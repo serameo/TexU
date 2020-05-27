@@ -157,9 +157,9 @@
 #define TEXU_LABEL_CLASS               "TexuLabelClass"
 #define TEXU_EDIT_CLASS                "TexuEditClass"
 #define TEXU_LISTBOX_CLASS             "TexuListBoxClass"
-#define TEXU_COMBOBOX_CLASS            "TexuComboBoxClass"
+/*#define TEXU_COMBOBOX_CLASS            "TexuComboBoxClass"*/
 #define TEXU_LISTCTRL_CLASS            "TexuListCtrlClass"
-#define TEXU_TREECTRL_CLASS            "TexuTreeCtrlClass"
+/*#define TEXU_TREECTRL_CLASS            "TexuTreeCtrlClass"*/
 
 
 /* window styles */
@@ -223,6 +223,7 @@
 #define TEXU_LCFM_TEXT                0x0001
 #define TEXU_LCFM_DATA                0x0002
 #define TEXU_LCFM_COLOR               0x0004
+#define TEXU_LCFM_ALL                 (TEXU_LCFM_TEXT | TEXU_LCFM_DATA | TEXU_LCFM_COLOR)
 
 
 #endif /*_TEXUCONST_H_*/

@@ -79,8 +79,8 @@ typedef struct texu_lbwnd_notify texu_lbwnd_notify;
 
 struct texu_wnd_subitem
 {
-  texu_i32        col;      /* column index, zero based */
   texu_i32        idx;      /* row index, zero based    */
+  texu_i32        col;      /* column index, zero based */
   texu_char*      text;
   texu_i32        normcolor;    /* text attributes          */
   texu_i32        discolor;    /* text attributes          */
