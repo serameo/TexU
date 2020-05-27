@@ -74,7 +74,7 @@
 
 
 /* LISTBOX */
-#define TEXU_LBM_FIRST                 100
+#define TEXU_LBM_FIRST                 200
 #define TEXU_LBM_ADDITEM               (TEXU_LBM_FIRST +  1)
 #define TEXU_LBM_DELETEITEM            (TEXU_LBM_FIRST +  2)
 #define TEXU_LBM_GETCURSEL             (TEXU_LBM_FIRST +  3)
@@ -91,11 +91,59 @@
 #define TEXU_LBM_ENABLEITEM            (TEXU_LBM_FIRST + 14)
 
 /* listbox notification */
-#define TEXU_LBN_FIRST                 100
+#define TEXU_LBN_FIRST                 200
 #define TEXU_LBN_SETFOCUS              (TEXU_LBN_FIRST +  1)
 #define TEXU_LBN_KILLFOCUS             (TEXU_LBN_FIRST +  2)
 #define TEXU_LBN_DELETEITEM            (TEXU_LBN_FIRST +  3)
 #define TEXU_LBN_SELCHANGED            (TEXU_LBN_FIRST +  4)
+
+
+
+/* listctrl notification */
+#define TEXU_LCM_FIRST                 300
+#define TEXU_LCM_SETEDITABLECOLS       (TEXU_LCM_FIRST +  1)
+#define TEXU_LCM_GETITEMSPERPAGE       (TEXU_LCM_FIRST +  2)
+#define TEXU_LCM_GETCURPAGE            (TEXU_LCM_FIRST +  3)
+#define TEXU_LCM_SETCURPAGE            (TEXU_LCM_FIRST +  4)
+#define TEXU_LCM_GETEDITBOX            (TEXU_LCM_FIRST +  5)
+#define TEXU_LCM_SETCOLWIDTH           (TEXU_LCM_FIRST +  6)
+#define TEXU_LCM_SETCURROW             (TEXU_LCM_FIRST +  7)
+#define TEXU_LCM_GETCURROW             (TEXU_LCM_FIRST +  8)
+#define TEXU_LCM_GETEDITSTYLE          (TEXU_LCM_FIRST +  9)
+#define TEXU_LCM_SETEDITSTYLE          (TEXU_LCM_FIRST + 10)
+#define TEXU_LCM_INVALIDATEITEM        (TEXU_LCM_FIRST + 11)
+#define TEXU_LCM_GETITEMCOUNT          (TEXU_LCM_FIRST + 12)
+#define TEXU_LCM_GETITEM               (TEXU_LCM_FIRST + 13)
+#define TEXU_LCM_SETITEM               (TEXU_LCM_FIRST + 14)
+#define TEXU_LCM_DELETEALLITEMS        (TEXU_LCM_FIRST + 15)
+#define TEXU_LCM_DELETEITEM            (TEXU_LCM_FIRST + 16)
+#define TEXU_LCM_ADDITEM               (TEXU_LCM_FIRST + 17)
+#define TEXU_LCM_DELETEALLCOLUMNS      (TEXU_LCM_FIRST + 18)
+#define TEXU_LCM_DELETECOLUMN          (TEXU_LCM_FIRST + 19)
+#define TEXU_LCM_ADDCOLUMN             (TEXU_LCM_FIRST + 20)
+
+
+
+#define TEXU_LCN_FIRST                 300
+#define TEXU_LCN_SETFOCUS              (TEXU_LCN_FIRST +  1)
+#define TEXU_LCN_KILLFOCUS             (TEXU_LCN_FIRST +  2)
+#define TEXU_LCN_DELETEITEM            (TEXU_LCN_FIRST +  3)
+#define TEXU_LCN_SELCHANGED            (TEXU_LCN_FIRST +  4)
+#define TEXU_LCN_BEGINMOVING           (TEXU_LCN_FIRST +  5)
+#define TEXU_LCN_ENDMOVING             (TEXU_LCN_FIRST +  6)
+#define TEXU_LCN_ENDINSERTROWOK        (TEXU_LCN_FIRST +  7)
+#define TEXU_LCN_ENDINSERTROWCANCEL    (TEXU_LCN_FIRST +  8)
+#define TEXU_LCN_BEGININSERTROW        (TEXU_LCN_FIRST +  9)
+#define TEXU_LCN_BEGINEDITROW          (TEXU_LCN_FIRST + 10)
+#define TEXU_LCN_ENDEDITROWCANCEL      (TEXU_LCN_FIRST + 11)
+#define TEXU_LCN_ENDEDITROWOK          (TEXU_LCN_FIRST + 12)
+#define TEXU_LCN_BEGINEDIT             (TEXU_LCN_FIRST + 13)
+#define TEXU_LCN_ENDEDITOK             (TEXU_LCN_FIRST + 14)
+#define TEXU_LCN_ENDEDITCANCEL         (TEXU_LCN_FIRST + 15)
+
+
+
+
 
 
 #define TEXU_KEY_NEXTWND               10
@@ -152,7 +200,29 @@
 
 
 
+/* LIST CTRL */
+#define TEXU_LCS_EDITABLE             0x00010000
+#define TEXU_LCS_NOHEADER             0x00020000
+#define TEXU_LCS_NOBORDER             0x00040000
+#define TEXU_LCS_NOSELECTION          0x00080000
+#define TEXU_LCS_LINEEDIT             0x00100000
 
+#define TEXU_LC_ENDEDITOK             0x00000000
+#define TEXU_LC_ENDEDITCANCEL         0x00000001
+
+#define TEXU_LCT_EDITING              0x00000001
+#define TEXU_LCT_VIEW                 0x00000002
+#define TEXU_LCT_MOVINGCURSOR         0x00000003
+#define TEXU_LCT_INSERTING            0x00000004
+#define TEXU_LCT_ENDINSERTING         0x00000005
+#define TEXU_LCT_BEGINEDITING         0x00000006
+#define TEXU_LCT_ENDMOVING            0x00000007
+#define TEXU_LCT_ENDEDITING           0x00000008
+
+
+#define TEXU_LCFM_TEXT                0x0001
+#define TEXU_LCFM_DATA                0x0002
+#define TEXU_LCFM_COLOR               0x0004
 
 
 #endif /*_TEXUCONST_H_*/

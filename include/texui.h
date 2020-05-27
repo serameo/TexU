@@ -15,6 +15,7 @@
 #include "texutypes.h"
 #include "texuconst.h"
 #include "texucio.h"
+#include "texust.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,12 +26,6 @@ extern "C" {
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-
-struct texu_env;
-typedef struct texu_env texu_env;
-
-struct texu_wnd;
-typedef struct texu_wnd texu_wnd;
 
 typedef texu_i64  (*texu_wndproc)(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuDefWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
@@ -65,50 +60,6 @@ typedef struct texu_wnd texu_wnd;
 
 texu_wnd*          texu_wnd_new(texu_env*);
 void               texu_wnd_del(texu_wnd*);
-
-struct texu_wnd_attrs
-{
-  texu_i32         y;
-  texu_i32         x;
-  texu_i32         height;
-  texu_i32         width;
-  texu_ui32        style;
-  texu_ui32        exstyle;
-  texu_bool        enable;
-  texu_bool        visible;
-  texu_char*       text;
-  texu_i32         normalcolor;
-  texu_i32         disabledcolor;
-  texu_i32         focuscolor;
-  texu_ui32        id;
-  texu_char*       clsname;
-  void*            userdata;
-};
-typedef struct texu_wnd_attrs texu_wnd_attrs;
-
-struct texu_wnd_notify
-{
-  texu_wnd*        wnd;
-  texu_ui32        id;
-  texu_ui32        code;
-};
-typedef struct texu_wnd_notify texu_wnd_notify;
-
-struct texu_wnd_keycmd
-{
-  texu_i32        key;
-  texu_ui32       cmd;
-};
-typedef struct texu_wnd_keycmd texu_wnd_keycmd;
-
-struct texu_lbwnd_notify
-{
-  texu_wnd_notify  hdr;
-  texu_i32         index;
-};
-typedef struct texu_lbwnd_notify texu_lbwnd_notify;
-
-
 
 
 texu_status        texu_wnd_create(texu_wnd*, texu_wnd*, const texu_wnd_attrs*);
@@ -156,21 +107,18 @@ texu_i32           texu_wnd_get_x(texu_wnd*);
 texu_i32           texu_wnd_get_width(texu_wnd*);
 texu_i32           texu_wnd_get_height(texu_wnd*);
 texu_ui32          texu_wnd_get_style(texu_wnd*);
+void               texu_wnd_set_style(texu_wnd*, texu_ui32);
 texu_ui32          texu_wnd_get_exstyle(texu_wnd*);
+void               texu_wnd_set_exstyle(texu_wnd*, texu_ui32);
 void*              texu_wnd_get_userdata(texu_wnd*);
 void               texu_wnd_set_userdata(texu_wnd*, void*);
+void               texu_wnd_move(texu_wnd*, texu_i32, texu_i32, texu_i32, texu_i32);
 
 texu_cio*          texu_wnd_get_cio(texu_wnd*);
 void               texu_wnd_lock_update(texu_wnd*, texu_bool);
 texu_bool          texu_wnd_is_update_locked(texu_wnd* wnd);
-
-/* edit */
-struct texu_editminmax
-{
-  texu_i32         min; 
-  texu_i32         max; 
-};
-typedef struct texu_editminmax texu_editminmax;
+texu_env*          texu_wnd_get_env(texu_wnd*);
+void               texu_wnd_get_rect(texu_wnd*, texu_rect*);
 
 
 #ifdef __cplusplus
