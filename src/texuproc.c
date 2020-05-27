@@ -236,9 +236,16 @@ void _TexuEditProc_OnSetText(texu_wnd* wnd, const texu_char* text)
 {
   texu_editwnd* edit = 0;
   texu_ui32 style = texu_wnd_get_style(wnd);
+  /*texu_char buf[TEXU_MAX_WNDTEXT+1];*/
   
+  if (!text)
+  {
+    return;
+  }
+  TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_i64)text, 0);
   edit = (texu_editwnd*)texu_wnd_get_userdata(wnd);
-  texu_wnd_get_text(wnd, edit->editbuf, TEXU_MAX_WNDTEXT);
+  /*texu_wnd_get_text(wnd, edit->editbuf, TEXU_MAX_WNDTEXT);*/
+  strcpy(edit->editbuf, text);
   edit->firstvisit = 1;
   
   if (TEXU_ES_AUTODECIMALCOMMA & style)
@@ -369,7 +376,6 @@ _TexuEditProc_OnKillFocus(texu_wnd* wnd, texu_wnd* nextwnd)
   texu_i32  number = 0;
   texu_i32  rcminmax = TEXU_OK;
   
-  edit->firstvisit = 1;
     /* check if style is TEXU_ES_DECIMAL */
   if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
   {
@@ -409,10 +415,12 @@ _TexuEditProc_OnKillFocus(texu_wnd* wnd, texu_wnd* nextwnd)
     _TexuEditProc_AddDecimalFormat(edit);
   }
   /* update text */
-  edit->firstchar = 0;
-  edit->editing   = 0;
-  edit->selected  = 0;
+  edit->firstvisit = 1;
+  edit->firstchar  = 0;
+  edit->editing    = 0;
+  edit->selected   = 0;
   texu_wnd_set_text(wnd, edit->editbuf);
+  texu_wnd_invalidate(wnd);
 
   _TexuWndProc_Notify(wnd, TEXU_EN_KILLFOCUS);
   return TEXU_OK;
@@ -757,9 +765,9 @@ _TexuEditProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   edit->limitchars = (TEXU_ES_AUTOHSCROLL & style ? TEXU_MAX_WNDTEXT : attrs->width);
 
   texu_wnd_set_color(wnd,
-    TEXU_CIO_COLOR_WHITE_CYAN, TEXU_CIO_COLOR_WHITE_BLACK);
+    TEXU_CIO_BRIGHT_WHITE_CYAN, TEXU_CIO_COLOR_WHITE_CYAN);
   texu_wnd_set_userdata(wnd, edit);
-  texu_wnd_set_focuscolor(wnd, TEXU_CIO_COLOR_WHITE_CYAN|A_REVERSE);
+  texu_wnd_set_focuscolor(wnd, TEXU_CIO_CYAN_BRIGHT_WHITE);
 
   return TEXU_OK;
 }
@@ -2222,11 +2230,9 @@ _TexuListCtrlProc_OnAddColumn(texu_wnd* wnd, texu_wnd_header* hdritem)
   header->cols      = hdritem->cols;
   header->align     = hdritem->align;
   
-  
   header->normcolor = hdritem->normcolor;    /* text attributes          */
   header->discolor  = hdritem->discolor ;    /* text attributes          */
   header->selcolor  = hdritem->selcolor ;    /* text attributes          */
-
 
   header->editstyle = hdritem->editstyle;
   header->decwidth  = hdritem->decwidth;
@@ -2399,6 +2405,9 @@ _TexuListCtrlProc_OnAddItem(texu_wnd* wnd, texu_char* text, texu_i32 nitems)
       {
         strcpy(newcell->caption, "");
       }
+      newcell->normcolor = TEXU_CIO_COLOR_WHITE_BLACK;
+      newcell->discolor  = TEXU_CIO_COLOR_WHITE_BLACK;
+      newcell->selcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
       
       /* add the new item */
       if (header->firstcell)
@@ -2545,6 +2554,8 @@ _TexuListCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
       {
 
         normcolor = visiblecell->normcolor;
+        /*discolor  =    header->discolor;*/
+        selcolor  = visiblecell->selcolor;
         if (!(TEXU_LCS_NOSELECTION & style) && i == lctl->curselrow)
         {
           normcolor = selcolor;

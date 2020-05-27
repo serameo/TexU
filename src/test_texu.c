@@ -114,11 +114,34 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
   texu_wnd_set_text(status, text);
 }
 
+void
+_MyWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
+{
+  texu_rect rect = { 9, 0, 4, 100 };
+  /*texu_cio_draw_rect(dc, &rect, COLOR_PAIR(TEXU_CIO_BRIGHT_WHITE_BLUE));*/
+  texu_i32 widths[4] = { 10, 20, 30, 40 };
+
+  texu_rect rect2 = { 14, 0, 10, 100 };
+  texu_i32 heights[2] = { 4, 4 };
+  
+  texu_cio_draw_hrects(dc, &rect, widths, 4, 
+    texu_cio_get_color(dc, TEXU_CIO_BRIGHT_WHITE_BLUE));
+    
+  texu_cio_draw_vrects(dc, &rect2, heights, 2, 
+    texu_cio_get_color(dc, TEXU_CIO_BRIGHT_WHITE_YELLOW));
+}
+
 texu_i64
 MyWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {
+    case TEXU_WM_PAINT:
+    {
+      _MyWndProc_OnPaint(wnd, (texu_cio*)param1);
+      return 0;
+    }
+    
     case TEXU_WM_NOTIFY:
     {
       _MyWndProc_OnNotify(wnd, (texu_wnd_notify*)param1);
@@ -173,6 +196,8 @@ MyWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               2, /* id */
               0  /* user data */
               );
+      texu_wnd_set_color(child, TEXU_CIO_BRIGHT_WHITE_BLUE, TEXU_CIO_BRIGHT_WHITE_BLUE);
+      
       child = TexuCreateWindow(
               "Number:",
               TEXU_LABEL_CLASS,
@@ -698,7 +723,9 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
     case TEXU_WM_CREATE:
     {
       texu_wnd_header header;
+      texu_wnd_subitem subitem;
       texu_wnd* child = 0;
+      
       child = TexuCreateWindow(
               "Text:",
               TEXU_LISTCTRL_CLASS,
@@ -707,7 +734,7 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               0, /* y */
               0, /* x */
               20,
-              100,
+              120,
               wnd, /* parent */
               1, /* id */
               0  /* user data */
@@ -718,10 +745,10 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       header.cols = 20;
       header.align = TEXU_ALIGN_LEFT;
       header.normcolor = TEXU_CIO_COLOR_BLUE_YELLOW;
-      header.discolor = TEXU_CIO_COLOR_BLUE_YELLOW;
-      header.selcolor = TEXU_CIO_COLOR_YELLOW_BLUE;
+      header.discolor  = TEXU_CIO_COLOR_BLUE_YELLOW;
+      header.selcolor  = TEXU_CIO_COLOR_YELLOW_BLUE;
       header.editstyle = TEXU_ES_AUTOHSCROLL;
-      header.decwidth = 2;
+      header.decwidth  = 2;
       texu_wnd_send_msg(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
       
       header.caption = "Header 2";
@@ -749,7 +776,32 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       texu_wnd_send_msg(child, TEXU_LCM_ADDITEM, (texu_i64)"\t8\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
       texu_wnd_send_msg(child, TEXU_LCM_ADDITEM, (texu_i64)"\t9\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
       texu_wnd_send_msg(child, TEXU_LCM_ADDITEM, (texu_i64)"\t10\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-              
+      
+      subitem.idx = 0;
+      subitem.col = 0;
+      subitem.normcolor = TEXU_CIO_COLOR_GREEN_WHITE;
+      subitem.discolor  = TEXU_CIO_COLOR_GREEN_WHITE;
+      subitem.selcolor  = TEXU_CIO_COLOR_WHITE_GREEN;
+      
+      texu_wnd_send_msg(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
+
+      subitem.idx = 1;
+      subitem.col = 1;
+      subitem.normcolor = TEXU_CIO_COLOR_GREEN_MAGENTA;
+      subitem.discolor  = TEXU_CIO_COLOR_GREEN_MAGENTA;
+      subitem.selcolor  = TEXU_CIO_COLOR_MAGENTA_GREEN;
+      
+      texu_wnd_send_msg(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
+      
+
+      subitem.idx = 2;
+      subitem.col = 2;
+      subitem.normcolor = TEXU_CIO_COLOR_RED_YELLOW;
+      subitem.discolor  = TEXU_CIO_COLOR_RED_YELLOW;
+      subitem.selcolor  = TEXU_CIO_COLOR_YELLOW_RED;
+      
+      texu_wnd_send_msg(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
+      
       child = TexuCreateWindow(
               "F3 - Exit",
               TEXU_LABEL_CLASS,
