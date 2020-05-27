@@ -16,6 +16,7 @@
 #include "texumacros.h"
 #include "texutypes.h"
 #include "texuconst.h"
+#include "texust.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -146,30 +147,29 @@ texu_i32           texu_cio_getstr(texu_cio*, texu_char*);
 
 texu_i32           texu_cio_putch(texu_cio*, texu_i32, texu_i32, texu_i32);
 texu_i32           texu_cio_putch_attr(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
+texu_i32           texu_cio_putch_attr2(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32, texu_i32);
 texu_i32           texu_cio_putstr(texu_cio*, texu_i32, texu_i32, texu_char*);
 texu_i32           texu_cio_putstr_attr(texu_cio*, texu_i32, texu_i32, texu_char*, texu_i32);
+texu_i32           texu_cio_putstr_attr2(texu_cio*, texu_i32, texu_i32, texu_char*, texu_i32, texu_i32);
 
 texu_i32           texu_cio_refresh(texu_cio*);
 /* text attributes */
 texu_i32           texu_cio_attron(texu_cio*, texu_i32);
 texu_i32           texu_cio_attroff(texu_cio*, texu_i32);
 
-/*
-# TexU window object
-#
-         1         2         3         4         5         6         7         8
-12345678901234567890123456789012345678901234567890123456789012345678901234567890
-*/
+/* border */
+texu_i32           texu_cio_draw_rect(texu_cio*, texu_rect*, texu_i32);
+texu_i32           texu_cio_draw_line(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
+texu_i32           texu_cio_draw_vline(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
 
+texu_i32           texu_cio_draw_hrects(texu_cio*, texu_rect*, texu_i32*, texu_i32, texu_i32);
+texu_i32           texu_cio_draw_vrects(texu_cio*, texu_rect*, texu_i32*, texu_i32, texu_i32);
 
-
-
-
-
-
-
-
-
+texu_i32           texu_cio_get_color(texu_cio*, texu_i32);
+texu_i32           texu_cio_get_underline(texu_cio*, texu_i32);
+texu_i32           texu_cio_get_reverse(texu_cio*, texu_i32);
+texu_i32           texu_cio_get_blink(texu_cio*, texu_i32);
+texu_i32           texu_cio_get_color_attr(texu_cio*, texu_i32, texu_i32);
 
 #ifdef __cplusplus
 }
