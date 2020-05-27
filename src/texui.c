@@ -42,6 +42,7 @@ texu_i64          TexuDesktopProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuLabelProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuEditProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuListBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          TexuListCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 void              _texu_env_init_cls(texu_env*);
 texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
@@ -49,10 +50,11 @@ texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
 void
 _texu_env_init_cls(texu_env* env)
 {
-  texu_env_register_cls(env, TEXU_DESKTOP_CLASS, TexuDesktopProc);
-  texu_env_register_cls(env, TEXU_LABEL_CLASS, TexuLabelProc);
-  texu_env_register_cls(env, TEXU_EDIT_CLASS, TexuEditProc);
-  texu_env_register_cls(env, TEXU_LISTBOX_CLASS, TexuListBoxProc);
+  texu_env_register_cls(env, TEXU_DESKTOP_CLASS,  TexuDesktopProc);
+  texu_env_register_cls(env, TEXU_LABEL_CLASS,    TexuLabelProc);
+  texu_env_register_cls(env, TEXU_EDIT_CLASS,     TexuEditProc);
+  texu_env_register_cls(env, TEXU_LISTBOX_CLASS,  TexuListBoxProc);
+  texu_env_register_cls(env, TEXU_LISTCTRL_CLASS, TexuListCtrlProc);
 }
 
 
@@ -396,7 +398,7 @@ void
 _TexuDefWndProc_OnSetText(texu_wnd* wnd, const texu_char* text)
 {
   texu_ui32 textlen = strlen(text);
-  texu_ui32 len = strlen(wnd->text); 
+  /*texu_ui32 len = strlen(wnd->text); */
   
   texu_wnd* frame = texu_wnd_get_frame(wnd);
   texu_wnd* activewnd = texu_wnd_get_activechild(frame);
@@ -625,7 +627,7 @@ texu_wnd*
 texu_wnd_is_window(texu_wnd* wnd)
 {
   texu_wnd* parent = (wnd ? wnd->parent : 0);
-  texu_wnd* findwnd = 0;
+/*  texu_wnd* findwnd = 0;*/
   if (!wnd)
   {
     return 0;
@@ -1052,6 +1054,32 @@ texu_wnd_get_style(texu_wnd* wnd)
   return wnd->style;
 }
 
+void
+texu_wnd_move(texu_wnd* wnd, texu_i32 y, texu_i32 x, texu_i32 w, texu_i32 h)
+{
+  wnd->y = y;
+  wnd->x = x;
+  wnd->width = w;
+  wnd->height = h;
+  texu_wnd_invalidate(wnd);
+}
+
+
+void
+texu_wnd_set_style(texu_wnd* wnd, texu_ui32 style)
+{
+  wnd->style = style;
+  texu_wnd_invalidate(wnd);
+}
+
+
+void
+texu_wnd_set_exstyle(texu_wnd* wnd, texu_ui32 exstyle)
+{
+  wnd->exstyle = exstyle;
+  texu_wnd_invalidate(wnd);
+}
+
 texu_ui32
 texu_wnd_get_exstyle(texu_wnd* wnd)
 {
@@ -1218,6 +1246,21 @@ void
 texu_wnd_set_userdata(texu_wnd* wnd, void* userdata)
 {
   wnd->userdata = userdata;
+}
+
+texu_env*
+texu_wnd_get_env(texu_wnd* wnd)
+{
+  return wnd->env;
+}
+
+void
+texu_wnd_get_rect(texu_wnd* wnd, texu_rect* rect)
+{
+  rect->y = wnd->y;
+  rect->x = wnd->x;
+  rect->lines = wnd->height;
+  rect->cols  = wnd->width;
 }
 
 texu_cio*
