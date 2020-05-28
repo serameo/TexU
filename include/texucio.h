@@ -157,7 +157,9 @@ texu_i32           texu_cio_refresh(texu_cio*);
 texu_i32           texu_cio_attron(texu_cio*, texu_i32);
 texu_i32           texu_cio_attroff(texu_cio*, texu_i32);
 
+
 /* border */
+texu_i32           texu_cio_draw_frame(texu_cio*, texu_char*, texu_rect*, texu_i32);
 texu_i32           texu_cio_draw_rect(texu_cio*, texu_rect*, texu_i32);
 texu_i32           texu_cio_draw_line(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
 texu_i32           texu_cio_draw_vline(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);

@@ -94,11 +94,7 @@ texu_status        TexuRegisterClass(
                      texu_char*   clsname,
                      texu_wndproc wndproc
                    );
-void               TexuPushWindow(
-                     texu_wnd*  wnd
-                   );
-texu_wnd*          TexuPopWindow();
-texu_wnd*          TexuTopWindow();
+
 texu_wnd*          TexuCreateWindow(
                      texu_char* text,
                      texu_char* clsname,

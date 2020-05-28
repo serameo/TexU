@@ -121,6 +121,23 @@ texu_env*          texu_wnd_get_env(texu_wnd*);
 void               texu_wnd_get_rect(texu_wnd*, texu_rect*);
 
 
+
+
+
+
+
+
+
+
+
+/*tree window*/
+/*typedef texu_i32  (*texu_tree_find_proc)(const void*, const void*);*/
+typedef texu_i32  (*texu_tree_exp_proc)(FILE*, texu_treewnd_item*);
+typedef texu_i32  (*texu_tree_imp_proc)(texu_treewnd_item*, const texu_char*);
+
+typedef texu_i32  (*texu_tree_find_proc)(texu_i64, texu_i64, void*);
+
+
 #ifdef __cplusplus
 }
 #endif

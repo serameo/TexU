@@ -119,6 +119,32 @@ struct texu_editminmax
 };
 typedef struct texu_editminmax texu_editminmax;
 
+/* tree */
+
+struct texu_treewnd_item
+{
+    texu_char   itemtext[TEXU_MAX_WNDTEXT + 1];
+    texu_i64    lparam;
+    texu_bool   expanded;
+    texu_bool   selected;
+    texu_i32    children;
+    texu_bool   populated;
+    texu_i32    normcolor;
+    texu_i32    discolor;
+    texu_i32    selcolor;
+};
+typedef struct texu_treewnd_item texu_treewnd_item;
+
+
+struct texu_treewnd_notify
+{
+  texu_wnd_notify  hdr;         /* notification header */
+  texu_tree_item*  item;
+};
+typedef struct texu_treewnd_notify texu_treewnd_notify;
+
+
+
 
 #ifdef __cplusplus
 }

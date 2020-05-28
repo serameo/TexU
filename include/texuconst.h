@@ -144,6 +144,34 @@
 
 
 
+/*TREE CTRL*/
+#define TEXU_TCM_FIRST                 400
+#define TEXU_TCM_EXPANDALLITEMS        (TEXU_TCM_FIRST +  1)
+#define TEXU_TCM_COLLAPSEALLITEMS      (TEXU_TCM_FIRST +  2)
+#define TEXU_TCM_IMPORTFROMFILE        (TEXU_TCM_FIRST +  3)
+#define TEXU_TCM_EXPORTTOFILE          (TEXU_TCM_FIRST +  4)
+#define TEXU_TCM_GETSELITEM            (TEXU_TCM_FIRST +  5)
+#define TEXU_TCM_SETSELITEM            (TEXU_TCM_FIRST +  6)
+#define TEXU_TCM_SETFINDITEMPROC       (TEXU_TCM_FIRST +  7)
+#define TEXU_TCM_COLLAPSEITEM          (TEXU_TCM_FIRST +  8)
+#define TEXU_TCM_EXPANDITEM            (TEXU_TCM_FIRST +  9)
+#define TEXU_TCM_FINDNEXTITEM          (TEXU_TCM_FIRST + 10)
+#define TEXU_TCM_FINDITEM              (TEXU_TCM_FIRST + 11)
+#define TEXU_TCM_GETITEM               (TEXU_TCM_FIRST + 12)
+#define TEXU_TCM_SETITEM               (TEXU_TCM_FIRST + 13)
+#define TEXU_TCM_DELETEITEM            (TEXU_TCM_FIRST + 14)
+#define TEXU_TCM_INSERTITEM            (TEXU_TCM_FIRST + 15)
+
+
+
+#define TEXU_TCN_FIRST                 400
+#define TEXU_TCN_SETFOCUS              (TEXU_TCN_FIRST +  1)
+#define TEXU_TCN_KILLFOCUS             (TEXU_TCN_FIRST +  2)
+#define TEXU_TCN_ITEMCOLLAPSING        (TEXU_TCN_FIRST +  3)
+#define TEXU_TCN_ITEMCOLLAPSED         (TEXU_TCN_FIRST +  4)
+#define TEXU_TCN_ITEMEXPANDING         (TEXU_TCN_FIRST +  5)
+#define TEXU_TCN_ITEMEXPANDED          (TEXU_TCN_FIRST +  6)
+
 
 
 #define TEXU_KEY_NEXTWND               10
@@ -159,7 +187,7 @@
 #define TEXU_LISTBOX_CLASS             "TexuListBoxClass"
 /*#define TEXU_COMBOBOX_CLASS            "TexuComboBoxClass"*/
 #define TEXU_LISTCTRL_CLASS            "TexuListCtrlClass"
-/*#define TEXU_TREECTRL_CLASS            "TexuTreeCtrlClass"*/
+#define TEXU_TREECTRL_CLASS            "TexuTreeCtrlClass"
 
 
 /* window styles */
@@ -224,6 +252,22 @@
 #define TEXU_LCFM_DATA                0x0002
 #define TEXU_LCFM_COLOR               0x0004
 #define TEXU_LCFM_ALL                 (TEXU_LCFM_TEXT | TEXU_LCFM_DATA | TEXU_LCFM_COLOR)
+
+
+
+
+
+
+
+#define TEXU_TCS_SHOWNODE            0x00000001
+#define TEXU_TCS_NOHIGHLIGHT         0x00000002
+#define TEXU_TCS_FULLSECROW          0x00000004
+
+#define TEXU_TPO_PRE                 -1
+#define TEXU_TPO_IN                  0
+#define TEXU_TPO_POST                1
+
+
 
 
 #endif /*_TEXUCONST_H_*/

@@ -70,6 +70,34 @@ texu_list_item*     texu_list_first(texu_list*);
 texu_list_item*     texu_list_last(texu_list*);
 texu_ui64           texu_list_count(texu_list*);
 
+/*
+# TexU queue
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+struct texu_queue;
+typedef struct texu_queue texu_queue;
+
+texu_queue*        texu_queue_new();
+void               texu_queue_del(texu_queue*);
+
+void               texu_queue_free(texu_queue*);
+/* callback free the queue */
+void               texu_queue_cb_free(
+                     texu_queue*,
+                     void (*)(texu_i64, void*),
+                     void*);
+/* add/insert a new item */
+texu_status        texu_queue_enqueue(texu_queue*, texu_i64);
+/* remove an item on the queue */
+texu_status        texu_queue_dequeue(texu_queue*);
+texu_status        texu_queue_cb_dequeue(
+                     texu_queue*,
+                     void (*)(texu_i64, void*),
+                     void*);
+texu_i64           texu_queue_first(texu_queue*);
+texu_bool          texu_queue_empty(texu_queue*);
 
 /*
 # TexU array
@@ -132,6 +160,7 @@ texu_status        texu_stack_cb_pop(
                      void (*)(texu_i64, void*),
                      void*);
 texu_i64           texu_stack_top(texu_stack*);
+texu_i64           texu_stack_count(texu_stack*);
 
 /*
 # TexU tree
@@ -182,6 +211,8 @@ texu_tree_item*   texu_tree_find_next_item(
                     texu_i64,
                     texu_i32 (*)(texu_i64, texu_i64, void*),
                     void*);
+texu_tree_item*   texu_tree_get_root(texu_tree*);
+texu_ui64         texu_tree_count(texu_tree*);
 
 /*
 # 3rd parameter
