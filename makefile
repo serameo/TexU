@@ -22,7 +22,9 @@ TEXU_SOURCES = $(TEXU_SRC_DIR)/texulib.c \
                $(TEXU_SRC_DIR)/texucio.c \
                $(TEXU_SRC_DIR)/texuproc.c \
                $(TEXU_SRC_DIR)/texui.c \
+               $(TEXU_SRC_DIR)/texuctrl.c \
                $(TEXU_SRC_DIR)/texu.c
+
 
 TEXU_OBJECTS  = $(TEXU_SOURCES:.c=.o)
 TEXU_INCLUDES = -I$(TEXU_INC_DIR)
