@@ -321,6 +321,90 @@ texu_list_rfind_prev(
 }
 
 /*
+# TexU queue
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+struct texu_queue
+{
+  texu_list* list;
+};
+
+texu_queue*
+texu_queue_new()
+{
+  texu_queue* queue = (texu_queue*)malloc(sizeof(texu_queue));
+  if (queue)
+  {
+    queue->list = texu_list_new();
+  }
+  return queue;
+}
+
+void
+texu_queue_del(texu_queue* queue)
+{
+  if (queue)
+  {
+    texu_list_del(queue->list);
+    free(queue);
+  }
+}
+
+void
+texu_queue_free(texu_queue* queue)
+{
+  texu_queue_cb_free(queue, 0, 0);
+}
+
+/* callback free the queue */
+void
+texu_queue_cb_free(
+  texu_queue* queue,
+  void (*cb)(texu_i64, void*),
+  void* userdata)
+{
+  texu_list_cb_free(queue->list, cb, userdata);
+}
+
+/* add/insert a new item */
+texu_status
+texu_queue_enqueue(texu_queue* queue, texu_i64 data)
+{
+  return texu_list_add(queue->list, data);
+}
+
+/* remove an item on the queue */
+texu_status        texu_queue_dequeue(texu_queue* queue)
+{
+  return texu_queue_cb_dequeue(queue, 0, 0);
+}
+
+texu_status
+texu_queue_cb_dequeue(
+  texu_queue* queue,
+  void (*cb)(texu_i64, void*),
+  void* userdata)
+{
+  texu_list_item* item = texu_list_first(queue->list);
+  return texu_list_cb_remove(queue->list, item, cb, userdata);
+}
+  
+texu_i64
+texu_queue_first(texu_queue* queue)
+{
+  texu_list_item* item = texu_list_first(queue->list);
+  return (item ? item->data : 0);
+}
+
+texu_bool
+texu_queue_empty(texu_queue* queue)
+{
+  return (texu_list_count(queue->list) == 0);
+}
+
+/*
 # TexU array
 #
          1         2         3         4         5         6         7         8
@@ -597,6 +681,11 @@ texu_stack_cb_pop(
   return TEXU_OK;
 }
 
+texu_i64
+texu_stack_count(texu_stack* stack)
+{
+  return stack->nitems;
+}
 /*
 # TexU tree
 #
@@ -981,6 +1070,19 @@ texu_tree_populate(
 }
 
 
+texu_tree_item*
+texu_tree_get_root(texu_tree* tree)
+{
+  return tree->root;
+}
+
+texu_ui64
+texu_tree_count(texu_tree* tree)
+{
+  return tree->nitems;
+}
+
+
 /*
 # TexU map
 #
@@ -1297,7 +1399,6 @@ texu_map_cmp_find(
   }
   return rc;
 }
-
 
 #ifdef __cplusplus
 }

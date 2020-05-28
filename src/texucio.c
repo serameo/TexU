@@ -276,6 +276,22 @@ texu_cio_refresh(texu_cio* cio)
 }
 
 texu_i32
+texu_cio_draw_frame(texu_cio* cio, texu_char* text, texu_rect* rect, texu_i32 attrs)
+{
+  texu_i32 len = 0;
+  
+  texu_cio_draw_rect(cio, rect, attrs);
+  
+  if (text)
+  {
+    len = strlen(text);
+    texu_cio_putstr_attr(cio, rect->y,
+      rect->x + (rect->cols - len)/2, text, attrs | A_REVERSE);
+  }
+  return TEXU_OK;
+}
+
+texu_i32
 texu_cio_draw_rect(texu_cio* cio, texu_rect* rect, texu_i32 attrs)
 {
   texu_cio_attron(cio, attrs);

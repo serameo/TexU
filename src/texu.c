@@ -14,8 +14,16 @@
 extern "C" {
 #endif
 
+
+void               TexuPushWindow(
+                     texu_wnd*  wnd
+                   );
+texu_wnd*          TexuPopWindow();
+texu_wnd*          TexuTopWindow();
+
 /* global variables */
 texu_env*  genv = 0;
+
 
 
 texu_status
@@ -86,6 +94,7 @@ TexuCreateWindow(
   texu_wnd* wnd = 0;
   texu_wnd_attrs attrs;
   texu_status rc = TEXU_OK;
+  texu_wnd* desktop = texu_env_get_desktop(genv);
 
   if (!genv)
   {
@@ -114,7 +123,7 @@ TexuCreateWindow(
 
   if (!(parent))
   {
-    parent = (genv ? texu_env_get_desktop(genv) : 0);
+    parent = desktop;
   }
   rc = texu_wnd_create(wnd, parent, &attrs);
 
@@ -122,6 +131,11 @@ TexuCreateWindow(
   {
     texu_wnd_del(wnd);
     return 0;
+  }
+  
+  if (parent == desktop)
+  {
+    TexuPushWindow(wnd);
   }
   return wnd;
 }
@@ -131,8 +145,15 @@ TexuDestroyWindow(
   texu_wnd*  wnd
 )
 {
+  texu_wnd* topwnd = 0;
+  TexuPopWindow();
+
   texu_wnd_destroy(wnd);
   texu_wnd_del(wnd);
+  
+  topwnd = TexuTopWindow();
+  TexuShowWindow(topwnd, TEXU_WS_SHOW);
+  TexuInvalidateWindow(topwnd);
 }
 
 void

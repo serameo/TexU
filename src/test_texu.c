@@ -6,6 +6,7 @@
 #define MyWndClass  "MyWndClass"
 #define MyWndClass2 "MyWndClass2"
 #define MyWndClass3 "MyWndClass3"
+#define MyWndClass4 "MyWndClass4"
 
 #define ID_HELP             (TEXU_WM_USER + 1)
 #define ID_ADD              (TEXU_WM_USER + 2)
@@ -16,6 +17,7 @@
 texu_i64 MyWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64 MyWndProc2(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64 MyWndProc3(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64 MyWndProc4(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 int main()
 {
@@ -41,6 +43,10 @@ int main()
          MyWndClass3,
          MyWndProc3
          );
+  rc = TexuRegisterClass(
+         MyWndClass4,
+         MyWndProc4
+         );
   
   wnd = TexuCreateWindow(
           "Test TexU App",
@@ -55,7 +61,7 @@ int main()
           1, /* id */
           0  /* user data */
           );
-  TexuPushWindow(wnd);
+  /*TexuPushWindow(wnd);*/
   TexuShowWindow(wnd, TEXU_WS_SHOW);
   TexuInvalidateWindow(wnd);
   
@@ -92,7 +98,7 @@ void _MyWndProc_OnAdd(texu_wnd* wnd)
           2, /* id */
           0  /* user data */
           );
-  TexuPushWindow(newwnd);
+  /*TexuPushWindow(newwnd);*/
   TexuShowWindow(newwnd, TEXU_WS_SHOW);
   TexuInvalidateWindow(newwnd);
 }
@@ -117,11 +123,11 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
 void
 _MyWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
-  texu_rect rect = { 9, 0, 4, 100 };
+  texu_rect rect = { 9, 0, 4, 99 };
   /*texu_cio_draw_rect(dc, &rect, COLOR_PAIR(TEXU_CIO_BRIGHT_WHITE_BLUE));*/
-  texu_i32 widths[4] = { 10, 20, 30, 40 };
+  texu_i32 widths[4] = { 10, 20, 30, 39 };
 
-  texu_rect rect2 = { 14, 0, 10, 100 };
+  texu_rect rect2 = { 14, 0, 10, 99 };
   texu_i32 heights[2] = { 4, 4 };
   
   texu_cio_draw_hrects(dc, &rect, widths, 4, 
@@ -429,7 +435,7 @@ void _MyWndProc2_OnAdd(texu_wnd* wnd)
           3, /* id */
           0  /* user data */
           );
-  TexuPushWindow(newwnd);
+  /*TexuPushWindow(newwnd);*/
   TexuShowWindow(newwnd, TEXU_WS_SHOW);
   TexuInvalidateWindow(newwnd);
 }
@@ -442,21 +448,27 @@ void _MyWndProc2_OnHelp(texu_wnd* wnd)
 
 void _MyWndProc2_OnExit(texu_wnd* wnd)
 {
-  texu_wnd* topwnd = 0;
-  TexuPopWindow();
   TexuDestroyWindow(wnd);
-  
-  topwnd = TexuTopWindow();
-  TexuShowWindow(topwnd, TEXU_WS_SHOW);
-  TexuInvalidateWindow(topwnd);
 }
 
+
+void
+_MyWndProc2_OnPaint(texu_wnd* wnd, texu_cio* dc)
+{
+  texu_rect rect = { 9, 0, 4, 99 };
+  texu_cio_draw_frame(dc, "Hello World", &rect,
+    texu_cio_get_color(dc, TEXU_CIO_BRIGHT_WHITE_BLUE));
+}
 
 texu_i64
 MyWndProc2(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {
+    case TEXU_WM_PAINT:
+      _MyWndProc2_OnPaint(wnd, (texu_cio*)param1);
+      return 0;
+      
     case TEXU_WM_COMMAND:
     {
       switch (param1)
@@ -646,6 +658,22 @@ MyWndProc2(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               );
       texu_wnd_set_color(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
       
+      
+      child = TexuCreateWindow(
+              "F2 - List Demo",
+              TEXU_LABEL_CLASS,
+              TEXU_WS_CENTER, /* style*/
+              0, /* exstyle*/
+              23, /* y */
+              20, /* x */
+              1,  /* height */
+              16, /* width */
+              wnd, /* parent */
+              11, /* id */
+              0  /* user data */
+              );
+      texu_wnd_set_color(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
+      
       child = TexuCreateWindow(
               "F3 - Exit",
               TEXU_LABEL_CLASS,
@@ -691,16 +719,35 @@ MyWndProc2(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
 
 
+void _MyWndProc3_OnAdd(texu_wnd* wnd)
+{
+  texu_wnd* ctl = texu_wnd_find_child(wnd, IDC_STATUSBAR);
+  texu_wnd* newwnd = 0;
+  
+  texu_wnd_set_text(ctl, "Pressed F2 to add");
+  
+  newwnd = TexuCreateWindow(
+          "Test TexU App - window 4",
+          MyWndClass4,
+          0, /* style*/
+          0, /* exstyle*/
+          0, /* y */
+          0, /* x */
+          TexuGetMaxY(),
+          TexuGetMaxX(),
+          0, /* parent */
+          4, /* id */
+          0  /* user data */
+          );
+  /*TexuPushWindow(newwnd);*/
+  TexuShowWindow(newwnd, TEXU_WS_SHOW);
+  TexuInvalidateWindow(newwnd);
+}
+
 
 void _MyWndProc3_OnExit(texu_wnd* wnd)
 {
-  texu_wnd* topwnd = 0;
-  TexuPopWindow();
   TexuDestroyWindow(wnd);
-  
-  topwnd = TexuTopWindow();
-  TexuShowWindow(topwnd, TEXU_WS_SHOW);
-  TexuInvalidateWindow(topwnd);
 }
 
 texu_i64
@@ -714,6 +761,10 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       {
         case ID_DELETE:
           _MyWndProc3_OnExit(wnd);
+          break;
+          
+        case ID_ADD:
+          _MyWndProc3_OnAdd(wnd);
           break;
           
       }
@@ -802,6 +853,144 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       
       texu_wnd_send_msg(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
       
+      
+      child = TexuCreateWindow(
+              "F2 - Tree Demo",
+              TEXU_LABEL_CLASS,
+              TEXU_WS_CENTER, /* style*/
+              0, /* exstyle*/
+              23, /* y */
+              20, /* x */
+              1,  /* height */
+              16, /* width */
+              wnd, /* parent */
+              11, /* id */
+              0  /* user data */
+              );
+      texu_wnd_set_color(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
+      
+      child = TexuCreateWindow(
+              "F3 - Exit",
+              TEXU_LABEL_CLASS,
+              TEXU_WS_CENTER, /* style*/
+              0, /* exstyle*/
+              23, /* y */
+              40, /* x */
+              1,  /* height */
+              16, /* width */
+              wnd, /* parent */
+              13, /* id */
+              0  /* user data */
+              );
+      texu_wnd_set_color(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
+      
+      texu_wnd_add_keycmd(wnd, KEY_F(1), ID_HELP);
+      texu_wnd_add_keycmd(wnd, KEY_F(2), ID_ADD);
+      texu_wnd_add_keycmd(wnd, KEY_F(3), ID_DELETE);
+      
+      child = TexuCreateWindow(
+              "This is the third window",
+              TEXU_LABEL_CLASS,
+              0, /* style*/
+              0, /* exstyle*/
+              24, /* y */
+              0, /* x */
+              1,  /* height */
+              100, /* width */
+              wnd, /* parent */
+              IDC_STATUSBAR, /* id */
+              0  /* user data */
+              );
+      texu_wnd_set_color(child, TEXU_CIO_COLOR_BLUE_YELLOW, TEXU_CIO_COLOR_BLUE_YELLOW);
+      return TEXU_OK;
+    }
+  }
+  return TexuDefWndProc(wnd, msg, param1, param2);
+}
+
+
+
+
+
+
+
+
+void _MyWndProc4_OnExit(texu_wnd* wnd)
+{
+  TexuDestroyWindow(wnd);
+}
+
+texu_i64
+MyWndProc4(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+{
+  switch (msg)
+  {
+    case TEXU_WM_COMMAND:
+    {
+      switch (param1)
+      {
+        case ID_DELETE:
+          _MyWndProc3_OnExit(wnd);
+          break;
+          
+      }
+      break;
+    }
+
+    case TEXU_WM_CREATE:
+    {
+      texu_treewnd_item data;
+      texu_tree_item* item;
+      texu_wnd* child = 0;
+      
+      child = TexuCreateWindow(
+              "Text:",
+              TEXU_TREECTRL_CLASS,
+              0, /* style*/
+              0, /* exstyle*/
+              0, /* y */
+              0, /* x */
+              20,
+              120,
+              wnd, /* parent */
+              1, /* id */
+              0  /* user data */
+              );
+              
+      memset(&data, 0, sizeof(data));
+      data.normcolor = TEXU_CIO_BRIGHT_WHITE_BLUE;
+      data.discolor = TEXU_CIO_COLOR_WHITE_BLUE;
+      data.selcolor = TEXU_CIO_BLUE_BRIGHT_WHITE;
+      strcpy(data.itemtext, "Item 1");
+      item = (texu_tree_item*)texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, 0, (texu_i64)&data);
+      
+      strcpy(data.itemtext, "Item 1 - 1");
+      texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+
+      strcpy(data.itemtext, "Item 1 - 2");
+      texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+
+      strcpy(data.itemtext, "Item 1 - 3");
+      texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+
+      strcpy(data.itemtext, "Item 1 - 4");
+      texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+      
+      strcpy(data.itemtext, "Item 2");
+      item = (texu_tree_item*)texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, 0, (texu_i64)&data);
+      
+      strcpy(data.itemtext, "Item 2 - 1");
+      texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+
+      strcpy(data.itemtext, "Item 2 - 2");
+      texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+
+      strcpy(data.itemtext, "Item 2 - 3");
+      texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+
+      strcpy(data.itemtext, "Item 2 - 4");
+      texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+      
       child = TexuCreateWindow(
               "F3 - Exit",
               TEXU_LABEL_CLASS,
@@ -839,6 +1028,8 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
   }
   return TexuDefWndProc(wnd, msg, param1, param2);
 }
+
+
 
 
 
