@@ -445,6 +445,7 @@ _TexuEditProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd)
   edit->selected   = 1;
   
   _TexuWndProc_Notify(wnd, TEXU_EN_SETFOCUS);
+  texu_wnd_invalidate(wnd);
 }
 
 
@@ -763,6 +764,7 @@ _TexuEditProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   edit->editing    = 0;
   edit->decwidth   = 6;
   edit->limitchars = (TEXU_ES_AUTOHSCROLL & style ? TEXU_MAX_WNDTEXT : attrs->width);
+  edit->selected   = 0;
 
   texu_wnd_set_color(wnd,
     TEXU_CIO_BRIGHT_WHITE_CYAN, TEXU_CIO_COLOR_WHITE_CYAN);
@@ -825,34 +827,45 @@ void _TexuEditProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   }
 }
 
-
-
 texu_i64
 TexuEditProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
+  
   switch (msg)
   {
     case TEXU_WM_CREATE:
+    {
       return _TexuEditProc_OnCreate(wnd, (texu_wnd_attrs*)param1);
+    }  
 
     case TEXU_WM_CHAR:
+    {
       _TexuEditProc_OnChar(wnd, (texu_i32)param1);
       return 0;
+    }
 
     case TEXU_WM_DESTROY:
+    {
       _TexuEditProc_OnDestroy(wnd);
       break;
+    }
 
     case TEXU_WM_PAINT:
+    {
       _TexuEditProc_OnPaint(wnd, (texu_cio*)param1);
       return 0;
+    }
 
     case TEXU_WM_SETFOCUS:
+    {
       _TexuEditProc_OnSetFocus(wnd, (texu_wnd*)param1);
       break;
+    }
 
     case TEXU_WM_KILLFOCUS:
+    {
       return _TexuEditProc_OnKillFocus(wnd, (texu_wnd*)param1);
+    }
       
     case TEXU_EM_LIMITTEXT:
     {

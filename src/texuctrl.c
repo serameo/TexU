@@ -661,6 +661,8 @@ _TexuListCtrlProc_DrawItem(
 {
   texu_i32 len = 0;
   texu_char buf[TEXU_MAX_WNDTEXT+1];
+  
+  memset(buf, 0, sizeof(buf));
   len = texu_printf_alignment(buf, 
           caption,
           rccell->cols,

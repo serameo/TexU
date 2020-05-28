@@ -95,6 +95,7 @@ TexuCreateWindow(
   texu_wnd_attrs attrs;
   texu_status rc = TEXU_OK;
   texu_wnd* desktop = texu_env_get_desktop(genv);
+  texu_wnd* childwnd = 0;
 
   if (!genv)
   {
@@ -136,7 +137,14 @@ TexuCreateWindow(
   if (parent == desktop)
   {
     TexuPushWindow(wnd);
+    
+    childwnd = texu_wnd_get_activechild(wnd);
+    if (childwnd)
+    {
+      texu_wnd_send_msg(childwnd, TEXU_WM_SETFOCUS, 0, 0);
+    }
   }
+
   return wnd;
 }
 

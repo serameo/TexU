@@ -794,7 +794,7 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       memset(&header, 0, sizeof(header));
       header.caption = "Header 1";
       header.cols = 20;
-      header.align = TEXU_ALIGN_LEFT;
+      header.align = TEXU_ALIGN_RIGHT;
       header.normcolor = TEXU_CIO_COLOR_BLUE_YELLOW;
       header.discolor  = TEXU_CIO_COLOR_BLUE_YELLOW;
       header.selcolor  = TEXU_CIO_COLOR_YELLOW_BLUE;
@@ -802,9 +802,11 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       header.decwidth  = 2;
       texu_wnd_send_msg(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
       
+      header.align = TEXU_ALIGN_CENTER;
       header.caption = "Header 2";
       texu_wnd_send_msg(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
       
+      header.align = TEXU_ALIGN_LEFT;
       header.caption = "Header 3";
       texu_wnd_send_msg(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
       
