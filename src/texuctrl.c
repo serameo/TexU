@@ -3976,7 +3976,7 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   attrs2.id         = 1;
   attrs2.clsname    = TEXU_EDIT_CLASS;
   attrs2.userdata   = 0;
-  attrs2.style      = TEXU_ES_AUTOHSCROLL|TEXU_ES_NUMBER;
+  attrs2.style      = TEXU_ES_AUTOHSCROLL|TEXU_ES_NUMBER|TEXU_ES_CENTER;
   attrs2.exstyle    = 0;
   
   rc = texu_wnd_create(editwnd, wnd, &attrs2);
@@ -4016,6 +4016,8 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
 void
 _TexuUpDownCtrlProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd)
 {
+  texu_udwnd* udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_send_msg(udctl->editwnd, TEXU_WM_SETFOCUS, 0, 0);
   _TexuWndProc_Notify(wnd, TEXU_UDCN_SETFOCUS);
 }
 
