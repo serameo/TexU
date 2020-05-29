@@ -36,7 +36,7 @@ TEST_INC_DIR = ./include
 TEST_SOURCES = $(TEST_SRC_DIR)/test_texu.c
 TEST_OBJECTS = $(TEST_SOURCES:.c=.o)
 
-DEFINES = 
+DEFINES = -DXTERM_256COLOR
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
