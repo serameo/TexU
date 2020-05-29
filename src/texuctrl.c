@@ -661,11 +661,22 @@ _TexuListCtrlProc_DrawItem(
 {
   texu_i32 len = 0;
   texu_char buf[TEXU_MAX_WNDTEXT+1];
+  texu_i32 cols = rccell->cols;
+  texu_i32 x = rccell->x;
+  texu_i32 y = rccell->y;
   
   memset(buf, 0, sizeof(buf));
+  memset(buf, ' ', cols);
+  texu_cio_putstr_attr(dc,
+      y,
+      x,
+      buf,
+      COLOR_PAIR(color));
+  
+  cols = (isheader ? cols : cols - 2);
   len = texu_printf_alignment(buf, 
           caption,
-          rccell->cols,
+          cols,
           align);
   /* is is a header */
   if (isheader)
@@ -673,10 +684,14 @@ _TexuListCtrlProc_DrawItem(
     buf[0] = '[';
     buf[len - 1] = ']';
   }
+  else
+  {
+    x += 1;
+  }
 
   texu_cio_putstr_attr(dc,
-      rccell->y,
-      rccell->x,
+      y,
+      x,
       buf,
       COLOR_PAIR(color));
 }
@@ -3844,6 +3859,323 @@ TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
   return TexuDefWndProc(wnd, msg, param1, param2);
 }
 
+
+/*
+#-------------------------------------------------------------------------------
+# TexU up/down ctrl
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+
+struct texu_udwnd
+{
+  texu_wnd*       editwnd;
+  texu_i32        step;
+  texu_i32        min;
+  texu_i32        max;
+};
+typedef struct texu_udwnd texu_udwnd;
+
+
+void                  _TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch);
+texu_status           _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs);
+void                  _TexuUpDownCtrlProc_OnDestroy(texu_wnd* wnd);
+void                  _TexuUpDownCtrlProc_OnSetFocus(texu_wnd*, texu_wnd*);
+texu_i32              _TexuUpDownCtrlProc_OnKillFocus(texu_wnd*, texu_wnd*);
+texu_i32              _TexuUpDownCtrlProc_OnGetText(texu_wnd* wnd, texu_char* text, texu_i32 textlen);
+void                  _TexuUpDownCtrlProc_OnSetText(texu_wnd* wnd, const texu_char* text);
+void                  _TexuUpDownCtrlProc_OnSetMinMax(texu_wnd* wnd, texu_i32, texu_i32);
+texu_status           _TexuUpDownCtrlProc_OnGetMinMax(texu_wnd* wnd, texu_i32*, texu_i32*);
+void                  _TexuUpDownCtrlProc_OnSetStep(texu_wnd* wnd, texu_i32);
+texu_i32              _TexuUpDownCtrlProc_OnGetStep(texu_wnd* wnd);
+void                  _TexuUpDownCtrlProc_OnStep(texu_wnd* wnd, texu_i32);
+void                  _TexuUpDownCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
+
+
+void
+_TexuUpDownCtrlProc_OnSetMinMax(texu_wnd* wnd, texu_i32 min, texu_i32 max)
+{
+  texu_udwnd* udctl = 0;
+  texu_editminmax minmax;
+  
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  udctl->min = min;
+  udctl->max = max;
+  
+  minmax.min = min;
+  minmax.max = max;
+  texu_wnd_send_msg(udctl->editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
+}
+
+texu_status
+_TexuUpDownCtrlProc_OnGetMinMax(texu_wnd* wnd, texu_i32* min, texu_i32* max)
+{
+  texu_udwnd* udctl = 0;
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  *min = udctl->min;
+  *max = udctl->max;
+  return TEXU_OK;
+}
+
+void
+_TexuUpDownCtrlProc_OnSetStep(texu_wnd* wnd, texu_i32 step)
+{
+  texu_udwnd* udctl = 0;
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  udctl->step = step;
+}
+
+texu_i32
+_TexuUpDownCtrlProc_OnGetStep(texu_wnd* wnd)
+{
+  texu_udwnd* udctl = 0;
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  return udctl->step;
+}
+
+void
+_TexuUpDownCtrlProc_OnStep(texu_wnd* wnd, texu_i32 updown)
+{
+  if (updown > 0)
+  {
+    _TexuUpDownCtrlProc_OnChar(wnd, KEY_UP);
+  }
+  else
+  {
+    _TexuUpDownCtrlProc_OnChar(wnd, KEY_DOWN);
+  }
+}
+
+
+texu_status
+_TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
+{
+  texu_udwnd* udctl = 0;
+  texu_wnd_attrs attrs2;
+  texu_wnd* editwnd = 0;
+  texu_status rc = TEXU_OK;
+  texu_editminmax minmax;
+  
+  editwnd = texu_wnd_new(texu_wnd_get_env(wnd));
+  if (!editwnd)
+  {
+    return TEXU_NOMEM;
+  }
+  
+  memset(&attrs2, 0, sizeof(attrs2));
+  attrs2.y          = attrs->y;
+  attrs2.x          = attrs->x;
+  attrs2.height     = attrs->height;
+  attrs2.width      = attrs->width-1;
+  attrs2.enable     = TEXU_TRUE;
+  attrs2.visible    = TEXU_TRUE;
+  attrs2.text       = "0";
+  attrs2.normalcolor    = TEXU_CIO_COLOR_WHITE_BLACK;
+  attrs2.disabledcolor  = TEXU_CIO_COLOR_WHITE_BLACK;
+  attrs2.id         = 1;
+  attrs2.clsname    = TEXU_EDIT_CLASS;
+  attrs2.userdata   = 0;
+  attrs2.style      = TEXU_ES_AUTOHSCROLL|TEXU_ES_NUMBER;
+  attrs2.exstyle    = 0;
+  
+  rc = texu_wnd_create(editwnd, wnd, &attrs2);
+
+  if (rc != TEXU_OK)
+  {
+    texu_wnd_del(editwnd);
+    return TEXU_ERROR;
+  }
+ 
+  udctl = (texu_udwnd*)malloc(sizeof(texu_lcwnd));
+  if (!udctl)
+  {
+    texu_wnd_del(editwnd);
+    return TEXU_NOMEM;
+  }
+  
+  memset(udctl, 0, sizeof(texu_udwnd));
+  udctl->editwnd = editwnd;   /* no parameter */
+  udctl->step = 1;
+  udctl->min = 0;
+  udctl->max = 255;
+  
+  minmax.min = udctl->min;
+  minmax.max = udctl->max;
+  texu_wnd_send_msg(udctl->editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);  
+  
+  /* save memory */
+  texu_wnd_set_color(wnd,
+    TEXU_CIO_COLOR_CYAN_BLACK, TEXU_CIO_COLOR_WHITE_BLACK);
+  texu_wnd_set_userdata(wnd, udctl);
+  return TEXU_OK;
+}
+
+
+
+void
+_TexuUpDownCtrlProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd)
+{
+  _TexuWndProc_Notify(wnd, TEXU_UDCN_SETFOCUS);
+}
+
+texu_i32
+_TexuUpDownCtrlProc_OnKillFocus(texu_wnd* wnd, texu_wnd* prevwnd)
+{
+  /*update value to window text */
+  texu_udwnd* udctl = 0;
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  
+ 
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  
+  texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, 0);
+  
+  texu_wnd_get_text(udctl->editwnd, buf, TEXU_MAX_WNDTEXT);
+  texu_wnd_set_text(wnd, buf);
+ 
+  _TexuWndProc_Notify(wnd, TEXU_UDCN_KILLFOCUS);
+
+  return TEXU_CONTINUE;
+}
+
+void
+_TexuUpDownCtrlProc_OnDestroy(texu_wnd* wnd)
+{
+  texu_udwnd* udctl = 0;
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  free(udctl);
+}
+
+
+void
+_TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch)
+{
+  texu_udwnd* udctl = 0;
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  texu_i32 val = 0;
+  texu_bool updown = TEXU_FALSE;
+  
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_get_text(udctl->editwnd, buf, TEXU_MAX_WNDTEXT);
+  val = atol(buf);
+  
+  switch (ch)
+  {
+    case KEY_UP:
+    {
+      val += udctl->step;
+      updown = TEXU_TRUE;
+      break;
+    }
+    case KEY_DOWN:
+    {
+      val -= udctl->step;
+      updown = TEXU_TRUE;
+      break;
+    }
+  }
+  
+  if (updown)
+  {
+    if (val >= udctl->min && val <= udctl->max)
+    {
+      sprintf(buf, "%d", val);
+      texu_wnd_set_text(wnd, buf);
+    }
+  }
+  else
+  {
+    texu_wnd_send_msg(udctl->editwnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+  }
+}
+
+void
+_TexuUpDownCtrlProc_OnSetText(texu_wnd* wnd, const texu_char* text)
+{
+  texu_udwnd* udctl = 0;
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  texu_i32 val = 0;
+  
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  val = atol(text);
+  
+  sprintf(buf, "%d", val);
+  texu_wnd_set_text(udctl->editwnd, buf);
+  TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_i64)buf, 0);
+}
+
+void 
+_TexuUpDownCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
+{
+  texu_i32 y = texu_wnd_get_y(wnd);
+  texu_i32 x = texu_wnd_get_x(wnd);
+  texu_i32 width = texu_wnd_get_width(wnd);
+  texu_i32 color = TEXU_CIO_BRIGHT_WHITE_BLUE;
+  
+  texu_cio_putch_attr(dc, y, x+width-1, ACS_PLMINUS,
+    texu_cio_get_color(dc, color));
+}
+
+
+texu_i64
+TexuUpDownCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+{
+  switch (msg)
+  {
+    case TEXU_WM_CHAR:
+      _TexuUpDownCtrlProc_OnChar(wnd, (texu_i32)param1);  
+      return 0;
+      
+    case TEXU_WM_CREATE:
+      return _TexuUpDownCtrlProc_OnCreate(wnd, (texu_wnd_attrs*)param1);
+
+    case TEXU_WM_PAINT:
+      _TexuUpDownCtrlProc_OnPaint(wnd, (texu_cio*)param1);
+      return 0;
+      
+    case TEXU_WM_DESTROY:
+      _TexuUpDownCtrlProc_OnDestroy(wnd);
+      break;
+      
+    case TEXU_WM_SETFOCUS:
+      _TexuUpDownCtrlProc_OnSetFocus(wnd, (texu_wnd*)param1);
+      break;
+
+    case TEXU_WM_KILLFOCUS:
+      return _TexuUpDownCtrlProc_OnKillFocus(wnd, (texu_wnd*)param1);
+
+    case TEXU_WM_SETTEXT:
+      _TexuUpDownCtrlProc_OnSetText(wnd, (const texu_char*)param1);
+      return 0;
+      
+    case TEXU_UDCM_SETMINMAX:
+    {
+      _TexuUpDownCtrlProc_OnSetMinMax(wnd, (texu_i32)param1, (texu_i32)param2);
+      return 0;
+    }
+    case TEXU_UDCM_GETMINMAX:
+    {
+      return _TexuUpDownCtrlProc_OnGetMinMax(wnd, (texu_i32*)param1, (texu_i32*)param2);
+    }
+    case TEXU_UDCM_SETSTEP:
+    {
+      _TexuUpDownCtrlProc_OnSetStep(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_UDCM_GETSTEP:
+    {
+      return _TexuUpDownCtrlProc_OnGetStep(wnd);
+    }
+    case TEXU_UDCM_STEP:
+    {
+      _TexuUpDownCtrlProc_OnStep(wnd, (texu_i32)param1);
+      return 0;
+    }
+  }
+  return TexuDefWndProc(wnd, msg, param1, param2);
+}
+  
 
 #ifdef __cplusplus
 }

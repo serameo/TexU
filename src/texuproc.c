@@ -178,6 +178,8 @@ texu_status        _TexuEditProc_ValidateDecimalStyle(texu_wnd* wnd, texu_editwn
 texu_status        _TexuEditProc_ValidateA2ZStyle(texu_wnd* wnd, texu_editwnd* edit, texu_i32 ch);
 texu_i32           _TexuEditProc_RemoveDecimalFormat(texu_editwnd* edit);
 texu_i32           _TexuEditProc_AddDecimalFormat(texu_editwnd* edit);
+texu_status        _TexuEditProc_ValidateMinMax(texu_editwnd* edit, texu_i32 val);
+texu_i32           _TexuEditProc_SelMinMax(texu_i32 min, texu_i32 max, texu_i32 val);
 
 void               _TexuWndProc_Notify(texu_wnd*, texu_ui32);
 
@@ -193,6 +195,18 @@ _TexuWndProc_Notify(texu_wnd* wnd, texu_ui32 code)
   notify.code = code;
   texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
 }
+
+
+texu_status
+_TexuEditProc_ValidateMinMax(texu_editwnd* edit, texu_i32 val)
+{
+  if (edit->onminmax && val >= edit->min && val <= edit->max)
+  {
+    return TEXU_OK;
+  }
+  return TEXU_ERROR;
+}
+
 
 void _TexuEditProc_OnLimitText(texu_wnd* wnd, texu_i32 limit)
 {
@@ -270,12 +284,38 @@ void _TexuEditProc_OnSetValidString(texu_wnd* wnd, const texu_char* validstr)
   }
 }
 
+texu_i32
+_TexuEditProc_SelMinMax(texu_i32 min, texu_i32 max, texu_i32 val)
+{
+  if (val < min)
+  {
+    val = min;
+  }
+  if (val > max)
+  {
+    val = max;
+  }
+  return val;
+}
+
 void _TexuEditProc_OnSetValidMinMax(texu_wnd* wnd, texu_i32 on, texu_editminmax* vmm)
 {
+  texu_char buf[TEXU_MAX_WNDTEXT + 1];
   texu_editwnd* edit = (texu_editwnd*)texu_wnd_get_userdata(wnd);
+  texu_i32 val = 0;
+  
   edit->min = vmm->min;
   edit->max = vmm->max;
   edit->onminmax = (on == TEXU_TRUE ? TEXU_TRUE : TEXU_FALSE);
+  
+  if (on)
+  {
+    strcpy(buf, edit->editbuf);
+    val = atol(buf);
+    val = _TexuEditProc_SelMinMax(vmm->min, vmm->max, val);
+    sprintf(buf, "%d", val);
+    texu_wnd_set_text(wnd, buf);
+  }
 }
 
 
@@ -646,6 +686,20 @@ _TexuEditProc_OnChar(texu_wnd* wnd, texu_i32 ch)
         edit->editbuf[len]   = ch;
         edit->editbuf[len+1] = 0;
         edit->selected   = 0;
+        
+        if ((TEXU_ES_NUMBER & style) && edit->onminmax)
+        {
+          texu_i32 val = 0;
+          val = atol(edit->editbuf);
+          if (_TexuEditProc_ValidateMinMax(edit, val) != TEXU_OK)
+          {
+            val = _TexuEditProc_SelMinMax(edit->min, edit->max, val);
+            sprintf(buf, "%d", val);
+            strcpy(edit->editbuf, buf);
+            len = strlen(edit->editbuf);
+          }
+        }
+        
         if (len < width)
         {
           if (TEXU_ES_PASSWORD & style)

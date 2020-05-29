@@ -44,6 +44,7 @@ texu_i64          TexuEditProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuListBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuListCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuTreeCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          TexuUpDownCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 void              _texu_env_init_cls(texu_env*);
 texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
@@ -57,6 +58,7 @@ _texu_env_init_cls(texu_env* env)
   texu_env_register_cls(env, TEXU_LISTBOX_CLASS,  TexuListBoxProc);
   texu_env_register_cls(env, TEXU_LISTCTRL_CLASS, TexuListCtrlProc);
   texu_env_register_cls(env, TEXU_TREECTRL_CLASS, TexuTreeCtrlProc);
+  texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS, TexuUpDownCtrlProc);
 }
 
 

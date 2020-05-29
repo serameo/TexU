@@ -121,6 +121,7 @@ _texu_cio_init_colors(texu_cio* cio)
   init_pair(TEXU_CIO_COLOR_WHITE_MAGENTA,   COLOR_WHITE,    COLOR_MAGENTA);
   init_pair(TEXU_CIO_COLOR_WHITE_CYAN,      COLOR_WHITE,    COLOR_CYAN);
   init_pair(TEXU_CIO_COLOR_WHITE_WHITE,     COLOR_WHITE,    COLOR_WHITE);
+
 /*BRIGHT WHITE*/  
   init_pair(TEXU_CIO_BRIGHT_WHITE_BLACK,    TEXU_CIO_BRIGHT_WHITE,  COLOR_BLACK);
   init_pair(TEXU_CIO_BRIGHT_WHITE_RED,      TEXU_CIO_BRIGHT_WHITE,  COLOR_RED);
@@ -137,6 +138,7 @@ _texu_cio_init_colors(texu_cio* cio)
   init_pair(TEXU_CIO_BLUE_BRIGHT_WHITE,     COLOR_BLUE,             TEXU_CIO_BRIGHT_WHITE);
   init_pair(TEXU_CIO_MAGENTA_BRIGHT_WHITE,  COLOR_MAGENTA,          TEXU_CIO_BRIGHT_WHITE);
   init_pair(TEXU_CIO_CYAN_BRIGHT_WHITE,     COLOR_CYAN,             TEXU_CIO_BRIGHT_WHITE);
+
 }
 
 texu_i32

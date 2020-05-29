@@ -203,6 +203,21 @@ MyWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               0  /* user data */
               );
       texu_wnd_set_color(child, TEXU_CIO_BRIGHT_WHITE_BLUE, TEXU_CIO_BRIGHT_WHITE_BLUE);
+
+      child = TexuCreateWindow(
+              "Text",
+              TEXU_UPDOWNCTRL_CLASS,
+              0, /* style*/
+              0, /* exstyle*/
+              0, /* y */
+              42, /* x */
+              1,
+              10,
+              wnd, /* parent */
+              14, /* id */
+              0  /* user data */
+              );
+      texu_wnd_set_color(child, TEXU_CIO_BRIGHT_WHITE_BLUE, TEXU_CIO_BRIGHT_WHITE_BLUE);
       
       child = TexuCreateWindow(
               "Number:",
