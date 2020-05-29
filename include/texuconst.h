@@ -174,6 +174,23 @@
 
 
 
+/*UP DOWN CTRL*/
+#define TEXU_UDCM_FIRST                500
+#define TEXU_UDCM_SETMINMAX            (TEXU_UDCM_FIRST +  1)
+#define TEXU_UDCM_GETMINMAX            (TEXU_UDCM_FIRST +  2)
+#define TEXU_UDCM_SETSTEP              (TEXU_UDCM_FIRST +  3)
+#define TEXU_UDCM_GETSTEP              (TEXU_UDCM_FIRST +  4)
+#define TEXU_UDCM_STEP                 (TEXU_UDCM_FIRST +  5)
+
+#define TEXU_UDCN_FIRST                500
+#define TEXU_UDCN_SETFOCUS             (TEXU_UDCN_FIRST +  1)
+#define TEXU_UDCN_KILLFOCUS            (TEXU_UDCN_FIRST +  2)
+
+
+
+
+
+
 #define TEXU_KEY_NEXTWND               10
 #define TEXU_KEY_PREVWND               KEY_BTAB
 #define TEXU_KEY_ESCAPE                27
@@ -188,6 +205,8 @@
 /*#define TEXU_COMBOBOX_CLASS            "TexuComboBoxClass"*/
 #define TEXU_LISTCTRL_CLASS            "TexuListCtrlClass"
 #define TEXU_TREECTRL_CLASS            "TexuTreeCtrlClass"
+#define TEXU_UPDOWNCTRL_CLASS          "TexuUpDownCtrlClass"
+
 
 
 /* window styles */
@@ -252,10 +271,6 @@
 #define TEXU_LCFM_DATA                0x0002
 #define TEXU_LCFM_COLOR               0x0004
 #define TEXU_LCFM_ALL                 (TEXU_LCFM_TEXT | TEXU_LCFM_DATA | TEXU_LCFM_COLOR)
-
-
-
-
 
 
 
