@@ -181,12 +181,29 @@
 #define TEXU_UDCM_SETSTEP              (TEXU_UDCM_FIRST +  3)
 #define TEXU_UDCM_GETSTEP              (TEXU_UDCM_FIRST +  4)
 #define TEXU_UDCM_STEP                 (TEXU_UDCM_FIRST +  5)
+#define TEXU_UDCM_SETPAGE              (TEXU_UDCM_FIRST +  6)
+#define TEXU_UDCM_GETPAGE              (TEXU_UDCM_FIRST +  7)
+#define TEXU_UDCM_PAGE                 (TEXU_UDCM_FIRST +  8)
+#define TEXU_UDCM_GETINT               (TEXU_UDCM_FIRST +  9)
 
 #define TEXU_UDCN_FIRST                500
 #define TEXU_UDCN_SETFOCUS             (TEXU_UDCN_FIRST +  1)
 #define TEXU_UDCN_KILLFOCUS            (TEXU_UDCN_FIRST +  2)
+#define TEXU_UDCN_STEP                 (TEXU_UDCN_FIRST +  3)
 
 
+
+/*PROGRESS BAR*/
+#define TEXU_PGBM_FIRST                600
+#define TEXU_PGBM_SETMAX               (TEXU_PGBM_FIRST +  1)
+#define TEXU_PGBM_GETMAX               (TEXU_PGBM_FIRST +  2)
+#define TEXU_PGBM_SETPOS               (TEXU_PGBM_FIRST +  3)
+#define TEXU_PGBM_GETPOS               (TEXU_PGBM_FIRST +  4)
+#define TEXU_PGBM_SETSTEP              (TEXU_PGBM_FIRST +  5)
+#define TEXU_PGBM_GETSTEP              (TEXU_PGBM_FIRST +  6)
+#define TEXU_PGBM_STEP                 (TEXU_PGBM_FIRST +  7)
+
+#define TEXU_PGBN_FIRST                600
 
 
 
@@ -206,6 +223,7 @@
 #define TEXU_LISTCTRL_CLASS            "TexuListCtrlClass"
 #define TEXU_TREECTRL_CLASS            "TexuTreeCtrlClass"
 #define TEXU_UPDOWNCTRL_CLASS          "TexuUpDownCtrlClass"
+#define TEXU_PROGRESSBAR_CLASS         "TexuProgressBarClass"
 
 
 
