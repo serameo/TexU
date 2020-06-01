@@ -2242,7 +2242,7 @@ texu_i32 _TexuListCtrlProc_OnGetItemsPerPage(texu_wnd* wnd)
 }
 
 texu_i64
-TexuListCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+_TexuListCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {
@@ -3760,7 +3760,7 @@ void _TexuTreeCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 }
 
 texu_i64
-TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+_TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {
@@ -3872,6 +3872,7 @@ struct texu_udwnd
 {
   texu_wnd*       editwnd;
   texu_i32        step;
+  texu_i32        page;
   texu_i32        min;
   texu_i32        max;
 };
@@ -3891,6 +3892,9 @@ void                  _TexuUpDownCtrlProc_OnSetStep(texu_wnd* wnd, texu_i32);
 texu_i32              _TexuUpDownCtrlProc_OnGetStep(texu_wnd* wnd);
 void                  _TexuUpDownCtrlProc_OnStep(texu_wnd* wnd, texu_i32);
 void                  _TexuUpDownCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
+void                  _TexuUpDownCtrlProc_OnSetPage(texu_wnd* wnd, texu_i32);
+texu_i32              _TexuUpDownCtrlProc_OnGetPage(texu_wnd* wnd);
+void                  _TexuUpDownCtrlProc_OnPage(texu_wnd* wnd, texu_i32);
 
 
 void
@@ -3947,6 +3951,34 @@ _TexuUpDownCtrlProc_OnStep(texu_wnd* wnd, texu_i32 updown)
   }
 }
 
+void
+_TexuUpDownCtrlProc_OnSetPage(texu_wnd* wnd, texu_i32 page)
+{
+  texu_udwnd* udctl = 0;
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  udctl->page = page;
+}
+
+texu_i32
+_TexuUpDownCtrlProc_OnGetPage(texu_wnd* wnd)
+{
+  texu_udwnd* udctl = 0;
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  return udctl->page;
+}
+
+void
+_TexuUpDownCtrlProc_OnPage(texu_wnd* wnd, texu_i32 updown)
+{
+  if (updown > 0)
+  {
+    _TexuUpDownCtrlProc_OnChar(wnd, KEY_NPAGE);
+  }
+  else
+  {
+    _TexuUpDownCtrlProc_OnChar(wnd, KEY_PPAGE);
+  }
+}
 
 texu_status
 _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
@@ -3997,6 +4029,7 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   memset(udctl, 0, sizeof(texu_udwnd));
   udctl->editwnd = editwnd;   /* no parameter */
   udctl->step = 1;
+  udctl->page = 10;
   udctl->min = 0;
   udctl->max = 255;
   
@@ -4049,6 +4082,19 @@ _TexuUpDownCtrlProc_OnDestroy(texu_wnd* wnd)
   free(udctl);
 }
 
+texu_i32
+_TexuUpDownCtrlProc_OnGetInt(texu_wnd* wnd)
+{
+  texu_udwnd* udctl = 0;
+  texu_i32 val = 0;
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+
+  udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_get_text(udctl->editwnd, buf, TEXU_MAX_WNDTEXT);
+  val = atol(buf);
+
+  return val;
+}
 
 void
 _TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch)
@@ -4057,22 +4103,32 @@ _TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch)
   texu_char buf[TEXU_MAX_WNDTEXT+1];
   texu_i32 val = 0;
   texu_bool updown = TEXU_FALSE;
+  texu_i32 added = 0;
   
   udctl = (texu_udwnd*)texu_wnd_get_userdata(wnd);
-  texu_wnd_get_text(udctl->editwnd, buf, TEXU_MAX_WNDTEXT);
-  val = atol(buf);
-  
   switch (ch)
   {
     case KEY_UP:
     {
-      val += udctl->step;
+      added += udctl->step;
       updown = TEXU_TRUE;
       break;
     }
     case KEY_DOWN:
     {
-      val -= udctl->step;
+      added -= udctl->step;
+      updown = TEXU_TRUE;
+      break;
+    }
+    case KEY_NPAGE:
+    {
+      added -= udctl->page;
+      updown = TEXU_TRUE;
+      break;
+    }
+    case KEY_PPAGE:
+    {
+      added += udctl->page;
       updown = TEXU_TRUE;
       break;
     }
@@ -4080,11 +4136,23 @@ _TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch)
   
   if (updown)
   {
-    if (val >= udctl->min && val <= udctl->max)
+    texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, 0);
+    
+    texu_wnd_get_text(udctl->editwnd, buf, TEXU_MAX_WNDTEXT);
+    val = atol(buf);
+    val += added;
+    if (val < udctl->min)
     {
-      sprintf(buf, "%d", val);
-      texu_wnd_set_text(wnd, buf);
+      val = udctl->min;
     }
+    if (val > udctl->max)
+    {
+      val = udctl->max;
+    }
+    sprintf(buf, "%d", val);
+    texu_wnd_set_text(wnd, buf);
+    
+    _TexuWndProc_Notify(wnd, TEXU_UDCN_STEP);
   }
   else
   {
@@ -4121,7 +4189,7 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 
 
 texu_i64
-TexuUpDownCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+_TexuUpDownCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {
@@ -4174,10 +4242,267 @@ TexuUpDownCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param
       _TexuUpDownCtrlProc_OnStep(wnd, (texu_i32)param1);
       return 0;
     }
+    case TEXU_UDCM_SETPAGE:
+    {
+      _TexuUpDownCtrlProc_OnSetPage(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_UDCM_GETPAGE:
+    {
+      return _TexuUpDownCtrlProc_OnGetPage(wnd);
+    }
+    case TEXU_UDCM_PAGE:
+    {
+      _TexuUpDownCtrlProc_OnPage(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_UDCM_GETINT:
+    {
+      return _TexuUpDownCtrlProc_OnGetInt(wnd);
+    }
   }
   return TexuDefWndProc(wnd, msg, param1, param2);
 }
   
+
+
+/*
+#-------------------------------------------------------------------------------
+# TexU up/down ctrl
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+
+struct texu_pgbwnd
+{
+  texu_i32        step;
+  texu_i32        pos;
+  texu_i32        max;
+};
+typedef struct texu_pgbwnd texu_pgbwnd;
+
+
+texu_status           _TexuProgressBarProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs);
+void                  _TexuProgressBarProc_OnDestroy(texu_wnd* wnd);
+void                  _TexuProgressBarProc_OnSetMax(texu_wnd* wnd, texu_i32);
+void                  _TexuProgressBarProc_OnSetPos(texu_wnd* wnd, texu_i32);
+texu_i32              _TexuProgressBarProc_OnGetPos(texu_wnd* wnd);
+void                  _TexuProgressBarProc_OnSetStep(texu_wnd* wnd, texu_i32);
+texu_i32              _TexuProgressBarProc_OnGetStep(texu_wnd* wnd);
+void                  _TexuProgressBarProc_OnStep(texu_wnd* wnd, texu_i32);
+void                  _TexuProgressBarProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
+
+
+void
+_TexuProgressBarProc_OnSetMax(texu_wnd* wnd, texu_i32 max)
+{
+  texu_pgbwnd* pgb = 0;
+  
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  pgb->max = max;
+}
+
+texu_i32
+_TexuProgressBarProc_OnGetMax(texu_wnd* wnd)
+{
+  texu_pgbwnd* pgb = 0;
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  return pgb->max;
+}
+
+void
+_TexuProgressBarProc_OnSetPos(texu_wnd* wnd, texu_i32 pos)
+{
+  texu_pgbwnd* pgb = 0;
+  
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  if (pos < 0)
+  {
+    pos = 0;
+  }
+  if (pos > pgb->max)
+  {
+    pos = pgb->max;
+  }
+  pgb->pos = pos;
+  texu_wnd_invalidate(wnd);
+}
+
+texu_i32
+_TexuProgressBarProc_OnGetPos(texu_wnd* wnd)
+{
+  texu_pgbwnd* pgb = 0;
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  return pgb->pos;
+}
+
+void
+_TexuProgressBarProc_OnSetStep(texu_wnd* wnd, texu_i32 step)
+{
+  texu_pgbwnd* pgb = 0;
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  pgb->step = step;
+}
+
+texu_i32
+_TexuProgressBarProc_OnGetStep(texu_wnd* wnd)
+{
+  texu_pgbwnd* pgb = 0;
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  return pgb->step;
+}
+
+void
+_TexuProgressBarProc_OnStep(texu_wnd* wnd, texu_i32 updown)
+{
+  texu_pgbwnd* pgb = 0;
+  texu_i32 pos = 0;
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  pos = pgb->pos;
+  
+  if (updown > 0)
+  {
+    pos += pgb->step;
+  }
+  else
+  {
+    pos -= pgb->step;
+  }
+  
+  if (pos < 0)
+  {
+    pos = 0;
+  }
+  if (pos > pgb->max)
+  {
+    pos = pgb->max;
+  }
+  pgb->pos = pos;
+  texu_wnd_invalidate(wnd);
+}
+
+texu_status
+_TexuProgressBarProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
+{
+  texu_pgbwnd* pgb = 0;
+  
+ 
+  pgb = (texu_pgbwnd*)malloc(sizeof(texu_lcwnd));
+  if (!pgb)
+  {
+    return TEXU_NOMEM;
+  }
+  
+  memset(pgb, 0, sizeof(texu_pgbwnd));
+  pgb->step = 1;
+  pgb->max = 100;
+  pgb->pos = 0;
+  
+  texu_wnd_set_color(wnd,
+    TEXU_CIO_COLOR_CYAN_BLACK, TEXU_CIO_COLOR_WHITE_BLACK);
+  texu_wnd_set_userdata(wnd, pgb);
+  texu_wnd_enable(wnd, TEXU_FALSE);
+  return TEXU_OK;
+}
+
+void
+_TexuProgressBarProc_OnDestroy(texu_wnd* wnd)
+{
+  texu_pgbwnd* pgb = 0;
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  free(pgb);
+}
+
+
+void 
+_TexuProgressBarProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
+{
+  texu_i32 y = texu_wnd_get_y(wnd);
+  texu_i32 x = texu_wnd_get_x(wnd);
+  texu_i32 width = texu_wnd_get_width(wnd);
+  texu_i32 color = TEXU_CIO_BRIGHT_WHITE_BLUE;
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  texu_char text[TEXU_MAX_WNDTEXT+1];
+  texu_f32 pct = 0.0;
+  texu_pgbwnd* pgb = 0;
+  texu_i32 pgwidth = 0;
+
+  pgb = (texu_pgbwnd*)texu_wnd_get_userdata(wnd);
+  
+  memset(buf, 0, width+1);
+  memset(buf, '.', width);
+  texu_cio_putstr_attr(dc, y, x, buf,
+    texu_cio_get_color(dc, color));
+  
+  pct = (0 == pgb->max ? 0.0 : (texu_f32)(pgb->pos * 100.0 / pgb->max));
+  sprintf(text, "%.02f%%", pct);
+  
+  pgwidth = (0 == pgb->max ? 0 : (100 == (texu_i32)pct ? width : (pgb->pos * width / pgb->max)));
+  texu_printf_alignment(buf, text, pgwidth, TEXU_ALIGN_RIGHT);
+  
+  strcat(buf, "%%");
+  texu_cio_putstr_attr(dc, y, x, buf,
+    texu_cio_get_reverse(dc, color));
+}
+
+
+texu_i64
+_TexuProgressBarProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+{
+  switch (msg)
+  {
+    case TEXU_WM_CREATE:
+      return _TexuProgressBarProc_OnCreate(wnd, (texu_wnd_attrs*)param1);
+
+    case TEXU_WM_PAINT:
+      _TexuProgressBarProc_OnPaint(wnd, (texu_cio*)param1);
+      return 0;
+      
+    case TEXU_WM_DESTROY:
+      _TexuProgressBarProc_OnDestroy(wnd);
+      break;
+
+    case TEXU_WM_ENABLE:
+      return TexuDefWndProc(wnd, msg, 0, 0);
+
+    case TEXU_PGBM_SETMAX:
+    {
+      _TexuProgressBarProc_OnSetMax(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_PGBM_GETMAX:
+    {
+      return _TexuProgressBarProc_OnGetMax(wnd);
+    }
+
+    case TEXU_PGBM_SETPOS:
+    {
+      _TexuProgressBarProc_OnSetPos(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_PGBM_GETPOS:
+    {
+      return _TexuProgressBarProc_OnGetPos(wnd);
+    }
+    case TEXU_PGBM_SETSTEP:
+    {
+      _TexuProgressBarProc_OnSetStep(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_PGBM_GETSTEP:
+    {
+      return _TexuProgressBarProc_OnGetStep(wnd);
+    }
+    case TEXU_PGBM_STEP:
+    {
+      _TexuProgressBarProc_OnStep(wnd, (texu_i32)param1);
+      return 0;
+    }
+  }
+  return TexuDefWndProc(wnd, msg, param1, param2);
+}
+
 
 #ifdef __cplusplus
 }

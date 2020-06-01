@@ -47,7 +47,7 @@ _TexuDesktopWndProc_OnEnable(texu_wnd* wnd, texu_bool enable)
 }
 
 texu_i64
-TexuDesktopProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+_TexuDesktopProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {
@@ -70,6 +70,7 @@ TexuDesktopProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
 void               _TexuLabelProc_OnPaint(texu_wnd*, texu_cio*);
 texu_status        _TexuLabelProc_OnCreate(texu_wnd*, texu_wnd_attrs*);
+
 
 void
 _TexuLabelProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
@@ -108,7 +109,7 @@ _TexuLabelProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
 }
 
 texu_i64
-TexuLabelProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+_TexuLabelProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {
@@ -118,6 +119,9 @@ TexuLabelProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
     case TEXU_WM_PAINT:
       _TexuLabelProc_OnPaint(wnd, (texu_cio*)param1);
       return 0;
+
+    case TEXU_WM_ENABLE:
+      return TexuDefWndProc(wnd, msg, 0, 0);
   }
   return TexuDefWndProc(wnd, msg, param1, param2);
 }
@@ -882,7 +886,7 @@ void _TexuEditProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 }
 
 texu_i64
-TexuEditProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+_TexuEditProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   
   switch (msg)
@@ -1776,7 +1780,7 @@ void _TexuListBoxProc_OnDeleteItem(texu_wnd* wnd, texu_i32 idx)
 }
 
 texu_i64
-TexuListBoxProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+_TexuListBoxProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {

@@ -38,13 +38,14 @@ struct texu_env_wndcls
 typedef struct texu_env_wndcls texu_env_wndcls;
 
 /* internally window procedure */
-texu_i64          TexuDesktopProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuLabelProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuEditProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuListBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuListCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuTreeCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuUpDownCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuDesktopProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuLabelProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuEditProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuListBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuListCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuTreeCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuUpDownCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuProgressBarProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 void              _texu_env_init_cls(texu_env*);
 texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
@@ -52,13 +53,14 @@ texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
 void
 _texu_env_init_cls(texu_env* env)
 {
-  texu_env_register_cls(env, TEXU_DESKTOP_CLASS,  TexuDesktopProc);
-  texu_env_register_cls(env, TEXU_LABEL_CLASS,    TexuLabelProc);
-  texu_env_register_cls(env, TEXU_EDIT_CLASS,     TexuEditProc);
-  texu_env_register_cls(env, TEXU_LISTBOX_CLASS,  TexuListBoxProc);
-  texu_env_register_cls(env, TEXU_LISTCTRL_CLASS, TexuListCtrlProc);
-  texu_env_register_cls(env, TEXU_TREECTRL_CLASS, TexuTreeCtrlProc);
-  texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS, TexuUpDownCtrlProc);
+  texu_env_register_cls(env, TEXU_DESKTOP_CLASS,      _TexuDesktopProc);
+  texu_env_register_cls(env, TEXU_LABEL_CLASS,        _TexuLabelProc);
+  texu_env_register_cls(env, TEXU_EDIT_CLASS,         _TexuEditProc);
+  texu_env_register_cls(env, TEXU_LISTBOX_CLASS,      _TexuListBoxProc);
+  texu_env_register_cls(env, TEXU_LISTCTRL_CLASS,     _TexuListCtrlProc);
+  texu_env_register_cls(env, TEXU_TREECTRL_CLASS,     _TexuTreeCtrlProc);
+  texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);
+  texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);
 }
 
 
@@ -1013,8 +1015,7 @@ texu_wnd_visible(texu_wnd* wnd, texu_bool visible)
 texu_status
 texu_wnd_enable(texu_wnd* wnd, texu_bool enable)
 {
-  wnd->enable = enable;
-  return TEXU_OK;
+  return texu_wnd_send_msg(wnd, TEXU_WM_ENABLE, (texu_i64)enable, 0);
 }
 
 texu_bool
