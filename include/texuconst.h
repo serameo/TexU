@@ -206,6 +206,21 @@
 #define TEXU_PGBN_FIRST                600
 
 
+/*STATUS BAR*/
+#define TEXU_SBM_FIRST                700
+#define TEXU_SBM_ADDPART              (TEXU_SBM_FIRST +  1)
+#define TEXU_SBM_SETTEXT              (TEXU_SBM_FIRST +  2)
+#define TEXU_SBM_GETTEXT              (TEXU_SBM_FIRST +  3)
+#define TEXU_SBM_SETWIDTH             (TEXU_SBM_FIRST +  4)
+#define TEXU_SBM_GETWIDTH             (TEXU_SBM_FIRST +  5)
+#define TEXU_SBM_SETALIGN             (TEXU_SBM_FIRST +  6)
+#define TEXU_SBM_GETALIGN             (TEXU_SBM_FIRST +  7)
+#define TEXU_SBM_SETCOLOR             (TEXU_SBM_FIRST +  8)
+#define TEXU_SBM_GETCOLOR             (TEXU_SBM_FIRST +  9)
+
+#define TEXU_SBN_FIRST                700
+
+
 
 
 #define TEXU_KEY_NEXTWND               10
@@ -217,6 +232,7 @@
 
 #define TEXU_DESKTOP_CLASS             "TexuDesktopClass"
 #define TEXU_LABEL_CLASS               "TexuLabelClass"
+#define TEXU_STATUSBAR_CLASS           "TexuStatusBarClass"
 #define TEXU_EDIT_CLASS                "TexuEditClass"
 #define TEXU_LISTBOX_CLASS             "TexuListBoxClass"
 /*#define TEXU_COMBOBOX_CLASS            "TexuComboBoxClass"*/
