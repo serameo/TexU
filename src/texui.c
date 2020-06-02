@@ -29,6 +29,8 @@ struct texu_env
   texu_wnd*         desktop; /* the root of all window frames */
   texu_list*        wndcls;  /* the registered classes */
   texu_bool         exit;
+  texu_i32          ypos;   /* cursor position */
+  texu_i32          xpos;   /* cursor position */
 };
 struct texu_env_wndcls
 {
@@ -38,14 +40,19 @@ struct texu_env_wndcls
 typedef struct texu_env_wndcls texu_env_wndcls;
 
 /* internally window procedure */
+/* see texuproc.c */
 texu_i64          _TexuDesktopProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuLabelProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuEditProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuListBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuStatusBarProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+
+/* see texuctrl.c */
 texu_i64          _TexuListCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuTreeCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuUpDownCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuProgressBarProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+
 
 void              _texu_env_init_cls(texu_env*);
 texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
@@ -61,6 +68,7 @@ _texu_env_init_cls(texu_env* env)
   texu_env_register_cls(env, TEXU_TREECTRL_CLASS,     _TexuTreeCtrlProc);
   texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);
   texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);
+  texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);
 }
 
 
@@ -276,6 +284,34 @@ texu_env_top_wnd(texu_env* env)
   return topwnd;
 }
 
+
+
+texu_status
+texu_env_save_curpos(texu_env* env, texu_i32 ypos, texu_i32 xpos)
+{
+  texu_status rc = texu_cio_getyx(env->cio, ypos, xpos);
+  
+  env->ypos = ypos;
+  env->xpos = xpos;
+  
+  return rc;
+}
+
+texu_status
+texu_env_restore_curpos(texu_env* env)
+{
+  texu_status rc = TEXU_OK;
+  texu_i32 ypos = env->ypos;
+  texu_i32 xpos = env->xpos;
+  
+  env->ypos = 0;
+  env->xpos = 0;
+  rc = texu_cio_gotoyx(env->cio, ypos, xpos);
+  
+  return rc;
+}
+
+/* cursor position */
 /*
 # TexU window object
 #
@@ -1060,13 +1096,16 @@ texu_wnd_get_style(texu_wnd* wnd)
 }
 
 void
-texu_wnd_move(texu_wnd* wnd, texu_i32 y, texu_i32 x, texu_i32 w, texu_i32 h)
+texu_wnd_move(texu_wnd* wnd, texu_i32 y, texu_i32 x, texu_i32 w, texu_i32 h, texu_bool redraw)
 {
   wnd->y = y;
   wnd->x = x;
   wnd->width = w;
   wnd->height = h;
-  texu_wnd_invalidate(wnd);
+  if (redraw)
+  {
+    texu_wnd_invalidate(wnd);
+  }
 }
 
 
@@ -1292,6 +1331,23 @@ texu_wnd_is_update_locked(texu_wnd* wnd)
 {
   return wnd->lockedupdate;
 }
+
+
+texu_status
+texu_wnd_save_curpos(texu_wnd* wnd)
+{
+  texu_i32 y = texu_wnd_get_y(wnd);
+  texu_i32 x = texu_wnd_get_x(wnd);
+  texu_i32 width = texu_wnd_get_width(wnd);
+  return texu_env_save_curpos(wnd->env, y, x+width-1);
+}
+
+texu_status
+texu_wnd_restore_curpos(texu_wnd* wnd)
+{
+  return texu_env_restore_curpos(wnd->env);
+}
+
 
 
 

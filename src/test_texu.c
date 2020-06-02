@@ -127,7 +127,9 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
   if (notify->id == IDC_UPDOWN)
   {
     val = texu_wnd_send_msg(udctl, TEXU_UDCM_GETINT, 0, 0);
+    texu_wnd_save_curpos(udctl);
     texu_wnd_send_msg(pgb, TEXU_PGBM_SETPOS, val, 0);
+    texu_wnd_restore_curpos(udctl);
   }
 }
 
@@ -404,7 +406,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
 
   child = TexuCreateWindow(
           "",
-          TEXU_LABEL_CLASS,
+          TEXU_STATUSBAR_CLASS,
           0, /* style*/
           0, /* exstyle*/
           24, /* y */
@@ -415,7 +417,16 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
           IDC_STATUSBAR, /* id */
           0  /* user data */
           );
-  texu_wnd_set_color(child, TEXU_CIO_COLOR_BLUE_YELLOW, TEXU_CIO_COLOR_BLUE_YELLOW);
+  /*texu_wnd_set_color(child, TEXU_CIO_COLOR_BLUE_YELLOW, TEXU_CIO_COLOR_BLUE_YELLOW);*/
+  texu_wnd_send_msg(child, TEXU_SBM_SETCOLOR, 0, TEXU_CIO_COLOR_BLUE_YELLOW);
+  
+  texu_wnd_send_msg(child, TEXU_SBM_ADDPART, (texu_i64)"Part 2", 30);
+  texu_wnd_send_msg(child, TEXU_SBM_SETCOLOR, 1, TEXU_CIO_COLOR_WHITE_BLUE);
+  texu_wnd_send_msg(child, TEXU_SBM_SETALIGN, 1, TEXU_ALIGN_CENTER);
+  
+  texu_wnd_send_msg(child, TEXU_SBM_ADDPART, (texu_i64)"Part 3", 20);
+  texu_wnd_send_msg(child, TEXU_SBM_SETCOLOR, 2, TEXU_CIO_COLOR_WHITE_RED);
+  texu_wnd_send_msg(child, TEXU_SBM_SETALIGN, 2, TEXU_ALIGN_RIGHT);
   
   return TEXU_OK;
 }

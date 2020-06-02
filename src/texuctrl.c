@@ -1232,7 +1232,9 @@ void _TexuListCtrlProc_OnBeginEdit(texu_wnd* wnd)
   lctl->editingstate = TEXU_LCT_BEGINEDITING;
   /* show edit box at the current row and column */
   _TexuListCtrlProc_GetCellRect(lctl->editingcell, &rccell);
-  texu_wnd_move(lctl->editbox, rccell.y, rccell.x, rccell.lines, rccell.cols);
+  texu_wnd_send_msg(lctl->editbox, TEXU_WM_KILLFOCUS, 0, 0);
+  
+  texu_wnd_move(lctl->editbox, rccell.y, rccell.x, rccell.lines, rccell.cols, TEXU_TRUE);
 
   editstyle = _TexuListCtrlProc_OnGetEditStyle(wnd, lctl->curselcol);
 
@@ -1249,6 +1251,7 @@ void _TexuListCtrlProc_OnBeginEdit(texu_wnd* wnd)
   texu_wnd_visible(lctl->editbox, TEXU_TRUE);
   
   /*TuiSetFocus(lctl->editbox);*/
+  texu_wnd_send_msg(lctl->editbox, TEXU_WM_SETFOCUS, 0, 0);
   
   /* update state */
   lctl->editingstate = TEXU_LCT_EDITING;
@@ -4153,6 +4156,7 @@ _TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch)
     texu_wnd_set_text(wnd, buf);
     
     _TexuWndProc_Notify(wnd, TEXU_UDCN_STEP);
+    texu_wnd_send_msg(udctl->editwnd, TEXU_WM_SETFOCUS, 0, 0);
   }
   else
   {
