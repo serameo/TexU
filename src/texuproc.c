@@ -254,16 +254,17 @@ void _TexuEditProc_OnSetText(texu_wnd* wnd, const texu_char* text)
 {
   texu_editwnd* edit = 0;
   texu_ui32 style = texu_wnd_get_style(wnd);
-  /*texu_char buf[TEXU_MAX_WNDTEXT+1];*/
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
   
   if (!text)
   {
     return;
   }
+  /*copy text into the buffer to prevent copy its memory*/
+  strcpy(buf, text);
   TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_i64)text, 0);
   edit = (texu_editwnd*)texu_wnd_get_userdata(wnd);
-  /*texu_wnd_get_text(wnd, edit->editbuf, TEXU_MAX_WNDTEXT);*/
-  strcpy(edit->editbuf, text);
+  strcpy(edit->editbuf, buf);
   edit->firstvisit = 1;
   
   if (TEXU_ES_AUTODECIMALCOMMA & style)
