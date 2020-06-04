@@ -22,6 +22,469 @@ extern "C" {
 
 /*
 #-------------------------------------------------------------------------------
+# TexU message box
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+struct texu_msgbox
+{
+  texu_wnd*       owner;
+  texu_ui32       id;
+  texu_i32        titlecolor;
+  texu_i32        labelcolor;
+  texu_i32        okcolor;
+  texu_i32        cancelcolor;
+  texu_i32        yescolor;
+  texu_i32        nocolor;
+  texu_char       text[TEXU_MAX_WNDTEXT+1];
+  texu_char       caption[TEXU_MAX_WNDTEXT+1];
+  void*           userdata;
+};
+typedef struct texu_msgbox texu_msgbox;
+
+
+
+void               _TexuMsgBoxProc_OnPaint(texu_wnd*, texu_cio*);
+texu_status        _TexuMsgBoxProc_OnCreate(texu_wnd*, texu_wnd_attrs*);
+void               _TexuMsgBoxProc_OnDestroy(texu_wnd*);
+void               _TexuMsgBoxProc_OnSetCaption(texu_wnd*, const texu_char*);
+void               _TexuMsgBoxProc_OnSetOwner(texu_wnd*, texu_wnd*);
+
+
+texu_status        _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 lines);
+texu_status        _TexuMsgBoxProc_CreateButtons(
+                      texu_wnd* wnd,
+                      texu_i32 y,
+                      texu_i32 x,
+                      texu_char* caption,
+                      texu_ui32 id,
+                      texu_i32 cmd,
+                      texu_i32 color);
+
+void               _TexuMsgBoxProc_Notify(texu_wnd* wnd, texu_ui32, texu_ui32);
+
+
+
+
+void
+_TexuMsgBoxProc_Notify(texu_wnd* wnd, texu_ui32 code, texu_ui32 id)
+{
+  texu_msgbox_notify notify;
+  texu_msgbox* msgbox = (texu_msgbox*)texu_wnd_get_userdata(wnd);
+  texu_wnd* parent = msgbox->owner;
+  
+  if (!parent)
+  {
+    parent = texu_wnd_get_parent(wnd);
+  }
+
+  notify.hdr.wnd  = wnd;
+  notify.hdr.id   = texu_wnd_get_id(wnd);
+  notify.hdr.code = code;
+  notify.id = id;
+  texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
+}
+                      
+void
+_TexuMsgBoxProc_OnDestroy(texu_wnd* wnd)
+{
+  texu_wnd* topwnd = 0;
+  texu_env* env = 0;
+  texu_msgbox* msgbox = (texu_msgbox*)texu_wnd_get_userdata(wnd);
+  free(msgbox);
+  
+  env = texu_wnd_get_env(wnd);
+  texu_env_pop_wnd(env);
+
+  topwnd = texu_env_top_wnd(env);
+  texu_wnd_send_msg(topwnd, TEXU_WM_SHOW, TEXU_TRUE, 0);
+  texu_wnd_invalidate(topwnd);
+}
+
+void
+_TexuMsgBoxProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
+{
+  texu_i32 x = texu_wnd_get_x(wnd);
+  texu_i32 y = texu_wnd_get_y(wnd);
+  texu_i32 width = texu_wnd_get_width(wnd);
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  texu_msgbox* msgbox = (texu_msgbox*)texu_wnd_get_userdata(wnd);
+  
+  /*draw caption*/
+  texu_printf_alignment(buf, msgbox->caption, width, TEXU_ALIGN_CENTER);
+  texu_cio_putstr_attr(dc, y, x, buf,
+    texu_cio_get_color(dc, msgbox->titlecolor));
+}
+
+texu_i32
+_TexuDefWndProc_CountLines(texu_char* text, texu_i32* maxlen)
+{
+  texu_i32 lines = 0;
+  texu_char* tok;
+  texu_i32 len = 0;
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  
+  *maxlen = 0;
+  if (text && strlen(text) > 0)
+  {
+    ++lines;
+  }
+  else
+  {
+    return lines;
+  }
+  strcpy(buf, text);
+  
+  tok = strtok(buf, "\n");
+  while (tok)
+  {
+    ++lines;
+    len = strlen(tok);
+    if (len > *maxlen)
+    {
+      *maxlen = len;
+    }
+    tok = strtok(0, "\n");
+  }
+  return lines;
+}
+
+texu_status
+_TexuMsgBoxProc_CreateButtons(
+  texu_wnd* wnd,
+  texu_i32 y,
+  texu_i32 x,
+  texu_char* caption,
+  texu_ui32 id,
+  texu_i32 cmd,
+  texu_i32 color
+)
+{
+  texu_wnd* child = 0;
+  texu_wnd_attrs childattrs;
+  texu_status rc = TEXU_OK;
+  
+  child = texu_wnd_new(texu_wnd_get_env(wnd));
+  if (!child)
+  {
+    return TEXU_NOMEM;
+  }
+
+  memset(&childattrs, 0, sizeof(texu_wnd_attrs));
+  childattrs.y          = y;
+  childattrs.x          = x;
+  childattrs.height     = 1;
+  childattrs.width      = strlen(caption);
+  childattrs.enable     = TEXU_FALSE;
+  childattrs.visible    = TEXU_TRUE;
+  childattrs.text       = caption;
+  childattrs.normalcolor    = color;
+  childattrs.disabledcolor  = color;
+  childattrs.focuscolor     = color;
+  childattrs.id         = id;
+  childattrs.clsname    = TEXU_LABEL_CLASS;
+  childattrs.userdata   = 0;
+  childattrs.style      = TEXU_WS_CENTER;
+  childattrs.exstyle    = 0;
+
+  rc = texu_wnd_create(child, wnd, &childattrs);
+
+  if (rc != TEXU_OK)
+  {
+    texu_wnd_del(child);
+    return TEXU_ERROR;
+  }
+  
+  texu_wnd_add_keycmd(wnd, KEY_F(cmd), id);
+  return rc;
+}
+
+texu_status
+_TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 lines)
+{
+  texu_wnd* child = 0;
+  texu_char* tok;
+  texu_wnd_attrs childattrs;
+  texu_i32 id = 1000;
+  texu_i32 y = 2;
+  texu_i32 x = 0;
+  texu_bool idok = 0;
+  texu_bool idcancel = 0;
+  texu_bool idyes = 0;
+  texu_bool idno = 0;
+  texu_char* caption = 0;
+  texu_status rc = TEXU_OK;
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  static texu_char* buttons[] = { "[ F1-OK ]", "[ F2-CANCEL ]", "[ F3-YES ]", "[ F4-NO ]" };
+  static texu_i32   btnwidths[] = { 9, 13, 10, 9 };
+  texu_i32 width = 0;
+  texu_i32 wndwidth = texu_wnd_get_width(wnd);
+  
+  texu_msgbox* msgbox = (texu_msgbox*)texu_wnd_get_userdata(wnd);
+  
+  
+  if (lines < 1)
+  {
+    return TEXU_ERROR;
+  }
+  
+  /* create labels*/
+  strcpy(buf, attrs->text);
+  tok = strtok(buf, "\n");
+  while (tok)
+  {
+    child = texu_wnd_new(texu_wnd_get_env(wnd));
+    if (!child)
+    {
+      return TEXU_NOMEM;
+    }
+
+    memset(&childattrs, 0, sizeof(texu_wnd_attrs));
+    childattrs.y          = attrs->y+y;
+    childattrs.x          = attrs->x;
+    childattrs.height     = 1;
+    childattrs.width      = attrs->width;
+    childattrs.enable     = TEXU_FALSE;
+    childattrs.visible    = TEXU_TRUE;
+    childattrs.text       = tok;
+    childattrs.normalcolor    = TEXU_CIO_COLOR_BLACK_WHITE;
+    childattrs.disabledcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
+    childattrs.focuscolor     = TEXU_CIO_COLOR_BLACK_WHITE;
+    childattrs.id         = id;
+    childattrs.clsname    = TEXU_LABEL_CLASS;
+    childattrs.userdata   = 0;
+    childattrs.style      = TEXU_WS_CENTER;
+    childattrs.exstyle    = 0;
+
+    rc = texu_wnd_create(child, wnd, &childattrs);
+
+    if (rc != TEXU_OK)
+    {
+      texu_wnd_del(child);
+      return TEXU_ERROR;
+    }
+    texu_wnd_set_color(child,
+      msgbox->labelcolor, msgbox->labelcolor);
+      
+    tok = strtok(0, "\n");
+    
+    ++y;
+    ++id;
+  }
+  /* create buttons */
+  if (attrs->style & TEXU_MBS_OK)
+  {
+    ++idok;
+    width += btnwidths[0];
+  }
+  if (attrs->style & TEXU_MBS_CANCEL)
+  {
+    ++idcancel;
+    width += btnwidths[1] + 1;
+  }
+  if (attrs->style & TEXU_MBS_YES)
+  {
+    ++idyes;
+    width += btnwidths[2]+ 1;
+  }
+  if (attrs->style & TEXU_MBS_NO)
+  {
+    ++idno;
+    width += btnwidths[3]+ 1;
+  }
+  
+  y += attrs->y+2;
+  x = attrs->x + (wndwidth - width)/2;
+  if (idok)
+  {
+    caption = buttons[0];
+    rc = _TexuMsgBoxProc_CreateButtons(
+            wnd,
+            y,
+            x,
+            caption,
+            TEXU_IDOK,
+            1, msgbox->okcolor);
+    if (rc != TEXU_OK)
+    {
+      return rc;
+    }
+    x += strlen(caption) + 1;
+  }
+  if (idcancel)
+  {
+    caption = buttons[1];
+    rc = _TexuMsgBoxProc_CreateButtons(
+            wnd,
+            y,
+            x,
+            caption,
+            TEXU_IDCANCEL,
+            2, msgbox->cancelcolor);
+    if (rc != TEXU_OK)
+    {
+      return rc;
+    }
+    x += strlen(caption) + 1;
+  }
+  if (idyes)
+  {
+    caption = buttons[2];
+    rc = _TexuMsgBoxProc_CreateButtons(
+            wnd,
+            y,
+            x,
+            caption,
+            TEXU_IDYES,
+            3, msgbox->yescolor);
+    if (rc != TEXU_OK)
+    {
+      return rc;
+    }
+    x += strlen(caption) + 1;
+  }
+  if (idno)
+  {
+    caption = buttons[3];
+    rc = _TexuMsgBoxProc_CreateButtons(
+            wnd,
+            y,
+            x,
+            caption,
+            TEXU_IDNO,
+            4, msgbox->nocolor);
+    if (rc != TEXU_OK)
+    {
+      return rc;
+    }
+    x += strlen(caption) + 1;
+  }
+  
+  return TEXU_OK;
+}
+
+texu_status
+_TexuMsgBoxProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
+{
+  texu_i32 lines = 0;
+  texu_i32 reserved = 5;
+  texu_i32 maxlen = 0;
+  texu_i32 maxbtns = 46; /*" [ F1-OK ] [ F2-CANCEL ] [ F3-YES ] [ F4-NO ] "*/
+  texu_status rc = TEXU_OK;
+  texu_rect rect;
+  texu_msgbox* msgbox = 0;
+  
+  msgbox = (texu_msgbox*)malloc(sizeof(texu_msgbox));
+  if (!msgbox)
+  {
+    return TEXU_NOMEM;
+  }
+  
+  memset(msgbox, 0, sizeof(texu_msgbox));
+  msgbox->titlecolor  = TEXU_CIO_COLOR_WHITE_BLUE;
+  msgbox->labelcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
+  msgbox->okcolor     = TEXU_CIO_COLOR_BLACK_GREEN;
+  msgbox->cancelcolor = TEXU_CIO_COLOR_WHITE_YELLOW;
+  msgbox->yescolor    = TEXU_CIO_COLOR_BLACK_GREEN;
+  msgbox->nocolor     = TEXU_CIO_COLOR_BLACK_RED;
+  
+  texu_wnd_set_userdata(wnd, msgbox);
+
+  /* adjust window rect */
+  lines = _TexuDefWndProc_CountLines(attrs->text, &maxlen);
+  maxlen += 4;
+  
+  rect.cols  = (maxbtns > maxlen ? maxbtns : maxlen);
+  rect.lines = reserved + lines;
+  rect.y = (LINES - rect.lines)/2;
+  rect.x = (COLS - rect.cols)/2;
+  
+  texu_wnd_move(wnd, rect.y, rect.x, rect.cols, rect.lines, TEXU_FALSE);
+  
+  attrs->x = rect.x;
+  attrs->y = rect.y;
+  attrs->width  = rect.cols;
+  attrs->height = rect.lines;
+  
+  /*create labels and buttons*/
+  rc = _TexuMsgBoxProc_CreateChildren(wnd, attrs, lines);
+  if (rc != TEXU_OK)
+  {
+    free(msgbox);
+    return rc;
+  }
+  
+  texu_wnd_set_color(wnd, TEXU_CIO_COLOR_BLACK_WHITE, TEXU_CIO_COLOR_BLACK_WHITE);
+  
+  return TEXU_OK;
+}
+
+void _TexuMsgBoxProc_OnSetCaption(texu_wnd* wnd, const texu_char* caption)
+{
+  texu_msgbox* msgbox = 0;
+  
+  msgbox = (texu_msgbox*)texu_wnd_get_userdata(wnd);
+  if (caption)
+  {
+     strcpy(msgbox->caption, caption);
+  }
+}
+
+void _TexuMsgBoxProc_OnSetOwner(texu_wnd* wnd, texu_wnd* owner)
+{
+  texu_msgbox* msgbox = 0;
+  
+  msgbox = (texu_msgbox*)texu_wnd_get_userdata(wnd);
+  msgbox->owner = owner;
+}
+
+texu_i64
+_TexuMsgBoxProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+{
+  switch (msg)
+  {
+    case TEXU_WM_COMMAND:
+    {
+      /*
+      switch (param1)
+      {
+        case TEXU_IDOK:
+        case TEXU_IDCANCEL:
+        case TEXU_IDYES:
+        case TEXU_IDNO:
+          break;
+      }*/
+      _TexuMsgBoxProc_Notify(wnd, TEXU_MBN_ENDDIALOG, param1);
+      texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);
+      return 0;
+    }
+
+    case TEXU_WM_PAINT:
+      _TexuMsgBoxProc_OnPaint(wnd, (texu_cio*)param1);
+      return 0;
+ 
+    case TEXU_WM_DESTROY:
+      _TexuMsgBoxProc_OnDestroy(wnd);
+      return 0;
+
+    case TEXU_WM_CREATE:
+      return _TexuMsgBoxProc_OnCreate(wnd, (texu_wnd_attrs*)param1);
+
+    case TEXU_MBM_SETOWNER:
+      _TexuMsgBoxProc_OnSetOwner(wnd, (texu_wnd*)param1);
+      return 0;
+
+    case TEXU_MBM_SETCAPTION:
+      _TexuMsgBoxProc_OnSetCaption(wnd, (const texu_char*)param1);
+      return 0;
+  }
+  return TexuDefWndProc(wnd, msg, param1, param2);
+}
+
+
+/*
+#-------------------------------------------------------------------------------
 # TexU desktop
 #
          1         2         3         4         5         6         7         8
@@ -73,7 +536,7 @@ texu_status        _TexuLabelProc_OnCreate(texu_wnd*, texu_wnd_attrs*);
 
 
 void
-_TexuLabelProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
+_TexuLabelProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
   if (texu_wnd_is_visible(wnd))
   {
@@ -85,16 +548,16 @@ _TexuLabelProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
     texu_i32 normcolor = TEXU_CIO_COLOR_CYAN_BLACK;
     texu_i32 discolor = TEXU_CIO_COLOR_WHITE_BLACK;
     texu_ui32 style = texu_wnd_get_style(wnd);
-    texu_bool enable = texu_wnd_is_enable(wnd);
     texu_i32 color = TEXU_CIO_COLOR_CYAN_BLACK;
 
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
     texu_printf_alignment(buf, text, width, style);
 
     texu_wnd_get_color(wnd, &normcolor, &discolor);
-    color = (enable ? normcolor : discolor);
+    color = normcolor;
     
-    texu_cio_putstr_attr(cio, y, x, buf, COLOR_PAIR(color));
+    texu_cio_putstr_attr(dc, y, x, buf,
+      texu_cio_get_color(dc, color));
     return;
   }
 }
@@ -134,8 +597,6 @@ _TexuLabelProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-
-
 
 struct texu_editwnd
 {
@@ -260,8 +721,9 @@ void _TexuEditProc_OnSetText(texu_wnd* wnd, const texu_char* text)
   {
     return;
   }
-  /*copy text into the buffer to prevent copy its memory*/
+  /*copy to buffer to prevent Mac crashed*/
   strcpy(buf, text);
+ 
   TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_i64)text, 0);
   edit = (texu_editwnd*)texu_wnd_get_userdata(wnd);
   strcpy(edit->editbuf, buf);
@@ -826,9 +1288,9 @@ _TexuEditProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   edit->selected   = 0;
 
   texu_wnd_set_color(wnd,
-    TEXU_CIO_BRIGHT_WHITE_CYAN, TEXU_CIO_COLOR_WHITE_CYAN);
+    TEXU_CIO_COLOR_BLACK_CYAN, TEXU_CIO_COLOR_WHITE_BLACK);
   texu_wnd_set_userdata(wnd, edit);
-  texu_wnd_set_focuscolor(wnd, TEXU_CIO_CYAN_BRIGHT_WHITE);
+  texu_wnd_set_focuscolor(wnd, TEXU_CIO_COLOR_BLACK_WHITE);
 
   return TEXU_OK;
 }
@@ -839,13 +1301,13 @@ void _TexuEditProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_i64 len = 0;
   texu_char buf[TEXU_MAX_WNDTEXT+1];
   texu_char text[TEXU_MAX_WNDTEXT+1];
-  texu_i32 normcolor = TEXU_CIO_COLOR_WHITE_BLUE|A_BOLD;
+  texu_i32 normcolor = TEXU_CIO_COLOR_WHITE_BLUE;
   texu_i32 discolor = TEXU_CIO_COLOR_WHITE_BLACK;
   texu_ui32 style = texu_wnd_get_style(wnd);
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
   texu_i32 width = texu_wnd_get_width(wnd);
-  texu_i32 color = TEXU_CIO_COLOR_WHITE_BLUE|A_BOLD;
+  texu_i32 color = TEXU_CIO_COLOR_WHITE_BLUE;
  
   edit = (texu_editwnd*)texu_wnd_get_userdata(wnd);
  
@@ -880,8 +1342,9 @@ void _TexuEditProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
       style = TEXU_ALIGN_LEFT;
     }
     texu_printf_alignment(text, buf, width, style);
+    color = (edit->selected ? texu_wnd_get_focuscolor(wnd) : color);
     texu_cio_putstr_attr(dc, y, x, text, 
-      (edit->selected ? COLOR_PAIR(color)|A_REVERSE : COLOR_PAIR(color)));
+      texu_cio_get_color(dc, color));
     texu_cio_gotoyx(dc, y, x+len);
   }
 }

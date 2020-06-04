@@ -42,6 +42,9 @@ typedef struct texu_env_wndcls texu_env_wndcls;
 /* internally window procedure */
 /* see texuproc.c */
 texu_i64          _TexuDesktopProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuMsgBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+
+
 texu_i64          _TexuLabelProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuEditProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuListBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
@@ -61,6 +64,8 @@ void
 _texu_env_init_cls(texu_env* env)
 {
   texu_env_register_cls(env, TEXU_DESKTOP_CLASS,      _TexuDesktopProc);
+  texu_env_register_cls(env, TEXU_MSGBOX_CLASS,       _TexuMsgBoxProc);
+
   texu_env_register_cls(env, TEXU_LABEL_CLASS,        _TexuLabelProc);
   texu_env_register_cls(env, TEXU_EDIT_CLASS,         _TexuEditProc);
   texu_env_register_cls(env, TEXU_LISTBOX_CLASS,      _TexuListBoxProc);
@@ -555,8 +560,11 @@ _TexuDefWndProc_OnChar(texu_wnd* wnd, texu_i32 ch)
     else
     {
       /* the current frame window is active */
-      activewnd = texu_wnd_get_activechild(activewnd);
-      return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+      if (activewnd)
+      {
+        activewnd = texu_wnd_get_activechild(activewnd);
+        return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+      }
     }
   }
   else
@@ -1044,8 +1052,7 @@ texu_wnd_prevwnd(texu_wnd* wnd)
 texu_status
 texu_wnd_visible(texu_wnd* wnd, texu_bool visible)
 {
-  wnd->visible = visible;
-  return TEXU_OK;
+  return texu_wnd_send_msg(wnd, TEXU_WM_SHOW, (texu_i64)visible, 0);
 }
 
 texu_status

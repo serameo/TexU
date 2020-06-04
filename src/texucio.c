@@ -420,6 +420,20 @@ texu_cio_get_color_attr(texu_cio* cio, texu_i32 clridx, texu_i32 attrs)
 }
 
 
+texu_i32
+texu_cio_save_screen(texu_cio* cio, FILE* fp)
+{
+  return putwin(cio->wndscr, fp);
+}
+
+texu_i32
+texu_cio_restore_screen(texu_cio* cio, FILE* fp)
+{
+  WINDOW* wndscr = getwin(fp);
+  return wrefresh(wndscr);
+}
+
+
 
 
 #ifdef __cplusplus

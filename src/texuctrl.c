@@ -3518,9 +3518,9 @@ texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
     tc->indent = 2;
     tc->shifted_right = 0;
     tc->shifted = 4;
-    tc->normcolor = TEXU_CIO_BRIGHT_WHITE_BLACK;
-    tc->discolor = TEXU_CIO_BRIGHT_WHITE_BLACK;
-    tc->selcolor = TEXU_CIO_BLACK_BRIGHT_WHITE;
+    tc->normcolor = TEXU_CIO_COLOR_WHITE_BLACK;
+    tc->discolor = TEXU_CIO_COLOR_WHITE_BLACK;
+    tc->selcolor = TEXU_CIO_COLOR_BLACK_WHITE;
 
     tc->tree = texu_tree_new();
     if (!tc->tree)
@@ -4185,7 +4185,7 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
   texu_i32 width = texu_wnd_get_width(wnd);
-  texu_i32 color = TEXU_CIO_BRIGHT_WHITE_BLUE;
+  texu_i32 color = TEXU_CIO_COLOR_WHITE_BLUE;
   
   texu_cio_putch_attr(dc, y, x+width-1, ACS_PLMINUS,
     texu_cio_get_color(dc, color));
@@ -4425,7 +4425,7 @@ _TexuProgressBarProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
   texu_i32 width = texu_wnd_get_width(wnd);
-  texu_i32 color = TEXU_CIO_BRIGHT_WHITE_BLUE;
+  texu_i32 color = TEXU_CIO_COLOR_WHITE_BLUE;
   texu_char buf[TEXU_MAX_WNDTEXT+1];
   texu_char text[TEXU_MAX_WNDTEXT+1];
   texu_f32 pct = 0.0;

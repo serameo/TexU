@@ -77,6 +77,73 @@ TexuRegisterClass(
 }
 
 texu_wnd*
+TexuMessageBox(
+  texu_char* caption,
+  texu_char* text,
+  texu_wnd*  owner,
+  texu_ui32  id,
+  texu_ui32  buttons,
+  void*      userdata
+)
+{
+  texu_wnd* wnd = 0;
+  texu_wnd_attrs attrs;
+  texu_status rc = TEXU_OK;
+  texu_wnd* desktop = texu_env_get_desktop(genv);
+  texu_wnd* childwnd = 0;
+
+
+  if (!genv)
+  {
+    return 0;
+  }
+  wnd = texu_wnd_new(genv);
+  if (!wnd)
+  {
+    return 0;
+  }
+  memset(&attrs, 0, sizeof(attrs));
+  attrs.y          = 0;
+  attrs.x          = 0;
+  attrs.height     = 0;
+  attrs.width      = 0;
+  attrs.enable     = TEXU_TRUE;
+  attrs.visible    = TEXU_TRUE;
+  attrs.text       = text;
+  attrs.normalcolor    = TEXU_CIO_COLOR_BLACK_WHITE;
+  attrs.disabledcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
+  attrs.id         = id;
+  attrs.clsname    = TEXU_MSGBOX_CLASS;
+  attrs.userdata   = userdata;
+  attrs.style      = buttons;
+  attrs.exstyle    = 0;
+
+  rc = texu_wnd_create(wnd, desktop, &attrs);
+
+  if (rc != TEXU_OK)
+  {
+    texu_wnd_del(wnd);
+    return 0;
+  }
+  
+  texu_wnd_send_msg(wnd, TEXU_MBM_SETOWNER, (texu_i64)owner, 0);
+  texu_wnd_send_msg(wnd, TEXU_MBM_SETCAPTION, (texu_i64)caption, 0);
+  
+  TexuPushWindow(wnd);
+  
+  childwnd = texu_wnd_get_activechild(wnd);
+  if (childwnd)
+  {
+    texu_wnd_send_msg(childwnd, TEXU_WM_SETFOCUS, 0, 0);
+  }
+  
+  TexuShowWindow(wnd, TEXU_WS_SHOW);
+  TexuInvalidateWindow(wnd);
+  
+  return wnd;
+}
+
+texu_wnd*
 TexuCreateWindow(
   texu_char* text,
   texu_char* clsname,

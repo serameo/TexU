@@ -12,6 +12,7 @@
 #define ID_ADD              (TEXU_WM_USER + 2)
 #define ID_DELETE           (TEXU_WM_USER + 3)
 #define ID_FIND             (TEXU_WM_USER + 4)
+#define ID_MSGBOX           (TEXU_WM_USER + 5)
 #define IDC_STATUSBAR       12
 #define IDC_UPDOWN          15
 #define IDC_PROGRESSBAR     16
@@ -80,6 +81,19 @@ void _MyWndProc_OnHelp(texu_wnd* wnd)
   texu_wnd_set_text(ctl, "Pressed F1 to help");
 }
 
+void
+_MyWndProc_OnMsgBox(texu_wnd* wnd)
+{
+  TexuMessageBox(
+            "Hello world",
+            "Do you want to update user?",
+            wnd,
+            1001, /* id */
+            TEXU_MBS_YESNOCANCEL,
+            0  /* user data */
+          );
+}
+
 void _MyWndProc_OnAdd(texu_wnd* wnd)
 {
   texu_wnd* ctl = texu_wnd_find_child(wnd, IDC_STATUSBAR);
@@ -119,6 +133,7 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
   texu_wnd* udctl = texu_wnd_find_child(wnd, IDC_UPDOWN);
   texu_wnd* pgb = texu_wnd_find_child(wnd, IDC_PROGRESSBAR);
   texu_i32 val = 0;
+  texu_msgbox_notify* msg = 0;
   
   memset(text, 0, sizeof(text));
   texu_wnd_send_msg(lb, TEXU_LBM_GETITEMTEXT, (texu_i64)lbntf->index, (texu_i64)text);
@@ -131,23 +146,45 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
     texu_wnd_send_msg(pgb, TEXU_PGBM_SETPOS, val, 0);
     texu_wnd_restore_curpos(udctl);
   }
+  
+  if (notify->code == TEXU_MBN_ENDDIALOG)
+  {
+    msg = (texu_msgbox_notify*)notify;
+    val = msg->id;
+    
+    switch (val)
+    {
+      case TEXU_IDOK:
+        strcpy(text, "PRESSED OK");
+        break;
+      case TEXU_IDCANCEL:
+        strcpy(text, "PRESSED CANCEL");
+        break;
+      case TEXU_IDYES:
+        strcpy(text, "PRESSED YES");
+        break;
+      case TEXU_IDNO:
+        strcpy(text, "PRESSED NO");
+        break;
+    }
+    texu_wnd_set_text(status, text);
+  }
 }
 
 void
 _MyWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
   texu_rect rect = { 9, 0, 4, 99 };
-  /*texu_cio_draw_rect(dc, &rect, COLOR_PAIR(TEXU_CIO_BRIGHT_WHITE_BLUE));*/
   texu_i32 widths[4] = { 10, 20, 30, 39 };
 
   texu_rect rect2 = { 14, 0, 10, 99 };
   texu_i32 heights[2] = { 4, 4 };
   
   texu_cio_draw_hrects(dc, &rect, widths, 4, 
-    texu_cio_get_color(dc, TEXU_CIO_BRIGHT_WHITE_BLUE));
+    texu_cio_get_color(dc, TEXU_CIO_COLOR_WHITE_BLUE));
     
   texu_cio_draw_vrects(dc, &rect2, heights, 2, 
-    texu_cio_get_color(dc, TEXU_CIO_BRIGHT_WHITE_YELLOW));
+    texu_cio_get_color(dc, TEXU_CIO_COLOR_WHITE_YELLOW));
 }
 
 texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
@@ -179,7 +216,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
           2, /* id */
           0  /* user data */
           );
-  texu_wnd_set_color(child, TEXU_CIO_BRIGHT_WHITE_BLUE, TEXU_CIO_BRIGHT_WHITE_BLUE);
+  texu_wnd_set_color(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
 
   child = TexuCreateWindow(
           "Text",
@@ -194,7 +231,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
           IDC_UPDOWN, /* id */
           0  /* user data */
           );
-  texu_wnd_set_color(child, TEXU_CIO_BRIGHT_WHITE_BLUE, TEXU_CIO_BRIGHT_WHITE_BLUE);
+  texu_wnd_set_color(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
   
   child = TexuCreateWindow(
           "Number:",
@@ -237,8 +274,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
           IDC_PROGRESSBAR, /* id */
           0  /* user data */
           );
-  texu_wnd_set_color(child, TEXU_CIO_BRIGHT_WHITE_BLUE, TEXU_CIO_BRIGHT_WHITE_BLUE);
-  /*texu_wnd_send_msg(child, TEXU_PGBM_SETPOS, 15, 0);*/
+  texu_wnd_set_color(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
   texu_wnd_send_msg(child, TEXU_PGBM_SETMAX, 255, 0);
 
 
@@ -403,6 +439,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   texu_wnd_add_keycmd(wnd, KEY_F(1), ID_HELP);
   texu_wnd_add_keycmd(wnd, KEY_F(2), ID_ADD);
   texu_wnd_add_keycmd(wnd, KEY_F(3), ID_DELETE);
+  texu_wnd_add_keycmd(wnd, KEY_F(4), ID_MSGBOX);
 
   child = TexuCreateWindow(
           "",
@@ -460,6 +497,9 @@ MyWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
           break;
         case ID_ADD:
           _MyWndProc_OnAdd(wnd);
+          break;
+        case ID_MSGBOX:
+          _MyWndProc_OnMsgBox(wnd);
           break;
         default:
           break;
@@ -520,7 +560,7 @@ _MyWndProc2_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
   texu_rect rect = { 9, 0, 4, 99 };
   texu_cio_draw_frame(dc, "Hello World", &rect,
-    texu_cio_get_color(dc, TEXU_CIO_BRIGHT_WHITE_BLUE));
+    texu_cio_get_color(dc, TEXU_CIO_COLOR_WHITE_BLUE));
 }
 
 texu_i64
@@ -1023,9 +1063,9 @@ MyWndProc4(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               );
               
       memset(&data, 0, sizeof(data));
-      data.normcolor = TEXU_CIO_BRIGHT_WHITE_BLUE;
+      data.normcolor = TEXU_CIO_COLOR_WHITE_BLUE;
       data.discolor = TEXU_CIO_COLOR_WHITE_BLUE;
-      data.selcolor = TEXU_CIO_BLUE_BRIGHT_WHITE;
+      data.selcolor = TEXU_CIO_COLOR_BLUE_WHITE;
       strcpy(data.itemtext, "Item 1");
       item = (texu_tree_item*)texu_wnd_send_msg(child, TEXU_TCM_INSERTITEM, 0, (texu_i64)&data);
       
