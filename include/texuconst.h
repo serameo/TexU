@@ -220,6 +220,14 @@
 
 #define TEXU_SBN_FIRST                700
 
+/*MESSAGE BOX*/
+#define TEXU_MBM_FIRST                800
+#define TEXU_MBM_SETOWNER             (TEXU_MBM_FIRST +  1)
+#define TEXU_MBM_SETCAPTION           (TEXU_MBM_FIRST +  2)
+
+#define TEXU_MBN_FIRST                800
+#define TEXU_MBN_ENDDIALOG            (TEXU_MBN_FIRST +  1)
+
 
 
 
@@ -230,6 +238,7 @@
 
 #define TEXU_ENV_MAX_FRAMES            4096
 
+#define TEXU_MSGBOX_CLASS              "TexuMsgBoxClass"
 #define TEXU_DESKTOP_CLASS             "TexuDesktopClass"
 #define TEXU_LABEL_CLASS               "TexuLabelClass"
 #define TEXU_STATUSBAR_CLASS           "TexuStatusBarClass"
@@ -252,6 +261,25 @@
 #define TEXU_ALIGN_LEFT                TEXU_WS_LEFT
 #define TEXU_ALIGN_CENTER              TEXU_WS_CENTER
 #define TEXU_ALIGN_RIGHT               TEXU_WS_RIGHT
+
+
+
+#define TEXU_IDOK                      0x00000001
+#define TEXU_IDCANCEL                  0x00000002
+#define TEXU_IDYES                     0x00000004
+#define TEXU_IDNO                      0x00000008
+#define TEXU_IDOKCANCEL                (TEXU_IDOK  | TEXU_IDCANCEL)
+#define TEXU_IDYESNO                   (TEXU_IDYES | TEXU_IDNO)
+#define TEXU_IDYESNOCANCEL             (TEXU_IDYES | TEXU_IDNO | TEXU_IDCANCEL)
+
+/* MSGBOX */
+#define TEXU_MBS_OK                    0x00010000
+#define TEXU_MBS_CANCEL                0x00020000
+#define TEXU_MBS_YES                   0x00040000
+#define TEXU_MBS_NO                    0x00080000
+#define TEXU_MBS_OKCANCEL              (TEXU_MBS_OK  | TEXU_MBS_CANCEL)
+#define TEXU_MBS_YESNO                 (TEXU_MBS_YES | TEXU_MBS_NO)
+#define TEXU_MBS_YESNOCANCEL           (TEXU_MBS_YES | TEXU_MBS_NO | TEXU_MBS_CANCEL)
 
 
 /* EDIT */

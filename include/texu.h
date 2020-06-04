@@ -74,6 +74,7 @@ typedef char*                          texu_string;
 #include "texui.h"
 #include "texutils.h"
 #include "texucio.h"
+#include "texust.h"
 
 /*
 # TexU interface functions
@@ -121,6 +122,16 @@ void               TexuShowWindow(
 void               TexuInvalidateWindow(
                      texu_wnd*  wnd
                      );
+texu_wnd*
+TexuMessageBox(
+  texu_char* caption,
+  texu_char* text,
+  texu_wnd*  owner,
+  texu_ui32  id,
+  texu_ui32  buttons,
+  void*      userdata
+);
+
 
 #endif /*_TEXU_H_*/
 

@@ -143,6 +143,14 @@ struct texu_treewnd_notify
 };
 typedef struct texu_treewnd_notify texu_treewnd_notify;
 
+struct texu_msgbox_notify
+{
+  texu_wnd_notify  hdr;         /* notification header */
+  texu_ui32        id;
+};
+typedef struct texu_msgbox_notify texu_msgbox_notify;
+
+
 
 
 

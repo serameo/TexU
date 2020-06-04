@@ -177,6 +177,9 @@ texu_i32           texu_cio_get_reverse(texu_cio*, texu_i32);
 texu_i32           texu_cio_get_blink(texu_cio*, texu_i32);
 texu_i32           texu_cio_get_color_attr(texu_cio*, texu_i32, texu_i32);
 
+texu_i32           texu_cio_save_screen(texu_cio*, FILE*);
+texu_i32           texu_cio_restore_screen(texu_cio*, FILE*);
+
 #ifdef __cplusplus
 }
 #endif
