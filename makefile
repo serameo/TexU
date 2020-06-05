@@ -20,9 +20,10 @@ TEXU_LIB_DIR = ./lib
 TEXU_SOURCES = $(TEXU_SRC_DIR)/texulib.c \
                $(TEXU_SRC_DIR)/texutils.c \
                $(TEXU_SRC_DIR)/texucio.c \
-               $(TEXU_SRC_DIR)/texuproc.c \
                $(TEXU_SRC_DIR)/texui.c \
+               $(TEXU_SRC_DIR)/texuproc.c \
                $(TEXU_SRC_DIR)/texuctrl.c \
+               $(TEXU_SRC_DIR)/texumenu.c \
                $(TEXU_SRC_DIR)/texu.c
 
 
