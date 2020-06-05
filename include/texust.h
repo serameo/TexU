@@ -151,6 +151,23 @@ struct texu_msgbox_notify
 typedef struct texu_msgbox_notify texu_msgbox_notify;
 
 
+/*MENU*/
+
+struct texu_menu_item
+{
+  texu_ui32       id;
+  texu_char       text[TEXU_MAX_WNDTEXT+1];
+  texu_bool       enable;
+  texu_bool       visible;
+  texu_i32        color;
+  texu_i32        discolor;
+  texu_i32        selcolor;
+  texu_ui32       style;    /*TEXU_MS_TEXT, TEXU_MS_BREAK*/
+};
+typedef struct texu_menu_item texu_menu_item;
+
+struct texu_menu;
+typedef struct texu_menu texu_menu;
 
 
 

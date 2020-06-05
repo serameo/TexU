@@ -3,7 +3,7 @@
 # File Name: texuio.h
 # Author: Seree Rakwong
 # Date: 13-MAY-2020
-# Purpose: get input/output from/to the screen
+# Purpose: get console input/output from/to the screen
 #
 */
 
@@ -130,6 +130,13 @@ enum
 };
 
 
+#define ALT_F0            (1024 + 264)
+#define ALT_F(k)          (ALT_F0 + (k))
+
+#define Alt_X (1024+'X') /* 1112 == 0x458 */
+#define Alt_x (1024+'x') /* 1144 == 0x478 */
+
+
 struct texu_cio;
 typedef struct texu_cio texu_cio;
 
@@ -179,6 +186,10 @@ texu_i32           texu_cio_get_color_attr(texu_cio*, texu_i32, texu_i32);
 
 texu_i32           texu_cio_save_screen(texu_cio*, FILE*);
 texu_i32           texu_cio_restore_screen(texu_cio*, FILE*);
+
+texu_i32
+texu_cio_nodelay(texu_cio* cio, texu_i32 delay);
+
 
 #ifdef __cplusplus
 }

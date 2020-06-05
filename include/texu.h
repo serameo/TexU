@@ -132,6 +132,46 @@ TexuMessageBox(
   void*      userdata
 );
 
+texu_i64
+TexuSendMessage(
+  texu_wnd*     wnd,
+  texu_ui32     msg,
+  texu_i64      param1,
+  texu_i64      param2
+);
+
+texu_wnd*
+TexuGetWindowItem(
+  texu_wnd*     wnd,
+  texu_ui32     id
+);
+
+void
+TexuGetWindowText(
+  texu_wnd*         wnd,
+  const texu_char*  text
+);
+
+void
+TexuSetColor(
+  texu_wnd*     wnd,
+  texu_i32      color,
+  texu_i32      discolor
+);
+
+void
+TexuAddKeyCommands(
+  texu_wnd*   wnd,
+  texu_i32    key,
+  texu_ui32   cmd
+);
+
+
+
+
+
+
+
 
 #endif /*_TEXU_H_*/
 
