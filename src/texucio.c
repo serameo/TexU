@@ -52,6 +52,24 @@ texu_cio_del(texu_cio* cio)
   }
 }
 
+texu_i32
+texu_cio_nodelay(texu_cio* cio, texu_i32 delay)
+{
+  return nodelay(cio->wndscr, delay);
+}
+
+void
+_texu_cio_init_keys(texu_cio* cio)
+{
+  /*
+  define_key ("\033X", Alt_X);
+  define_key ("\033x", Alt_x);
+  
+  define_key ("\033F1", ALT_F(1));
+  */
+}
+
+
 void
 _texu_cio_init_colors(texu_cio* cio)
 {

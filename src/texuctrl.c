@@ -127,7 +127,7 @@ void                  _TexuListCtrlProc_DrawItem(
                         texu_cio* dc, texu_rect* rccell, const texu_char* caption,
                         texu_ui32 attrs, texu_i32 align, texu_i32 isheader);
 
-void                  _TexuListCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch);
+void                  _TexuListCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt);
 void                  _TexuListCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
 texu_i32              _TexuListCtrlProc_OnAddItem(texu_wnd* wnd, texu_char* text, texu_i32 nitems);
 void                  _TexuListCtrlProc_OnDeleteAllItems(texu_wnd* wnd);
@@ -1302,7 +1302,7 @@ void _TexuListCtrlProc_OnEndEdit(texu_wnd* wnd, texu_i32 ok)
 
 
 
-void _TexuListCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch)
+void _TexuListCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
   texu_lcwnd* lctl = 0;
   texu_i32 repaint = 0;
@@ -2250,7 +2250,7 @@ _TexuListCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
   switch (msg)
   {
     case TEXU_WM_CHAR:
-      _TexuListCtrlProc_OnChar(wnd, (texu_i32)param1);  
+      _TexuListCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);  
       return 0;
       
     case TEXU_WM_CREATE:
@@ -2401,7 +2401,7 @@ texu_tree_item*     _TexuTreeCtrlProc_OnFindItem(texu_wnd* wnd, texu_treewnd_ite
 texu_tree_item*     _TexuTreeCtrlProc_OnFindNextItem(texu_wnd* wnd, texu_tree_item* previtem, texu_treewnd_item* finditem);
 texu_i32            _TexuTreeCtrlProc_OnExpandItem(texu_wnd* wnd, texu_tree_item* item);
 texu_i32            _TexuTreeCtrlProc_OnCollapseItem(texu_wnd* wnd, texu_tree_item* item);
-void                _TexuTreeCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch);
+void                _TexuTreeCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt);
 void                _TexuTreeCtrlProc_OnDestroy(texu_wnd* wnd);
 void                _TexuTreeCtrlProc_OnSetFocus(texu_wnd* wnd, texu_wnd* );
 texu_i32            _TexuTreeCtrlProc_OnKillFocus(texu_wnd* wnd, texu_wnd* );
@@ -3024,7 +3024,7 @@ texu_tree_item* _TexuTreeCtrlProc_MovePrev(texu_wnd* wnd, texu_i32 move_times)
     return tc->curselitem;
 }
 
-void _TexuTreeCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch)
+void _TexuTreeCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_treewnd* tc = 0;
     texu_rect rc;
@@ -3793,7 +3793,7 @@ _TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_WM_CHAR:
     {
-        _TexuTreeCtrlProc_OnChar(wnd, (texu_i32) param1);
+        _TexuTreeCtrlProc_OnChar(wnd, (texu_i32) param1, (texu_i32)param2);
         break;
     }
     case TEXU_TCM_INSERTITEM:
@@ -3882,7 +3882,7 @@ struct texu_udwnd
 typedef struct texu_udwnd texu_udwnd;
 
 
-void                  _TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch);
+void                  _TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt);
 texu_status           _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs);
 void                  _TexuUpDownCtrlProc_OnDestroy(texu_wnd* wnd);
 void                  _TexuUpDownCtrlProc_OnSetFocus(texu_wnd*, texu_wnd*);
@@ -3946,11 +3946,11 @@ _TexuUpDownCtrlProc_OnStep(texu_wnd* wnd, texu_i32 updown)
 {
   if (updown > 0)
   {
-    _TexuUpDownCtrlProc_OnChar(wnd, KEY_UP);
+    _TexuUpDownCtrlProc_OnChar(wnd, KEY_UP, 0);
   }
   else
   {
-    _TexuUpDownCtrlProc_OnChar(wnd, KEY_DOWN);
+    _TexuUpDownCtrlProc_OnChar(wnd, KEY_DOWN, 0);
   }
 }
 
@@ -3975,11 +3975,11 @@ _TexuUpDownCtrlProc_OnPage(texu_wnd* wnd, texu_i32 updown)
 {
   if (updown > 0)
   {
-    _TexuUpDownCtrlProc_OnChar(wnd, KEY_NPAGE);
+    _TexuUpDownCtrlProc_OnChar(wnd, KEY_NPAGE, 0);
   }
   else
   {
-    _TexuUpDownCtrlProc_OnChar(wnd, KEY_PPAGE);
+    _TexuUpDownCtrlProc_OnChar(wnd, KEY_PPAGE, 0);
   }
 }
 
@@ -4100,7 +4100,7 @@ _TexuUpDownCtrlProc_OnGetInt(texu_wnd* wnd)
 }
 
 void
-_TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch)
+_TexuUpDownCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
   texu_udwnd* udctl = 0;
   texu_char buf[TEXU_MAX_WNDTEXT+1];
@@ -4198,7 +4198,7 @@ _TexuUpDownCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 para
   switch (msg)
   {
     case TEXU_WM_CHAR:
-      _TexuUpDownCtrlProc_OnChar(wnd, (texu_i32)param1);  
+      _TexuUpDownCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);  
       return 0;
       
     case TEXU_WM_CREATE:

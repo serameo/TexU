@@ -11,6 +11,7 @@
 #include "texulib.h"
 #include "texutils.h"
 #include "texui.h"
+#include "texumenu.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -56,6 +57,11 @@ texu_i64          _TexuTreeCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuUpDownCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuProgressBarProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
+/* menu texumenu.c */
+texu_i64          _TexuMenuProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+
+
+
 
 void              _texu_env_init_cls(texu_env*);
 texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
@@ -74,6 +80,8 @@ _texu_env_init_cls(texu_env* env)
   texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);
   texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);
   texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);
+  
+  texu_env_register_cls(env, TEXU_MENU_CLASS,         _TexuMenuProc);
 }
 
 
@@ -223,16 +231,31 @@ texu_env_run(texu_env* env)
 {
   texu_i32 ch = 0;
   texu_wnd* activewnd = 0;
+  texu_i32 altpressed = 0;
+  /*texu_i32 ctlpressed = 0;*/
 
   while (!(env->exit))
   {
+    altpressed = 0;
     ch = texu_cio_getch(env->cio);
+    if (27 == ch)
+    {
+      altpressed = 1;
+      texu_cio_nodelay(env->cio, 1);
+      ch = texu_cio_getch(env->cio);
+      if (-1 == ch)
+      {
+        texu_cio_nodelay(env->cio, 0);
+        /* enter menu if it is available */
+        continue;
+      }
+    }
     activewnd = (texu_wnd*)texu_stack_top(env->frames);
     if (!activewnd)
     {
       break;
     }
-    texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+    texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, (texu_i64)altpressed);
   }
   return TEXU_OK;
 }
@@ -326,31 +349,33 @@ texu_env_restore_curpos(texu_env* env)
 
 struct texu_wnd
 {
-  texu_wnd*        parent;
-  texu_list*       children;
-  texu_wnd*        activechild;
-  texu_wndproc     wndproc;
-  texu_env*        env;     /* console input/output */
-  texu_list*       keycmds;
-  texu_bool        lockedupdate;
+  texu_wnd*         parent;
+  texu_list*        children;
+  texu_wnd*         activechild;
+  texu_wndproc      wndproc;
+  texu_env*         env;     /* console input/output */
+  texu_list*        keycmds;
+  texu_bool         lockedupdate;
 /*
-  texu_wnd_attrs   attrs;
+  texu_wnd_attrs    attrs;
 */
-  texu_i32         y;
-  texu_i32         x;
-  texu_i32         height;
-  texu_i32         width;
-  texu_ui32        style;
-  texu_ui32        exstyle;
-  texu_bool        enable;
-  texu_bool        visible;
-  texu_char        text[TEXU_MAX_WNDTEXT+1];
-  texu_i32         normalcolor;
-  texu_i32         disabledcolor;
-  texu_i32         focuscolor;
-  texu_ui32        id;
-  texu_char*       clsname;
-  void*            userdata;
+  texu_i32          y;
+  texu_i32          x;
+  texu_i32          height;
+  texu_i32          width;
+  texu_ui32         style;
+  texu_ui32         exstyle;
+  texu_bool         enable;
+  texu_bool         visible;
+  texu_char         text[TEXU_MAX_WNDTEXT+1];
+  texu_i32          normalcolor;
+  texu_i32          disabledcolor;
+  texu_i32          focuscolor;
+  texu_ui32         id;
+  texu_char*        clsname;
+  void*             userdata;
+  
+  texu_menu*        menu;
 };
 
 /*
@@ -361,7 +386,7 @@ struct texu_wnd
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
 
-texu_i32           _TexuDefWndProc_OnChar(texu_wnd*, texu_i32 ch);
+texu_i32           _TexuDefWndProc_OnChar(texu_wnd*, texu_i32 ch, texu_i32 alt);
 texu_i32           _TexuDefWndProc_OnKillFocus(texu_wnd*, texu_wnd* nextwnd);
 void               _TexuDefWndProc_OnSetFocus(texu_wnd*, texu_wnd* prevwnd);
 void               _TexuDefWndProc_OnSetText(texu_wnd* wnd, const texu_char* text);
@@ -373,6 +398,48 @@ texu_bool          _TexuDefWndProc_OnShow(texu_wnd*, texu_bool);
 texu_bool          _TexuDefWndProc_OnEnable(texu_wnd*, texu_bool);
 void               _TexuDefWndProc_OnEraseBg(texu_wnd*, texu_cio*);
 texu_i64           _TexuDefWndProc_OnMsg(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2);
+void               _TexuDefWndProc_OnMove(texu_wnd*, texu_rect*, texu_bool);
+void               _TexuDefWndProc_OnCommand(texu_wnd*, texu_ui32);
+void               _TexuDefWndProc_OnNotify(texu_wnd*, texu_wnd_notify*);
+texu_menu*         _TexuDefWndProc_OnSetMenu(texu_wnd*, texu_menu*);
+void               _TexuDefWndProc_OnRedrawMenu(texu_wnd*);
+void               _TexuDefWndProc_OnEnterMenu(texu_wnd*);
+void               _TexuDefWndProc_OnLeaveMenu(texu_wnd*);
+
+
+texu_menu*
+_TexuDefWndProc_OnSetMenu(texu_wnd* wnd, texu_menu* menu)
+{
+  texu_menu* oldmenu = wnd->menu;
+  wnd->menu = menu;
+  return oldmenu;
+}
+
+void
+_TexuDefWndProc_OnRedrawMenu(texu_wnd* wnd)
+{
+  texu_wnd_invalidate(texu_menu_get_menubar(wnd->menu));
+}
+
+void
+_TexuDefWndProc_OnEnterMenu(texu_wnd* wnd)
+{
+}
+
+void
+_TexuDefWndProc_OnLeaveMenu(texu_wnd* wnd)
+{
+}
+
+void
+_TexuDefWndProc_OnCommand(texu_wnd* wnd, texu_ui32 id)
+{
+}
+
+void
+_TexuDefWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
+{
+}
 
 
 texu_i64
@@ -380,6 +447,20 @@ _TexuDefWndProc_OnMsg(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 pa
 {
   return 0;
 }
+
+void
+_TexuDefWndProc_OnMove(texu_wnd* wnd, texu_rect* rect, texu_bool redraw)
+{
+  wnd->y = rect->y;
+  wnd->x = rect->x;
+  wnd->height = rect->lines;
+  wnd->width  = rect->cols;
+  if (redraw)
+  {
+    texu_wnd_invalidate(wnd);
+  }
+}
+
 
 texu_bool
 _TexuDefWndProc_OnShow(texu_wnd* wnd, texu_bool visible)
@@ -500,7 +581,7 @@ _TexuDefWndProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd)
 }
 
 texu_i32
-_TexuDefWndProc_OnChar(texu_wnd* wnd, texu_i32 ch)
+_TexuDefWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
   texu_i64 rc = 0;
   texu_wnd* activewnd = texu_wnd_get_activechild(wnd);
@@ -577,11 +658,40 @@ _TexuDefWndProc_OnChar(texu_wnd* wnd, texu_i32 ch)
   return 0;
 }
 
+
 texu_i64
 TexuDefWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
   switch (msg)
   {
+    case TEXU_WM_SETMENU:
+      _TexuDefWndProc_OnSetMenu(wnd, (texu_menu*)param1);
+      return 0;
+
+    case TEXU_WM_REDRAWMENU:
+      _TexuDefWndProc_OnRedrawMenu(wnd);
+      return 0;
+
+    case TEXU_WM_ENTERMENU:
+      _TexuDefWndProc_OnEnterMenu(wnd);
+      return 0;
+
+    case TEXU_WM_LEAVEMENU:
+      _TexuDefWndProc_OnLeaveMenu(wnd);
+      return 0;
+
+    case TEXU_WM_NOTIFY:
+      _TexuDefWndProc_OnNotify(wnd, (texu_wnd_notify*)param1);
+      return 0;
+
+    case TEXU_WM_COMMAND:
+      _TexuDefWndProc_OnCommand(wnd, (texu_ui32)param1);
+      return 0;
+      
+    case TEXU_WM_MOVE:
+      _TexuDefWndProc_OnMove(wnd, (texu_rect*)param1, (texu_bool)param2);
+      return 0;
+
     case TEXU_WM_SHOW:
       return _TexuDefWndProc_OnShow(wnd, (texu_bool)param1);
 
@@ -589,7 +699,7 @@ TexuDefWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       return _TexuDefWndProc_OnEnable(wnd, (texu_bool)param1);
 
     case TEXU_WM_CHAR:
-      return _TexuDefWndProc_OnChar(wnd, (texu_i32)param1);
+      return _TexuDefWndProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
 
     case TEXU_WM_SETFOCUS:
       _TexuDefWndProc_OnSetFocus(wnd, (texu_wnd*)param1);
@@ -1105,14 +1215,8 @@ texu_wnd_get_style(texu_wnd* wnd)
 void
 texu_wnd_move(texu_wnd* wnd, texu_i32 y, texu_i32 x, texu_i32 w, texu_i32 h, texu_bool redraw)
 {
-  wnd->y = y;
-  wnd->x = x;
-  wnd->width = w;
-  wnd->height = h;
-  if (redraw)
-  {
-    texu_wnd_invalidate(wnd);
-  }
+  texu_rect rect = { y, x, h, w };
+  texu_wnd_send_msg(wnd, TEXU_WM_MOVE, (texu_i64)&rect, redraw);
 }
 
 

@@ -627,7 +627,7 @@ typedef struct texu_editwnd texu_editwnd;
 
 
 texu_status        _TexuEditProc_OnCreate(texu_wnd*, texu_wnd_attrs*);
-void               _TexuEditProc_OnChar(texu_wnd*, texu_i32 ch);
+void               _TexuEditProc_OnChar(texu_wnd*, texu_i32 ch, texu_i32 alt);
 void               _TexuEditProc_OnDestroy(texu_wnd*);
 void               _TexuEditProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
 texu_i32           _TexuEditProc_OnKillFocus(texu_wnd* wnd, texu_wnd* nextwnd);
@@ -1025,7 +1025,7 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd* wnd, texu_editwnd* edit
 
 
 void
-_TexuEditProc_OnChar(texu_wnd* wnd, texu_i32 ch)
+_TexuEditProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
   texu_editwnd* edit = 0;
   texu_i32 changed = 0;
@@ -1362,7 +1362,7 @@ _TexuEditProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
     case TEXU_WM_CHAR:
     {
-      _TexuEditProc_OnChar(wnd, (texu_i32)param1);
+      _TexuEditProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
       return 0;
     }
 
@@ -1492,7 +1492,7 @@ void               _TexuListBoxProc_OnSetItemText(texu_wnd* wnd, texu_i32 idx, c
 texu_i32           _TexuListBoxProc_OnGetItemText(texu_wnd* wnd, texu_i32 idx, texu_char* text);
 texu_i32           _TexuListBoxProc_OnGetCurSel(texu_wnd* wnd);
 void               _TexuListBoxProc_OnDeleteAllItems(texu_wnd* wnd);
-void               _TexuListBoxProc_OnChar(texu_wnd*, texu_i32 ch);
+void               _TexuListBoxProc_OnChar(texu_wnd*, texu_i32 ch, texu_i32 alt);
 void               _TexuListBoxProc_OnEnableItem(texu_wnd* wnd, texu_i32 idx, texu_i32 check);
 
 
@@ -1581,7 +1581,7 @@ _TexuListBoxProc_GetPrevItemEnabled(texu_lbwnd* lb, texu_lbwnd_item* item)
 }
 
 void
-_TexuListBoxProc_OnChar(texu_wnd* wnd, texu_i32 ch)
+_TexuListBoxProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
   texu_lbwnd* lb = texu_wnd_get_userdata(wnd);
   texu_i32 repaint = 0;
@@ -2249,7 +2249,7 @@ _TexuListBoxProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
   switch (msg)
   {
     case TEXU_WM_CHAR:
-      _TexuListBoxProc_OnChar(wnd, (texu_i32)param1);  
+      _TexuListBoxProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);  
       return 0;
       
     case TEXU_WM_CREATE:

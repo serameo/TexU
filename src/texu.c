@@ -287,6 +287,58 @@ TexuInvalidateWindow(
   texu_wnd_invalidate(wnd);
 }
 
+texu_i64
+TexuSendMessage(
+  texu_wnd*     wnd,
+  texu_ui32     msg,
+  texu_i64      param1,
+  texu_i64      param2
+)
+{
+  return texu_wnd_send_msg(wnd, msg, param1, param2);
+}
+
+
+texu_wnd*
+TexuGetWindowItem(
+  texu_wnd*     wnd,
+  texu_ui32     id
+)
+{
+  return texu_wnd_find_child(wnd, id);
+}
+
+void
+TexuGetWindowText(
+  texu_wnd*         wnd,
+  const texu_char*  text
+)
+{
+  texu_wnd_set_text(wnd, (text ? text : ""));
+}
+
+void
+TexuSetColor(
+  texu_wnd*     wnd,
+  texu_i32      color,
+  texu_i32      discolor
+)
+{
+  texu_wnd_set_color(wnd, color, discolor);
+}
+
+
+
+void
+TexuAddKeyCommands(
+  texu_wnd*   wnd,
+  texu_i32    key,
+  texu_ui32   cmd
+)
+{
+  texu_wnd_add_keycmd(wnd, key, cmd);
+}
+
 
 
 
