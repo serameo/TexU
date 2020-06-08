@@ -108,7 +108,7 @@ texu_status        texu_dblog_log(
 */
 
 struct texu_db;
-typedef struct texu_db texu_db;;
+typedef struct texu_db texu_db;
 
 
 

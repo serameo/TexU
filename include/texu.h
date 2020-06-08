@@ -75,6 +75,7 @@ typedef char*                          texu_string;
 #include "texutils.h"
 #include "texucio.h"
 #include "texust.h"
+#include "texumenu.h"
 
 /*
 # TexU interface functions
@@ -167,8 +168,14 @@ TexuAddKeyCommands(
   texu_i32    alt
 );
 
+void
+TexuEnableWindow(texu_wnd* wnd, texu_bool enable);
 
+void
+TexuSaveCursorPosition(texu_wnd* wnd);
 
+void
+TexuRestoreCursorPosition(texu_wnd* wnd);
 
 
 
