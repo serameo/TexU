@@ -35,8 +35,8 @@ texu_menu*        texu_menu_new(texu_wnd*, texu_ui32);
 void              texu_menu_del(texu_menu*);
 
 texu_wnd*         texu_menu_get_menubar(texu_menu*);
-texu_tree_item*   texu_menu_add_menu(texu_menu*, const texu_char* text);
-texu_tree_item*   texu_menu_add_item(texu_menu*, texu_tree_item*, const texu_char* text, texu_ui32 id);
+texu_tree_item*   texu_menu_add_menu(texu_menu*, const texu_char* text, texu_bool enable);
+texu_tree_item*   texu_menu_add_item(texu_menu*, texu_tree_item*, const texu_char* text, texu_ui32 id, texu_bool enable);
 
 
 texu_tree_item*   texu_menu_find_item(texu_menu*, texu_ui32);

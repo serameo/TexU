@@ -17,25 +17,25 @@
 */
 
 /* status */
-#define TEXU_NOMEM                      (-2)
-#define TEXU_ERROR                      (-1)
-#define TEXU_OK                         (0)
-#define TEXU_NOTFOUND                   (1)
-#define TEXU_NOTREGISTERED_CLASS        (2)
-#define TEXU_DUPLICATED_ID              (3)
+#define TEXU_NOMEM                      (texu_i32)(-2)
+#define TEXU_ERROR                      (texu_i32)(-1)
+#define TEXU_OK                         (texu_i32)(0)
+#define TEXU_NOTFOUND                   (texu_i32)(1)
+#define TEXU_NOTREGISTERED_CLASS        (texu_i32)(2)
+#define TEXU_DUPLICATED_ID              (texu_i32)(3)
 
 /* state */
-#define TEXU_CONTINUE                   (0)
-#define TEXU_BREAK                      (-1)
+#define TEXU_CONTINUE                   (texu_i32)(0)
+#define TEXU_BREAK                      (texu_i32)(-1)
 
 /* boolean */
-#define TEXU_FALSE                      (0)
-#define TEXU_TRUE                       (1)
+#define TEXU_FALSE                      (texu_i32)(0)
+#define TEXU_TRUE                       (texu_i32)(1)
 
 /* compare */
-#define TEXU_CMP_LT                     (-1)                /*less than*/
-#define TEXU_CMP_EQ                     (0)                 /*equal to*/
-#define TEXU_CMP_GT                     (1)                 /*greater than*/
+#define TEXU_CMP_LT                     (texu_i32)(-1)                /*less than*/
+#define TEXU_CMP_EQ                     (texu_i32)(0)                 /*equal to*/
+#define TEXU_CMP_GT                     (texu_i32)(1)                 /*greater than*/
 
 #define TEXU_MAX_WNDTEXT                256
 

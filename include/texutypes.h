@@ -36,7 +36,7 @@ typedef unsigned char                  texu_byte;
 typedef short                          texu_short;
 typedef long                           texu_long;
 typedef long long                      texu_longlong;
-typedef long long                      texu_bool;
+typedef long                           texu_bool;
 typedef float                          texu_float;
 typedef double                         texu_double;
 typedef char*                          texu_string;
