@@ -312,7 +312,7 @@ _TexuMenuProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   {
     menuitem = (texu_menu_item*)treeitem->data;
     len = strlen(menuitem->text);
-    texu_printf_alignment(buf, menuitem->text, len+2, TEXU_ALIGN_CENTER);
+    texu_printf_alignment(buf, menuitem->text, len, TEXU_ALIGN_CENTER);
     
     if (menuitem->enable)
     {
@@ -327,7 +327,7 @@ _TexuMenuProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
       texu_cio_get_color(dc, color));
     treeitem = treeitem->next;
     
-    x += len+2;
+    x += len;
   }
 }
 
@@ -680,7 +680,7 @@ _TexuMenuWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   {
     baritem = (texu_menu_item*)treeitem->data;
     len = strlen(baritem->text);
-    texu_printf_alignment(buf, baritem->text, len+2, TEXU_ALIGN_CENTER);
+    texu_printf_alignment(buf, baritem->text, len, TEXU_ALIGN_CENTER);
     
     if (baritem->enable)
     {
@@ -709,7 +709,7 @@ _TexuMenuWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
       texu_cio_get_color(dc, color));
     treeitem = treeitem->next;
     
-    x += len+2;
+    x += len;
   }
 }
 texu_status

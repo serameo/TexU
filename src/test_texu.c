@@ -143,9 +143,9 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
   if (notify->id == IDC_UPDOWN)
   {
     val = TexuSendMessage(udctl, TEXU_UDCM_GETINT, 0, 0);
-    texu_wnd_save_curpos(udctl);
+    TexuSaveCursorPosition(udctl);
     TexuSendMessage(pgb, TEXU_PGBM_SETPOS, val, 0);
-    texu_wnd_restore_curpos(udctl);
+    TexuRestoreCursorPosition(udctl);
   }
   
   if (notify->code == TEXU_MBN_ENDDIALOG)
@@ -196,22 +196,22 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   texu_tree_item *item = 0;
   
   menu = texu_menu_new(wnd, ID_MAINMENU);
-  item = texu_menu_add_menu(menu, "File", TEXU_TRUE);
+  item = texu_menu_add_menu(menu, " File ", TEXU_TRUE);
   texu_menu_add_item(menu, item, " New          ", 1, TEXU_TRUE);
   texu_menu_add_item(menu, item, " Open         ", 2, TEXU_TRUE);
   texu_menu_add_item(menu, item, " ------------ ", -1, TEXU_FALSE);
   texu_menu_add_item(menu, item, " Exit         ", 3, TEXU_TRUE);
 
-  item = texu_menu_add_menu(menu, "Edit", TEXU_TRUE);
+  item = texu_menu_add_menu(menu, " Edit ", TEXU_TRUE);
   texu_menu_add_item(menu, item, " Cut          ", 11, TEXU_TRUE);
   texu_menu_add_item(menu, item, " Copy         ", 12, TEXU_TRUE);
   texu_menu_add_item(menu, item, " Paste        ", 13, TEXU_TRUE);
   
-  item = texu_menu_add_menu(menu, "Search", TEXU_TRUE);
+  item = texu_menu_add_menu(menu, " Search ", TEXU_TRUE);
   texu_menu_add_item(menu, item, " Find         ", 21, TEXU_TRUE);
   texu_menu_add_item(menu, item, " Find Next    ", 22, TEXU_TRUE);
   
-  item = texu_menu_add_menu(menu, "View", TEXU_FALSE);
+  item = texu_menu_add_menu(menu, " View ", TEXU_FALSE);
   texu_menu_add_item(menu, item, " Vertical     ", 31, TEXU_TRUE);
   
   child = TexuCreateWindow(
@@ -655,7 +655,7 @@ MyWndProc2(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               2, /* id */
               0  /* user data */
               );
-      texu_wnd_enable(child, TEXU_FALSE);
+      TexuEnableWindow(child, TEXU_FALSE);
       
       child = TexuCreateWindow(
               "Number:",

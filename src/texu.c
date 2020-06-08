@@ -341,9 +341,23 @@ TexuAddKeyCommands(
 }
 
 
+void
+TexuEnableWindow(texu_wnd* wnd, texu_bool enable)
+{
+  texu_wnd_enable(wnd, enable);
+}
 
+void
+TexuSaveCursorPosition(texu_wnd* wnd)
+{
+  texu_wnd_save_curpos(wnd);
+}
 
-
+void
+TexuRestoreCursorPosition(texu_wnd* wnd)
+{
+  texu_wnd_restore_curpos(wnd);
+}
 
 
 #ifdef __cplusplus
