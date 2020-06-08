@@ -27,3 +27,6 @@ How to enable terminal supported 256 colors
 - $ TERM=xterm-256color
 
 
+<p align="center">
+  <img src="https://github.com/serameo/TexU/blob/master/samples/TexU_sample06.png" width="640" title="Sample1">
+</p>
