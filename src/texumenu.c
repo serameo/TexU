@@ -39,7 +39,7 @@ struct texu_menu
   texu_tree_item*   curbaritem;
   texu_tree_item*   curitem;
   texu_ui32         barid;
-  texu_i32          color;
+  texu_i32          normcolor;
   texu_i32          discolor;
   texu_i32          selcolor;
 };
@@ -59,14 +59,14 @@ struct texu_menu_item
 
 */
 
-texu_menu_item*   _texu_menu_item_new();
+texu_menu_item*   _texu_menu_item_new(const texu_char* text, texu_ui32 id, texu_bool enable);
 void              _texu_menu_item_del(texu_menu_item*);
 texu_tree_item*   _texu_menu_find_item(texu_menu*, texu_tree_item*, texu_ui32 id);
 
 
 
 texu_menu_item*
-_texu_menu_item_new(const texu_char* text, texu_ui32 id)
+_texu_menu_item_new(const texu_char* text, texu_ui32 id, texu_bool enable)
 {
   texu_menu_item* item = (texu_menu_item*)malloc(sizeof(texu_menu_item));
   if (item)
@@ -74,11 +74,11 @@ _texu_menu_item_new(const texu_char* text, texu_ui32 id)
     memset(item, 0, sizeof(texu_menu_item));
     strcpy(item->text, (text ? text : ""));
     item->id = id;
-    item->enable = TEXU_TRUE;
+    item->enable = enable;
     item->style = (text ? TEXU_MS_TEXT : TEXU_MS_BREAK);
-    item->color = TEXU_CIO_COLOR_BLACK_WHITE;
-    item->discolor = TEXU_CIO_COLOR_BLACK_WHITE;
-    item->selcolor = TEXU_CIO_COLOR_BLUE_WHITE;
+    item->normcolor = TEXU_CIO_COLOR_BLACK_CYAN;
+    item->discolor  = TEXU_CIO_COLOR_WHITE_CYAN;
+    item->selcolor  = TEXU_CIO_COLOR_CYAN_BLUE;
   }
   return item;
 }
@@ -147,9 +147,9 @@ _texu_menu_create_wndbar(texu_menu* menu, texu_wnd* owner, texu_ui32 id)
   attrs.enable     = TEXU_FALSE;
   attrs.visible    = TEXU_TRUE;
   attrs.text       = "";
-  attrs.normalcolor    = TEXU_CIO_COLOR_BLACK_WHITE;
-  attrs.disabledcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
-  attrs.focuscolor     = TEXU_CIO_COLOR_BLACK_YELLOW;
+  attrs.normalcolor    = TEXU_CIO_COLOR_BLACK_CYAN;
+  attrs.disabledcolor  = TEXU_CIO_COLOR_WHITE_CYAN;
+  attrs.focuscolor     = TEXU_CIO_COLOR_BLACK_CYAN;
   attrs.id         = id;
   attrs.clsname    = TEXU_MENU_CLASS;
   attrs.userdata   = menu;
@@ -193,9 +193,9 @@ texu_menu_new(texu_wnd* owner, texu_ui32 id)
     }
     menu->tree    = texu_tree_new();
     menu->wndbar  = wnd;
-    menu->color     = TEXU_CIO_COLOR_BLACK_WHITE;
-    menu->discolor  = TEXU_CIO_COLOR_BLACK_WHITE;
-    menu->selcolor  = TEXU_CIO_COLOR_BLUE_WHITE;
+    menu->normcolor = TEXU_CIO_COLOR_BLACK_CYAN;
+    menu->discolor  = TEXU_CIO_COLOR_WHITE_CYAN;
+    menu->selcolor  = TEXU_CIO_COLOR_CYAN_BLUE;
   }
   return menu;
 }
@@ -218,11 +218,11 @@ texu_menu_get_menubar(texu_menu* menu)
 }
 
 texu_tree_item*
-texu_menu_add_menu(texu_menu* menu, const texu_char* text)
+texu_menu_add_menu(texu_menu* menu, const texu_char* text, texu_bool enable)
 {
   texu_ui32 barid = menu->barid;
   ++menu->barid;
-  return texu_menu_add_item(menu, 0, text, barid);
+  return texu_menu_add_item(menu, 0, text, barid, enable);
 }
 
 texu_tree_item*
@@ -243,10 +243,10 @@ texu_menu_set_curmenu(texu_menu* menu, texu_tree_item* baritem)
 
 
 texu_tree_item*
-texu_menu_add_item(texu_menu* menu, texu_tree_item* baritem, const texu_char* text, texu_ui32 id)
+texu_menu_add_item(texu_menu* menu, texu_tree_item* baritem, const texu_char* text, texu_ui32 id, texu_bool enable)
 {
   texu_tree_item* treeitem = 0;
-  texu_menu_item* item = _texu_menu_item_new(text, id);
+  texu_menu_item* item = _texu_menu_item_new(text, id, enable);
   
   treeitem = texu_tree_add_item(menu->tree, baritem, (texu_i64)item);
   if (!(treeitem))
@@ -287,14 +287,14 @@ _TexuMenuProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
   texu_i32 color = TEXU_CIO_COLOR_BLACK_WHITE;
-  texu_i32 normcolor = TEXU_CIO_COLOR_BLACK_WHITE;
-  texu_i32 discolor = TEXU_CIO_COLOR_BLACK_WHITE;
-  texu_i32 selcolor = TEXU_CIO_COLOR_WHITE_BLUE;
   texu_tree_item* treeitem = 0;
   texu_menu* menu = (texu_menu*)texu_wnd_get_userdata(wnd);
   texu_char buf[TEXU_MAX_WNDTEXT+1];
   texu_menu_item* menuitem = 0;
   texu_i32 len = 0;
+  texu_i32 normcolor = menu->normcolor;
+  texu_i32 discolor = menu->discolor;
+  texu_i32 selcolor = menu->selcolor;
   
   /*draw menu bar*/
   if (!(texu_wnd_is_visible(wnd)))
@@ -362,9 +362,27 @@ _TexuMenuWndProc_DrawPopupMenu(
   texu_i32 y,
   texu_i32 x,
   texu_i32 normcolor,
-  texu_i32 selcolor);
+  texu_i32 selcolor,
+  texu_i32 discolor);
+  
 texu_i32
 _TexuMenuProc_GetMaxLength(texu_tree_item* baritem);
+
+texu_tree_item*
+_TexuMenuWndProc_GetNextMenuItem(texu_tree_item* curitem);
+
+texu_tree_item*
+_TexuMenuWndProc_GetPrevMenuItem(texu_tree_item* curitem);
+
+
+texu_tree_item*
+_TexuMenuWndProc_GetNextMenuItemEnabled(texu_tree_item* parentitem, texu_tree_item* curitem);
+
+texu_tree_item*
+_TexuMenuWndProc_GetPrevMenuItemEnabled(texu_tree_item* parentitem, texu_tree_item* curitem);
+
+
+
 
 
 void
@@ -387,12 +405,130 @@ _TexuMenuWndProc_OnDestroy(texu_wnd* wnd)
   texu_wnd_invalidate(topwnd);
 }
 
+texu_tree_item*
+_TexuMenuWndProc_GetNextMenuItem(texu_tree_item* curitem)
+{
+  texu_tree_item* item = curitem;
+  texu_menu_item* menuitem = 0;
+  if (item)
+  {
+    item = item->next;
+  }
+  while (item)
+  {
+    menuitem = (texu_menu_item*)item->data;
+    if (menuitem->enable)
+    {
+      return item;
+    }
+    item = item->next;
+  }
+  return curitem;
+}
+
+
+texu_tree_item*
+_TexuMenuWndProc_GetPrevMenuItem(texu_tree_item* curitem)
+{
+  texu_tree_item* item = curitem;
+  texu_menu_item* menuitem = 0;
+  if (item)
+  {
+    item = item->prev;
+  }
+  while (item)
+  {
+    menuitem = (texu_menu_item*)item->data;
+    if (menuitem->enable)
+    {
+      return item;
+    }
+    item = item->prev;
+  }
+  return curitem;
+}
+
+texu_tree_item*
+_TexuMenuWndProc_GetPrevMenuItemEnabled(texu_tree_item* parentitem, texu_tree_item* curitem)
+{
+  texu_tree_item* item = 0;
+  texu_menu_item* menuitem = 0;
+  if (curitem)
+  {
+    item = _TexuMenuWndProc_GetPrevMenuItem(curitem);
+    menuitem = (texu_menu_item*)item->data;
+    if (!(menuitem->enable) || item == curitem)
+    {
+      menuitem = (texu_menu_item*)parentitem->lastchild->data;
+      if (!(menuitem->enable))
+      {
+        item = _TexuMenuWndProc_GetPrevMenuItem(parentitem->lastchild);
+      }
+      else
+      {
+        item = parentitem->lastchild;
+      }
+    }
+  }
+  else
+  {
+    menuitem = (texu_menu_item*)parentitem->lastchild->data;
+    if (!(menuitem->enable))
+    {
+      item = _TexuMenuWndProc_GetPrevMenuItem(parentitem->lastchild);
+    }
+    else
+    {
+      item = parentitem->lastchild;
+    }
+  }
+  return item;
+}
+
+texu_tree_item*
+_TexuMenuWndProc_GetNextMenuItemEnabled(texu_tree_item* parentitem, texu_tree_item* curitem)
+{
+  texu_tree_item* item = 0;
+  texu_menu_item* menuitem = 0;
+  if (curitem)
+  {
+    item = _TexuMenuWndProc_GetNextMenuItem(curitem);
+    menuitem = (texu_menu_item*)item->data;
+    if (!(menuitem->enable) || item == curitem)
+    {
+      menuitem = (texu_menu_item*)parentitem->firstchild->data;
+      if (!(menuitem->enable))
+      {
+        item = _TexuMenuWndProc_GetNextMenuItem(parentitem->firstchild);
+      }
+      else
+      {
+        item = parentitem->firstchild;
+      }
+    }
+  }
+  else
+  {
+    menuitem = (texu_menu_item*)parentitem->firstchild->data;
+    if (!(menuitem->enable))
+    {
+      item = _TexuMenuWndProc_GetNextMenuItem(parentitem->firstchild);
+    }
+    else
+    {
+      item = parentitem->firstchild;
+    }
+  }
+  return item;
+}
+
 void
 _TexuMenuWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
   texu_menu* menu = (texu_menu*)texu_wnd_get_userdata(wnd);
   texu_tree_item* baritem = menu->curbaritem;
   texu_tree_item* curitem = menu->curitem;
+  texu_tree_item* root = texu_tree_get_root(menu->tree);
   texu_menu_item* menuitem = (curitem ? (texu_menu_item*)curitem->data : 0);
   
   if (TEXU_KEY_SELMENU == ch) /*pressed enter*/
@@ -408,58 +544,34 @@ _TexuMenuWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
     return;
   }
   
+  if (!(baritem))
+  {
+    return;
+  }
   switch(ch)
   {
     case KEY_UP:
     {
-      if (curitem && curitem->prev)
-      {
-        curitem = curitem->prev;
-      }
-      else if (!curitem && baritem)
-      {
-        curitem = baritem->firstchild;
-      }
+      curitem = _TexuMenuWndProc_GetPrevMenuItemEnabled(baritem, curitem);
       menu->curitem = curitem;
       break;
     }
     case KEY_DOWN:
     {
-      if (curitem && curitem->next)
-      {
-        curitem = curitem->next;
-      }
-      else if (!curitem && baritem)
-      {
-        curitem = baritem->firstchild;
-      }
+      curitem = _TexuMenuWndProc_GetNextMenuItemEnabled(baritem, curitem);
       menu->curitem = curitem;
       break;
     }
     case KEY_LEFT:
     {
-      if (baritem && baritem->prev)
-      {
-        baritem = baritem->prev;
-      }
-      else if (!baritem)
-      {
-        baritem = texu_menu_get_menu(menu, 0);
-      }
+      baritem = _TexuMenuWndProc_GetPrevMenuItemEnabled(root, baritem);
       menu->curbaritem = baritem;
       menu->curitem = baritem->firstchild;
       break;
     }
     case KEY_RIGHT:
     {
-      if (baritem && baritem->next)
-      {
-        baritem = baritem->next;
-      }
-      else if (!baritem)
-      {
-        baritem = texu_menu_get_menu(menu, 0);
-      }
+      baritem = _TexuMenuWndProc_GetNextMenuItemEnabled(root, baritem);
       menu->curbaritem = baritem;
       menu->curitem = baritem->firstchild;
       break;
@@ -503,7 +615,8 @@ _TexuMenuWndProc_DrawPopupMenu(
   texu_i32 y,
   texu_i32 x,
   texu_i32 normcolor,
-  texu_i32 selcolor)
+  texu_i32 selcolor,
+  texu_i32 discolor)
 {
   texu_tree_item* item = baritem->firstchild;
   texu_menu_item* menuitem = 0;
@@ -515,12 +628,16 @@ _TexuMenuWndProc_DrawPopupMenu(
   {
     menuitem = (texu_menu_item*)item->data;
 
-    texu_printf_alignment(buf, menuitem->text, maxlen+2, TEXU_ALIGN_LEFT);
+    texu_printf_alignment(buf, menuitem->text, maxlen, TEXU_ALIGN_LEFT);
     
     color = normcolor;
     if (item == menu->curitem)
     {
       color = selcolor;
+    }
+    if (!(menuitem->enable))
+    {
+      color = discolor;
     }
     texu_cio_putstr_attr(dc, y, x, buf,
       texu_cio_get_color(dc, color));
@@ -536,14 +653,14 @@ _TexuMenuWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
   texu_i32 color = TEXU_CIO_COLOR_BLACK_WHITE;
-  texu_i32 normcolor = TEXU_CIO_COLOR_BLACK_WHITE;
-  texu_i32 discolor = TEXU_CIO_COLOR_BLACK_WHITE;
-  texu_i32 selcolor = TEXU_CIO_COLOR_WHITE_BLUE;
   texu_tree_item* treeitem = 0;
   texu_menu_item* baritem = 0;
   texu_menu* menu = (texu_menu*)texu_wnd_get_userdata(wnd);
   texu_char buf[TEXU_MAX_WNDTEXT+1];
   texu_i32 len = 0;
+  texu_i32 normcolor = menu->normcolor;
+  texu_i32 discolor = menu->discolor;
+  texu_i32 selcolor = menu->selcolor;
   
   /*draw menu bar*/
   if (!(texu_wnd_is_visible(wnd)))
@@ -572,7 +689,16 @@ _TexuMenuWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
       if (treeitem == menu->curbaritem)
       {
         color = selcolor;
-        _TexuMenuWndProc_DrawPopupMenu(wnd, dc, menu, treeitem, y+1, x, normcolor, selcolor);
+        _TexuMenuWndProc_DrawPopupMenu(
+          wnd,
+          dc,
+          menu,
+          treeitem,
+          y+1,
+          x,
+          normcolor,
+          selcolor,
+          discolor);
       }
     }
     else

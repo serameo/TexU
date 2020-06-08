@@ -196,21 +196,23 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   texu_tree_item *item = 0;
   
   menu = texu_menu_new(wnd, ID_MAINMENU);
-  item = texu_menu_add_menu(menu, "File");
-  texu_menu_add_item(menu, item, " New   ", 1);
-  texu_menu_add_item(menu, item, " Open  ", 2);
-  texu_menu_add_item(menu, item, " Exit  ", 3);
+  item = texu_menu_add_menu(menu, "File", TEXU_TRUE);
+  texu_menu_add_item(menu, item, " New          ", 1, TEXU_TRUE);
+  texu_menu_add_item(menu, item, " Open         ", 2, TEXU_TRUE);
+  texu_menu_add_item(menu, item, " ------------ ", -1, TEXU_FALSE);
+  texu_menu_add_item(menu, item, " Exit         ", 3, TEXU_TRUE);
 
-  item = texu_menu_add_menu(menu, "Edit");
-  texu_menu_add_item(menu, item, " Cut   ", 11);
-  texu_menu_add_item(menu, item, " Copy  ", 12);
-  texu_menu_add_item(menu, item, " Paste ", 13);
+  item = texu_menu_add_menu(menu, "Edit", TEXU_TRUE);
+  texu_menu_add_item(menu, item, " Cut          ", 11, TEXU_TRUE);
+  texu_menu_add_item(menu, item, " Copy         ", 12, TEXU_TRUE);
+  texu_menu_add_item(menu, item, " Paste        ", 13, TEXU_TRUE);
   
-  item = texu_menu_add_menu(menu, "Search");
-  texu_menu_add_item(menu, item, " Find      ", 21);
-  texu_menu_add_item(menu, item, " Find Next ", 22);
+  item = texu_menu_add_menu(menu, "Search", TEXU_TRUE);
+  texu_menu_add_item(menu, item, " Find         ", 21, TEXU_TRUE);
+  texu_menu_add_item(menu, item, " Find Next    ", 22, TEXU_TRUE);
   
-  item = texu_menu_add_menu(menu, "View");
+  item = texu_menu_add_menu(menu, "View", TEXU_FALSE);
+  texu_menu_add_item(menu, item, " Vertical     ", 31, TEXU_TRUE);
   
   child = TexuCreateWindow(
           "Text:",
