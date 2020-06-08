@@ -235,10 +235,15 @@
 
 
 
+#define TEXU_KEY_SELMENU               10
 
 #define TEXU_KEY_NEXTWND               10
 #define TEXU_KEY_PREVWND               KEY_BTAB
 #define TEXU_KEY_ESCAPE                27
+
+#define TEXU_KEYPRESSED_ALT            1
+#define TEXU_KEYPRESSED_CTRL           2
+
 
 
 #define TEXU_ENV_MAX_FRAMES            4096
@@ -256,6 +261,7 @@
 #define TEXU_PROGRESSBAR_CLASS         "TexuProgressBarClass"
 
 #define TEXU_MENU_CLASS               "TexuMenuClass"
+#define TEXU_MENUWND_CLASS            "TexuMenuWndClass"
 
 
 

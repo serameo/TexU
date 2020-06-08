@@ -147,7 +147,7 @@ TexuGetWindowItem(
 );
 
 void
-TexuGetWindowText(
+TexuSetWindowText(
   texu_wnd*         wnd,
   const texu_char*  text
 );
@@ -163,7 +163,8 @@ void
 TexuAddKeyCommands(
   texu_wnd*   wnd,
   texu_i32    key,
-  texu_ui32   cmd
+  texu_ui32   cmd,
+  texu_i32    alt
 );
 
 

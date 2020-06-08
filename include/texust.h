@@ -65,6 +65,7 @@ typedef struct texu_wnd_notify texu_wnd_notify;
 struct texu_wnd_keycmd
 {
   texu_i32        key;
+  texu_i32        alt;
   texu_ui32       cmd;
 };
 typedef struct texu_wnd_keycmd texu_wnd_keycmd;

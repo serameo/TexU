@@ -40,8 +40,13 @@ texu_tree_item*   texu_menu_add_item(texu_menu*, texu_tree_item*, const texu_cha
 
 
 texu_tree_item*   texu_menu_find_item(texu_menu*, texu_ui32);
-texu_menu_item*   texu_menu_get_menu(texu_menu*, texu_ui32);
-texu_menu_item*   texu_menu_get_menuitem(texu_menu*, texu_tree_item*, texu_ui32);
+texu_tree_item*   texu_menu_get_menu(texu_menu*, texu_ui32);
+texu_tree_item*   texu_menu_set_curmenu(texu_menu*, texu_tree_item*);
+
+texu_tree_item*   texu_menu_get_menuitem(texu_menu*, texu_tree_item*, texu_ui32);
+texu_tree_item*   texu_menu_set_curmenuitem(texu_menu*, texu_tree_item*);
+
+
 void              texu_menu_enable_item(texu_menu*, texu_menu_item*, texu_bool);
 
 

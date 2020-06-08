@@ -49,6 +49,9 @@ void              texu_env_exit(texu_env*);
 texu_status       texu_env_save_curpos(texu_env* env, texu_i32 ypos, texu_i32 xpos);
 texu_status       texu_env_restore_curpos(texu_env*);
 
+void              texu_env_save_screen(texu_env* env);
+void              texu_env_restore_screen(texu_env* env);
+
 /*
 # TexU window object
 #
@@ -73,8 +76,8 @@ texu_status       texu_wnd_remove_child(texu_wnd*, texu_wnd*);
 texu_wnd*         texu_wnd_find_child(texu_wnd*, texu_ui32);
 texu_wnd*         texu_wnd_is_window(texu_wnd*);
 
-texu_status       texu_wnd_add_keycmd(texu_wnd*, texu_i32, texu_ui32);
-texu_wnd_keycmd*  texu_wnd_find_keycmd(texu_wnd*, texu_i32);
+texu_status       texu_wnd_add_keycmd(texu_wnd*, texu_i32, texu_ui32, texu_i32);
+texu_wnd_keycmd*  texu_wnd_find_keycmd(texu_wnd*, texu_i32, texu_i32);
 
 texu_i64          texu_wnd_send_msg(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          texu_wnd_invalidate(texu_wnd*);
@@ -126,7 +129,7 @@ void              texu_wnd_get_rect(texu_wnd*, texu_rect*);
 texu_status       texu_wnd_save_curpos(texu_wnd*);
 texu_status       texu_wnd_restore_curpos(texu_wnd*);
 
-
+texu_menu*        texu_wnd_set_menu(texu_wnd*, texu_menu*);
 
 
 
