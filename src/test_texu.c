@@ -79,7 +79,7 @@ int main()
 void _MyWndProc_OnHelp(texu_wnd* wnd)
 {
   texu_wnd* ctl = TexuGetWindowItem(wnd, IDC_STATUSBAR);
-  TexuGetWindowText(ctl, "Pressed F1 to help");
+  TexuSetWindowText(ctl, "Pressed F1 to help");
 }
 
 void
@@ -100,7 +100,7 @@ void _MyWndProc_OnAdd(texu_wnd* wnd)
   texu_wnd* ctl = TexuGetWindowItem(wnd, IDC_STATUSBAR);
   texu_wnd* newwnd = 0;
   
-  TexuGetWindowText(ctl, "Pressed F2 to add");
+  TexuSetWindowText(ctl, "Pressed F2 to add");
   
   newwnd = TexuCreateWindow(
           "Test TexU App - window 2",
@@ -138,7 +138,7 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
   
   memset(text, 0, sizeof(text));
   TexuSendMessage(lb, TEXU_LBM_GETITEMTEXT, (texu_i64)lbntf->index, (texu_i64)text);
-  TexuGetWindowText(status, text);
+  TexuSetWindowText(status, text);
   
   if (notify->id == IDC_UPDOWN)
   {
@@ -168,7 +168,7 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
         strcpy(text, "PRESSED NO");
         break;
     }
-    TexuGetWindowText(status, text);
+    TexuSetWindowText(status, text);
   }
 }
 
@@ -197,8 +197,19 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   
   menu = texu_menu_new(wnd, ID_MAINMENU);
   item = texu_menu_add_menu(menu, "File");
+  texu_menu_add_item(menu, item, " New   ", 1);
+  texu_menu_add_item(menu, item, " Open  ", 2);
+  texu_menu_add_item(menu, item, " Exit  ", 3);
+
   item = texu_menu_add_menu(menu, "Edit");
+  texu_menu_add_item(menu, item, " Cut   ", 11);
+  texu_menu_add_item(menu, item, " Copy  ", 12);
+  texu_menu_add_item(menu, item, " Paste ", 13);
+  
   item = texu_menu_add_menu(menu, "Search");
+  texu_menu_add_item(menu, item, " Find      ", 21);
+  texu_menu_add_item(menu, item, " Find Next ", 22);
+  
   item = texu_menu_add_menu(menu, "View");
   
   child = TexuCreateWindow(
@@ -447,10 +458,10 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
           );
   TexuSetColor(child, TEXU_CIO_COLOR_WHITE_RED, TEXU_CIO_COLOR_WHITE_RED);
   
-  TexuAddKeyCommands(wnd, KEY_F(1), ID_HELP);
-  TexuAddKeyCommands(wnd, KEY_F(2), ID_ADD);
-  TexuAddKeyCommands(wnd, KEY_F(3), ID_DELETE);
-  TexuAddKeyCommands(wnd, KEY_F(4), ID_MSGBOX);
+  TexuAddKeyCommands(wnd, KEY_F(1), ID_HELP, 0);
+  TexuAddKeyCommands(wnd, KEY_F(2), ID_ADD, 0);
+  TexuAddKeyCommands(wnd, KEY_F(3), ID_DELETE, 0);
+  TexuAddKeyCommands(wnd, KEY_F(4), ID_MSGBOX, 0);
 
   child = TexuCreateWindow(
           "",
@@ -477,6 +488,16 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   TexuSendMessage(child, TEXU_SBM_SETALIGN, 2, TEXU_ALIGN_RIGHT);
   
   return TEXU_OK;
+}
+
+void _MyWndProc_OnCommand(texu_wnd* wnd, texu_i32 id)
+{
+  texu_wnd* status = TexuGetWindowItem(wnd, IDC_STATUSBAR);
+  texu_char text[TEXU_MAX_WNDTEXT+1];
+  
+  memset(text, 0, sizeof(text));
+  sprintf(text, "enter id: %d from menu", id);
+  TexuSetWindowText(status, text);
 }
 
 texu_i64
@@ -513,6 +534,7 @@ MyWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
           _MyWndProc_OnMsgBox(wnd);
           break;
         default:
+          _MyWndProc_OnCommand(wnd, param1);
           break;
       }
       break;
@@ -534,7 +556,7 @@ void _MyWndProc2_OnAdd(texu_wnd* wnd)
   texu_wnd* ctl = TexuGetWindowItem(wnd, IDC_STATUSBAR);
   texu_wnd* newwnd = 0;
   
-  TexuGetWindowText(ctl, "Pressed F2 to add");
+  TexuSetWindowText(ctl, "Pressed F2 to add");
   
   newwnd = TexuCreateWindow(
           "Test TexU App - window 3",
@@ -557,7 +579,7 @@ void _MyWndProc2_OnAdd(texu_wnd* wnd)
 void _MyWndProc2_OnHelp(texu_wnd* wnd)
 {
   texu_wnd* ctl = TexuGetWindowItem(wnd, IDC_STATUSBAR);
-  TexuGetWindowText(ctl, "Pressed F12 to exit");
+  TexuSetWindowText(ctl, "Pressed F12 to exit");
 }
 
 void _MyWndProc2_OnExit(texu_wnd* wnd)
@@ -803,9 +825,9 @@ MyWndProc2(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               );
       TexuSetColor(child, TEXU_CIO_COLOR_WHITE_RED, TEXU_CIO_COLOR_WHITE_RED);
       
-      TexuAddKeyCommands(wnd, KEY_F(1), ID_HELP);
-      TexuAddKeyCommands(wnd, KEY_F(2), ID_ADD);
-      TexuAddKeyCommands(wnd, KEY_F(3), ID_DELETE);
+      TexuAddKeyCommands(wnd, KEY_F(1), ID_HELP, 0);
+      TexuAddKeyCommands(wnd, KEY_F(2), ID_ADD, 0);
+      TexuAddKeyCommands(wnd, KEY_F(3), ID_DELETE, 0);
       
       child = TexuCreateWindow(
               "This is the second window",
@@ -838,7 +860,7 @@ void _MyWndProc3_OnAdd(texu_wnd* wnd)
   texu_wnd* ctl = TexuGetWindowItem(wnd, IDC_STATUSBAR);
   texu_wnd* newwnd = 0;
   
-  TexuGetWindowText(ctl, "Pressed F2 to add");
+  TexuSetWindowText(ctl, "Pressed F2 to add");
   
   newwnd = TexuCreateWindow(
           "Test TexU App - window 4",
@@ -1000,9 +1022,9 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               );
       TexuSetColor(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
       
-      TexuAddKeyCommands(wnd, KEY_F(1), ID_HELP);
-      TexuAddKeyCommands(wnd, KEY_F(2), ID_ADD);
-      TexuAddKeyCommands(wnd, KEY_F(3), ID_DELETE);
+      TexuAddKeyCommands(wnd, KEY_F(1), ID_HELP, 0);
+      TexuAddKeyCommands(wnd, KEY_F(2), ID_ADD, 0);
+      TexuAddKeyCommands(wnd, KEY_F(3), ID_DELETE, 0);
       
       child = TexuCreateWindow(
               "This is the third window",
@@ -1122,8 +1144,8 @@ MyWndProc4(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               );
       TexuSetColor(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
       
-      TexuAddKeyCommands(wnd, KEY_F(1), ID_HELP);
-      TexuAddKeyCommands(wnd, KEY_F(3), ID_DELETE);
+      TexuAddKeyCommands(wnd, KEY_F(1), ID_HELP, 0);
+      TexuAddKeyCommands(wnd, KEY_F(3), ID_DELETE, 0);
       
       child = TexuCreateWindow(
               "This is the third window",

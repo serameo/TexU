@@ -196,7 +196,7 @@ _TexuMsgBoxProc_CreateButtons(
     return TEXU_ERROR;
   }
   
-  texu_wnd_add_keycmd(wnd, KEY_F(cmd), id);
+  texu_wnd_add_keycmd(wnd, KEY_F(cmd), id, 0);
   return rc;
 }
 

@@ -23,6 +23,8 @@ extern "C" {
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
+#define TEXU_ENV_SCRFILE   "./.texuenv"
+
 struct texu_env
 {
   texu_stack*       frames;  /* hold window frames */
@@ -32,6 +34,7 @@ struct texu_env
   texu_bool         exit;
   texu_i32          ypos;   /* cursor position */
   texu_i32          xpos;   /* cursor position */
+  FILE*             scrfp;  /* to write/read screen */
 };
 struct texu_env_wndcls
 {
@@ -59,12 +62,15 @@ texu_i64          _TexuProgressBarProc(texu_wnd*, texu_ui32, texu_i64, texu_i64)
 
 /* menu texumenu.c */
 texu_i64          _TexuMenuProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuMenuWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 
 
 
 void              _texu_env_init_cls(texu_env*);
 texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
+FILE*             _texu_env_init_screen(texu_env* env);
+
 
 void
 _texu_env_init_cls(texu_env* env)
@@ -82,8 +88,16 @@ _texu_env_init_cls(texu_env* env)
   texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);
   
   texu_env_register_cls(env, TEXU_MENU_CLASS,         _TexuMenuProc);
+  texu_env_register_cls(env, TEXU_MENUWND_CLASS,      _TexuMenuWndProc);
+  
 }
 
+FILE*
+_texu_env_init_screen(texu_env* env)
+{
+  FILE* fp = fopen(TEXU_ENV_SCRFILE, "w");
+  return fp;
+}
 
 texu_wndproc
 _texu_env_find_wndproc(texu_env* env, texu_char* clsname)
@@ -187,6 +201,8 @@ texu_env_new()
     /* console input/output */
     env->cio = texu_cio_new();
     texu_cio_init(env->cio);
+    
+    env->scrfp = _texu_env_init_screen(env);
 
     /* window classes */
     env->wndcls = texu_list_new();
@@ -217,6 +233,7 @@ texu_env_del(texu_env* env)
 {
   if (env)
   {
+    fclose(env->scrfp);
     texu_list_del(env->wndcls);
     texu_stack_del(env->frames);
     texu_wnd_del(env->desktop);
@@ -230,32 +247,44 @@ texu_status
 texu_env_run(texu_env* env)
 {
   texu_i32 ch = 0;
+  texu_i32 ch2 = 0;
   texu_wnd* activewnd = 0;
   texu_i32 altpressed = 0;
-  /*texu_i32 ctlpressed = 0;*/
+  texu_i32 ctlpressed = 0;
+  texu_char* keypressed;
 
   while (!(env->exit))
   {
     altpressed = 0;
     ch = texu_cio_getch(env->cio);
-    if (27 == ch)
+    keypressed = keyname(ch);
+    if (strlen(keypressed) > 1)
     {
-      altpressed = 1;
-      texu_cio_nodelay(env->cio, 1);
-      ch = texu_cio_getch(env->cio);
-      if (-1 == ch)
+      if (strcmp("^[", keypressed) == 0)
       {
-        texu_cio_nodelay(env->cio, 0);
-        /* enter menu if it is available */
-        continue;
+        texu_cio_nodelay(env->cio, TEXU_TRUE);
+        ch2 = texu_cio_getch(env->cio);
+        texu_cio_nodelay(env->cio, TEXU_FALSE);
+        if (-1 != ch2)
+        {
+          altpressed = 1;
+          ch = ch2;
+        }
+      }
+      if ('M' == keypressed[0])
+      {
+        ctlpressed = 2;
+        ch = keypressed[1];
       }
     }
+
     activewnd = (texu_wnd*)texu_stack_top(env->frames);
     if (!activewnd)
     {
       break;
     }
-    texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, (texu_i64)altpressed);
+    texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch,
+      (texu_i64)(altpressed|ctlpressed));
   }
   return TEXU_OK;
 }
@@ -339,6 +368,20 @@ texu_env_restore_curpos(texu_env* env)
   return rc;
 }
 
+
+void
+texu_env_save_screen(texu_env* env)
+{
+  texu_cio_save_screen(env->cio, env->scrfp);
+}
+
+
+void
+texu_env_restore_screen(texu_env* env)
+{
+  texu_cio_restore_screen(env->cio, env->scrfp);
+}
+
 /* cursor position */
 /*
 # TexU window object
@@ -403,8 +446,15 @@ void               _TexuDefWndProc_OnCommand(texu_wnd*, texu_ui32);
 void               _TexuDefWndProc_OnNotify(texu_wnd*, texu_wnd_notify*);
 texu_menu*         _TexuDefWndProc_OnSetMenu(texu_wnd*, texu_menu*);
 void               _TexuDefWndProc_OnRedrawMenu(texu_wnd*);
-void               _TexuDefWndProc_OnEnterMenu(texu_wnd*);
+void               _TexuDefWndProc_OnEnterMenu(texu_wnd*, texu_i32, texu_i32);
 void               _TexuDefWndProc_OnLeaveMenu(texu_wnd*);
+
+texu_wnd*
+_TexuDefWndProc_OpenMenuWnd(
+  texu_wnd*  owner,
+  texu_menu*  menu
+);
+
 
 
 texu_menu*
@@ -421,14 +471,95 @@ _TexuDefWndProc_OnRedrawMenu(texu_wnd* wnd)
   texu_wnd_invalidate(texu_menu_get_menubar(wnd->menu));
 }
 
-void
-_TexuDefWndProc_OnEnterMenu(texu_wnd* wnd)
+
+
+
+texu_wnd*
+_TexuDefWndProc_OpenMenuWnd(
+  texu_wnd*  owner,
+  texu_menu*  menu
+)
 {
+  texu_wnd* wnd = 0;
+  texu_wnd_attrs attrs;
+  texu_status rc = TEXU_OK;
+  texu_env* env = texu_wnd_get_env(owner);
+  texu_wnd* desktop = texu_env_get_desktop(env);
+
+
+  wnd = texu_wnd_new(env);
+  if (!wnd)
+  {
+    return 0;
+  }
+  memset(&attrs, 0, sizeof(attrs));
+  attrs.y          = 0;
+  attrs.x          = 0;
+  attrs.height     = 1;
+  attrs.width      = COLS;
+  attrs.enable     = TEXU_TRUE;
+  attrs.visible    = TEXU_TRUE;
+  attrs.text       = "";
+  attrs.normalcolor    = TEXU_CIO_COLOR_BLACK_WHITE;
+  attrs.disabledcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
+  attrs.id         = -1;
+  attrs.clsname    = TEXU_MENUWND_CLASS;
+  attrs.userdata   = menu;
+  attrs.style      = 0;
+  attrs.exstyle    = 0;
+
+  rc = texu_wnd_create(wnd, desktop, &attrs);
+
+  if (rc != TEXU_OK)
+  {
+    texu_wnd_del(wnd);
+    return 0;
+  }
+  
+  texu_wnd_send_msg(wnd, TEXU_MBM_SETOWNER, (texu_i64)owner, 0);
+  
+  texu_env_push_wnd(env, wnd);
+  
+  texu_wnd_visible(wnd, TEXU_TRUE);
+  texu_wnd_invalidate(wnd);
+  
+  return wnd;
+}
+
+
+
+void
+_TexuDefWndProc_OnEnterMenu(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
+{
+  /*open the new window to draw menu*/
+  texu_i32 selmenu = 0;
+  texu_tree_item* curitem = 0;
+  /*
+  texu_env_save_screen(wnd->env);
+  */
+  selmenu = ch - '0' - 1;
+  curitem = texu_menu_get_menu(wnd->menu, selmenu);
+  if (!(curitem))
+  {
+    curitem = texu_menu_get_menu(wnd->menu, 0);
+    if (!(curitem))
+    {
+      return;
+    }
+  }
+  texu_menu_set_curmenu(wnd->menu, curitem);
+  texu_menu_set_curmenuitem(wnd->menu, curitem->firstchild);
+  _TexuDefWndProc_OpenMenuWnd(wnd, wnd->menu);
 }
 
 void
 _TexuDefWndProc_OnLeaveMenu(texu_wnd* wnd)
 {
+  /*open the new window to draw menu*/
+  /*
+  texu_env_restore_screen(wnd->env);
+  */
+  texu_wnd_send_msg(wnd, TEXU_WM_REDRAWMENU, 0, 0);
 }
 
 void
@@ -520,6 +651,11 @@ _TexuDefWndProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
 void
 _TexuDefWndProc_OnDestroy(texu_wnd* wnd)
 {
+  texu_menu* menu = wnd->menu;
+  if (menu)
+  {
+    texu_menu_del(menu);
+  }
 }
 
 void
@@ -593,15 +729,25 @@ _TexuDefWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
   texu_i32 width = 0;
   texu_cio* cio = 0;
   texu_wnd_keycmd* keycmd = 0;
+  texu_menu* menu = 0;
 
-  keycmd = texu_wnd_find_keycmd(wnd, ch);
+  keycmd = texu_wnd_find_keycmd(wnd, ch, alt);
   if (keycmd && parent == desktop)
   {
     /* if there are any hotkey registered */
-    return texu_wnd_send_msg(wnd, TEXU_WM_COMMAND, (texu_i64)keycmd->cmd, 0);
+    return texu_wnd_send_msg(wnd, TEXU_WM_COMMAND, (texu_i64)keycmd->cmd, alt);
   }
   if (parent == desktop)
   {
+    if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
+    {
+      menu = wnd->menu;
+      if (menu)
+      {
+        rc = texu_wnd_send_msg(wnd, TEXU_WM_ENTERMENU, ch, alt);
+        return 0;
+      }
+    }
     if (activewnd && activewnd != wnd)
     {
       if (ch == TEXU_KEY_NEXTWND)
@@ -635,7 +781,7 @@ _TexuDefWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
       }
       else
       {
-        return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+        return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
       }
     } /* child window is active */
     else
@@ -644,7 +790,7 @@ _TexuDefWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
       if (activewnd)
       {
         activewnd = texu_wnd_get_activechild(activewnd);
-        return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+        return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
       }
     }
   }
@@ -652,7 +798,7 @@ _TexuDefWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
   {
     if (activewnd)
     {
-      return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+      return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
     }
   }
   return 0;
@@ -673,7 +819,7 @@ TexuDefWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       return 0;
 
     case TEXU_WM_ENTERMENU:
-      _TexuDefWndProc_OnEnterMenu(wnd);
+      _TexuDefWndProc_OnEnterMenu(wnd, (texu_i32)param1, (texu_i32)param2);
       return 0;
 
     case TEXU_WM_LEAVEMENU:
@@ -740,7 +886,7 @@ TexuDefWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
 texu_list_item*         _texu_wnd_find_child(texu_wnd* wnd, texu_ui32 id);
 texu_wnd*               _texu_wnd_is_window(texu_wnd* parent, texu_wnd* wnd);
-texu_list_item*         _texu_wnd_find_keycmd(texu_wnd* wnd, texu_i32 key);
+texu_list_item*         _texu_wnd_find_keycmd(texu_wnd* wnd, texu_i32 key, texu_i32 alt);
 
 texu_wnd*
 _texu_wnd_is_window(texu_wnd* parent, texu_wnd* wnd)
@@ -1243,7 +1389,7 @@ texu_wnd_get_exstyle(texu_wnd* wnd)
 
 
 texu_list_item*
-_texu_wnd_find_keycmd(texu_wnd* wnd, texu_i32 key)
+_texu_wnd_find_keycmd(texu_wnd* wnd, texu_i32 key, texu_i32 alt)
 {
   texu_wnd_keycmd *keycmd = 0;
   texu_list_item* item = texu_list_first(wnd->keycmds);
@@ -1251,7 +1397,7 @@ _texu_wnd_find_keycmd(texu_wnd* wnd, texu_i32 key)
   while (item)
   {
     keycmd = (texu_wnd_keycmd*)item->data;
-    if (keycmd->key == key)
+    if (keycmd->key == key && keycmd->alt == alt)
     {
       return item;
     }
@@ -1261,19 +1407,20 @@ _texu_wnd_find_keycmd(texu_wnd* wnd, texu_i32 key)
 }
 
 texu_wnd_keycmd*
-texu_wnd_find_keycmd(texu_wnd* wnd, texu_i32 key)
+texu_wnd_find_keycmd(texu_wnd* wnd, texu_i32 key, texu_i32 alt)
 {
-  texu_list_item* item = _texu_wnd_find_keycmd(wnd, key);
+  texu_list_item* item = _texu_wnd_find_keycmd(wnd, key, alt);
   return (item ? (texu_wnd_keycmd*)item->data : 0);
 }
 
 texu_status
-texu_wnd_add_keycmd(texu_wnd* wnd, texu_i32 key, texu_ui32 cmd)
+texu_wnd_add_keycmd(texu_wnd* wnd, texu_i32 key, texu_ui32 cmd, texu_i32 alt)
 {
   texu_status rc = TEXU_OK;
   texu_wnd_keycmd *keycmd = (texu_wnd_keycmd*)malloc(sizeof(texu_wnd_keycmd));
   keycmd->key = key;
   keycmd->cmd = cmd;
+  keycmd->alt = alt;
   texu_list_add(wnd->keycmds, (texu_i64)keycmd);
   return rc;
 }
@@ -1459,6 +1606,13 @@ texu_wnd_restore_curpos(texu_wnd* wnd)
   return texu_env_restore_curpos(wnd->env);
 }
 
+texu_menu*
+texu_wnd_set_menu(texu_wnd* wnd, texu_menu* newmenu)
+{
+  texu_menu* oldmenu = wnd->menu;
+  wnd->menu = newmenu;
+  return oldmenu;
+}
 
 
 
