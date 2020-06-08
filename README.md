@@ -21,8 +21,9 @@ All text objects are implemented by using a simple library (TexU_List, TexU_Stac
 This library concept is likely Win32 API concept. All window classes are required to register into the TexU environment. And then, you could implement your message by your procedure.
 
 How to build:
-$ make
+- $ make
 
 How to enable terminal supported 256 colors
-$ TERM=xterm-256color
+- $ TERM=xterm-256color
+
 
