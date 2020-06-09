@@ -278,9 +278,9 @@
 
 
 #define TEXU_IDOK                      0x00000001
-#define TEXU_IDCANCEL                  0x00000002
-#define TEXU_IDYES                     0x00000004
-#define TEXU_IDNO                      0x00000008
+#define TEXU_IDYES                     0x00000002
+#define TEXU_IDNO                      0x00000004
+#define TEXU_IDCANCEL                  0x00000008
 #define TEXU_IDOKCANCEL                (TEXU_IDOK  | TEXU_IDCANCEL)
 #define TEXU_IDYESNO                   (TEXU_IDYES | TEXU_IDNO)
 #define TEXU_IDYESNOCANCEL             (TEXU_IDYES | TEXU_IDNO | TEXU_IDCANCEL)
