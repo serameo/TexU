@@ -76,9 +76,9 @@ _texu_menu_item_new(const texu_char* text, texu_ui32 id, texu_bool enable)
     item->id = id;
     item->enable = enable;
     item->style = (text ? TEXU_MS_TEXT : TEXU_MS_BREAK);
-    item->normcolor = TEXU_CIO_COLOR_BLACK_CYAN;
+    item->normcolor = TEXU_CIO_COLOR_BLUE_WHITE;
     item->discolor  = TEXU_CIO_COLOR_WHITE_CYAN;
-    item->selcolor  = TEXU_CIO_COLOR_CYAN_BLUE;
+    item->selcolor  = TEXU_CIO_COLOR_WHITE_BLUE;
   }
   return item;
 }
@@ -147,7 +147,7 @@ _texu_menu_create_wndbar(texu_menu* menu, texu_wnd* owner, texu_ui32 id)
   attrs.enable     = TEXU_FALSE;
   attrs.visible    = TEXU_TRUE;
   attrs.text       = "";
-  attrs.normalcolor    = TEXU_CIO_COLOR_BLACK_CYAN;
+  attrs.normalcolor    = TEXU_CIO_COLOR_BLACK_WHITE;
   attrs.disabledcolor  = TEXU_CIO_COLOR_WHITE_CYAN;
   attrs.focuscolor     = TEXU_CIO_COLOR_BLACK_CYAN;
   attrs.id         = id;
@@ -193,7 +193,7 @@ texu_menu_new(texu_wnd* owner, texu_ui32 id)
     }
     menu->tree    = texu_tree_new();
     menu->wndbar  = wnd;
-    menu->normcolor = TEXU_CIO_COLOR_BLACK_CYAN;
+    menu->normcolor = TEXU_CIO_COLOR_BLACK_WHITE;
     menu->discolor  = TEXU_CIO_COLOR_WHITE_CYAN;
     menu->selcolor  = TEXU_CIO_COLOR_CYAN_BLUE;
   }
@@ -630,14 +630,14 @@ _TexuMenuWndProc_DrawPopupMenu(
 
     texu_printf_alignment(buf, menuitem->text, maxlen, TEXU_ALIGN_LEFT);
     
-    color = normcolor;
+    color = menuitem->normcolor;
     if (item == menu->curitem)
     {
-      color = selcolor;
+      color = menuitem->selcolor;
     }
     if (!(menuitem->enable))
     {
-      color = discolor;
+      color = menuitem->discolor;
     }
     texu_cio_putstr_attr(dc, y, x, buf,
       texu_cio_get_color(dc, color));

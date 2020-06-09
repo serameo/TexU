@@ -258,20 +258,30 @@ texu_env_run(texu_env* env)
     altpressed = 0;
     ch = texu_cio_getch(env->cio);
     keypressed = keyname(ch);
-    if (strlen(keypressed) > 1)
+    if ('^' == keypressed[0] && keypressed[1] != 0)
     {
-      if (strcmp("^[", keypressed) == 0)
+      if ('[' == keypressed[1])
       {
         texu_cio_nodelay(env->cio, TEXU_TRUE);
         ch2 = texu_cio_getch(env->cio);
         texu_cio_nodelay(env->cio, TEXU_FALSE);
+        
+        keypressed = keyname(ch2);
         if (-1 != ch2)
         {
           altpressed = 1;
-          ch = ch2;
+          if ('^' == keypressed[0])
+          {
+            ctlpressed = 2;
+          }
+          ch = keypressed[1];
         }
       }
-      if ('M' == keypressed[0])
+      else if ('J' == keypressed[1] || 10 == ch)
+      {
+        /* enter key LF */
+      }
+      else
       {
         ctlpressed = 2;
         ch = keypressed[1];

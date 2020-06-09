@@ -176,7 +176,7 @@ _TexuMsgBoxProc_CreateButtons(
   childattrs.x          = x;
   childattrs.height     = 1;
   childattrs.width      = strlen(caption);
-  childattrs.enable     = TEXU_FALSE;
+  childattrs.enable     = TEXU_TRUE;
   childattrs.visible    = TEXU_TRUE;
   childattrs.text       = caption;
   childattrs.normalcolor    = color;
@@ -196,7 +196,9 @@ _TexuMsgBoxProc_CreateButtons(
     return TEXU_ERROR;
   }
   
-  texu_wnd_add_keycmd(wnd, KEY_F(cmd), id, 0);
+  texu_wnd_set_color(child, color, color);
+  
+  texu_wnd_add_keycmd(wnd, cmd, id, 0);
   return rc;
 }
 
@@ -216,10 +218,15 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
   texu_char* caption = 0;
   texu_status rc = TEXU_OK;
   texu_char buf[TEXU_MAX_WNDTEXT+1];
-  static texu_char* buttons[] = { "[ F1-OK ]", "[ F2-CANCEL ]", "[ F3-YES ]", "[ F4-NO ]" };
-  static texu_i32   btnwidths[] = { 9, 13, 10, 9 };
+  static texu_char* buttons[] = { " F1 - OK ", " F2 - Yes  ", "  F3 - No  ", " F4 - Cancel " };
+  static texu_i32   btnwidths[] = { 9, 10, 9, 13 };
   texu_i32 width = 0;
   texu_i32 wndwidth = texu_wnd_get_width(wnd);
+  
+  enum
+  {
+    F1_OK, F2_YES, F3_NO, F4_CANCEL
+  };
   
   texu_msgbox* msgbox = (texu_msgbox*)texu_wnd_get_userdata(wnd);
   
@@ -276,52 +283,36 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
   if (attrs->style & TEXU_MBS_OK)
   {
     ++idok;
-    width += btnwidths[0];
-  }
-  if (attrs->style & TEXU_MBS_CANCEL)
-  {
-    ++idcancel;
-    width += btnwidths[1] + 1;
+    width += btnwidths[F1_OK];
   }
   if (attrs->style & TEXU_MBS_YES)
   {
     ++idyes;
-    width += btnwidths[2]+ 1;
+    width += btnwidths[F2_YES]+ 1;
   }
   if (attrs->style & TEXU_MBS_NO)
   {
     ++idno;
-    width += btnwidths[3]+ 1;
+    width += btnwidths[F3_NO]+ 1;
+  }
+  if (attrs->style & TEXU_MBS_CANCEL)
+  {
+    ++idcancel;
+    width += btnwidths[F4_CANCEL] + 1;
   }
   
   y += attrs->y+2;
   x = attrs->x + (wndwidth - width)/2;
   if (idok)
   {
-    caption = buttons[0];
+    caption = buttons[F1_OK];
     rc = _TexuMsgBoxProc_CreateButtons(
             wnd,
             y,
             x,
             caption,
             TEXU_IDOK,
-            1, msgbox->okcolor);
-    if (rc != TEXU_OK)
-    {
-      return rc;
-    }
-    x += strlen(caption) + 1;
-  }
-  if (idcancel)
-  {
-    caption = buttons[1];
-    rc = _TexuMsgBoxProc_CreateButtons(
-            wnd,
-            y,
-            x,
-            caption,
-            TEXU_IDCANCEL,
-            2, msgbox->cancelcolor);
+            KEY_F(1), msgbox->okcolor);
     if (rc != TEXU_OK)
     {
       return rc;
@@ -330,14 +321,14 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
   }
   if (idyes)
   {
-    caption = buttons[2];
+    caption = buttons[F2_YES];
     rc = _TexuMsgBoxProc_CreateButtons(
             wnd,
             y,
             x,
             caption,
             TEXU_IDYES,
-            3, msgbox->yescolor);
+            KEY_F(2), msgbox->yescolor);
     if (rc != TEXU_OK)
     {
       return rc;
@@ -346,14 +337,30 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
   }
   if (idno)
   {
-    caption = buttons[3];
+    caption = buttons[F3_NO];
     rc = _TexuMsgBoxProc_CreateButtons(
             wnd,
             y,
             x,
             caption,
             TEXU_IDNO,
-            4, msgbox->nocolor);
+            KEY_F(3), msgbox->nocolor);
+    if (rc != TEXU_OK)
+    {
+      return rc;
+    }
+    x += strlen(caption) + 1;
+  }
+  if (idcancel)
+  {
+    caption = buttons[F4_CANCEL];
+    rc = _TexuMsgBoxProc_CreateButtons(
+            wnd,
+            y,
+            x,
+            caption,
+            TEXU_IDCANCEL,
+            KEY_F(4), msgbox->cancelcolor);
     if (rc != TEXU_OK)
     {
       return rc;
@@ -370,7 +377,7 @@ _TexuMsgBoxProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   texu_i32 lines = 0;
   texu_i32 reserved = 5;
   texu_i32 maxlen = 0;
-  texu_i32 maxbtns = 46; /*" [ F1-OK ] [ F2-CANCEL ] [ F3-YES ] [ F4-NO ] "*/
+  texu_i32 maxbtns = 54; /*" [ F1 - OK ] [ F2 - CANCEL ] [ F3 - YES ] [ F4 - NO ] "*/
   texu_status rc = TEXU_OK;
   texu_rect rect;
   texu_msgbox* msgbox = 0;
@@ -385,7 +392,7 @@ _TexuMsgBoxProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   msgbox->titlecolor  = TEXU_CIO_COLOR_WHITE_BLUE;
   msgbox->labelcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
   msgbox->okcolor     = TEXU_CIO_COLOR_BLACK_GREEN;
-  msgbox->cancelcolor = TEXU_CIO_COLOR_WHITE_YELLOW;
+  msgbox->cancelcolor = TEXU_CIO_COLOR_BLACK_YELLOW;
   msgbox->yescolor    = TEXU_CIO_COLOR_BLACK_GREEN;
   msgbox->nocolor     = TEXU_CIO_COLOR_BLACK_RED;
   
@@ -555,6 +562,10 @@ _TexuLabelProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 
     texu_wnd_get_color(wnd, &normcolor, &discolor);
     color = normcolor;
+    if (!(texu_wnd_is_enable(wnd)))
+    {
+      color = discolor;
+    }
     
     texu_cio_putstr_attr(dc, y, x, buf,
       texu_cio_get_color(dc, color));
