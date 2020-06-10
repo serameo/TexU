@@ -50,6 +50,8 @@ void               texu_list_cb_free(
                      void*);
 /* add/insert a new item */
 texu_status        texu_list_add(texu_list*, texu_i64);
+texu_status        texu_list_insert_first(texu_list*, texu_i64);
+texu_status        texu_list_insert_last(texu_list*, texu_i64);
 texu_status        texu_list_insert(texu_list*, texu_list_item*, texu_i64);
 /* remove an item on the list */
 texu_status        texu_list_remove(texu_list*, texu_list_item*);
