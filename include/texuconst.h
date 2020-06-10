@@ -246,19 +246,18 @@
 
 
 
-#define TEXU_ENV_MAX_FRAMES            4096
+#define TEXU_ENV_MAX_FRAMES            256
 
-#define TEXU_MSGBOX_CLASS              "TexuMsgBoxClass"
-#define TEXU_DESKTOP_CLASS             "TexuDesktopClass"
-#define TEXU_LABEL_CLASS               "TexuLabelClass"
-#define TEXU_STATUSBAR_CLASS           "TexuStatusBarClass"
-#define TEXU_EDIT_CLASS                "TexuEditClass"
-#define TEXU_LISTBOX_CLASS             "TexuListBoxClass"
-/*#define TEXU_COMBOBOX_CLASS            "TexuComboBoxClass"*/
-#define TEXU_LISTCTRL_CLASS            "TexuListCtrlClass"
-#define TEXU_TREECTRL_CLASS            "TexuTreeCtrlClass"
-#define TEXU_UPDOWNCTRL_CLASS          "TexuUpDownCtrlClass"
-#define TEXU_PROGRESSBAR_CLASS         "TexuProgressBarClass"
+#define TEXU_MSGBOX_CLASS             "TexuMsgBoxClass"
+#define TEXU_DESKTOP_CLASS            "TexuDesktopClass"
+#define TEXU_LABEL_CLASS              "TexuLabelClass"
+#define TEXU_STATUSBAR_CLASS          "TexuStatusBarClass"
+#define TEXU_EDIT_CLASS               "TexuEditClass"
+#define TEXU_LISTBOX_CLASS            "TexuListBoxClass"
+#define TEXU_LISTCTRL_CLASS           "TexuListCtrlClass"
+#define TEXU_TREECTRL_CLASS           "TexuTreeCtrlClass"
+#define TEXU_UPDOWNCTRL_CLASS         "TexuUpDownCtrlClass"
+#define TEXU_PROGRESSBAR_CLASS        "TexuProgressBarClass"
 
 #define TEXU_MENU_CLASS               "TexuMenuClass"
 #define TEXU_MENUWND_CLASS            "TexuMenuWndClass"

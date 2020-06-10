@@ -129,14 +129,6 @@ enum
 #endif
 };
 
-
-#define ALT_F0            (1024 + 264)
-#define ALT_F(k)          (ALT_F0 + (k))
-
-#define Alt_X (1024+'X') /* 1112 == 0x458 */
-#define Alt_x (1024+'x') /* 1144 == 0x478 */
-
-
 struct texu_cio;
 typedef struct texu_cio texu_cio;
 
