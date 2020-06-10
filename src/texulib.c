@@ -111,6 +111,35 @@ texu_list_cb_free(
 }
 
 texu_status
+texu_list_insert_first(texu_list* list, texu_i64 data)
+{
+  texu_list_item* newitem = _texu_list_item_new(data);
+  if (!newitem)
+  {
+    return TEXU_NOMEM;
+  }
+  if (list->first)
+  {
+    newitem->next     = list->first->next;
+    list->first->prev = newitem;
+    list->first       = newitem;
+  }
+  else
+  {
+    list->first = list->last = newitem;
+  }
+
+  ++list->nitems;
+  return TEXU_OK;
+}
+
+texu_status
+texu_list_insert_last(texu_list* list, texu_i64 data)
+{
+  return texu_list_add(list, data);
+}
+
+texu_status
 texu_list_insert(
   texu_list* list,
   texu_list_item* after,
@@ -141,6 +170,7 @@ texu_list_insert(
     }
     after->prev  = newitem;
   }
+  ++list->nitems;
   return TEXU_OK;
 }
 
@@ -482,7 +512,7 @@ texu_array_cb_free(
 texu_i64
 texu_array_get(texu_array* array, texu_ui64 idx)
 {
-  if (idx > array->nitems)
+  if (idx < 0 || idx >= array->nitems)
   {
     return -1;
   }
@@ -492,7 +522,7 @@ texu_array_get(texu_array* array, texu_ui64 idx)
 void
 texu_array_set(texu_array* array, texu_ui64 idx, texu_i64 data)
 {
-  if (idx > array->nitems)
+  if (idx < 0 || idx >= array->nitems)
   {
     return;
   }
@@ -635,7 +665,7 @@ texu_stack_full(texu_stack* stack)
 texu_i64
 texu_stack_top(texu_stack* stack)
 {
-  if (stack->index < 0)
+  if (texu_stack_empty(stack))
   {
     return 0;
   }

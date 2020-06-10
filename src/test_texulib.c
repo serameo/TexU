@@ -57,12 +57,12 @@ void test_array()
 
   for (i = 0; i < 8; ++i)
   {
-    texu_array_set(arr, 0, (texu_i64)s[i]);
+    texu_array_set(arr, i, (texu_i64)s[i]);
   }
 
   printf("Printing by the array...\n");
   nitems = texu_array_count(arr);
-  for(; i < nitems; ++i)
+  for(i = 0; i < nitems; ++i)
   {
     printf("%s\n", (char*)texu_array_get(arr, i));
   }
@@ -91,8 +91,15 @@ void test_stack()
 
 texu_i64 test_tree_populate(texu_tree_item* item, void* user)
 {
-  printf("%*c", item->nlevel, ' ');
-  printf("%s\n", (char*)item->data);
+  static texu_char buf[BUFSIZ];
+  
+  if (item->data)
+  {
+    memset(buf, 0, sizeof(buf));
+    memset(buf, ' ', item->nlevel);
+    
+    printf("%s%s\n", buf, (char*)item->data);
+  }
   return 0;
 }
 
@@ -220,7 +227,7 @@ void test_xcnf()
 
   key = "TEXU.SCREEN.WIDTH";
   i64 = texu_xcnf_get_int(xcnf, key, -1);
-  printf("%s=%lld\n", key, i64);
+  printf("%s=%d\n", key, i64);
 
   key = "TEXU.TEXT.SCALE";
   f64 = texu_xcnf_get_float(xcnf, key, 2.25);
@@ -277,8 +284,6 @@ int main(int argc, char* argv[])
   test_array();
   printf("\nTest stack...\n");
   test_stack();
-  printf("\nTest tree...\n");
-  test_tree();
   printf("\nTest map...\n");
   test_map();
   printf("\nTest map2...\n");
@@ -287,6 +292,8 @@ int main(int argc, char* argv[])
   test_xcnf();
   printf("\nTest dblog...\n");
   test_dblog();
+  printf("\nTest tree...\n");
+  test_tree();
 
   return 0;
 }
