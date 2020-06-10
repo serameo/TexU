@@ -91,7 +91,7 @@ TexuMessageBox(
   texu_status rc = TEXU_OK;
   texu_wnd* desktop = texu_env_get_desktop(genv);
   texu_wnd* childwnd = 0;
-
+  texu_env* env = genv;
 
   if (!genv)
   {
@@ -110,8 +110,8 @@ TexuMessageBox(
   attrs.enable     = TEXU_TRUE;
   attrs.visible    = TEXU_TRUE;
   attrs.text       = text;
-  attrs.normalcolor    = TEXU_CIO_COLOR_BLACK_WHITE;
-  attrs.disabledcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
+  attrs.normalcolor    = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
+  attrs.disabledcolor  = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
   attrs.id         = id;
   attrs.clsname    = TEXU_MSGBOX_CLASS;
   attrs.userdata   = userdata;
@@ -161,7 +161,8 @@ TexuCreateWindow(
   texu_wnd* wnd = 0;
   texu_wnd_attrs attrs;
   texu_status rc = TEXU_OK;
-  texu_wnd* desktop = texu_env_get_desktop(genv);
+  texu_env* env = genv;
+  texu_wnd* desktop = texu_env_get_desktop(env);
   texu_wnd* childwnd = 0;
 
   if (!genv)
@@ -181,8 +182,8 @@ TexuCreateWindow(
   attrs.enable     = TEXU_TRUE;
   attrs.visible    = TEXU_TRUE;
   attrs.text       = text;
-  attrs.normalcolor    = TEXU_CIO_COLOR_WHITE_BLACK;
-  attrs.disabledcolor  = TEXU_CIO_COLOR_WHITE_BLACK;
+  attrs.normalcolor    = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+  attrs.disabledcolor  = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
   attrs.id         = id;
   attrs.clsname    = clsname;
   attrs.userdata   = userdata;

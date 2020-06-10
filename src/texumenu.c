@@ -59,14 +59,14 @@ struct texu_menu_item
 
 */
 
-texu_menu_item*   _texu_menu_item_new(const texu_char* text, texu_ui32 id, texu_bool enable);
+texu_menu_item*   _texu_menu_item_new(texu_env* env, const texu_char* text, texu_ui32 id, texu_bool enable);
 void              _texu_menu_item_del(texu_menu_item*);
 texu_tree_item*   _texu_menu_find_item(texu_menu*, texu_tree_item*, texu_ui32 id);
 
 
 
 texu_menu_item*
-_texu_menu_item_new(const texu_char* text, texu_ui32 id, texu_bool enable)
+_texu_menu_item_new(texu_env* env, const texu_char* text, texu_ui32 id, texu_bool enable)
 {
   texu_menu_item* item = (texu_menu_item*)malloc(sizeof(texu_menu_item));
   if (item)
@@ -76,9 +76,9 @@ _texu_menu_item_new(const texu_char* text, texu_ui32 id, texu_bool enable)
     item->id = id;
     item->enable = enable;
     item->style = (text ? TEXU_MS_TEXT : TEXU_MS_BREAK);
-    item->normcolor = TEXU_CIO_COLOR_BLUE_WHITE;
-    item->discolor  = TEXU_CIO_COLOR_WHITE_CYAN;
-    item->selcolor  = TEXU_CIO_COLOR_WHITE_BLUE;
+    item->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM);
+    item->discolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_DISABLED);
+    item->selcolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_SELECTED);
   }
   return item;
 }
@@ -133,7 +133,8 @@ _texu_menu_create_wndbar(texu_menu* menu, texu_wnd* owner, texu_ui32 id)
 {
   texu_wnd_attrs attrs;
   texu_status rc = TEXU_OK;
-  texu_wnd* wnd = texu_wnd_new(texu_wnd_get_env(owner));
+  texu_env* env = texu_wnd_get_env(owner);
+  texu_wnd* wnd = texu_wnd_new(env);
   if (!wnd)
   {
     return 0;
@@ -147,9 +148,9 @@ _texu_menu_create_wndbar(texu_menu* menu, texu_wnd* owner, texu_ui32 id)
   attrs.enable     = TEXU_FALSE;
   attrs.visible    = TEXU_TRUE;
   attrs.text       = "";
-  attrs.normalcolor    = TEXU_CIO_COLOR_BLACK_WHITE;
-  attrs.disabledcolor  = TEXU_CIO_COLOR_WHITE_CYAN;
-  attrs.focuscolor     = TEXU_CIO_COLOR_BLACK_CYAN;
+  attrs.normalcolor    = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
+  attrs.disabledcolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENU_DISABLED);
+  attrs.focuscolor     = texu_env_get_syscolor(env, TEXU_COLOR_MENU_SELECTED);
   attrs.id         = id;
   attrs.clsname    = TEXU_MENU_CLASS;
   attrs.userdata   = menu;
@@ -179,6 +180,7 @@ texu_menu_new(texu_wnd* owner, texu_ui32 id)
 {
   texu_wnd* wnd = 0;
   texu_menu* menu = (texu_menu*)malloc(sizeof(texu_menu));
+  texu_env* env = texu_wnd_get_env(owner);
 
   if (menu)
   {
@@ -193,9 +195,9 @@ texu_menu_new(texu_wnd* owner, texu_ui32 id)
     }
     menu->tree    = texu_tree_new();
     menu->wndbar  = wnd;
-    menu->normcolor = TEXU_CIO_COLOR_BLACK_WHITE;
-    menu->discolor  = TEXU_CIO_COLOR_WHITE_CYAN;
-    menu->selcolor  = TEXU_CIO_COLOR_CYAN_BLUE;
+    menu->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
+    menu->discolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENU_DISABLED);
+    menu->selcolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENU_SELECTED);
   }
   return menu;
 }
@@ -246,7 +248,8 @@ texu_tree_item*
 texu_menu_add_item(texu_menu* menu, texu_tree_item* baritem, const texu_char* text, texu_ui32 id, texu_bool enable)
 {
   texu_tree_item* treeitem = 0;
-  texu_menu_item* item = _texu_menu_item_new(text, id, enable);
+  texu_env* env = texu_wnd_get_env(menu->owner);
+  texu_menu_item* item = _texu_menu_item_new(env, text, id, enable);
   
   treeitem = texu_tree_add_item(menu->tree, baritem, (texu_i64)item);
   if (!(treeitem))
@@ -286,7 +289,8 @@ _TexuMenuProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
-  texu_i32 color = TEXU_CIO_COLOR_BLACK_WHITE;
+  texu_env* env = texu_wnd_get_env(wnd);
+  texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
   texu_tree_item* treeitem = 0;
   texu_menu* menu = (texu_menu*)texu_wnd_get_userdata(wnd);
   texu_char buf[TEXU_MAX_WNDTEXT+1];
@@ -652,7 +656,8 @@ _TexuMenuWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
-  texu_i32 color = TEXU_CIO_COLOR_BLACK_WHITE;
+  texu_env* env = texu_wnd_get_env(wnd);
+  texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
   texu_tree_item* treeitem = 0;
   texu_menu_item* baritem = 0;
   texu_menu* menu = (texu_menu*)texu_wnd_get_userdata(wnd);

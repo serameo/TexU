@@ -284,6 +284,7 @@ _TexuListCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   texu_wnd_attrs attrs2;
   texu_wnd* editwnd = 0;
   texu_status rc = TEXU_OK;
+  texu_env* env = texu_wnd_get_env(wnd);
   
   editwnd = texu_wnd_new(texu_wnd_get_env(wnd));
   if (!editwnd)
@@ -299,8 +300,8 @@ _TexuListCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   attrs2.enable     = TEXU_FALSE;
   attrs2.visible    = TEXU_FALSE;
   attrs2.text       = "";
-  attrs2.normalcolor    = TEXU_CIO_COLOR_WHITE_BLACK;
-  attrs2.disabledcolor  = TEXU_CIO_COLOR_WHITE_BLACK;
+  attrs2.normalcolor    = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL);
+  attrs2.disabledcolor  = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_DISABLED);
   attrs2.id         = 1;
   attrs2.clsname    = TEXU_EDIT_CLASS;
   attrs2.userdata   = 0;
@@ -350,7 +351,7 @@ _TexuListCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   
   /* save memory */
   texu_wnd_set_color(wnd,
-    TEXU_CIO_COLOR_CYAN_BLACK, TEXU_CIO_COLOR_WHITE_BLACK);
+    texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL), texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_DISABLED));
   texu_wnd_set_userdata(wnd, lctl);
   return TEXU_OK;
 }
@@ -600,6 +601,7 @@ _TexuListCtrlProc_OnAddItem(texu_wnd* wnd, texu_char* text, texu_i32 nitems)
   texu_lcwnd_header* header = 0;
   texu_char buf[TEXU_MAX_WNDTEXT+1];
   texu_lcwnd_cell* newcell = 0;
+  texu_env* env = texu_wnd_get_env(wnd);
 
   lctl = (texu_lcwnd*)texu_wnd_get_userdata(wnd);
   if (lctl->nheaders > 0)
@@ -625,9 +627,9 @@ _TexuListCtrlProc_OnAddItem(texu_wnd* wnd, texu_char* text, texu_i32 nitems)
       {
         strcpy(newcell->caption, "");
       }
-      newcell->normcolor = TEXU_CIO_COLOR_WHITE_BLACK;
-      newcell->discolor  = TEXU_CIO_COLOR_WHITE_BLACK;
-      newcell->selcolor  = TEXU_CIO_COLOR_BLACK_WHITE;
+      newcell->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_ITEM);
+      newcell->discolor  = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_ITEM_DISABLED);
+      newcell->selcolor  = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_ITEM_SELECTED);
       
       /* add the new item */
       if (header->firstcell)
@@ -3510,6 +3512,7 @@ _TexuTreeCtrlProc_OnFindNextItem(texu_wnd* wnd, texu_tree_item* previtem, texu_t
 texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
 {
     texu_treewnd* tc = (texu_treewnd*) malloc(sizeof (texu_treewnd));
+    texu_env* env = texu_wnd_get_env(wnd);
     if (!tc)
     {
         return TEXU_NOMEM;
@@ -3518,9 +3521,9 @@ texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
     tc->indent = 2;
     tc->shifted_right = 0;
     tc->shifted = 4;
-    tc->normcolor = TEXU_CIO_COLOR_WHITE_BLACK;
-    tc->discolor = TEXU_CIO_COLOR_WHITE_BLACK;
-    tc->selcolor = TEXU_CIO_COLOR_BLACK_WHITE;
+    tc->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL);
+    tc->discolor  = texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_DISABLED);
+    tc->selcolor  = texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_SELECTED);
 
     tc->tree = texu_tree_new();
     if (!tc->tree)
@@ -3530,7 +3533,9 @@ texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
     }
     /* set tree */
     texu_wnd_set_userdata(wnd, tc);
-    texu_wnd_set_color(wnd, TEXU_CIO_COLOR_WHITE_BLACK, TEXU_CIO_COLOR_WHITE_BLACK);
+    texu_wnd_set_color(wnd, 
+      texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL),
+      texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_DISABLED));
 
     return TEXU_OK;
 }
@@ -3652,24 +3657,25 @@ texu_i64 _TexuTreeCtrlProc_PreorderTraverseProc(texu_tree_item* item, void* args
 
 void _TexuTreeCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
-    texu_rect rc;
-    texu_char buf[TEXU_MAX_WNDTEXT + 1];
-    texu_i32 displayableitems = 0;
-    texu_treewnd* tc = 0;
-    texu_i32 y = 0;
-    texu_treewnd_item* data = 0;
-    texu_treeview_item* view = 0;
-    texu_list_item* iter;
-    texu_i32 count = 0, items = 0;
-    texu_i32 ysel = 0;
-    texu_i32 xsel = 0;
-    texu_char bufsel[TEXU_MAX_WNDTEXT + 1];
-    texu_ui32 style = 0;
-    texu_char filler = 0;
-    texu_bool fullrow = TEXU_FALSE;
-    texu_i32 startx = 0, endx = 0;
-    texu_i32 normcolor = TEXU_CIO_COLOR_WHITE_BLACK;
-    texu_i32 selcolor = TEXU_CIO_COLOR_BLACK_WHITE;
+  texu_rect rc;
+  texu_char buf[TEXU_MAX_WNDTEXT + 1];
+  texu_i32 displayableitems = 0;
+  texu_treewnd* tc = 0;
+  texu_i32 y = 0;
+  texu_treewnd_item* data = 0;
+  texu_treeview_item* view = 0;
+  texu_list_item* iter;
+  texu_i32 count = 0, items = 0;
+  texu_i32 ysel = 0;
+  texu_i32 xsel = 0;
+  texu_char bufsel[TEXU_MAX_WNDTEXT + 1];
+  texu_ui32 style = 0;
+  texu_char filler = 0;
+  texu_bool fullrow = TEXU_FALSE;
+  texu_i32 startx = 0, endx = 0;
+  texu_env* env = texu_wnd_get_env(wnd);
+  texu_i32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
+  texu_i32 selcolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENU_SELECTED);
 
     tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
 
@@ -3709,8 +3715,8 @@ void _TexuTreeCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
         {
             view = (texu_treeview_item*)iter->data;
             data = (texu_treewnd_item*)view->item->data;
-            /*normcolor = data->normcolor;
-            selcolor = data->selcolor;*/
+            normcolor = data->normcolor;
+            selcolor = data->selcolor;
 
             memset(buf, filler, sizeof (buf));
             _TexuTreeCtrlProc_GetDisplayedText(wnd, buf, &startx, &endx, view->item, rc.cols, TEXU_FALSE);
@@ -3991,6 +3997,7 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   texu_wnd* editwnd = 0;
   texu_status rc = TEXU_OK;
   texu_editminmax minmax;
+  texu_env* env = texu_wnd_get_env(wnd);
   
   editwnd = texu_wnd_new(texu_wnd_get_env(wnd));
   if (!editwnd)
@@ -4006,8 +4013,8 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   attrs2.enable     = TEXU_TRUE;
   attrs2.visible    = TEXU_TRUE;
   attrs2.text       = "0";
-  attrs2.normalcolor    = TEXU_CIO_COLOR_WHITE_BLACK;
-  attrs2.disabledcolor  = TEXU_CIO_COLOR_WHITE_BLACK;
+  attrs2.normalcolor    = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
+  attrs2.disabledcolor  = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED);
   attrs2.id         = 1;
   attrs2.clsname    = TEXU_EDIT_CLASS;
   attrs2.userdata   = 0;
@@ -4042,7 +4049,8 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   
   /* save memory */
   texu_wnd_set_color(wnd,
-    TEXU_CIO_COLOR_CYAN_BLACK, TEXU_CIO_COLOR_WHITE_BLACK);
+    texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL),
+    texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED));
   texu_wnd_set_userdata(wnd, udctl);
   return TEXU_OK;
 }
@@ -4185,7 +4193,8 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
   texu_i32 width = texu_wnd_get_width(wnd);
-  texu_i32 color = TEXU_CIO_COLOR_WHITE_BLUE;
+  texu_env* env = texu_wnd_get_env(wnd);
+  texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
   
   texu_cio_putch_attr(dc, y, x+width-1, ACS_PLMINUS,
     texu_cio_get_color(dc, color));
@@ -4390,7 +4399,7 @@ texu_status
 _TexuProgressBarProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
 {
   texu_pgbwnd* pgb = 0;
-  
+  texu_env* env = texu_wnd_get_env(wnd);
  
   pgb = (texu_pgbwnd*)malloc(sizeof(texu_lcwnd));
   if (!pgb)
@@ -4404,7 +4413,8 @@ _TexuProgressBarProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   pgb->pos = 0;
   
   texu_wnd_set_color(wnd,
-    TEXU_CIO_COLOR_CYAN_BLACK, TEXU_CIO_COLOR_WHITE_BLACK);
+    texu_env_get_syscolor(env, TEXU_COLOR_PROGRESSBAR),
+    texu_env_get_syscolor(env, TEXU_COLOR_PROGRESSBAR_DISABLED));
   texu_wnd_set_userdata(wnd, pgb);
   texu_wnd_enable(wnd, TEXU_FALSE);
   return TEXU_OK;
@@ -4425,7 +4435,9 @@ _TexuProgressBarProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
   texu_i32 width = texu_wnd_get_width(wnd);
-  texu_i32 color = TEXU_CIO_COLOR_WHITE_BLUE;
+  texu_env* env = texu_wnd_get_env(wnd);
+  texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_PROGRESSBAR);
+
   texu_char buf[TEXU_MAX_WNDTEXT+1];
   texu_char text[TEXU_MAX_WNDTEXT+1];
   texu_f32 pct = 0.0;
