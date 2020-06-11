@@ -202,6 +202,14 @@ _TexuMsgBoxProc_CreateButtons(
   return rc;
 }
 
+  
+enum
+{
+  F1_OK, F2_YES, F3_NO, F4_CANCEL
+};
+static texu_char* buttons[] = { " F1 - OK ", " F2 - Yes  ", "  F3 - No  ", " F4 - Cancel " };
+static texu_i32   btnwidths[] = { 9, 10, 9, 13 };
+
 texu_status
 _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 lines)
 {
@@ -218,16 +226,9 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
   texu_char* caption = 0;
   texu_status rc = TEXU_OK;
   texu_char buf[TEXU_MAX_WNDTEXT+1];
-  static texu_char* buttons[] = { " F1 - OK ", " F2 - Yes  ", "  F3 - No  ", " F4 - Cancel " };
-  static texu_i32   btnwidths[] = { 9, 10, 9, 13 };
   texu_i32 width = 0;
   texu_i32 wndwidth = texu_wnd_get_width(wnd);
   texu_env* env = texu_wnd_get_env(wnd);
-  
-  enum
-  {
-    F1_OK, F2_YES, F3_NO, F4_CANCEL
-  };
   
   texu_msgbox* msgbox = (texu_msgbox*)texu_wnd_get_userdata(wnd);
   
@@ -272,7 +273,9 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
       texu_wnd_del(child);
       return TEXU_ERROR;
     }
-    texu_wnd_set_color(child, texu_env_get_syscolor(env, TEXU_COLOR_DIALOG), texu_env_get_syscolor(env, TEXU_COLOR_DIALOG));
+    texu_wnd_set_color(child,
+      texu_env_get_syscolor(env, TEXU_COLOR_DIALOG),
+      texu_env_get_syscolor(env, TEXU_COLOR_DIALOG));
       
     tok = strtok(0, "\n");
     
@@ -317,11 +320,17 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
     {
       return rc;
     }
+    texu_wnd_add_keycmd(wnd, 10, TEXU_IDOK, 0);
     x += strlen(caption) + 1;
   }
   if (idyes)
   {
     caption = buttons[F2_YES];
+    /* re-color if available*/
+    if (!(idok))
+    {
+      msgbox->yescolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_OK);
+    }
     rc = _TexuMsgBoxProc_CreateButtons(
             wnd,
             y,
@@ -333,6 +342,7 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
     {
       return rc;
     }
+    texu_wnd_add_keycmd(wnd, 10, TEXU_IDYES, 0);
     x += strlen(caption) + 1;
   }
   if (idno)
@@ -354,6 +364,11 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
   if (idcancel)
   {
     caption = buttons[F4_CANCEL];
+    /*if there is no cancel button, then assign escape to no button*/
+    if (!(idno))
+    {
+      msgbox->cancelcolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_NO);
+    }
     rc = _TexuMsgBoxProc_CreateButtons(
             wnd,
             y,
@@ -365,8 +380,10 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd* wnd, texu_wnd_attrs* attrs, texu_i32 li
     {
       return rc;
     }
+    texu_wnd_add_keycmd(wnd, 27, TEXU_IDCANCEL, 0);
     x += strlen(caption) + 1;
   }
+    
   
   return TEXU_OK;
 }
@@ -377,10 +394,11 @@ _TexuMsgBoxProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   texu_i32 lines = 0;
   texu_i32 reserved = 5;
   texu_i32 maxlen = 0;
-  texu_i32 maxbtns = 54; /*" [ F1 - OK ] [ F2 - CANCEL ] [ F3 - YES ] [ F4 - NO ] "*/
+  texu_i32 maxbtns = 60; /*"[ F1 - OK ] [ F2 - CANCEL ] [ F3 - YES ] [ F4 - NO ]"*/
   texu_status rc = TEXU_OK;
   texu_rect rect;
   texu_msgbox* msgbox = 0;
+  texu_i32 width = 0;
   texu_env* env = texu_wnd_get_env(wnd);
   
   msgbox = (texu_msgbox*)malloc(sizeof(texu_msgbox));
@@ -402,8 +420,26 @@ _TexuMsgBoxProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   /* adjust window rect */
   lines = _TexuDefWndProc_CountLines(attrs->text, &maxlen);
   maxlen += 4;
+
+  if (attrs->style & TEXU_MBS_OK)
+  {
+    width += btnwidths[F1_OK] + 2;
+  }
+  if (attrs->style & TEXU_MBS_YES)
+  {
+    width += btnwidths[F2_YES] + 2;
+  }
+  if (attrs->style & TEXU_MBS_NO)
+  {
+    width += btnwidths[F3_NO] + 2;
+  }
+  if (attrs->style & TEXU_MBS_CANCEL)
+  {
+    width += btnwidths[F4_CANCEL] + 2;
+  }
   
-  rect.cols  = (maxbtns > maxlen ? maxbtns : maxlen);
+  maxbtns = TEXU_MIN(maxbtns, width);
+  rect.cols  = TEXU_MAX(maxbtns, maxlen) + 2;
   rect.lines = reserved + lines;
   rect.y = (LINES - rect.lines)/2;
   rect.x = (COLS - rect.cols)/2;
@@ -2484,7 +2520,7 @@ _TexuStatusBarProc_OnSetWidth(texu_wnd* wnd, texu_i32 id, texu_i32 width)
   texu_sbwnd_part* part = _texu_sbwnd_part_find(sb->parts, id);
   texu_i32 oldwidth = part->width;
   
-  if (part && width > 0)
+  if (part && width >= 0)
   {
     part->width = width;
     
@@ -2569,10 +2605,13 @@ _TexuStatusBarProc_OnGetAlign(texu_wnd* wnd, texu_i32 id)
 texu_i32
 _TexuStatusBarProc_OnAddPart(texu_wnd* wnd, const texu_char* text, texu_i32 width)
 {
+  texu_env* env = texu_wnd_get_env(wnd);
   texu_list_item* item = 0;
   texu_sbwnd* sb = (texu_sbwnd*)texu_wnd_get_userdata(wnd);
   texu_i32 nparts = texu_list_count(sb->parts);
-  texu_sbwnd_part* part = _texu_sbwnd_part_new(text, width, TEXU_CIO_COLOR_CYAN_BLACK, TEXU_ALIGN_LEFT);
+  texu_sbwnd_part* part = _texu_sbwnd_part_new(text, width,
+                            texu_env_get_syscolor(env, TEXU_COLOR_STATUSBAR),
+                            TEXU_ALIGN_LEFT);
    
   part->id = nparts;
   texu_list_add(sb->parts, (texu_i64)part);

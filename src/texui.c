@@ -92,7 +92,7 @@ _texu_env_init_syscolors(texu_env* env)
   env->syscolors[TEXU_COLOR_DIALOG]             = TEXU_CIO_COLOR_BLACK_WHITE;
   env->syscolors[TEXU_COLOR_TITLE_WINDOW]       = TEXU_CIO_COLOR_WHITE_BLUE;
   env->syscolors[TEXU_COLOR_BUTTON_OK]          = TEXU_CIO_COLOR_BLACK_GREEN;
-  env->syscolors[TEXU_COLOR_BUTTON_YES]         = TEXU_CIO_COLOR_BLACK_BLUE;
+  env->syscolors[TEXU_COLOR_BUTTON_YES]         = TEXU_CIO_COLOR_WHITE_BLUE;
   env->syscolors[TEXU_COLOR_BUTTON_NO]          = TEXU_CIO_COLOR_BLACK_RED;
   env->syscolors[TEXU_COLOR_BUTTON_CANCEL]      = TEXU_CIO_COLOR_BLACK_YELLOW;
   env->syscolors[TEXU_COLOR_MENU]               = TEXU_CIO_COLOR_BLUE_WHITE;
@@ -113,13 +113,13 @@ _texu_env_init_syscolors(texu_env* env)
   env->syscolors[TEXU_COLOR_LISTCTRL]           = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LISTCTRL_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLACK;
-  env->syscolors[TEXU_COLOR_LISTCTRL_ITEM]           = TEXU_CIO_COLOR_BLUE_WHITE;
+  env->syscolors[TEXU_COLOR_LISTCTRL_ITEM]           = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_DISABLED]  = TEXU_CIO_COLOR_BLACK_WHITE;
   env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLUE;
   env->syscolors[TEXU_COLOR_TREECTRL]           = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_TREECTRL_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_TREECTRL_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLACK;
-  env->syscolors[TEXU_COLOR_TREECTRL_ITEM]           = TEXU_CIO_COLOR_BLUE_WHITE;
+  env->syscolors[TEXU_COLOR_TREECTRL_ITEM]           = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_TREECTRL_ITEM_DISABLED]  = TEXU_CIO_COLOR_BLACK_WHITE;
   env->syscolors[TEXU_COLOR_TREECTRL_ITEM_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLUE;
   env->syscolors[TEXU_COLOR_UPDOWNCTRL]             = TEXU_CIO_COLOR_BLUE_WHITE;
@@ -345,8 +345,12 @@ texu_env_run(texu_env* env)
           if ('^' == keypressed[0])
           {
             ctlpressed = 2;
+            ch = keypressed[1];
           }
-          ch = keypressed[1];
+          else
+          {
+            ch = ch2;
+          }
         }
       }
       else if ('J' == keypressed[1] || 10 == ch)
@@ -776,7 +780,7 @@ _TexuDefWndProc_OnGetText(texu_wnd* wnd, texu_char* text, texu_i32 textlen)
 
   if (textlen < 0 || 0 == text)
   {
-    return strlen(wnd->text);
+    return len;
   }
 
   memset(text, 0, textlen);
