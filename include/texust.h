@@ -164,6 +164,7 @@ struct texu_menu_item
   texu_i32        discolor;
   texu_i32        selcolor;
   texu_ui32       style;    /*TEXU_MS_TEXT, TEXU_MS_BREAK*/
+  texu_char       info[TEXU_MAX_WNDTEXT+1];
 };
 typedef struct texu_menu_item texu_menu_item;
 
