@@ -42,7 +42,7 @@ struct texu_env
 };
 struct texu_env_wndcls
 {
-  texu_char*        clsname;
+  const texu_char*  clsname;
   texu_wndproc      proc;
 };
 typedef struct texu_env_wndcls texu_env_wndcls;
@@ -63,6 +63,8 @@ texu_i64          _TexuListCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuTreeCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuUpDownCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuProgressBarProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuPageCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+
 
 /* menu texumenu.c */
 texu_i64          _TexuMenuProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
@@ -72,7 +74,7 @@ texu_i64          _TexuMenuWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 
 void              _texu_env_init_cls(texu_env*);
-texu_wndproc      _texu_env_find_wndproc(texu_env*, texu_char*);
+texu_wndproc      _texu_env_find_wndproc(texu_env*, const texu_char*);
 FILE*             _texu_env_init_screen(texu_env* env);
 void              _texu_env_init_syscolors(texu_env* env);
 
@@ -147,6 +149,8 @@ _texu_env_init_cls(texu_env* env)
   texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);
   texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);
   texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);
+  texu_env_register_cls(env, TEXU_PAGECTRL_CLASS,     _TexuPageCtrlProc);
+  
   
   texu_env_register_cls(env, TEXU_MENU_CLASS,         _TexuMenuProc);
   texu_env_register_cls(env, TEXU_MENUWND_CLASS,      _TexuMenuWndProc);
@@ -161,7 +165,7 @@ _texu_env_init_screen(texu_env* env)
 }
 
 texu_wndproc
-_texu_env_find_wndproc(texu_env* env, texu_char* clsname)
+_texu_env_find_wndproc(texu_env* env, const texu_char* clsname)
 {
   texu_wndproc wndproc = 0;
   texu_env_wndcls* wndcls = 0;
@@ -232,7 +236,7 @@ texu_env_get_syscolor(texu_env* env, texu_i32 syscolor)
 texu_status
 texu_env_register_cls(
   texu_env* env,
-  texu_char* clsname,
+  const texu_char* clsname,
   texu_wndproc proc)
 {
   texu_status rc = TEXU_OK;
@@ -501,7 +505,7 @@ struct texu_wnd
   texu_i32          disabledcolor;
   texu_i32          focuscolor;
   texu_ui32         id;
-  texu_char*        clsname;
+  const texu_char*  clsname;
   void*             userdata;
   
   texu_menu*        menu;
@@ -1337,6 +1341,12 @@ texu_wnd_get_prev_activechild(texu_wnd* wnd, texu_wnd* childwnd)
   return 0;
 }
 
+texu_i32
+texu_wnd_children(texu_wnd* wnd)
+{
+  return texu_list_count(wnd->children);
+}
+
 texu_wnd*
 texu_wnd_firstchild(texu_wnd* wnd)
 {
@@ -1705,5 +1715,3 @@ texu_wnd_set_menu(texu_wnd* wnd, texu_menu* newmenu)
 #ifdef __cplusplus
 }
 #endif
-
-

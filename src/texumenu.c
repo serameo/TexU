@@ -44,41 +44,57 @@ struct texu_menu
   texu_i32          selcolor;
 };
 
-/*
-struct texu_menu_item
-{
-  texu_ui32       id;
-  texu_char       text[TEXU_MAX_WNDTEXT+1];
-  texu_bool       enable;
-  texu_bool       visible;
-  texu_i32        color;
-  texu_i32        discolor;
-  texu_i32        selcolor;
-  texu_ui32       style;
-};
-
-*/
-
-texu_menu_item*   _texu_menu_item_new(texu_env* env, const texu_char* text, texu_ui32 id, texu_bool enable);
+texu_menu_item*   _texu_menu_item_new(texu_env* env, const texu_char* text, texu_ui32 id, texu_bool enable, const texu_char* info);
 void              _texu_menu_item_del(texu_menu_item*);
 texu_tree_item*   _texu_menu_find_item(texu_menu*, texu_tree_item*, texu_ui32 id);
+
+void              _TexuMenuProc_OnPaint(texu_wnd*, texu_cio*);
+
+void              _TexuMenuWndroc_NotifyItem(texu_wnd* wnd, texu_ui32 code, texu_ui32 id, const texu_char* info);
+void              _TexuMenuWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
+void              _TexuMenuWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt);
+texu_status       _TexuMenuWndProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs);
+void              _TexuMenuWndProc_OnDestroy(texu_wnd*);
+
+void              _TexuMenuWndProc_DrawPopupMenu(
+                        texu_wnd* wnd,
+                        texu_cio* dc,
+                        texu_menu* menu,
+                        texu_tree_item* baritem,
+                        texu_i32 y,
+                        texu_i32 x,
+                        texu_i32 normcolor,
+                        texu_i32 selcolor,
+                        texu_i32 discolor);
+  
+texu_i32          _TexuMenuProc_GetMaxLength(texu_tree_item* baritem);
+texu_tree_item*   _TexuMenuWndProc_GetNextMenuItem(texu_tree_item* curitem);
+texu_tree_item*   _TexuMenuWndProc_GetPrevMenuItem(texu_tree_item* curitem);
+texu_tree_item*   _TexuMenuWndProc_GetNextMenuItemEnabled(texu_tree_item* parentitem, texu_tree_item* curitem);
+texu_tree_item*   _TexuMenuWndProc_GetPrevMenuItemEnabled(texu_tree_item* parentitem, texu_tree_item* curitem);
 
 
 
 texu_menu_item*
-_texu_menu_item_new(texu_env* env, const texu_char* text, texu_ui32 id, texu_bool enable)
+_texu_menu_item_new(
+  texu_env* env,
+  const texu_char* text,
+  texu_ui32 id,
+  texu_bool enable,
+  const texu_char* info)
 {
   texu_menu_item* item = (texu_menu_item*)malloc(sizeof(texu_menu_item));
   if (item)
   {
     memset(item, 0, sizeof(texu_menu_item));
     strcpy(item->text, (text ? text : ""));
-    item->id = id;
+    item->id     = id;
     item->enable = enable;
-    item->style = (text ? TEXU_MS_TEXT : TEXU_MS_BREAK);
+    item->style  = (text ? TEXU_MS_TEXT : TEXU_MS_BREAK);
     item->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM);
     item->discolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_DISABLED);
     item->selcolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_SELECTED);
+    strcpy(item->info, (info ? info : ""));
   }
   return item;
 }
@@ -220,11 +236,42 @@ texu_menu_get_menubar(texu_menu* menu)
 }
 
 texu_tree_item*
-texu_menu_add_menu(texu_menu* menu, const texu_char* text, texu_bool enable)
+texu_menu_add_menu_info(
+    texu_menu* menu,
+    const texu_char* text,
+    texu_bool enable,
+    const texu_char* info)
 {
   texu_ui32 barid = menu->barid;
   ++menu->barid;
-  return texu_menu_add_item(menu, 0, text, barid, enable);
+  return texu_menu_add_item_info(menu, 0, text, barid, enable, info);
+}
+texu_tree_item*
+texu_menu_add_item_info(
+    texu_menu* menu,
+    texu_tree_item* baritem,
+    const texu_char* text,
+    texu_ui32 barid,
+    texu_bool enable,
+    const texu_char* info)
+{
+  texu_tree_item* treeitem = 0;
+  texu_env* env = texu_wnd_get_env(menu->owner);
+  texu_menu_item* item = _texu_menu_item_new(env, text, barid, enable, info);
+  
+  treeitem = texu_tree_add_item(menu->tree, baritem, (texu_i64)item);
+  if (!(treeitem))
+  {
+    _texu_menu_item_del(item);
+    return 0;
+  }
+  return treeitem;
+}
+
+texu_tree_item*
+texu_menu_add_menu(texu_menu* menu, const texu_char* text, texu_bool enable)
+{
+  return texu_menu_add_menu_info(menu, text, enable, "");
 }
 
 texu_tree_item*
@@ -245,19 +292,14 @@ texu_menu_set_curmenu(texu_menu* menu, texu_tree_item* baritem)
 
 
 texu_tree_item*
-texu_menu_add_item(texu_menu* menu, texu_tree_item* baritem, const texu_char* text, texu_ui32 id, texu_bool enable)
+texu_menu_add_item(
+  texu_menu* menu,
+  texu_tree_item* baritem,
+  const texu_char* text,
+  texu_ui32 id,
+  texu_bool enable)
 {
-  texu_tree_item* treeitem = 0;
-  texu_env* env = texu_wnd_get_env(menu->owner);
-  texu_menu_item* item = _texu_menu_item_new(env, text, id, enable);
-  
-  treeitem = texu_tree_add_item(menu->tree, baritem, (texu_i64)item);
-  if (!(treeitem))
-  {
-    _texu_menu_item_del(item);
-    return 0;
-  }
-  return treeitem;
+  return texu_menu_add_item_info(menu, baritem, text, id, enable, "");
 }
 
 texu_tree_item*
@@ -270,18 +312,19 @@ texu_menu_get_menuitem(texu_menu* menu, texu_tree_item* baritem, texu_ui32 id)
 texu_tree_item*
 texu_menu_set_curmenuitem(texu_menu* menu, texu_tree_item* item)
 {
+  texu_menu_item* menuitem = 0;
   texu_tree_item* olditem = menu->curitem;
   menu->curitem = item;
+  if (item)
+  {
+    menuitem = (texu_menu_item*)item->data;
+    _TexuMenuWndroc_NotifyItem(menu->wndbar, TEXU_MNN_ITEMCHANGED, menuitem->id, menuitem->info);
+  }
   return olditem;
 }
 
 
-/* WINDOW MENU */
-#define TEXU_MNM_FIRST                      100
-#define TEXU_MNM_SETOWNER                   (TEXU_MNM_FIRST +  1)
 
-
-void               _TexuMenuProc_OnPaint(texu_wnd*, texu_cio*);
 
 
 void
@@ -349,44 +392,26 @@ _TexuMenuProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 }
 
 
-
-
-
-void              _TexuMenuWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
-void              _TexuMenuWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt);
-texu_status       _TexuMenuWndProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs);
-void              _TexuMenuWndProc_OnDestroy(texu_wnd*);
-
 void
-_TexuMenuWndProc_DrawPopupMenu(
-  texu_wnd* wnd,
-  texu_cio* dc,
-  texu_menu* menu,
-  texu_tree_item* baritem,
-  texu_i32 y,
-  texu_i32 x,
-  texu_i32 normcolor,
-  texu_i32 selcolor,
-  texu_i32 discolor);
+_TexuMenuWndroc_NotifyItem(texu_wnd* wnd, texu_ui32 code, texu_ui32 id, const texu_char* info)
+{
+  texu_menuitem_notify notify;
+  texu_menu* menu = (texu_menu*)texu_wnd_get_userdata(wnd);
+  texu_wnd* parent = menu->owner;
   
-texu_i32
-_TexuMenuProc_GetMaxLength(texu_tree_item* baritem);
+  if (!parent)
+  {
+    parent = texu_wnd_get_parent(wnd);
+  }
 
-texu_tree_item*
-_TexuMenuWndProc_GetNextMenuItem(texu_tree_item* curitem);
-
-texu_tree_item*
-_TexuMenuWndProc_GetPrevMenuItem(texu_tree_item* curitem);
-
-
-texu_tree_item*
-_TexuMenuWndProc_GetNextMenuItemEnabled(texu_tree_item* parentitem, texu_tree_item* curitem);
-
-texu_tree_item*
-_TexuMenuWndProc_GetPrevMenuItemEnabled(texu_tree_item* parentitem, texu_tree_item* curitem);
-
-
-
+  memset(&notify, 0, sizeof(notify));
+  notify.hdr.wnd  = wnd;
+  notify.hdr.id   = texu_wnd_get_id(wnd);
+  notify.hdr.code = code;
+  notify.id = id;
+  strcpy(notify.info, (info ? info : ""));
+  texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
+}
 
 
 void
@@ -582,7 +607,13 @@ _TexuMenuWndProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
     }
   }
   
-  texu_env_restore_screen(texu_wnd_get_env(wnd));
+  if (menu->curitem)
+  {
+    menuitem = (texu_menu_item*)menu->curitem->data;
+    _TexuMenuWndroc_NotifyItem(wnd, TEXU_MNN_ITEMCHANGED,
+      menuitem->id,
+      menuitem->info);
+  }
   texu_wnd_invalidate(wnd);
 }
 

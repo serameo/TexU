@@ -138,6 +138,7 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
   texu_wnd* pgb = TexuGetWindowItem(wnd, IDC_PROGRESSBAR);
   texu_i32 val = 0;
   texu_msgbox_notify* msg = 0;
+  texu_menuitem_notify* menuitem = 0;
   
   memset(text, 0, sizeof(text));
   if (notify->id == IDC_LIST1)
@@ -179,6 +180,13 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
     }
     TexuSetWindowText(status, text);
   }
+  
+  if (notify->code == TEXU_MNN_ITEMCHANGED)
+  {
+    menuitem = (texu_menuitem_notify*)notify;
+    strcpy(text, menuitem->info);
+    TexuSetWindowText(status, text);
+  }
 }
 
 void
@@ -206,19 +214,19 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   
   menu = texu_menu_new(wnd, ID_MAINMENU);
   item = texu_menu_add_menu(menu, " File ", TEXU_TRUE);
-  texu_menu_add_item(menu, item, " New          ", ID_ADD, TEXU_TRUE);
-  texu_menu_add_item(menu, item, " Open         ", 2, TEXU_TRUE);
-  texu_menu_add_item(menu, item, "--------------", -1, TEXU_FALSE);
-  texu_menu_add_item(menu, item, " Exit         ", ID_DELETE, TEXU_TRUE);
+  texu_menu_add_item_info(menu, item, " New          ", ID_ADD,     TEXU_TRUE,  "New window");
+  texu_menu_add_item_info(menu, item, " Open         ", 2,          TEXU_TRUE,  "Open window");
+  texu_menu_add_item_info(menu, item, "--------------", -1,         TEXU_FALSE, "");
+  texu_menu_add_item_info(menu, item, " Exit   Alt+X ", ID_DELETE,  TEXU_TRUE,  "Exit a program");
 
   item = texu_menu_add_menu(menu, " Edit ", TEXU_TRUE);
-  texu_menu_add_item(menu, item, " Cut          ", 11, TEXU_TRUE);
-  texu_menu_add_item(menu, item, " Copy         ", 12, TEXU_TRUE);
-  texu_menu_add_item(menu, item, " Paste        ", 13, TEXU_TRUE);
+  texu_menu_add_item_info(menu, item, " Cut          ", 11,         TEXU_TRUE,  "Cut selection");
+  texu_menu_add_item_info(menu, item, " Copy         ", 12,         TEXU_TRUE,  "Copy selection");
+  texu_menu_add_item_info(menu, item, " Paste        ", 13,         TEXU_TRUE,  "Paste selection copied");
   
   item = texu_menu_add_menu(menu, " Search ", TEXU_TRUE);
-  texu_menu_add_item(menu, item, " Find         ", 21, TEXU_TRUE);
-  texu_menu_add_item(menu, item, " Find Next    ", 22, TEXU_TRUE);
+  texu_menu_add_item_info(menu, item, " Find         ", 21,         TEXU_TRUE,  "Find text");
+  texu_menu_add_item_info(menu, item, " Find Next    ", 22,         TEXU_TRUE,  "Find next text");
   
   item = texu_menu_add_menu(menu, " View ", TEXU_FALSE);
   texu_menu_add_item(menu, item, " Help     ", 31, TEXU_TRUE);

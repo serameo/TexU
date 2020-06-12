@@ -118,7 +118,7 @@ _TexuMsgBoxProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 }
 
 texu_i32
-_TexuDefWndProc_CountLines(texu_char* text, texu_i32* maxlen)
+_TexuDefWndProc_CountLines(const texu_char* text, texu_i32* maxlen)
 {
   texu_i32 lines = 0;
   texu_char* tok;
@@ -2757,5 +2757,3 @@ _TexuStatusBarProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param
 #ifdef __cplusplus
 }
 #endif
-
-
