@@ -4554,10 +4554,8 @@ _TexuProgressBarProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 par
 
 struct texu_pagewnd
 {
-/*  texu_list*     pages;*/
   texu_wnd*      curpage;
-  texu_wnd*      firstactive;
-  texu_wnd*      lastactive;
+  texu_i32       curidx;
 };
 typedef struct texu_pagewnd texu_pagewnd;
 
@@ -4568,20 +4566,54 @@ void                  _TexuPageCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
 void                  _TexuPageCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt);
 
 texu_status           _TexuPageCtrlProc_OnAddPage(texu_wnd* wnd, const texu_char* clsname, texu_ui32 id);
+texu_wnd*             _TexuPageCtrlProc_OnSetCurPage(texu_wnd* wnd, texu_i32 idx);
+texu_wnd*             _TexuPageCtrlProc_OnGetCurPage(texu_wnd* wnd);
+texu_i32              _TexuPageCtrlProc_OnGetPageIndex(texu_wnd* wnd, texu_wnd* page);
+texu_i32              _TexuPageCtrlProc_OnGetCountPage(texu_wnd* wnd);
+
 texu_wnd*             _TexuPageCtrl_CreatePage(
                           texu_wnd*         wnd,
                           const texu_char*  clsname,
                           texu_ui32         id);
-texu_wnd*             _TexuPageCtrlProc_OnSetCurPage(texu_wnd* wnd, texu_i32 idx);
-texu_wnd*             _TexuPageCtrlProc_OnGetCurPage(texu_wnd* wnd);
 texu_wnd*             _TexuPageCtrlProc_GetFirstChildEnabled(texu_wnd*);
 texu_wnd*             _TexuPageCtrlProc_GetLastChildEnabled(texu_wnd*);
 texu_wnd*             _TexuPageCtrlProc_GetPage(texu_wnd* wnd, texu_i32 idx);
 texu_wnd*             _TexuPageCtrlProc_GetNextPageEnabled(texu_wnd* wnd, texu_wnd* page);
 texu_wnd*             _TexuPageCtrlProc_GetPrevPageEnabled(texu_wnd* wnd, texu_wnd* page);
 texu_wnd*             _TexuPageCtrlProc_SetCurPage(texu_wnd* wnd, texu_wnd* newpage);
+texu_i32              _TexuPageCtrlProc_GetPageIndex(texu_wnd* wnd, texu_wnd* whatpage);
 
 
+
+texu_i32
+_TexuPageCtrlProc_OnGetPageIndex(texu_wnd* wnd, texu_wnd* page)
+{
+  return _TexuPageCtrlProc_GetPageIndex(wnd, page);
+}
+
+texu_i32
+_TexuPageCtrlProc_OnGetCountPage(texu_wnd* wnd)
+{
+  texu_i32 children = texu_wnd_children(wnd);
+  return children;
+}
+
+texu_i32
+_TexuPageCtrlProc_GetPageIndex(texu_wnd* wnd, texu_wnd* whatpage)
+{
+  texu_wnd* page = texu_wnd_firstchild(wnd);
+  texu_i32 i = 0;
+  while (page)
+  {
+    if (page == whatpage)
+    {
+      return i;
+    }
+    page = texu_wnd_nextwnd(page);
+    ++i; /* next index */
+  }
+  return -1;
+}
 
 texu_wnd*
 _TexuPageCtrlProc_GetPage(texu_wnd* wnd, texu_i32 idx)
@@ -4866,6 +4898,12 @@ _TexuPageCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
 
     case TEXU_PGM_GETCURPAGE:
       return (texu_i64)_TexuPageCtrlProc_OnGetCurPage(wnd);
+
+    case TEXU_PGM_GETPAGEINDEX:
+      return _TexuPageCtrlProc_OnGetPageIndex(wnd, (texu_wnd*)param1);
+
+    case TEXU_PGM_COUNTPAGE:
+      return _TexuPageCtrlProc_OnGetCountPage(wnd);
   }
   return TexuDefWndProc(wnd, msg, param1, param2);
 }

@@ -224,12 +224,14 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   texu_menu_add_item_info(menu, item, " Copy         ", 12,         TEXU_TRUE,  "Copy selection");
   texu_menu_add_item_info(menu, item, " Paste        ", 13,         TEXU_TRUE,  "Paste selection copied");
   
-  item = texu_menu_add_menu(menu, " Search ", TEXU_TRUE);
+  item = texu_menu_add_menu(menu, " Search ", TEXU_FALSE);
   texu_menu_add_item_info(menu, item, " Find         ", 21,         TEXU_TRUE,  "Find text");
   texu_menu_add_item_info(menu, item, " Find Next    ", 22,         TEXU_TRUE,  "Find next text");
   
-  item = texu_menu_add_menu(menu, " View ", TEXU_FALSE);
+  item = texu_menu_add_menu(menu, " View ", TEXU_TRUE);
   texu_menu_add_item(menu, item, " Help     ", 31, TEXU_TRUE);
+  texu_menu_add_item(menu, item, "----------", -1, TEXU_TRUE);
+  texu_menu_add_item(menu, item, " About    ", 32, TEXU_TRUE);
   
   child = TexuCreateWindow(
           "Text:",
@@ -1253,4 +1255,3 @@ int main2()
   TexuShutdown();
   return 0;
 }
-
