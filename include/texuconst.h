@@ -234,6 +234,24 @@
 #define TEXU_MBN_ENDDIALOG              (TEXU_MBN_FIRST +  1)
 
 
+/*PAGECTRL*/
+#define TEXU_PGM_FIRST                  1000
+#define TEXU_PGM_ADDPAGE                (TEXU_PGM_FIRST +  1)
+#define TEXU_PGM_SETCURPAGE             (TEXU_PGM_FIRST +  2)
+#define TEXU_PGM_GETCURPAGE             (TEXU_PGM_FIRST +  3)
+
+#define TEXU_PGN_FIRST                  1000
+
+
+/*MENU */
+#define TEXU_MNM_FIRST                  10000
+
+#define TEXU_MNN_FIRST                  10000
+#define TEXU_MNN_ITEMCHANGED            (TEXU_MNN_FIRST +  1)
+
+
+
+
 
 #define TEXU_KEY_SELMENU               10
 
@@ -258,6 +276,7 @@
 #define TEXU_TREECTRL_CLASS           "TexuTreeCtrlClass"
 #define TEXU_UPDOWNCTRL_CLASS         "TexuUpDownCtrlClass"
 #define TEXU_PROGRESSBAR_CLASS        "TexuProgressBarClass"
+#define TEXU_PAGECTRL_CLASS           "TexuPageCtrlClass"
 
 #define TEXU_MENU_CLASS               "TexuMenuClass"
 #define TEXU_MENUWND_CLASS            "TexuMenuWndClass"
@@ -360,4 +379,3 @@
 
 
 #endif /*_TEXUCONST_H_*/
-

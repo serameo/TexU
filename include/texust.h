@@ -35,12 +35,12 @@ struct texu_wnd_attrs
   texu_ui32        exstyle;
   texu_bool        enable;
   texu_bool        visible;
-  texu_char*       text;
+  const texu_char*       text;
   texu_i32         normalcolor;
   texu_i32         disabledcolor;
   texu_i32         focuscolor;
   texu_ui32        id;
-  texu_char*       clsname;
+  const texu_char*       clsname;
   void*            userdata;
 };
 typedef struct texu_wnd_attrs texu_wnd_attrs;
@@ -171,6 +171,14 @@ typedef struct texu_menu_item texu_menu_item;
 struct texu_menu;
 typedef struct texu_menu texu_menu;
 
+struct texu_menuitem_notify
+{
+  texu_wnd_notify   hdr;         /* notification header */
+  texu_ui32         id;
+  texu_char         info[TEXU_MAX_WNDTEXT+1];
+};
+typedef struct texu_menuitem_notify texu_menuitem_notify;
+
 
 
 #ifdef __cplusplus
@@ -181,4 +189,3 @@ typedef struct texu_menu texu_menu;
 
 
 #endif /*_TEXUSTRUCT_H_*/
-

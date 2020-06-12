@@ -81,7 +81,7 @@ void              texu_env_del(texu_env*);
 
 texu_status       texu_env_register_cls(
                     texu_env*,
-                    texu_char*,
+                    const texu_char*,
                     texu_wndproc);
 texu_status       texu_env_run(texu_env*);
 texu_cio*         texu_env_get_cio(texu_env*);
@@ -142,6 +142,7 @@ texu_wnd*         texu_wnd_firstchild(texu_wnd*);
 texu_wnd*         texu_wnd_lastchild(texu_wnd*);
 texu_wnd*         texu_wnd_nextwnd(texu_wnd*);
 texu_wnd*         texu_wnd_prevwnd(texu_wnd*);
+texu_i32          texu_wnd_children(texu_wnd*);
 
 texu_status       texu_wnd_visible(texu_wnd*, texu_bool);
 texu_status       texu_wnd_enable(texu_wnd*, texu_bool);
@@ -198,5 +199,3 @@ typedef texu_i32  (*texu_tree_find_proc)(texu_i64, texu_i64, void*);
 #endif
 
 #endif /* _TEXUI_H_ */
-
-
