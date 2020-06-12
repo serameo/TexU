@@ -239,6 +239,8 @@
 #define TEXU_PGM_ADDPAGE                (TEXU_PGM_FIRST +  1)
 #define TEXU_PGM_SETCURPAGE             (TEXU_PGM_FIRST +  2)
 #define TEXU_PGM_GETCURPAGE             (TEXU_PGM_FIRST +  3)
+#define TEXU_PGM_COUNTPAGE              (TEXU_PGM_FIRST +  4)
+#define TEXU_PGM_GETPAGEINDEX           (TEXU_PGM_FIRST +  5)
 
 #define TEXU_PGN_FIRST                  1000
 
