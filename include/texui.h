@@ -134,6 +134,7 @@ texu_wnd*         texu_wnd_get_frame(texu_wnd*);
 texu_ui32         texu_wnd_get_id(texu_wnd*);
 texu_wnd*         texu_wnd_get_parent(texu_wnd*);
 texu_wnd*         texu_wnd_get_activechild(texu_wnd*);
+texu_wnd*         texu_wnd_set_activechild(texu_wnd* wnd, texu_wnd* childwnd);
 texu_wnd*         texu_wnd_get_first_activechild(texu_wnd*);
 texu_wnd*         texu_wnd_get_last_activechild(texu_wnd*);
 texu_wnd*         texu_wnd_get_next_activechild(texu_wnd*, texu_wnd*);
@@ -179,6 +180,7 @@ texu_status       texu_wnd_save_curpos(texu_wnd*);
 texu_status       texu_wnd_restore_curpos(texu_wnd*);
 
 texu_menu*        texu_wnd_set_menu(texu_wnd*, texu_menu*);
+texu_menu*        texu_wnd_get_menu(texu_wnd*);
 
 
 

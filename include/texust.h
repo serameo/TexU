@@ -179,6 +179,20 @@ struct texu_menuitem_notify
 };
 typedef struct texu_menuitem_notify texu_menuitem_notify;
 
+struct texu_wnd_template
+{
+  const texu_char* text;
+  const texu_char* clsname;
+  texu_ui32  style;
+  texu_ui32  exstyle;
+  texu_i32   y;
+  texu_i32   x;
+  texu_i32   h;
+  texu_i32   w;
+  texu_i32   id;
+};
+typedef struct texu_wnd_template texu_wnd_template;
+
 
 
 #ifdef __cplusplus

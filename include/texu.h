@@ -97,22 +97,23 @@ texu_status        TexuRegisterClass(
                      texu_wndproc wndproc
                    );
 
-texu_wnd*          TexuCreateWindow(
-                     texu_char* text,
-                     texu_char* clsname,
-                     texu_ui32  style,
-                     texu_ui32  exstyle,
-                     texu_i32   y,
-                     texu_i32   x,
-                     texu_i32   h,
-                     texu_i32   w,
-                     texu_wnd*  parent,
-                     texu_i32   id,
-                     void*      userdata
-                   );
-void               TexuDestroyWindow(
-                     texu_wnd*  wnd
-                   );
+texu_wnd*           TexuCreateWindow(
+                      const texu_char* text,
+                      const texu_char* clsname,
+                      texu_ui32  style,
+                      texu_ui32  exstyle,
+                      texu_i32   y,
+                      texu_i32   x,
+                      texu_i32   h,
+                      texu_i32   w,
+                      texu_wnd*  parent,
+                      texu_i32   id,
+                      void*      userdata
+                    );
+void                TexuDestroyWindow(
+                      texu_wnd*  wnd
+                    );
+texu_status         TexuCreateControls(texu_wnd* wnd, texu_wnd_template*, texu_i32);
 
 #define TEXU_WS_HIDE            0
 #define TEXU_WS_SHOW            1
@@ -161,7 +162,7 @@ TexuSetColor(
 );
 
 void
-TexuAddKeyCommands(
+TexuAddHotKey(
   texu_wnd*   wnd,
   texu_i32    key,
   texu_ui32   cmd,
@@ -182,4 +183,3 @@ TexuRestoreCursorPosition(texu_wnd* wnd);
 
 
 #endif /*_TEXU_H_*/
-
