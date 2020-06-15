@@ -143,10 +143,39 @@ TexuMessageBox(
   return wnd;
 }
 
+texu_status
+TexuCreateControls(texu_wnd* wnd, texu_wnd_template* templ, texu_i32 nitems)
+{
+  texu_status rc = TEXU_OK;
+  texu_i32 i = 0;
+
+  for (i = 0; i < nitems; ++i)
+  {
+    if (!(templ[i].clsname) || strlen(templ[i].clsname) == 0)
+    {
+      break;
+    }
+    TexuCreateWindow(
+        templ[i].text,
+        templ[i].clsname,
+        templ[i].style,
+        templ[i].exstyle,
+        templ[i].y,
+        templ[i].x,
+        templ[i].h,
+        templ[i].w,
+        wnd,
+        templ[i].id,
+        0);
+  }
+  return rc;
+}
+
+
 texu_wnd*
 TexuCreateWindow(
-  texu_char* text,
-  texu_char* clsname,
+  const texu_char* text,
+  const texu_char* clsname,
   texu_ui32  style,
   texu_ui32  exstyle,
   texu_i32   y,
@@ -331,7 +360,7 @@ TexuSetColor(
 
 
 void
-TexuAddKeyCommands(
+TexuAddHotKey(
   texu_wnd*   wnd,
   texu_i32    key,
   texu_ui32   cmd,
@@ -364,4 +393,3 @@ TexuRestoreCursorPosition(texu_wnd* wnd)
 #ifdef __cplusplus
 }
 #endif
-

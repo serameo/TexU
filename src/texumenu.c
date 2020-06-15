@@ -232,7 +232,7 @@ texu_menu_del(texu_menu* menu)
 texu_wnd*
 texu_menu_get_menubar(texu_menu* menu)
 {
-  return menu->wndbar;
+  return (menu ? menu->wndbar : 0);
 }
 
 texu_tree_item*
@@ -785,5 +785,3 @@ _TexuMenuWndProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 #ifdef __cplusplus
 }
 #endif
-
-

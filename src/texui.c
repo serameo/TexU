@@ -624,9 +624,8 @@ _TexuDefWndProc_OnEnterMenu(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
   /*open the new window to draw menu*/
   texu_i32 selmenu = 0;
   texu_tree_item* curitem = 0;
-  /*
-  texu_env_save_screen(wnd->env);
-  */
+  texu_menu_item* menuitem = 0;
+
   selmenu = ch - '0' - 1;
   curitem = texu_menu_get_menu(wnd->menu, selmenu);
   if (!(curitem))
@@ -637,6 +636,12 @@ _TexuDefWndProc_OnEnterMenu(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
       return;
     }
   }
+  menuitem = (texu_menu_item*)curitem->data;
+  if (!(menuitem->enable))
+  {
+    return;
+  }
+
   texu_menu_set_curmenu(wnd->menu, curitem);
   texu_menu_set_curmenuitem(wnd->menu, curitem->firstchild);
   _TexuDefWndProc_OpenMenuWnd(wnd, wnd->menu);
@@ -1233,6 +1238,18 @@ texu_wnd_get_id(texu_wnd* wnd)
 
 
 texu_wnd*
+texu_wnd_set_activechild(texu_wnd* wnd, texu_wnd* childwnd)
+{
+  texu_wnd* oldchild = 0;
+  if (childwnd == wnd)
+  {
+    oldchild = wnd->activechild;
+    wnd->activechild = childwnd;
+  }
+  return oldchild;
+}
+
+texu_wnd*
 texu_wnd_get_activechild(texu_wnd* wnd)
 {
   texu_wnd* activechild = (wnd ? wnd->activechild : 0);
@@ -1710,6 +1727,11 @@ texu_wnd_set_menu(texu_wnd* wnd, texu_menu* newmenu)
   return oldmenu;
 }
 
+texu_menu*
+texu_wnd_get_menu(texu_wnd* wnd)
+{
+  return wnd->menu;
+}
 
 
 #ifdef __cplusplus
