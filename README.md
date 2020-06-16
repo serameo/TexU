@@ -8,6 +8,7 @@ These files are included many text objects by the following:
 - Label (TEXU_LABEL_CLASS)
 - Edit (TEXU_EDIT_CLASS)
 - List box (radio, check, or simple list box) (TEXU_LISTBOX_CLASS)
+- Combo box (TEXU_COMBOBOX_CLASS)
 - Status bar (TEXU_STATUSBAR_CLASS)
 - List control (TEXU_LISTCTRL_CLASS)
 - Tree control (TEXU_TREECTRL_CLASS)
