@@ -56,6 +56,7 @@ texu_i64          _TexuMsgBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuLabelProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuEditProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuListBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          _TexuComboBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuStatusBarProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 /* see texuctrl.c */
@@ -112,6 +113,9 @@ _texu_env_init_syscolors(texu_env* env)
   env->syscolors[TEXU_COLOR_LISTBOX]            = TEXU_CIO_COLOR_BLUE_WHITE;
   env->syscolors[TEXU_COLOR_LISTBOX_DISABLED]   = TEXU_CIO_COLOR_BLACK_WHITE;
   env->syscolors[TEXU_COLOR_LISTBOX_SELECTED]   = TEXU_CIO_COLOR_WHITE_BLUE;
+  env->syscolors[TEXU_COLOR_COMBOBOX]           = TEXU_CIO_COLOR_BLUE_WHITE;
+  env->syscolors[TEXU_COLOR_COMBOBOX_DISABLED]  = TEXU_CIO_COLOR_BLACK_WHITE;
+  env->syscolors[TEXU_COLOR_COMBOBOX_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLUE;
   env->syscolors[TEXU_COLOR_LISTCTRL]           = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LISTCTRL_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLACK;
@@ -144,6 +148,7 @@ _texu_env_init_cls(texu_env* env)
   texu_env_register_cls(env, TEXU_LABEL_CLASS,        _TexuLabelProc);
   texu_env_register_cls(env, TEXU_EDIT_CLASS,         _TexuEditProc);
   texu_env_register_cls(env, TEXU_LISTBOX_CLASS,      _TexuListBoxProc);
+  texu_env_register_cls(env, TEXU_COMBOBOX_CLASS,     _TexuComboBoxProc);
   texu_env_register_cls(env, TEXU_LISTCTRL_CLASS,     _TexuListCtrlProc);
   texu_env_register_cls(env, TEXU_TREECTRL_CLASS,     _TexuTreeCtrlProc);
   texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);
@@ -1472,7 +1477,7 @@ texu_wnd_get_style(texu_wnd* wnd)
 }
 
 void
-texu_wnd_move(texu_wnd* wnd, texu_i32 y, texu_i32 x, texu_i32 w, texu_i32 h, texu_bool redraw)
+texu_wnd_move(texu_wnd* wnd, texu_i32 y, texu_i32 x, texu_i32 h, texu_i32 w, texu_bool redraw)
 {
   texu_rect rect = { y, x, h, w };
   texu_wnd_send_msg(wnd, TEXU_WM_MOVE, (texu_i64)&rect, redraw);

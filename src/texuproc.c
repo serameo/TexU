@@ -444,7 +444,7 @@ _TexuMsgBoxProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   rect.y = (LINES - rect.lines)/2;
   rect.x = (COLS - rect.cols)/2;
   
-  texu_wnd_move(wnd, rect.y, rect.x, rect.cols, rect.lines, TEXU_FALSE);
+  texu_wnd_move(wnd, rect.y, rect.x, rect.lines, rect.cols, TEXU_FALSE);
   
   attrs->x = rect.x;
   attrs->y = rect.y;
@@ -1553,12 +1553,12 @@ texu_i32           _TexuListBoxProc_OnGetItemText(texu_wnd* wnd, texu_i32 idx, t
 texu_i32           _TexuListBoxProc_OnGetCurSel(texu_wnd* wnd);
 void               _TexuListBoxProc_OnDeleteAllItems(texu_wnd* wnd);
 void               _TexuListBoxProc_OnChar(texu_wnd*, texu_i32 ch, texu_i32 alt);
-void               _TexuListBoxProc_OnEnableItem(texu_wnd* wnd, texu_i32 idx, texu_i32 check);
+void               _TexuListBoxProc_OnEnableItem(texu_wnd* wnd, texu_i32 idx, texu_i32 enable);
 
 
 texu_i32           _TexuListBoxProc_FindIndexByItem(texu_lbwnd* lb, texu_lbwnd_item* item);
 texu_lbwnd_item*   _TexuListBoxProc_FindItemByIndex(texu_lbwnd* lb, texu_i32 idx);
-void               _TexuListProc_Notify(texu_wnd*, texu_ui32, texu_i32);
+void               _TexuListBoxProc_Notify(texu_wnd*, texu_ui32, texu_i32);
 texu_lbwnd_item*   _TexuListBoxProc_GetFirstItemEnabled(texu_lbwnd* lb);
 texu_lbwnd_item*   _TexuListBoxProc_GetNextItemEnabled(texu_lbwnd* lb, texu_lbwnd_item* item);
 texu_lbwnd_item*   _TexuListBoxProc_GetLastItemEnabled(texu_lbwnd* lb);
@@ -1750,26 +1750,32 @@ _TexuListBoxProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
         }
       }
     }
-    /*lines = (cursel - prevsel);*/
     
     /* find the new first visible */
-    if (lb->cursel >= lb->firstvisible + height)
+    if (1 == height)
     {
-      lb->firstvisible += lines + (cursel - prevsel);
-      if (lb->firstvisible > lb->nitems - height)
+      lb->firstvisible = lb->cursel;
+    }
+    else
+    {
+      if (lb->cursel >= lb->firstvisible + height)
       {
-        lb->firstvisible = lb->nitems - height;
+        lb->firstvisible += lines + (cursel - prevsel);
+        if (lb->firstvisible > lb->nitems - height)
+        {
+          lb->firstvisible = lb->nitems - height;
+        }
+      }
+      if (lb->firstvisible > lb->cursel)
+      {
+        lb->firstvisible += lines + (cursel - prevsel);
+        if (lb->firstvisible < 0)
+        {
+          lb->firstvisible = 0;
+        }
       }
     }
-    if (lb->firstvisible > lb->cursel)
-    {
-      lb->firstvisible += lines + (cursel - prevsel);
-      if (lb->firstvisible < 0)
-      {
-        lb->firstvisible = 0;
-      }
-    }
-    
+
     /* send notification */
     _TexuListBoxProc_OnSelChanged(wnd);
     /* redraw after changing */
@@ -1983,7 +1989,7 @@ texu_i32 _TexuListBoxProc_OnCountItemCheck(texu_wnd* wnd)
 }
 
 void
-_TexuListProc_Notify(texu_wnd* wnd, texu_ui32 code, texu_i32 index)
+_TexuListBoxProc_Notify(texu_wnd* wnd, texu_ui32 code, texu_i32 index)
 {
   texu_lbwnd_notify notify;
   texu_wnd* parent = texu_wnd_get_parent(wnd);
@@ -2047,7 +2053,7 @@ _TexuListBoxProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd)
   texu_wnd_invalidate(wnd);
   
   /* send notification */
-  _TexuListProc_Notify(wnd, TEXU_LBN_SETFOCUS, lb->cursel);
+  _TexuListBoxProc_Notify(wnd, TEXU_LBN_SETFOCUS, lb->cursel);
 }
 
 texu_i32
@@ -2057,14 +2063,14 @@ _TexuListBoxProc_OnKillFocus(texu_wnd* wnd, texu_wnd* nextwnd)
   texu_lbwnd* lb = texu_wnd_get_userdata(wnd);
   
   /* send notification */
-  _TexuListProc_Notify(wnd, TEXU_LBN_KILLFOCUS, lb->cursel);
+  _TexuListBoxProc_Notify(wnd, TEXU_LBN_KILLFOCUS, lb->cursel);
   return rc;
 }
 
 void _TexuListBoxProc_OnSelChanged(texu_wnd* wnd)
 {
   texu_lbwnd* lb = texu_wnd_get_userdata(wnd);
-  _TexuListProc_Notify(wnd, TEXU_LBN_SELCHANGED, lb->cursel);
+  _TexuListBoxProc_Notify(wnd, TEXU_LBN_SELCHANGED, lb->cursel);
 }
 
 
@@ -2250,7 +2256,7 @@ void _TexuListBoxProc_OnDeleteItem(texu_wnd* wnd, texu_i32 idx)
   if (item)
   {
     /* notify to parent */
-    _TexuListProc_Notify(wnd, TEXU_LBN_DELETEITEM, idx);
+    _TexuListBoxProc_Notify(wnd, TEXU_LBN_DELETEITEM, idx);
     
     /* remove the links */
     nextitem = item->next;
@@ -2396,6 +2402,384 @@ _TexuListBoxProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
   return TexuDefWndProc(wnd, msg, param1, param2);
 }
 
+/*
+#-------------------------------------------------------------------------------
+# TexU combobox
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+struct texu_cbwnd
+{
+  texu_wnd* lb;
+};
+typedef struct texu_cbwnd texu_cbwnd;
+
+void               _TexuComboBoxProc_OnPaint(texu_wnd*, texu_cio*);
+texu_status        _TexuComboBoxProc_OnCreate(texu_wnd*, texu_wnd_attrs*);
+void               _TexuComboBoxProc_OnDestroy(texu_wnd* wnd);
+texu_i32           _TexuComboBoxProc_OnKillFocus(texu_wnd* wnd, texu_wnd* nextwnd);
+void               _TexuComboBoxProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd);
+void               _TexuComboBoxProc_OnChar(texu_wnd*, texu_i32 ch, texu_i32 alt);
+void               _TexuComboBoxProc_OnDeleteItem(texu_wnd* wnd, texu_i32 idx);
+texu_i32           _TexuComboBoxProc_OnAddItem(texu_wnd* wnd, const texu_char* text);
+texu_i32           _TexuComboBoxProc_OnCountItemCheck(texu_wnd* wnd);
+texu_i32           _TexuComboBoxProc_OnGetItemChecked(texu_wnd* wnd, texu_i32 idx);
+texu_i32           _TexuComboBoxProc_OnSetItemChecked(texu_wnd* wnd, texu_i32 idx, texu_i32 check);
+texu_i64           _TexuComboBoxProc_OnGetItemData(texu_wnd* wnd, texu_i32 idx);
+void               _TexuComboBoxProc_OnSetItemData(texu_wnd* wnd, texu_i32 idx, texu_i64 data);
+texu_i32           _TexuComboBoxProc_OnGetItemCount(texu_wnd* wnd);
+void               _TexuComboBoxProc_OnSetItemText(texu_wnd* wnd, texu_i32 idx, const texu_char* text);
+texu_i32           _TexuComboBoxProc_OnGetItemText(texu_wnd* wnd, texu_i32 idx, texu_char* text);
+texu_i32           _TexuComboBoxProc_OnGetCurSel(texu_wnd* wnd);
+void               _TexuComboBoxProc_OnSetCurSel(texu_wnd* wnd, texu_i32 idx);
+void               _TexuComboBoxProc_OnDeleteAllItems(texu_wnd* wnd);
+void               _TexuComboBoxProc_OnEnableItem(texu_wnd* wnd, texu_i32 idx, texu_i32 enable);
+
+void               _TexuComboBoxProc_Notify(texu_wnd* wnd, texu_ui32 code, texu_i32 index);
+
+void
+_TexuComboBoxProc_Notify(texu_wnd* wnd, texu_ui32 code, texu_i32 index)
+{
+  texu_cbwnd_notify notify;
+  texu_wnd* parent = texu_wnd_get_parent(wnd);
+  
+  notify.hdr.wnd  = wnd;
+  notify.hdr.id   = texu_wnd_get_id(wnd);
+  notify.hdr.code = code;
+  notify.index    = index;
+  texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
+}
+
+texu_i32
+_TexuComboBoxProc_OnKillFocus(texu_wnd* wnd, texu_wnd* nextwnd)
+{
+  texu_i32 y = texu_wnd_get_y(wnd);
+  texu_i32 x = texu_wnd_get_x(wnd);
+  texu_i32 height = 1;
+  texu_i32 width = texu_wnd_get_width(wnd);
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  texu_i32 cursel = texu_wnd_send_msg(cb->lb, TEXU_LBM_GETCURSEL, 0, 0);
+  texu_char text[TEXU_MAX_WNDTEXT+1];
+
+  texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMTEXT, cursel, (texu_i64)text);
+  texu_wnd_set_text(wnd, text);
+
+  texu_wnd_move(cb->lb, y, x, height, width, TEXU_TRUE);
+  texu_wnd_visible(cb->lb, TEXU_FALSE);
+  _TexuComboBoxProc_Notify(wnd, TEXU_CBN_KILLFOCUS, cursel);
+  texu_wnd_invalidate(texu_wnd_get_parent(wnd));
+  return TEXU_OK;
+}
+
+void
+_TexuComboBoxProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd)
+{
+  texu_i32 y = texu_wnd_get_y(wnd);
+  texu_i32 x = texu_wnd_get_x(wnd);
+  texu_i32 height = 5;
+  texu_i32 width = texu_wnd_get_width(wnd);
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  texu_i32 cursel = texu_wnd_send_msg(cb->lb, TEXU_LBM_GETCURSEL, 0, 0);
+  texu_wnd_send_msg(cb->lb, TEXU_WM_SETFOCUS, 0, 0);
+  texu_wnd_move(cb->lb, y, x, height, width, TEXU_TRUE);
+  texu_wnd_visible(cb->lb, TEXU_TRUE);
+  _TexuComboBoxProc_Notify(wnd, TEXU_CBN_SETFOCUS, cursel);
+}
+
+texu_i32
+_TexuComboBoxProc_OnCountItemCheck(texu_wnd* wnd)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  return texu_wnd_send_msg(cb->lb, TEXU_LBM_COUNTITEMCHECKED, 0, 0);
+}
+
+texu_i32
+_TexuComboBoxProc_OnGetItemChecked(texu_wnd* wnd, texu_i32 idx)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  return texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMCHECKED, idx, 0);
+}
+
+texu_i32
+_TexuComboBoxProc_OnSetItemChecked(texu_wnd* wnd, texu_i32 idx, texu_i32 check)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  return texu_wnd_send_msg(cb->lb, TEXU_LBM_SETITEMCHECKED, idx, check);
+}
+
+void
+_TexuComboBoxProc_OnSetCurSel(texu_wnd* wnd, texu_i32 idx)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_send_msg(cb->lb, TEXU_LBM_SETCURSEL, idx, 0);
+}
+
+texu_i32
+_TexuComboBoxProc_OnGetCurSel(texu_wnd* wnd)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  return texu_wnd_send_msg(cb->lb, TEXU_LBM_GETCURSEL, 0, 0);
+}
+
+texu_i32
+_TexuComboBoxProc_OnGetItemCount(texu_wnd* wnd)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  return texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMCOUNT, 0, 0);
+}
+
+void
+_TexuComboBoxProc_OnSetItemText(texu_wnd* wnd, texu_i32 idx, const texu_char* text)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_send_msg(cb->lb, TEXU_LBM_SETITEMTEXT, idx, (texu_i64)text); 
+}
+
+texu_i32
+_TexuComboBoxProc_OnGetItemText(texu_wnd* wnd, texu_i32 idx, texu_char* text)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  return texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMTEXT, idx, (texu_i64)text); 
+}
+
+void
+_TexuComboBoxProc_OnDeleteAllItems(texu_wnd* wnd)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_send_msg(cb->lb, TEXU_LBM_DELETEALLITEMS, 0, 0);
+}
+
+void
+_TexuComboBoxProc_OnEnableItem(texu_wnd* wnd, texu_i32 idx, texu_i32 enable)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_send_msg(cb->lb, TEXU_LBM_ENABLEITEM, idx, enable);
+}
+
+texu_i64
+_TexuComboBoxProc_OnGetItemData(texu_wnd* wnd, texu_i32 idx)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  return texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMDATA, idx, 0);
+}
+
+void
+_TexuComboBoxProc_OnSetItemData(texu_wnd* wnd, texu_i32 idx, texu_i64 data)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_send_msg(cb->lb, TEXU_LBM_SETITEMDATA, idx, data);
+}
+
+
+void
+_TexuComboBoxProc_OnDeleteItem(texu_wnd* wnd, texu_i32 idx)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  texu_wnd_send_msg(cb->lb, TEXU_LBM_DELETEITEM, idx, 0);
+}
+
+texu_i32
+_TexuComboBoxProc_OnAddItem(texu_wnd* wnd, const texu_char* text)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  return texu_wnd_send_msg(cb->lb, TEXU_LBM_ADDITEM, (texu_i64)text, 0);
+}
+
+void
+_TexuComboBoxProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  switch (ch)
+  {
+    case KEY_UP:
+    case KEY_DOWN:
+    case KEY_PPAGE:
+    case KEY_NPAGE:
+      texu_wnd_send_msg(cb->lb, TEXU_WM_CHAR, ch, alt);
+      texu_wnd_invalidate(cb->lb);
+      return;
+  }
+}
+
+void
+_TexuComboBoxProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
+{
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  texu_char text[TEXU_MAX_WNDTEXT+1];
+  texu_i32 y = texu_wnd_get_y(wnd);
+  texu_i32 x = texu_wnd_get_x(wnd);
+  texu_i32 width = texu_wnd_get_width(wnd);
+  texu_env* env = texu_wnd_get_env(wnd);
+  texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX);
+
+  if (!(texu_wnd_is_visible(wnd)))
+  {
+    return;
+  }
+  texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
+  texu_printf_alignment(buf, text, width, TEXU_ALIGN_LEFT);
+  texu_cio_putstr_attr(dc, y, x, buf,
+    texu_cio_get_color(dc, color));
+}
+
+texu_status
+_TexuComboBoxProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
+{
+  texu_cbwnd* cb = 0;
+  texu_wnd* lb = 0;
+  texu_env* env = texu_wnd_get_env(wnd);
+  texu_wnd_attrs attrs2;
+  texu_status rc = TEXU_OK;
+  
+  lb = texu_wnd_new(texu_wnd_get_env(wnd));
+  if (!lb)
+  {
+    return TEXU_NOMEM;
+  }
+  attrs->height = 1; /* set to 1 */
+  
+  memset(&attrs2, 0, sizeof(attrs2));
+  attrs2.y          = attrs->y;
+  attrs2.x          = attrs->x;
+  attrs2.height     = 1;/*attrs->height;*/
+  attrs2.width      = attrs->width;
+  attrs2.enable     = TEXU_TRUE;
+  attrs2.visible    = TEXU_FALSE;
+  attrs2.text       = attrs->text;
+  attrs2.normalcolor    = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX);
+  attrs2.disabledcolor  = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX_DISABLED);
+  attrs2.focuscolor     = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX_SELECTED);
+  attrs2.id         = 1;
+  attrs2.clsname    = TEXU_LISTBOX_CLASS;
+  attrs2.userdata   = 0;
+  attrs2.style      = 0;
+  attrs2.exstyle    = 0;
+  
+  rc = texu_wnd_create(lb, wnd, &attrs2);
+
+  if (rc != TEXU_OK)
+  {
+    texu_wnd_del(lb);
+    return TEXU_ERROR;
+  }
+ 
+  cb = (texu_cbwnd*)malloc(sizeof(texu_cbwnd));
+  if (!cb)
+  {
+    texu_wnd_del(lb);
+    return TEXU_NOMEM;
+  }
+  
+  memset(cb, 0, sizeof(texu_cbwnd));
+  cb->lb = lb;
+
+  texu_wnd_set_userdata(wnd, cb);
+
+  return TEXU_OK;
+}
+
+void
+_TexuComboBoxProc_OnDestroy(texu_wnd* wnd)
+{
+  texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
+  free(cb);
+}
+
+texu_i64
+_TexuComboBoxProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+{
+  switch (msg)
+  {
+    case TEXU_WM_CHAR:
+      _TexuComboBoxProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);  
+      return 0;
+      
+    case TEXU_WM_CREATE:
+      return _TexuComboBoxProc_OnCreate(wnd, (texu_wnd_attrs*)param1);
+
+    case TEXU_WM_DESTROY:
+      _TexuComboBoxProc_OnDestroy(wnd);
+      break;
+    
+    case TEXU_WM_PAINT:
+      _TexuComboBoxProc_OnPaint(wnd, (texu_cio*)param1);
+      break;
+
+    case TEXU_WM_SETFOCUS:
+      _TexuComboBoxProc_OnSetFocus(wnd, (texu_wnd*)param1);
+      break;
+
+    case TEXU_WM_KILLFOCUS:
+      return _TexuComboBoxProc_OnKillFocus(wnd, (texu_wnd*)param1);
+      
+    case TEXU_CBM_DELETEITEM:
+    {
+      _TexuComboBoxProc_OnDeleteItem(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_CBM_ADDITEM:
+    {
+      return _TexuComboBoxProc_OnAddItem(wnd, (const texu_char*)param1);
+    }
+    case TEXU_CBM_GETCURSEL:
+    {
+      return _TexuComboBoxProc_OnGetCurSel(wnd);
+    }
+    case TEXU_CBM_SETCURSEL:
+    {
+      _TexuComboBoxProc_OnSetCurSel(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_CBM_DELETEALLITEMS:
+    {
+      _TexuComboBoxProc_OnDeleteAllItems(wnd);
+      return 0;
+    }
+    case TEXU_CBM_GETITEMCOUNT:
+    {
+      return _TexuComboBoxProc_OnGetItemCount(wnd);
+    }
+    case TEXU_CBM_SETITEMDATA:
+    {
+      _TexuComboBoxProc_OnSetItemData(wnd, (texu_i32)param1, (texu_i64)param2);
+      return 0;
+    }
+    case TEXU_CBM_GETITEMDATA:
+    {
+      return (texu_i32)_TexuComboBoxProc_OnGetItemData(wnd, (texu_i32)param1);
+    }
+    case TEXU_CBM_SETITEMTEXT:
+    {
+      _TexuComboBoxProc_OnSetItemText(wnd, (texu_i32)param1, (const texu_char*)param2);
+      return 0;
+    }
+    case TEXU_CBM_GETITEMTEXT:
+    {
+      return _TexuComboBoxProc_OnGetItemText(wnd, (texu_i32)param1, (texu_char*)param2);
+    }
+    case TEXU_CBM_COUNTITEMCHECKED:
+    {
+      return _TexuComboBoxProc_OnCountItemCheck(wnd);
+    }
+    case TEXU_CBM_GETITEMCHECKED:
+    {
+      return _TexuComboBoxProc_OnGetItemChecked(wnd, (texu_i32)param1);
+    }
+    case TEXU_CBM_SETITEMCHECKED:
+    {
+      return _TexuComboBoxProc_OnSetItemChecked(wnd, (texu_i32)param1, (texu_i32)param2);
+    }
+    case TEXU_CBM_ENABLEITEM:
+    {
+      _TexuComboBoxProc_OnEnableItem(wnd, (texu_i32)param1, (texu_i32)param2);
+      return 0;
+    }
+
+  }
+
+  return TexuDefWndProc(wnd, msg, param1, param2);
+}
 
 
 /*
@@ -2688,7 +3072,7 @@ _TexuStatusBarProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   texu_wnd_set_color(wnd, color, color);
   texu_wnd_set_userdata(wnd, sb);
   
-  texu_wnd_move(wnd, attrs->y, attrs->x, attrs->width, 1, TEXU_FALSE);
+  texu_wnd_move(wnd, attrs->y, attrs->x, 1, attrs->width, TEXU_FALSE);
   texu_wnd_enable(wnd, TEXU_FALSE);
   
   return TEXU_OK;

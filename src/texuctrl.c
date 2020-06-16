@@ -1228,7 +1228,7 @@ void _TexuListCtrlProc_OnBeginEdit(texu_wnd* wnd)
   _TexuListCtrlProc_GetCellRect(lctl->editingcell, &rccell);
   texu_wnd_send_msg(lctl->editbox, TEXU_WM_KILLFOCUS, 0, 0);
   
-  texu_wnd_move(lctl->editbox, rccell.y, rccell.x, rccell.lines, rccell.cols, TEXU_TRUE);
+  texu_wnd_move(lctl->editbox, rccell.y, rccell.x, rccell.cols, rccell.lines, TEXU_TRUE);
 
   editstyle = _TexuListCtrlProc_OnGetEditStyle(wnd, lctl->curselcol);
 

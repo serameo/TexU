@@ -69,6 +69,7 @@ struct texu_wnd_template
 #define IDC_PAGE2         218
 #define IDC_PAGE3         219
 #define IDC_PAGE4         220
+#define IDC_COMBO1        221
 
 texu_wnd_template templ5[] =
 {
@@ -205,18 +206,18 @@ void _MyWndProc_OnHelp(texu_wnd* wnd)
   TexuSetWindowText(ctl, "Pressed F1 to help");
   
   newwnd = TexuCreateWindow(
-          "Test TexU App - window 2",
-          MyWndClass5,
-          0, /* style*/
-          0, /* exstyle*/
-          0, /* y */
-          0, /* x */
-          TexuGetMaxY(),
-          TexuGetMaxX(),
-          0, /* parent */
-          2, /* id */
-          0  /* user data */
-          );
+              "Test TexU App - window 2",
+              MyWndClass5,
+              0, /* style*/
+              0, /* exstyle*/
+              0, /* y */
+              0, /* x */
+              TexuGetMaxY(),
+              TexuGetMaxX(),
+              0, /* parent */
+              2, /* id */
+              0  /* user data */
+              );
   
   TexuShowWindow(newwnd, TEXU_WS_SHOW);
   TexuInvalidateWindow(newwnd);
@@ -226,13 +227,13 @@ void
 _MyWndProc_OnMsgBox(texu_wnd* wnd)
 {
   TexuMessageBox(
-            "Hello world",
-            "Do you want to update user?",
-            wnd,
-            1001, /* id */
-            TEXU_MBS_OKCANCEL,
-            0  /* user data */
-          );
+    "Hello world",
+    "Do you want to update user?",
+    wnd,
+    1001, /* id */
+    TEXU_MBS_OKCANCEL,
+    0  /* user data */
+    );
 }
 
 void _MyWndProc_OnAdd_test(texu_wnd* wnd)
@@ -243,18 +244,18 @@ void _MyWndProc_OnAdd_test(texu_wnd* wnd)
   TexuSetWindowText(ctl, "Pressed F2 to add");
   
   newwnd = TexuCreateWindow(
-          "Test TexU App - window 2",
-          MyWndClass2,
-          0, /* style*/
-          0, /* exstyle*/
-          0, /* y */
-          0, /* x */
-          TexuGetMaxY(),
-          TexuGetMaxX(),
-          0, /* parent */
-          2, /* id */
-          0  /* user data */
-          );
+              "Test TexU App - window 2",
+              MyWndClass2,
+              0, /* style*/
+              0, /* exstyle*/
+              0, /* y */
+              0, /* x */
+              TexuGetMaxY(),
+              TexuGetMaxX(),
+              0, /* parent */
+              2, /* id */
+              0  /* user data */
+              );
   
   TexuShowWindow(newwnd, TEXU_WS_SHOW);
   TexuInvalidateWindow(newwnd);
@@ -268,9 +269,9 @@ void _MyWndProc_OnExit(texu_wnd* wnd)
 void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
 {
   texu_lbwnd_notify* lbntf = (texu_lbwnd_notify*)notify;
-  texu_wnd* status = TexuGetWindowItem(wnd, IDC_STATUSBAR);
-  texu_wnd* lb = notify->wnd;
   texu_char text[TEXU_MAX_WNDTEXT+1];
+  texu_wnd* status = TexuGetWindowItem(wnd, IDC_STATUSBAR);
+  texu_wnd* lb = TexuGetWindowItem(wnd, IDC_LIST1);
   texu_wnd* udctl = TexuGetWindowItem(wnd, IDC_UPDOWN);
   texu_wnd* pgb = TexuGetWindowItem(wnd, IDC_PROGRESSBAR);
   texu_i32 val = 0;
@@ -491,8 +492,33 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
           6, /* id */
           0  /* user data */
           );
+
   child = TexuCreateWindow(
-          "1.234",
+          "combo1",
+          TEXU_COMBOBOX_CLASS,
+          0, /* style*/
+          0, /* exstyle*/
+          starty+2, /* y */
+          42, /* x */
+          1,  /* height */
+          20, /* width */
+          wnd, /* parent */
+          IDC_COMBO1, /* id */
+          0  /* user data */
+          );
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo1", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo2", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo3", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo4", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo5", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo6", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo7", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo8", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo9", 0);
+  TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"comboA", 0);
+
+  child = TexuCreateWindow(
+          "",
           TEXU_LISTBOX_CLASS,
           0, /* style*/
           0, /* exstyle*/
