@@ -2477,10 +2477,12 @@ _TexuComboBoxProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd)
 {
   texu_i32 y = texu_wnd_get_y(wnd);
   texu_i32 x = texu_wnd_get_x(wnd);
-  texu_i32 height = 5;
   texu_i32 width = texu_wnd_get_width(wnd);
   texu_cbwnd* cb = (texu_cbwnd*)texu_wnd_get_userdata(wnd);
   texu_i32 cursel = texu_wnd_send_msg(cb->lb, TEXU_LBM_GETCURSEL, 0, 0);
+  texu_i32 nitems = texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMCOUNT, 0, 0);
+  texu_i32 height = TEXU_MIN(5, nitems);
+
   texu_wnd_send_msg(cb->lb, TEXU_WM_SETFOCUS, 0, 0);
   texu_wnd_move(cb->lb, y, x, height, width, TEXU_TRUE);
   texu_wnd_visible(cb->lb, TEXU_TRUE);
@@ -2620,6 +2622,9 @@ _TexuComboBoxProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
   texu_printf_alignment(buf, text, width, TEXU_ALIGN_LEFT);
   texu_cio_putstr_attr(dc, y, x, buf,
+    texu_cio_get_color(dc, color));
+
+  texu_cio_putch_attr(dc, y, x+width-1, 'V',
     texu_cio_get_color(dc, color));
 }
 

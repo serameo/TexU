@@ -510,12 +510,14 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo2", 0);
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo3", 0);
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo4", 0);
+  /*
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo5", 0);
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo6", 0);
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo7", 0);
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo8", 0);
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo9", 0);
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"comboA", 0);
+  */
 
   child = TexuCreateWindow(
           "",
