@@ -244,6 +244,31 @@
 
 #define TEXU_PGN_FIRST                  1000
 
+/* COMBOXBOX */
+#define TEXU_CBM_FIRST                  1100
+#define TEXU_CBM_ADDITEM                (TEXU_CBM_FIRST +  1)
+#define TEXU_CBM_DELETEITEM             (TEXU_CBM_FIRST +  2)
+#define TEXU_CBM_GETCURSEL              (TEXU_CBM_FIRST +  3)
+#define TEXU_CBM_SETCURSEL              (TEXU_CBM_FIRST +  4)
+#define TEXU_CBM_DELETEALLITEMS         (TEXU_CBM_FIRST +  5)
+#define TEXU_CBM_GETITEMCOUNT           (TEXU_CBM_FIRST +  6)
+#define TEXU_CBM_GETITEMDATA            (TEXU_CBM_FIRST +  7)
+#define TEXU_CBM_SETITEMDATA            (TEXU_CBM_FIRST +  8)
+#define TEXU_CBM_SETITEMTEXT            (TEXU_CBM_FIRST +  9)
+#define TEXU_CBM_GETITEMTEXT            (TEXU_CBM_FIRST + 10)
+#define TEXU_CBM_COUNTITEMCHECKED       (TEXU_CBM_FIRST + 11)
+#define TEXU_CBM_GETITEMCHECKED         (TEXU_CBM_FIRST + 12)
+#define TEXU_CBM_SETITEMCHECKED         (TEXU_CBM_FIRST + 13)
+#define TEXU_CBM_ENABLEITEM             (TEXU_CBM_FIRST + 14)
+
+/* listbox notification */
+#define TEXU_CBN_FIRST                  1100
+#define TEXU_CBN_SETFOCUS               (TEXU_CBN_FIRST +  1)
+#define TEXU_CBN_KILLFOCUS              (TEXU_CBN_FIRST +  2)
+#define TEXU_CBN_DELETEITEM             (TEXU_CBN_FIRST +  3)
+#define TEXU_CBN_SELCHANGED             (TEXU_CBN_FIRST +  4)
+
+
 
 /*MENU */
 #define TEXU_MNM_FIRST                  10000
@@ -274,6 +299,7 @@
 #define TEXU_STATUSBAR_CLASS          "TexuStatusBarClass"
 #define TEXU_EDIT_CLASS               "TexuEditClass"
 #define TEXU_LISTBOX_CLASS            "TexuListBoxClass"
+#define TEXU_COMBOBOX_CLASS           "TexuComboBoxClass"
 #define TEXU_LISTCTRL_CLASS           "TexuListCtrlClass"
 #define TEXU_TREECTRL_CLASS           "TexuTreeCtrlClass"
 #define TEXU_UPDOWNCTRL_CLASS         "TexuUpDownCtrlClass"

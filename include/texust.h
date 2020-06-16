@@ -77,6 +77,12 @@ struct texu_lbwnd_notify
 };
 typedef struct texu_lbwnd_notify texu_lbwnd_notify;
 
+struct texu_cbwnd_notify
+{
+  texu_wnd_notify  hdr;
+  texu_i32         index;
+};
+typedef struct texu_cbwnd_notify texu_cbwnd_notify;
 
 struct texu_wnd_subitem
 {
