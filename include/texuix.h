@@ -267,8 +267,79 @@
   (texu_i32)texu_wnd_send_msg(wnd, TEXU_TCM_DELETEITEM, (texu_i64)(texu_tree_item*)item, 0)
 
 #define TexuTreeCtrl_InsertItem(wnd, item, wnditem) \
-  (texu_i32)texu_wnd_send_msg(wnd, TEXU_TCM_INSERTITEM, (texu_i64)(texu_tree_item*)item, (const texu_i64)(const texu_treewnd_item*)wnditem)
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_TCM_INSERTITEM, (texu_i64)(texu_tree_item*)item, (texu_i64)(const texu_treewnd_item*)wnditem)
 
+
+/*UPDOWN CONTROL*/
+#define TexuUpDownCtrl_SetMinMax(wnd, min, max) \
+  texu_wnd_send_msg(wnd, TEXU_UDCM_SETMINMAX, (texu_i32)(min), (texu_i32)(max))
+
+#define TexuUpDownCtrl_GetMinMax(wnd, min, max) \
+  (texu_status)texu_wnd_send_msg(wnd, TEXU_UDCM_GETMINMAX, (texu_i32*)(min), (texu_i32*)(max))
+
+#define TexuUpDownCtrl_SetStep(wnd, updown) \
+  texu_wnd_send_msg(wnd, TEXU_UDCM_SETSTEP, (texu_i32)(updown), 0)
+
+#define TexuUpDownCtrl_GetStep(wnd) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_UDCM_GETSTEP, 0, 0)
+
+#define TexuUpDownCtrl_Step(wnd, updown) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_UDCM_STEP, (texu_i32)(updown), 0)
+
+#define TexuUpDownCtrl_SetPage(wnd, page) \
+  texu_wnd_send_msg(wnd, TEXU_UDCM_SETPAGE, (texu_i32)(page), 0)
+
+#define TexuUpDownCtrl_GetPage(wnd) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_UDCM_GETPAGE, 0, 0)
+
+#define TexuUpDownCtrl_Page(wnd, page) \
+  texu_wnd_send_msg(wnd, TEXU_UDCM_PAGE, (texu_i32)(page), 0)
+
+#define TexuUpDownCtrl_GetInt(wnd) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_UDCM_GETINT, 0, 0)
+
+
+/* PROGRESSBAR CONTROL*/
+#define TexuProgressBar_SetMax(wnd, max) \
+  texu_wnd_send_msg(wnd, TEXU_PGBM_SETMAX, (texu_i32)(max), 0)
+
+#define TexuProgressBar_GetMax(wnd) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGBM_GETMAX, 0, 0)
+
+#define TexuProgressBar_SetPos(wnd, pos) \
+  texu_wnd_send_msg(wnd, TEXU_PGBM_SETPOS, (texu_i32)(pos), 0)
+
+#define TexuProgressBar_GetPos(wnd) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGBM_GETPOS, 0, 0)
+
+#define TexuProgressBar_SetStep(wnd, step) \
+  texu_wnd_send_msg(wnd, TEXU_PGBM_SETSTEP, (texu_i32)(step), 0)
+
+#define TexuProgressBar_GetStep(wnd) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGBM_GETSTEP, 0, 0)
+
+#define TexuProgressBar_Step(wnd, updown) \
+  texu_wnd_send_msg(wnd, TEXU_PGBM_STEP, (texu_i32)(updown), 0)
+
+#define TexuProgressBar_GetPercent(wnd, pct) \
+  texu_wnd_send_msg(wnd, TEXU_PGBM_GETPERCENT, (texu_f32*)(pct), 0)
+
+
+/*PAGECTRL*/
+#define TexuPageCtrl_AddPage(wnd, clsname, id) \
+  (texu_status)texu_wnd_send_msg(wnd, TEXU_PGM_ADDPAGE, (const texu_char*)(pct), (texu_ui32)(id))
+
+#define TexuPageCtrl_SetCurPage(wnd, pageidx) \
+  (texu_wnd*)texu_wnd_send_msg(wnd, TEXU_PGM_SETCURPAGE, (texu_i32)(pageidx), 0)
+
+#define TexuPageCtrl_GetCurPage(wnd) \
+  (texu_wnd*)texu_wnd_send_msg(wnd, TEXU_PGM_GETCURPAGE, 0, 0)
+
+#define TexuPageCtrl_CountPage(wnd) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGM_COUNTPAGE, 0, 0)
+
+#define TexuPageCtrl_GetPageIndex(wnd, page) \
+  (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGM_GETPAGEINDEX, (texu_i32)page), 0)
 
 
 

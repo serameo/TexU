@@ -209,6 +209,7 @@
 #define TEXU_PGBM_SETSTEP               (TEXU_PGBM_FIRST +  5)
 #define TEXU_PGBM_GETSTEP               (TEXU_PGBM_FIRST +  6)
 #define TEXU_PGBM_STEP                  (TEXU_PGBM_FIRST +  7)
+#define TEXU_PGBM_GETPERCENT            (TEXU_PGBM_FIRST +  8)
 
 #define TEXU_PGBN_FIRST                 700
 
@@ -362,6 +363,7 @@
 /* LISTBOX */
 #define TEXU_LBS_CHECKBOX              0x00010000
 #define TEXU_LBS_RADIOBOX              0x00020000
+#define TEXU_LBS_OWNERCOLOR            0x00040000
 
 #define TEXU_LB_UNCHECKED              0
 #define TEXU_LB_CHECKED                1
