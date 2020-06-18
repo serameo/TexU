@@ -94,6 +94,7 @@
 #define TEXU_LBM_GETITEMCHECKED         (TEXU_LBM_FIRST + 12)
 #define TEXU_LBM_SETITEMCHECKED         (TEXU_LBM_FIRST + 13)
 #define TEXU_LBM_ENABLEITEM             (TEXU_LBM_FIRST + 14)
+#define TEXU_LBM_SETSELCOLOR            (TEXU_LBM_FIRST + 15)
 
 /* listbox notification */
 #define TEXU_LBN_FIRST                  300
@@ -126,6 +127,7 @@
 #define TEXU_LCM_DELETEALLCOLUMNS       (TEXU_LCM_FIRST + 18)
 #define TEXU_LCM_DELETECOLUMN           (TEXU_LCM_FIRST + 19)
 #define TEXU_LCM_ADDCOLUMN              (TEXU_LCM_FIRST + 20)
+#define TEXU_LCM_ADDITEMS               (TEXU_LCM_FIRST + 21)
 
 
 
@@ -260,6 +262,7 @@
 #define TEXU_CBM_GETITEMCHECKED         (TEXU_CBM_FIRST + 12)
 #define TEXU_CBM_SETITEMCHECKED         (TEXU_CBM_FIRST + 13)
 #define TEXU_CBM_ENABLEITEM             (TEXU_CBM_FIRST + 14)
+#define TEXU_CBM_GETLISTBOX             (TEXU_CBM_FIRST + 15)
 
 /* listbox notification */
 #define TEXU_CBN_FIRST                  1100
