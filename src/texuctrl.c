@@ -129,7 +129,8 @@ void                  _TexuListCtrlProc_DrawItem(
 
 void                  _TexuListCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt);
 void                  _TexuListCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
-texu_i32              _TexuListCtrlProc_OnAddItem(texu_wnd* wnd, texu_char* text, texu_i32 nitems);
+texu_i32              _TexuListCtrlProc_OnAddItems(texu_wnd* wnd, texu_char* text, texu_i32 nitems);
+texu_i32              _TexuListCtrlProc_OnAddItem(texu_wnd* wnd, const texu_char*);
 void                  _TexuListCtrlProc_OnDeleteAllItems(texu_wnd* wnd);
 void                  _TexuListCtrlProc_OnDeleteColumn(texu_wnd* wnd, texu_i32 col);
 texu_i32              _TexuListCtrlProc_OnAddColumn(texu_wnd* wnd, texu_wnd_header* hdritem);
@@ -139,7 +140,7 @@ texu_i32              _TexuListCtrlProc_OnGetItem(texu_wnd* wnd, texu_ui32 flags
 texu_i32              _TexuListCtrlProc_OnSetItem(texu_wnd* wnd, texu_ui32 flags, texu_wnd_subitem* subitem);
 void                  _TexuListCtrlProc_OnSetFocus(texu_wnd*, texu_wnd*);
 texu_i32              _TexuListCtrlProc_OnKillFocus(texu_wnd*, texu_wnd*);
-void                  _TexuListCtrlProc_OnInvalidateItem(texu_wnd* wnd, texu_ui32 col, texu_ui32 idx);
+void                  _TexuListCtrlProc_OnInvalidateItem(texu_wnd* wnd, texu_i32 row, texu_i32 col);
 void                  _TexuListCtrlProc_OnSelChanged(texu_wnd* wnd);
 void                  _TexuListCtrlProc_OnBeginMoving(texu_wnd* wnd);
 void                  _TexuListCtrlProc_OnMovingCursor(texu_wnd* wnd, texu_i32 ch);
@@ -153,7 +154,7 @@ texu_wnd*             _TexuListCtrlProc_OnGetEditBox(texu_wnd* wnd);
 void                  _TexuListCtrlProc_OnSetCurPage(texu_wnd* wnd, texu_i32 npage);
 texu_i32              _TexuListCtrlProc_OnGetCurPage(texu_wnd* wnd);
 texu_i32              _TexuListCtrlProc_OnGetItemsPerPage(texu_wnd* wnd);
-void                  _TexuListCtrlProc_OnSetEditableCols(texu_wnd* wnd, texu_i32 ncols, texu_i32* edtcols);
+void                  _TexuListCtrlProc_OnSetEditableCols(texu_wnd* wnd, texu_i32 ncols, const texu_i32* edtcols);
 void                  _TexuListCtrlProc_OnEndEditRow(texu_wnd* wnd, texu_i32 row, texu_i32 ok);
 void                  _TexuListCtrlProc_OnBeginEditRow(texu_wnd* wnd, texu_i32 row);
 void                  _TexuListCtrlProc_OnBeginInsertRow(texu_wnd* wnd, texu_i32 row);
@@ -161,6 +162,7 @@ void                  _TexuListCtrlProc_OnBeginInsertCell(texu_wnd* wnd, texu_i3
 void                  _TexuListCtrlProc_OnBeginEdit(texu_wnd* wnd);
 void                  _TexuListCtrlProc_OnEndEdit(texu_wnd* wnd, texu_i32 ok);
 void                  _TexuListCtrlProc_OnDeleteItem(texu_wnd* wnd, texu_i32 idx);
+void                  _TexuListCtrlProc_OnDeleteAllColumns(texu_wnd* wnd);
 
 
 
@@ -401,7 +403,7 @@ _TexuListCtrlProc_OnDestroy(texu_wnd* wnd)
 }
 
 void
-_TexuListCtrlProc_OnSetEditableCols(texu_wnd* wnd, texu_i32 ncols, texu_i32* edtcols)
+_TexuListCtrlProc_OnSetEditableCols(texu_wnd* wnd, texu_i32 ncols, const texu_i32* edtcols)
 {
   texu_lcwnd* lctl = 0;
   texu_i32 i = 0;
@@ -480,6 +482,22 @@ _TexuListCtrlProc_OnAddColumn(texu_wnd* wnd, texu_wnd_header* hdritem)
 }
 
 void
+_TexuListCtrlProc_OnDeleteAllColumns(texu_wnd* wnd)
+{
+  texu_i32 nheaders = 0;
+  texu_i32 i = 0;
+  texu_lcwnd* lctl = 0;
+
+  lctl = (texu_lcwnd*)texu_wnd_get_userdata(wnd);
+  nheaders = lctl->nheaders;
+  for (i = 0; i < nheaders; ++i)
+  {
+    _TexuListCtrlProc_OnDeleteColumn(wnd, 0);
+  }
+}
+
+
+void
 _TexuListCtrlProc_OnDeleteColumn(texu_wnd* wnd, texu_i32 col)
 {
   texu_lcwnd* lctl = 0;
@@ -521,7 +539,6 @@ _TexuListCtrlProc_OnDeleteColumn(texu_wnd* wnd, texu_i32 col)
   while (cell)
   {
     nextcell = cell->next;
-    /*free(cell->caption);*/
     cell->next = cell->prev = 0;
     free(cell);
     cell = nextcell;
@@ -541,10 +558,10 @@ _TexuListCtrlProc_OnDeleteAllItems(texu_wnd* wnd)
   texu_lcwnd* lctl = 0;
 
   lctl = (texu_lcwnd*)texu_wnd_get_userdata(wnd);
-  nitems = lctl->nheaders;
+  nitems = lctl->nitems;
   for (i = 0; i < nitems; ++i)
   {
-    texu_wnd_send_msg(wnd, TEXU_LCM_DELETEITEM, 0, 0);
+    _TexuListCtrlProc_OnDeleteItem(wnd, 0);
   }
 }
 
@@ -593,7 +610,15 @@ _TexuListCtrlProc_OnDeleteItem(texu_wnd* wnd, texu_i32 idx)
 }
 
 texu_i32
-_TexuListCtrlProc_OnAddItem(texu_wnd* wnd, texu_char* text, texu_i32 nitems)
+_TexuListCtrlProc_OnAddItem(texu_wnd* wnd, const texu_char* text)
+{
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  sprintf(buf, "\t%s", text);
+  return _TexuListCtrlProc_OnAddItems(wnd, (texu_char*)text, 1);
+}
+
+texu_i32
+_TexuListCtrlProc_OnAddItems(texu_wnd* wnd, texu_char* text, texu_i32 nitems)
 {
   texu_lcwnd* lctl = 0;
   texu_i32 i = 0;
@@ -1654,7 +1679,7 @@ texu_i32 _TexuListCtrlProc_InsertEmptyItem(texu_wnd* wnd)
   lctl = (texu_lcwnd*)texu_wnd_get_userdata(wnd);
   memset(sz, '\t', lctl->nheaders);
   sz[lctl->nheaders] = 0;
-  return _TexuListCtrlProc_OnAddItem(wnd, sz, lctl->nheaders);
+  return _TexuListCtrlProc_OnAddItems(wnd, sz, lctl->nheaders);
 }
 
 texu_i32 _TexuListCtrlProc_GetLastEditableCol(texu_lcwnd* lctl)
@@ -2060,7 +2085,7 @@ texu_i32 _TexuListCtrlProc_OnGetItem(texu_wnd* wnd, texu_ui32 flags, texu_wnd_su
   return rc;
 }
 
-void _TexuListCtrlProc_OnInvalidateItem(texu_wnd* wnd, texu_ui32 col, texu_ui32 idx)
+void _TexuListCtrlProc_OnInvalidateItem(texu_wnd* wnd, texu_i32 row, texu_i32 col)
 {
   texu_lcwnd* lctl = 0;
   texu_lcwnd_cell* cell = 0;
@@ -2070,13 +2095,13 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd* wnd, texu_ui32 col, texu_ui32 
   texu_i32 color = 0;
 
   lctl = (texu_lcwnd*)texu_wnd_get_userdata(wnd);
-  cell = _TexuListCtrlProc_FindCellByIndex(lctl, col, idx);
+  cell = _TexuListCtrlProc_FindCellByIndex(lctl, col, row);
   if (cell)
   {
     /* check if the cell is available on screen */
     texu_wnd_get_rect(wnd, &rcwnd);
-    if (idx >= lctl->firstvisiblerow && 
-        idx <  lctl->firstvisiblerow + rcwnd.lines)
+    if (row >= lctl->firstvisiblerow && 
+        row <  lctl->firstvisiblerow + rcwnd.lines)
     {
       if (col >= _TexuListCtrlProc_FindHeaderIndex(lctl, lctl->firstvisiblehdr) &&
           col <  _TexuListCtrlProc_FindHeaderIndex(lctl, lctl->lastvisiblehdr))
@@ -2086,7 +2111,7 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd* wnd, texu_ui32 col, texu_ui32 
 
         
         color = cell->normcolor;
-        if (idx == lctl->curselrow)
+        if (row == lctl->curselrow)
         {
           color = cell->selcolor;
         }
@@ -2277,12 +2302,16 @@ _TexuListCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_LCM_DELETEALLCOLUMNS:
     {
-      _TexuListCtrlProc_OnDeleteAllItems(wnd);
+      _TexuListCtrlProc_OnDeleteAllColumns(wnd);
       return 0;
     }
     case TEXU_LCM_ADDITEM:
     {
-      return _TexuListCtrlProc_OnAddItem(wnd, (texu_char*)param1, (texu_i32)param2);
+      return _TexuListCtrlProc_OnAddItem(wnd, (const texu_char*)param1);
+    }
+    case TEXU_LCM_ADDITEMS:
+    {
+      return _TexuListCtrlProc_OnAddItems(wnd, (texu_char*)param1, (texu_i32)param2);
     }
     case TEXU_LCM_DELETEITEM:
     {
@@ -2308,7 +2337,7 @@ _TexuListCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_LCM_INVALIDATEITEM:
     {
-      _TexuListCtrlProc_OnInvalidateItem(wnd, (texu_ui32)param1, (texu_ui32)param2);
+      _TexuListCtrlProc_OnInvalidateItem(wnd, (texu_i32)param1, (texu_i32)param2);
       return 0;
     }
     case TEXU_LCM_SETEDITSTYLE:
@@ -2353,7 +2382,7 @@ _TexuListCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_LCM_SETEDITABLECOLS:
     {
-      _TexuListCtrlProc_OnSetEditableCols(wnd, (texu_i32)param1, (texu_i32*)param2);
+      _TexuListCtrlProc_OnSetEditableCols(wnd, (texu_i32)param1, (const texu_i32*)param2);
       break;
     }
   }
@@ -2386,10 +2415,10 @@ void                _TexuTreeProc_Notify(texu_wnd* wnd, texu_ui32, texu_tree_ite
 
 
 void                _TexuTreeCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
-texu_tree_item*     _TexuTreeCtrlProc_OnInsertItem(texu_wnd* wnd, texu_tree_item* parentitem, texu_treewnd_item* insertitem);
+texu_tree_item*     _TexuTreeCtrlProc_OnInsertItem(texu_wnd* wnd, texu_tree_item* parentitem, const texu_treewnd_item* insertitem);
 texu_i32            _TexuTreeCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs*);
 texu_i32            _TexuTreeCtrlProc_OnDeleteItem(texu_wnd* wnd, texu_tree_item* item);
-texu_i32            _TexuTreeCtrlProc_OnSetItem(texu_wnd* wnd, texu_tree_item* item, texu_treewnd_item* setitem);
+texu_i32            _TexuTreeCtrlProc_OnSetItem(texu_wnd* wnd, texu_tree_item* item, const texu_treewnd_item* setitem);
 texu_i32            _TexuTreeCtrlProc_OnGetItem(texu_wnd* wnd, texu_tree_item* item, texu_treewnd_item* getitem);
 texu_tree_item*     _TexuTreeCtrlProc_OnFindItem(texu_wnd* wnd, texu_treewnd_item* finditem, void* userdata);
 texu_tree_item*     _TexuTreeCtrlProc_OnFindNextItem(texu_wnd* wnd, texu_tree_item* previtem, texu_treewnd_item* finditem);
@@ -2441,9 +2470,9 @@ texu_i64            _TexuTreeCtrlProc_ExpandAllItemsProc(texu_tree_item*, void*)
 texu_i64            _TexuTreeCtrlProc_CollapseAllItemsProc(texu_tree_item*, void*);
 
 /* helper functions */
-texu_treeview_item* _texu_treeview_item_new(texu_tree_item* item);
+texu_treeview_item* _texu_treeview_item_new(const texu_tree_item* item);
 void                _texu_treeview_item_del(texu_i64 data, void* userdata);
-texu_treewnd_item*  _texu_treewnd_item_new(texu_treewnd_item* item);
+texu_treewnd_item*  _texu_treewnd_item_new(const texu_treewnd_item* item);
 void                _texu_treewnd_item_del(texu_i64 data, void* userdata);
 
 
@@ -2472,12 +2501,12 @@ _TexuTreeCtrlProc_DefFindItemProc(texu_i64 d1, texu_i64 d2, void* userdata)
 }
 
 texu_treeview_item*
-_texu_treeview_item_new(texu_tree_item* item)
+_texu_treeview_item_new(const texu_tree_item* item)
 {
   texu_treeview_item* view = (texu_treeview_item*)malloc(sizeof(texu_treeview_item));
   if (view)
   {
-    view->item = item;
+    view->item = (texu_tree_item*)item;
   }
   return view;
 }
@@ -2879,7 +2908,6 @@ texu_tree_item* _TexuTreeCtrlProc_MoveNext(texu_wnd* wnd, texu_i32 move_times)
     data = (texu_treewnd_item*)view->item->data;
     
     tc->curselitem = view->item;
-    /*tc->tree->GetItemData(tc->curselitem, &data, sizeof (data));*/
     data->selected = 1;
 
     /* is the new index out-of-bound visible items? */
@@ -3157,7 +3185,7 @@ texu_i32 _TexuTreeCtrlProc_OnKillFocus(texu_wnd* wnd, texu_wnd* prevwnd)
 texu_tree_item* _TexuTreeCtrlProc_OnInsertItem(
   texu_wnd* wnd,
   texu_tree_item* parentitem,
-  texu_treewnd_item* insertitem)
+  const texu_treewnd_item* insertitem)
 {
     texu_treewnd* tc = 0;
     texu_i32 children = 0;
@@ -3205,7 +3233,7 @@ texu_tree_item* _TexuTreeCtrlProc_OnInsertItem(
 }
 
 texu_treewnd_item*
-_texu_treewnd_item_new(texu_treewnd_item* item)
+_texu_treewnd_item_new(const texu_treewnd_item* item)
 {
   texu_treewnd_item* data = (texu_treewnd_item*)malloc(sizeof(texu_treewnd_item));
   if (data)
@@ -3421,7 +3449,7 @@ texu_tree_item* _TexuTreeCtrlProc_OnGetSelItem(texu_wnd* wnd)
   return tc->curselitem;
 }
 
-texu_i32 _TexuTreeCtrlProc_OnSetItem(texu_wnd* wnd, texu_tree_item* item, texu_treewnd_item* setitem)
+texu_i32 _TexuTreeCtrlProc_OnSetItem(texu_wnd* wnd, texu_tree_item* item, const texu_treewnd_item* setitem)
 {
   texu_treewnd_item* data = 0;
 
@@ -3794,7 +3822,7 @@ _TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_TCM_INSERTITEM:
     {
-        return (texu_i32) _TexuTreeCtrlProc_OnInsertItem(wnd, (texu_tree_item*) param1, (texu_treewnd_item*) param2);
+        return (texu_i32) _TexuTreeCtrlProc_OnInsertItem(wnd, (texu_tree_item*) param1, (const texu_treewnd_item*) param2);
     }
     case TEXU_TCM_DELETEITEM:
     {
@@ -3802,7 +3830,7 @@ _TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_TCM_SETITEM:
     {
-        return _TexuTreeCtrlProc_OnSetItem(wnd, (texu_tree_item*) param1, (texu_treewnd_item*) param2);
+        return _TexuTreeCtrlProc_OnSetItem(wnd, (texu_tree_item*) param1, (const texu_treewnd_item*) param2);
     }
     case TEXU_TCM_GETITEM:
     {

@@ -518,6 +518,9 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo9", 0);
   TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"comboA", 0);
   */
+  child = (texu_wnd*)TexuSendMessage(child, TEXU_CBM_GETLISTBOX, 0, 0);
+  TexuSetColor(child, TEXU_CIO_COLOR_BLUE_WHITE, TEXU_CIO_COLOR_BLUE_WHITE);
+  TexuSendMessage(child, TEXU_LBM_SETSELCOLOR, TEXU_CIO_COLOR_BLUE_CYAN, 0);
 
   child = TexuCreateWindow(
           "",
@@ -542,6 +545,9 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64)"Item 8", 0);
   TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64)"Item 9", 0);
   TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64)"Item 10", 0);
+
+  TexuSetColor(child, TEXU_CIO_COLOR_BLUE_WHITE, TEXU_CIO_COLOR_BLACK_WHITE);
+  TexuSendMessage(child, TEXU_LBM_SETSELCOLOR, TEXU_CIO_COLOR_BLUE_CYAN, 0);
   
   TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)2, (texu_i64)TEXU_FALSE);
   TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)3, (texu_i64)TEXU_FALSE);
@@ -1165,16 +1171,16 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
       header.caption = "Header 6";
       TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
 
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 1\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 2\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 3\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 4\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 5\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 6\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 7\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 8\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t 9\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-      TexuSendMessage(child, TEXU_LCM_ADDITEM, (texu_i64)"\t10\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 1\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 2\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 3\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 4\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 5\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 6\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 7\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 8\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t 9\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+      TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64)"\t10\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
       
       subitem.idx = 0;
       subitem.col = 0;
