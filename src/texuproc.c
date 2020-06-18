@@ -1505,6 +1505,10 @@ struct texu_lbwnd_item
   texu_i64                data;
   texu_i32                checked;
   texu_i32                enable;
+  texu_i32                visible;
+  texu_i32                normcolor;
+  texu_i32                discolor;
+  texu_i32                selcolor;
   struct texu_lbwnd_item *prev;
   struct texu_lbwnd_item *next;
 };
@@ -2087,84 +2091,93 @@ void
 _TexuListBoxProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
 {
   texu_lbwnd* lb = texu_wnd_get_userdata(wnd);
-  if (texu_wnd_is_visible(wnd))
+  if (!(texu_wnd_is_visible(wnd)))
   {
-    texu_char buf[TEXU_MAX_WNDTEXT+1];
-    texu_char text[TEXU_MAX_WNDTEXT+1];
-    texu_i32 y = texu_wnd_get_y(wnd);
-    texu_i32 x = texu_wnd_get_x(wnd);
-    texu_i32 width = texu_wnd_get_width(wnd);
-    texu_i32 height = texu_wnd_get_height(wnd);
-    texu_i32 normcolor = TEXU_CIO_COLOR_CYAN_BLACK;
-    texu_i32 discolor = TEXU_CIO_COLOR_WHITE_BLACK;
-    texu_ui32 style = texu_wnd_get_style(wnd);
-    texu_bool enable = texu_wnd_is_enable(wnd);
-    texu_i32 color = TEXU_CIO_COLOR_CYAN_BLACK;
-    texu_i32 i = 0;
-    texu_i32 lines = 0;
-    texu_lbwnd_item* item = 0;
+    return;
+  }
+  texu_char buf[TEXU_MAX_WNDTEXT+1];
+  texu_char text[TEXU_MAX_WNDTEXT+1];
+  texu_i32 y = texu_wnd_get_y(wnd);
+  texu_i32 x = texu_wnd_get_x(wnd);
+  texu_i32 width = texu_wnd_get_width(wnd);
+  texu_i32 height = texu_wnd_get_height(wnd);
+  texu_i32 normcolor = TEXU_CIO_COLOR_CYAN_BLACK;
+  texu_i32 discolor = TEXU_CIO_COLOR_WHITE_BLACK;
+  texu_ui32 style = texu_wnd_get_style(wnd);
+  texu_bool enable = texu_wnd_is_enable(wnd);
+  texu_i32 color = TEXU_CIO_COLOR_CYAN_BLACK;
+  texu_i32 i = 0;
+  texu_i32 lines = 0;
+  texu_lbwnd_item* item = 0;
 
-    texu_wnd_get_color(wnd, &normcolor, &discolor);
-    color = (enable ? normcolor : discolor);
-     /* draw */
-    if (lb->nitems > 0)
+  texu_wnd_get_color(wnd, &normcolor, &discolor);
+  color = (enable ? normcolor : discolor);
+  /* draw */
+  if (lb->nitems > 0)
+  {
+    item = lb->firstitem;
+    lines = height;
+
+    for (i = 0; i < lb->nitems && item; ++i, item = item->next)
     {
-      item = lb->firstitem;
-      lines = height;
-
-      for (i = 0; i < lb->nitems && item; ++i, item = item->next)
+      if (i < lb->firstvisible)
       {
-        if (i < lb->firstvisible)
+        /* do nothing */
+        continue;
+      }
+      else if (i - lb->firstvisible < lines)
+      {
+        memset(buf, 0, sizeof(buf));
+        if (style & TEXU_LBS_CHECKBOX)
         {
-          /* do nothing */
-          continue;
-        }
-        else if (i - lb->firstvisible < lines)
-        {
-          memset(buf, 0, sizeof(buf));
-          if (style & TEXU_LBS_CHECKBOX)
+          if (item->checked)
           {
-            if (item->checked)
-            {
-              strcpy(buf, "[X] ");
-            }
-            else
-            {
-              strcpy(buf, "[ ] ");
-            }
-          }
-          else if (style & TEXU_LBS_RADIOBOX)
-          {
-            if (item->checked)
-            {
-              strcpy(buf, "(*) ");
-            }
-            else
-            {
-              strcpy(buf, "( ) ");
-            }
-          }          
-          
-          /* copy from item text */
-          strcat(buf, item->itemtext);
-          
-          memset(text, 0, sizeof(text));
-          texu_printf_alignment(text, buf, width, style);
-          
-          if (i == lb->cursel && item->enable)
-          {
-            color = lb->selcolor;
+            strcpy(buf, "[X] ");
           }
           else
           {
-            color = (item->enable ? normcolor : discolor);
+            strcpy(buf, "[ ] ");
           }
-          texu_cio_putstr_attr(cio, y+(i-lb->firstvisible), x, text,
-            texu_cio_get_color(cio, color));
-        }/* not owner draw */
-      } /* for each item */
-    } /* items are valid */
-  }
+        }
+        else if (style & TEXU_LBS_RADIOBOX)
+        {
+          if (item->checked)
+          {
+            strcpy(buf, "(*) ");
+          }
+          else
+          {
+            strcpy(buf, "( ) ");
+          }
+        }          
+          
+        /* copy from item text */
+        strcat(buf, item->itemtext);
+          
+        memset(text, 0, sizeof(text));
+        texu_printf_alignment(text, buf, width, style);
+          
+        if (i == lb->cursel && item->enable)
+        {
+          color = lb->selcolor;
+          if (style & TEXU_LBS_OWNERCOLOR)
+          {
+            color = item->selcolor;
+          }
+        }
+        else
+        {
+          color = (item->enable ? normcolor : discolor);
+          if (style & TEXU_LBS_OWNERCOLOR)
+          {
+            color = (item->enable ? item->normcolor : item->discolor);
+          }
+        }
+        texu_cio_putstr_attr(cio, y+(i-lb->firstvisible), x, text,
+        texu_cio_get_color(cio, color));
+      }/* not owner draw */
+    } /* for each item */
+  } /* items are valid */
 }
 
 texu_status
@@ -2219,6 +2232,7 @@ _TexuListBoxProc_OnDestroy(texu_wnd* wnd)
 
 texu_i32 _TexuListBoxProc_OnAddItem(texu_wnd* wnd, const texu_char* text)
 {
+  texu_env* env = texu_wnd_get_env(wnd);
   texu_lbwnd* lb = texu_wnd_get_userdata(wnd);
   texu_i32 len = 0;
   texu_lbwnd_item* item = 0;
@@ -2228,6 +2242,10 @@ texu_i32 _TexuListBoxProc_OnAddItem(texu_wnd* wnd, const texu_char* text)
   {
     memset(item, 0, sizeof(texu_lbwnd_item));
     item->enable = TEXU_TRUE;
+    item->visible = TEXU_TRUE;
+    item->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX);
+    item->discolor  = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_DISABLED);
+    item->selcolor  = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_SELECTED);
     
     len = strlen(text);
     if (len > TEXU_MAX_WNDTEXT)

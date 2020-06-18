@@ -4324,6 +4324,7 @@ texu_i32              _TexuProgressBarProc_OnGetStep(texu_wnd* wnd);
 void                  _TexuProgressBarProc_OnStep(texu_wnd* wnd, texu_i32);
 void                  _TexuProgressBarProc_OnPaint(texu_wnd* wnd, texu_cio* dc);
 texu_i32              _TexuProgressBarProc_OnGetText(texu_wnd* wnd, texu_char* text, texu_i32 textlen);
+void                  _TexuProgressBarProc_OnGetPercent(texu_wnd* wnd, texu_f32* pct);
 
 texu_f32              _TexuProgressBarProc_GetPercent(texu_wnd* wnd);
 
@@ -4448,6 +4449,12 @@ _TexuProgressBarProc_OnDestroy(texu_wnd* wnd)
   free(pgb);
 }
 
+void
+_TexuProgressBarProc_OnGetPercent(texu_wnd* wnd, texu_f32* pct)
+{
+  *pct = _TexuProgressBarProc_GetPercent(wnd);
+}
+
 texu_f32
 _TexuProgressBarProc_GetPercent(texu_wnd* wnd)
 {
@@ -4567,6 +4574,11 @@ _TexuProgressBarProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 par
     case TEXU_PGBM_STEP:
     {
       _TexuProgressBarProc_OnStep(wnd, (texu_i32)param1);
+      return 0;
+    }
+    case TEXU_PGBM_GETPERCENT:
+    {
+      _TexuProgressBarProc_OnGetPercent(wnd, (texu_f32*)param1);
       return 0;
     }
   }
