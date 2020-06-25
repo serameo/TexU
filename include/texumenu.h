@@ -30,6 +30,8 @@ extern "C" {
 #define TEXU_MS_TEXT          1
 #define TEXU_MS_BREAK         0
 
+typedef texu_tree_item    texu_popup_menu;
+typedef texu_tree_item    texu_popup_menu_item;
 
 texu_menu*        texu_menu_new(texu_wnd*, texu_ui32);
 void              texu_menu_del(texu_menu*);
@@ -66,9 +68,8 @@ texu_tree_item*   texu_menu_set_curmenu(texu_menu*, texu_tree_item*);
 texu_tree_item*   texu_menu_get_menuitem(texu_menu*, texu_tree_item*, texu_ui32);
 texu_tree_item*   texu_menu_set_curmenuitem(texu_menu*, texu_tree_item*);
 
-
-void              texu_menu_enable_item(texu_menu*, texu_menu_item*, texu_bool);
-
+texu_bool         texu_menu_enable_menu(texu_menu*, texu_ui32, texu_bool);
+texu_bool         texu_menu_enable_menuitem(texu_menu*, texu_tree_item*, texu_ui32, texu_bool);
 
 
 #ifdef __cplusplus

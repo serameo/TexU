@@ -79,7 +79,7 @@ typedef texu_i64  (*texu_wndproc)(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuDefWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 
-texu_env*         texu_env_new();
+texu_env*         texu_env_new(texu_i32, texu_i32);
 void              texu_env_del(texu_env*);
 
 texu_status       texu_env_register_cls(

@@ -26,45 +26,12 @@
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
 #include "texumacros.h"
-/*
-#define TEXU_FALSE                     0
-#define TEXU_TRUE                      1
-#define TEXU_IS_TRUE(e)                (0 != (e))
-#define TEXU_IS_FALSE(e)               (0 == (e))
-#define TEXT_IS_NULL(p)                (0 == (p))
-#define TEXT_IS_NOT_NULL(p)            (!(p))
-#define TEXU_MIN(a, b)                 ((a) < (b) ? (a) : (b))
-#define TEXU_MAX(a, b)                 ((a) > (b) ? (a) : (b))
-*/
 
 /*
 # TexU types and structures
 #
 */
 #include "texutypes.h"
-/*
-typedef char                           texu_i8;
-typedef unsigned char                  texu_ui8;
-typedef short                          texu_i16;
-typedef unsigned short                 texu_ui16;
-typedef long                           texu_i32;
-typedef unsigned long                  texu_ui32;
-typedef long long                      texu_i64;
-typedef unsigned long long             texu_ui64;
-typedef float                          texu_f4;
-typedef double                         texu_f8;
-
-typedef char                           texu_char;
-typedef unsigned char                  texu_byte;
-typedef short                          texu_short;
-typedef long                           texu_long;
-typedef long long                      texu_longlong;
-typedef long long                      texu_bool;
-typedef float                          texu_float;
-typedef double                         texu_double;
-typedef char*                          texu_string;
-*/
-
 
 /*
 # TexU libraries
@@ -81,12 +48,11 @@ typedef char*                          texu_string;
 # TexU interface functions
 #
 */
-texu_status        TexuStartup();
+texu_status        TexuStartup(texu_i32 lines, texu_i32 cols);
 texu_status        TexuShutdown();
 texu_status        TexuRun();
 
 texu_env*          TexuGetEnv();
-texu_cio*          TexuGetDC();
 texu_i32           TexuGetMaxY();
 texu_i32           TexuGetMaxX();
 
@@ -178,7 +144,35 @@ TexuSaveCursorPosition(texu_wnd* wnd);
 void
 TexuRestoreCursorPosition(texu_wnd* wnd);
 
+/* menus */
+texu_menu*            TexuCreateMenu(texu_wnd* owner, texu_ui32 id);
+void                  TexuDestroyMenu(texu_menu* menu);
+texu_popup_menu*      TexuAddPopupMenu(
+                        texu_menu* menu,
+                        const texu_char* text,
+                        texu_bool enable,
+                        const texu_char* info);
+texu_popup_menu_item* TexuAddPopupMenuItem(
+                        texu_menu* menu,
+                        texu_popup_menu* popup,
+                        const texu_char* text,
+                        texu_ui32 itemid,
+                        texu_bool enable,
+                        const texu_char* info);
+texu_popup_menu*      TexuGetPopupMenu(texu_menu* menu, texu_ui32 idx);
+texu_popup_menu_item* TexuGetPopupMenuItem(
+                        texu_menu* menu,
+                        texu_popup_menu* popup,
+                        texu_ui32 popupid);
+texu_bool             TexuEnablePopupMenu(texu_menu* menu, texu_ui32 idx, texu_bool enable);
+texu_bool             TexuEnablePopupMenuItem(texu_menu* menu, texu_popup_menu* popup, texu_ui32 id, texu_bool enable);
 
+/* device context */
+texu_cio*           TexuGetDC();
+texu_i32            TexuGetColor(texu_cio* cio, texu_i32 clridx);
+texu_i32            TexuDrawHRects(texu_cio* cio, texu_rect* rect, texu_i32* widths, texu_i32 nwidth, texu_i32 attrs);
+texu_i32            TexuDrawVRects(texu_cio* cio, texu_rect* rect, texu_i32* heights, texu_i32 nheight, texu_i32 attrs);
+texu_i32            TexuDrawFrame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_i32 attrs);
 
 
 

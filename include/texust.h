@@ -165,12 +165,12 @@ struct texu_menu_item
   texu_ui32       id;
   texu_char       text[TEXU_MAX_WNDTEXT+1];
   texu_bool       enable;
-  texu_bool       visible;
   texu_i32        normcolor;
   texu_i32        discolor;
   texu_i32        selcolor;
   texu_ui32       style;    /*TEXU_MS_TEXT, TEXU_MS_BREAK*/
   texu_char       info[TEXU_MAX_WNDTEXT+1];
+  void*           userdata;
 };
 typedef struct texu_menu_item texu_menu_item;
 
