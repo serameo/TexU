@@ -137,7 +137,7 @@ int main()
   texu_status rc = 0;
   texu_wnd* wnd = 0;
 
-  rc = TexuStartup();
+  rc = TexuStartup(25, 100);/*25 lines x 100 characters per line*/
   if (rc != TEXU_OK)
   {
     printf("cannot initialized environment\n");
@@ -336,11 +336,11 @@ _MyWndProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_rect rect2 = { 14, 0, 10, 99 };
   texu_i32 heights[2] = { 4, 4 };
   
-  texu_cio_draw_hrects(dc, &rect, widths, 4, 
-    texu_cio_get_color(dc, TEXU_CIO_COLOR_WHITE_BLUE));
+  TexuDrawHRects(dc, &rect, widths, 4, 
+    TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE));
     
-  texu_cio_draw_vrects(dc, &rect2, heights, 2, 
-    texu_cio_get_color(dc, TEXU_CIO_COLOR_WHITE_YELLOW));
+  TexuDrawVRects(dc, &rect2, heights, 2, 
+    TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_YELLOW));
 }
 
 texu_status _MyWndProc_OnCreate1(texu_wnd* wnd)
@@ -355,28 +355,29 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   texu_wnd* child = 0;
   texu_menu* menu = 0;
   texu_i32 starty = 1;
-  texu_tree_item *item = 0;
+  texu_popup_menu *item = 0;
   
-  menu = texu_menu_new(wnd, ID_MAINMENU);
-  item = texu_menu_add_menu(menu, " File ", TEXU_TRUE);
-  texu_menu_add_item_info(menu, item, " New          ", ID_ADD,     TEXU_TRUE,  "New window");
-  texu_menu_add_item_info(menu, item, " Open         ", 2,          TEXU_TRUE,  "Open window");
-  texu_menu_add_item_info(menu, item, "--------------", -1,         TEXU_FALSE, "");
-  texu_menu_add_item_info(menu, item, " Exit   Alt+X ", ID_DELETE,  TEXU_TRUE,  "Exit a program");
+  menu = TexuCreateMenu(wnd, ID_MAINMENU);
+  item = TexuAddPopupMenu(menu, " File ", TEXU_TRUE, "File");
+  TexuAddPopupMenuItem(menu, item, " New          ", ID_ADD,     TEXU_TRUE,  "New window");
+  TexuAddPopupMenuItem(menu, item, " Open         ", 2,          TEXU_TRUE,  "Open window");
+  TexuAddPopupMenuItem(menu, item, "--------------", -1,         TEXU_FALSE, "");
+  TexuAddPopupMenuItem(menu, item, " Exit   Alt+X ", ID_DELETE,  TEXU_TRUE,  "Exit a program");
 
-  item = texu_menu_add_menu(menu, " Edit ", TEXU_TRUE);
-  texu_menu_add_item_info(menu, item, " Cut          ", 11,         TEXU_TRUE,  "Cut selection");
-  texu_menu_add_item_info(menu, item, " Copy         ", 12,         TEXU_TRUE,  "Copy selection");
-  texu_menu_add_item_info(menu, item, " Paste        ", 13,         TEXU_TRUE,  "Paste selection copied");
+  item = TexuAddPopupMenu(menu, " Edit ", TEXU_TRUE, "Edit");
+  TexuAddPopupMenuItem(menu, item, " Cut          ", 11,         TEXU_TRUE,  "Cut selection");
+  TexuAddPopupMenuItem(menu, item, " Copy         ", 12,         TEXU_TRUE,  "Copy selection");
+  TexuAddPopupMenuItem(menu, item, " Paste        ", 13,         TEXU_TRUE,  "Paste selection copied");
   
-  item = texu_menu_add_menu(menu, " Search ", TEXU_FALSE);
-  texu_menu_add_item_info(menu, item, " Find         ", 21,         TEXU_TRUE,  "Find text");
-  texu_menu_add_item_info(menu, item, " Find Next    ", 22,         TEXU_TRUE,  "Find next text");
+  item = TexuAddPopupMenu(menu, " Search ", TEXU_TRUE, "Search");
+  TexuAddPopupMenuItem(menu, item, " Find         ", 21,         TEXU_TRUE,  "Find text");
+  TexuAddPopupMenuItem(menu, item, " Find Next    ", 22,         TEXU_TRUE,  "Find next text");
+  TexuEnablePopupMenu(menu, 2, TEXU_FALSE);
   
-  item = texu_menu_add_menu(menu, " View ", TEXU_TRUE);
-  texu_menu_add_item_info(menu, item, " Help      F1 ", ID_HELP,    TEXU_TRUE , "");
-  texu_menu_add_item_info(menu, item, "--------------", -1,         TEXU_FALSE, "");
-  texu_menu_add_item_info(menu, item, " About        ", ID_MSGBOX,  TEXU_TRUE , "About test_texu demo");
+  item = TexuAddPopupMenu(menu, " View ", TEXU_TRUE, "View");
+  TexuAddPopupMenuItem(menu, item, " Help      F1 ", ID_HELP,    TEXU_TRUE , "");
+  TexuAddPopupMenuItem(menu, item, "--------------", -1,         TEXU_FALSE, "");
+  TexuAddPopupMenuItem(menu, item, " About        ", ID_MSGBOX,  TEXU_TRUE , "About test_texu demo");
   
   child = TexuCreateWindow(
           "Text:",
@@ -809,7 +810,7 @@ _MyWndProc2_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
   texu_rect rect = { 9, 0, 4, 99 };
   texu_cio_draw_frame(dc, "Hello World", &rect,
-    texu_cio_get_color(dc, TEXU_CIO_COLOR_WHITE_BLUE));
+    TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE));
 }
 
 texu_i64
@@ -1137,7 +1138,7 @@ MyWndProc3(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
               0, /* y */
               0, /* x */
               20,
-              120,
+              100,
               wnd, /* parent */
               1, /* id */
               0  /* user data */
@@ -1490,7 +1491,7 @@ int main3()
   texu_char text[80];
   texu_char* key;
 
-  rc = TexuStartup();
+  rc = TexuStartup(25, 100);/*25 lines x 100 characters per line*/
   if (rc != TEXU_OK)
   {
     printf("cannot initialized environment\n");
@@ -1519,7 +1520,7 @@ int main3()
     if (ch == KEY_F(1))
     {
       texu_cio_putstr_attr(cio, 24, 0, "exit now", 
-        COLOR_PAIR(TEXU_CIO_COLOR_YELLOW_BLUE)|A_BLINK);
+        TexuGetColor(cio, TEXU_CIO_COLOR_YELLOW_BLUE)|A_BLINK);
       texu_cio_getch(cio);
       break;
     }

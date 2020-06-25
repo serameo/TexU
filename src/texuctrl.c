@@ -62,6 +62,7 @@ struct texu_lcwnd_header
   texu_ui32          editstyle;
   texu_i32           decwidth;
   texu_bool          enable;
+  void*              userdata;
   
   texu_lcwnd_cell*   firstcell;
   texu_lcwnd_cell*   lastcell;
@@ -692,16 +693,17 @@ _TexuListCtrlProc_DrawItem(
   texu_i32 x = rccell->x;
   texu_i32 y = rccell->y;
   
-  memset(buf, 0, sizeof(buf));
+  memset(buf, 0, sizeof(buf));/*
   memset(buf, ' ', cols);
   texu_cio_putstr_attr(dc,
       y,
       x,
       buf,
-      COLOR_PAIR(color));
+      texu_cio_get_color(dc, color));*/
   
-  cols = (isheader ? cols : cols - 2);
-  len = texu_printf_alignment(buf, 
+  cols = (isheader ? cols : cols - 0);
+  len = texu_printf_alignment(
+          buf, 
           caption,
           cols,
           align);
@@ -713,14 +715,15 @@ _TexuListCtrlProc_DrawItem(
   }
   else
   {
-    x += 1;
+    /*x += 1;*/
   }
 
-  texu_cio_putstr_attr(dc,
+  texu_cio_putstr_attr(
+      dc,
       y,
       x,
       buf,
-      COLOR_PAIR(color));
+      texu_cio_get_color(dc, color));
 }
 
 void
@@ -736,6 +739,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   texu_i32 i = 0;
   texu_i32 forcewidth = 0;
   texu_ui32 style = texu_wnd_get_style(wnd);
+  texu_i32 border = 0;
   
   lctl = (texu_lcwnd*)texu_wnd_get_userdata(wnd);
   
@@ -761,13 +765,13 @@ _TexuListCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
   }
   
   while (header && width < rcwnd.cols)
-  {    
+  {
     rcitem.x    = rcwnd.x + width - header->cols;
     rcitem.cols = header->cols;
     if (rcitem.x < 0)
     {
       rcitem.x = rcwnd.x;
-      if (forcewidth == 1)
+      if (1 == forcewidth)
       {
         rcitem.cols = width;
       }
@@ -777,21 +781,18 @@ _TexuListCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
       }
     }
 
-    normcolor =    header->normcolor;
-    selcolor  =    header->selcolor;
-
+    normcolor = header->normcolor;
+    selcolor  = header->selcolor;
+    /* draw header */
     if (!(style & TEXU_LCS_NOHEADER))
     {
-        if (style & TEXU_LCS_NOBORDER)
-        {
-            _TexuListCtrlProc_DrawItem(dc, &rcitem,
-                header->caption, normcolor, header->align, 0); /* 0=no border */
-        }
-        else
-        {
-            _TexuListCtrlProc_DrawItem(dc, &rcitem,
-                header->caption, normcolor, TEXU_ALIGN_CENTER, 1); /* 1=header */
-        }
+      border = 1;
+      if (style & TEXU_LCS_NOBORDER)
+      {
+        border = 0;
+      }
+      _TexuListCtrlProc_DrawItem(dc, &rcitem,
+          header->caption, normcolor, TEXU_ALIGN_CENTER, border); /* 0=no border, 1=border */
     }
 
     /* draw cells */
@@ -2408,6 +2409,7 @@ struct texu_treewnd
   texu_i32              discolor;
   texu_i32              selcolor;
   void*                 userdata_findproc;
+  void*                 exparam;
 };
 typedef struct texu_treewnd texu_treewnd;
 
@@ -2441,10 +2443,6 @@ texu_i32            _TexuTreeCtrlProc_OnGetShiftedText(texu_wnd* wnd);
 void                _TexuTreeCtrlProc_OnSetShiftedText(texu_wnd* wnd, texu_i32 shifted);
 
 void                _TexuTreeCtrlProc_RefreshView(texu_wnd* wnd);
-/*typedef texu_i32         (*fn_tree_compare_proc)(const void*, const void*);*/
-/*
-texu_i32            _TexuTreeCtrlProc_DefFindItemProc(const void* datap, const void* itemp);
-*/
 texu_i32            _TexuTreeCtrlProc_DefFindItemProc(texu_i64, texu_i64, void*);
 
 void                _TexuTreeCtrlProc_GetDisplayedText(
@@ -2492,7 +2490,6 @@ _TexuTreeProc_Notify(texu_wnd* wnd, texu_ui32 code, texu_tree_item* item)
 
 texu_i32
 _TexuTreeCtrlProc_DefFindItemProc(texu_i64 d1, texu_i64 d2, void* userdata)
-/*texu_i32 _TexuTreeCtrlProc_DefFindItemProc(const void* datap, const void* itemp)*/
 {
   /* this function compare the item text */
   texu_treewnd_item* dataitem = (texu_treewnd_item*) d1;
@@ -2663,486 +2660,478 @@ texu_i32 _TexuTreeCtrlProc_OnImportFromFile(texu_wnd* wnd, FILE* fp, texu_tree_i
 
 texu_i32 _TexuTreeCtrlProc_OnExportToFile(texu_wnd* wnd, FILE* fp, texu_tree_exp_proc prnproc)
 {
-    texu_queue* queue = 0;
-    texu_char buf[BUFSIZ + 1];
-    texu_treewnd* tc = 0;
-    texu_treewnd_item* data = 0;
-    texu_treeview_item* view = 0;
-    texu_tree_item* root = 0;
-    texu_i32 startx = 0, endx = 0;
+  texu_queue* queue = 0;
+  texu_char buf[BUFSIZ + 1];
+  texu_treewnd* tc = 0;
+  texu_treewnd_item* data = 0;
+  texu_treeview_item* view = 0;
+  texu_tree_item* root = 0;
+  texu_i32 startx = 0, endx = 0;
 
-    if (!fp)
-    {
-        /* nothing to do */
-        return -1;
-    }
-    tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
+  if (!fp)
+  {
+      /* nothing to do */
+      return -1;
+  }
+  tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
 
-    /* visible window & there is a visible item */
-    if (!tc->firstvisibleitem)
-    {
-        return 0;
-    }
-    /* populate all items */
-    queue = texu_queue_new();
-    root = texu_tree_get_root(tc->tree);
-    
-    texu_tree_populate(
-                    tc->tree,
-                    root->firstchild,
-                    TEXU_TPO_PRE,
-                    _TexuTreeCtrlProc_PreorderTraverseProc,
-                    queue);
-                    
+  /* visible window & there is a visible item */
+  if (!tc->firstvisibleitem)
+  {
+      return 0;
+  }
+  /* populate all items */
+  queue = texu_queue_new();
+  root = texu_tree_get_root(tc->tree);
+  
+  texu_tree_populate(
+                  tc->tree,
+                  root->firstchild,
+                  TEXU_TPO_PRE,
+                  _TexuTreeCtrlProc_PreorderTraverseProc,
+                  queue);
+                  
 
-    /* print all items to file */
-    while (!texu_queue_empty(queue))
-    {
-        
-        view = (texu_treeview_item*)texu_queue_first(queue);
-        
-        texu_queue_dequeue(queue);
+  /* print all items to file */
+  while (!texu_queue_empty(queue))
+  {
+      
+      view = (texu_treeview_item*)texu_queue_first(queue);
+      
+      texu_queue_dequeue(queue);
 
-        data = (texu_treewnd_item*)view->item->data;
+      data = (texu_treewnd_item*)view->item->data;
 
-        memset(buf, 0, sizeof (buf));
-        _TexuTreeCtrlProc_GetDisplayedText(wnd, buf, &startx, &endx, view->item, BUFSIZ - 1, TEXU_TRUE);
+      memset(buf, 0, sizeof (buf));
+      _TexuTreeCtrlProc_GetDisplayedText(wnd, buf, &startx, &endx, view->item, BUFSIZ - 1, TEXU_TRUE);
 
-        if (prnproc)
-        {
-            if (prnproc(fp, data) != 0)
-            {
-              free(view);
-                return 1;
-            }
-        }
-        else
-        {
-            fprintf(fp, "%s\n", buf);
-        }
-        free(view);
-    }
-    /* release memory */
-    texu_queue_cb_free(queue, _texu_treeview_item_del, 0);
-    
-    texu_queue_del(queue);
-    return 0;
+      if (prnproc)
+      {
+          if (prnproc(fp, data) != 0)
+          {
+            free(view);
+              return 1;
+          }
+      }
+      else
+      {
+          fprintf(fp, "%s\n", buf);
+      }
+      free(view);
+  }
+  /* release memory */
+  texu_queue_cb_free(queue, _texu_treeview_item_del, 0);
+  
+  texu_queue_del(queue);
+  return 0;
 }
 
 void _TexuTreeCtrlProc_AdjustVisibleItems(texu_wnd* wnd)
 {
-    texu_treewnd* tc = 0;
-    texu_treewnd_item* data = 0;
-    texu_treeview_item *view = 0;
-    texu_tree_item* root = 0;
-    texu_tree_item* next_item = 0;
-    texu_queue* queue;
-    texu_queue* subqueue;
-    texu_list* items = 0;
+  texu_treewnd* tc = 0;
+  texu_treewnd_item* data = 0;
+  texu_treeview_item *view = 0;
+  texu_tree_item* root = 0;
+  texu_tree_item* next_item = 0;
+  texu_queue* queue;
+  texu_queue* subqueue;
+  texu_list* items = 0;
 
-    tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
+  tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
 
-    /* visible window & there is a visible item */
-    if (!tc->firstvisibleitem)
-    {
-        return;
-    }
+  /* visible window & there is a visible item */
+  if (!tc->firstvisibleitem)
+  {
+      return;
+  }
 
-    items = texu_list_new();
+  items = texu_list_new();
 
-    queue = texu_queue_new();
-    root = texu_tree_get_root(tc->tree);
-    texu_tree_populate(
-                    tc->tree,
-                    root->firstchild,
-                    TEXU_TPO_PRE,
-                    _TexuTreeCtrlProc_PreorderTraverseProc,
-                    queue);
-                    
+  queue = texu_queue_new();
+  root = texu_tree_get_root(tc->tree);
+  texu_tree_populate(
+      tc->tree,
+      root->firstchild,
+      TEXU_TPO_PRE,
+      _TexuTreeCtrlProc_PreorderTraverseProc,
+      queue);
+                  
 
-    while (!texu_queue_empty(queue))
-    {
-        
-        view = (texu_treeview_item*)texu_queue_first(queue);
-        
-        texu_queue_dequeue(queue);
-
-        
-        texu_list_add(items, (texu_i64)view);
-
-        /* selected item */
-        data = (texu_treewnd_item*)view->item->data;
-
-        /* has data but not expanded */
-        if (data->children > 0 && !data->expanded)
-        {
-            next_item = view->item->next;
-
-            /* skip its children */
-            subqueue = texu_queue_new();
-            
-            texu_tree_populate(
-                    tc->tree,
-                    view->item,
-                    TEXU_TPO_PRE,
-                    _TexuTreeCtrlProc_PreorderTraverseProc,
-                    subqueue);
-            
-            texu_queue_cb_dequeue(subqueue, _texu_treeview_item_del, 0);
-            
-            while (!texu_queue_empty(subqueue))
-            {
-                view = (texu_treeview_item*)texu_queue_first(subqueue);
-                texu_queue_dequeue(subqueue);
-                
-                if (view->item == next_item)
-                {
-                    break;
-                }
-                texu_queue_cb_dequeue(queue, _texu_treeview_item_del, 0);
-            }
-            texu_queue_cb_free(subqueue, _texu_treeview_item_del, 0);
-            
-            texu_queue_del(subqueue);
-        }
-    }
-    texu_queue_cb_free(queue, _texu_treeview_item_del, 0);
-    texu_queue_del(queue);
+  while (!texu_queue_empty(queue))
+  {      
+    view = (texu_treeview_item*)texu_queue_first(queue);
     
+    texu_queue_dequeue(queue);
 
-    /* assign to the visible items */
-    if (texu_list_count(items) > 0)
+    
+    texu_list_add(items, (texu_i64)view);
+
+    /* selected item */
+    data = (texu_treewnd_item*)view->item->data;
+
+    /* has data but not expanded */
+    if (data->children > 0 && !data->expanded)
     {
-        if (tc->visibleitems)
-        {
-            
-            texu_list_cb_free(tc->visibleitems, _texu_treeview_item_del, 0);
-            texu_list_del(tc->visibleitems);
-        }
-        tc->visibleitems = items;
-    }
-    else
-    {
+      next_item = view->item->next;
+
+      /* skip its children */
+      subqueue = texu_queue_new();
+      
+      texu_tree_populate(
+          tc->tree,
+          view->item,
+          TEXU_TPO_PRE,
+          _TexuTreeCtrlProc_PreorderTraverseProc,
+          subqueue);
+      
+      texu_queue_cb_dequeue(subqueue, _texu_treeview_item_del, 0);
+      
+      while (!texu_queue_empty(subqueue))
+      {
+        view = (texu_treeview_item*)texu_queue_first(subqueue);
+        texu_queue_dequeue(subqueue);
         
-        texu_list_cb_free(items, _texu_treeview_item_del, 0);
-        texu_list_del(items);
+        if (view->item == next_item)
+        {
+          break;
+        }
+        texu_queue_cb_dequeue(queue, _texu_treeview_item_del, 0);
+      }
+      texu_queue_cb_free(subqueue, _texu_treeview_item_del, 0);
+      
+      texu_queue_del(subqueue);
     }
+  }
+  texu_queue_cb_free(queue, _texu_treeview_item_del, 0);
+  texu_queue_del(queue);
+  
+
+  /* assign to the visible items */
+  if (texu_list_count(items) > 0)
+  {
+    if (tc->visibleitems)
+    {
+      texu_list_cb_free(tc->visibleitems, _texu_treeview_item_del, 0);
+      texu_list_del(tc->visibleitems);
+    }
+    tc->visibleitems = items;
+  }
+  else
+  {      
+    texu_list_cb_free(items, _texu_treeview_item_del, 0);
+    texu_list_del(items);
+  }
 }
 
 void _TexuTreeCtrlProc_RefreshView(texu_wnd* wnd)
 {
-    /* refresh update if the new item or deleting item is in the visible bound */
-    texu_wnd_invalidate(wnd);
+  /* refresh update if the new item or deleting item is in the visible bound */
+  texu_wnd_invalidate(wnd);
 }
 
 texu_tree_item* _TexuTreeCtrlProc_MoveNext(texu_wnd* wnd, texu_i32 move_times)
 {
-    texu_treewnd* tc = 0;
-    texu_treewnd_item* data = 0;
-    texu_list_item* iter = 0;
-    texu_treeview_item* view = 0;
-    texu_i32 i = 0;
-    texu_i32 items = 0;
-    texu_i32 firstindex = 0;
-    texu_i32 curindex = 0;
-    texu_list_item* first_iter = 0;
-    texu_list_item* cur_iter = 0;
-    texu_rect rc;
-    texu_i32 first_moves = 0;
-    texu_i32 cur_moves = 0;
-    texu_bool movefirst = TEXU_TRUE;
+  texu_treewnd* tc = 0;
+  texu_treewnd_item* data = 0;
+  texu_list_item* iter = 0;
+  texu_treeview_item* view = 0;
+  texu_i32 i = 0;
+  texu_i32 items = 0;
+  texu_i32 firstindex = 0;
+  texu_i32 curindex = 0;
+  texu_list_item* first_iter = 0;
+  texu_list_item* cur_iter = 0;
+  texu_rect rc;
+  texu_i32 first_moves = 0;
+  texu_i32 cur_moves = 0;
+  texu_bool movefirst = TEXU_TRUE;
 
-    texu_wnd_get_rect(wnd, &rc);
-    tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
-    items = texu_list_count(tc->visibleitems);
+  texu_wnd_get_rect(wnd, &rc);
+  tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
+  items = texu_list_count(tc->visibleitems);
 
-    /* change selection item */
-    iter = texu_list_first(tc->visibleitems);
-    /* find the first index */
-    while (iter)
-    {
-        view = (texu_treeview_item*)iter->data;
-        data = (texu_treewnd_item*)view->item->data;
-        
-        if (view->item == tc->firstvisibleitem)
-        {
-            first_iter = iter;
-            break;
-        }
-        iter = iter->next;
-        ++firstindex;
-    }
-    /* find the current selection index */
-    curindex = firstindex;
-    while (iter)
-    {
-        view = (texu_treeview_item*)iter->data;
-        data = (texu_treewnd_item*)view->item->data;
-        if (view->item == tc->curselitem)
-        {
-            cur_iter = iter;
-            break;
-        }
-        iter = iter->next;
-        ++curindex;
-    }
-
-    if (curindex == items - 1)
-    {
-        /* no move required the last item */
-        return tc->curselitem;
-    }
-
-    /* un-highlighting the old item */
-    data = (texu_treewnd_item*)tc->curselitem->data;
-    data->selected = 0;
-
-    /* highlighting the new item */
-    iter = cur_iter;
-    cur_moves = TEXU_MAX(0, TEXU_MIN(move_times, items - curindex - 1));
-    for (i = 0; i < cur_moves && iter; ++i)
-    {
-        iter = iter->next;
-    }
+  /* change selection item */
+  iter = texu_list_first(tc->visibleitems);
+  /* find the first index */
+  while (iter)
+  {
     view = (texu_treeview_item*)iter->data;
     data = (texu_treewnd_item*)view->item->data;
     
-    tc->curselitem = view->item;
-    data->selected = 1;
+    if (view->item == tc->firstvisibleitem)
+    {
+        first_iter = iter;
+        break;
+    }
+    iter = iter->next;
+    ++firstindex;
+  }
+  /* find the current selection index */
+  curindex = firstindex;
+  while (iter)
+  {
+    view = (texu_treeview_item*)iter->data;
+    data = (texu_treewnd_item*)view->item->data;
+    if (view->item == tc->curselitem)
+    {
+      cur_iter = iter;
+      break;
+    }
+    iter = iter->next;
+    ++curindex;
+  }
 
-    /* is the new index out-of-bound visible items? */
-    if ((curindex + cur_moves) < (firstindex + rc.lines))
-    {
-        /* no move first */
-        movefirst = TEXU_FALSE;
-    }
-    if ((curindex + cur_moves) >= items)
-    {
-        movefirst = TEXU_FALSE;
-    }
-
-    if (movefirst)
-    {
-        /* how actual many movements */
-        first_moves = TEXU_MIN(cur_moves, items - move_times);
-        iter = first_iter;
-        for (i = 0; i < first_moves && iter; ++i)
-        {
-            iter = iter->next;
-        }
-        
-        view = (texu_treeview_item*)iter->data;
-        tc->firstvisibleitem = view->item;
-    }
+  if (curindex == items - 1)
+  {
+    /* no move required the last item */
     return tc->curselitem;
+  }
+
+  /* un-highlighting the old item */
+  data = (texu_treewnd_item*)tc->curselitem->data;
+  data->selected = 0;
+
+  /* highlighting the new item */
+  iter = cur_iter;
+  cur_moves = TEXU_MAX(0, TEXU_MIN(move_times, items - curindex - 1));
+  for (i = 0; i < cur_moves && iter; ++i)
+  {
+    iter = iter->next;
+  }
+  view = (texu_treeview_item*)iter->data;
+  data = (texu_treewnd_item*)view->item->data;
+  
+  tc->curselitem = view->item;
+  data->selected = 1;
+
+  /* is the new index out-of-bound visible items? */
+  if ((curindex + cur_moves) < (firstindex + rc.lines))
+  {
+      /* no move first */
+      movefirst = TEXU_FALSE;
+  }
+  if ((curindex + cur_moves) >= items)
+  {
+      movefirst = TEXU_FALSE;
+  }
+
+  if (movefirst)
+  {
+      /* how actual many movements */
+      first_moves = TEXU_MIN(cur_moves, items - move_times);
+      iter = first_iter;
+      for (i = 0; i < first_moves && iter; ++i)
+      {
+          iter = iter->next;
+      }
+      
+      view = (texu_treeview_item*)iter->data;
+      tc->firstvisibleitem = view->item;
+  }
+  return tc->curselitem;
 }
 
 texu_tree_item* _TexuTreeCtrlProc_MovePrev(texu_wnd* wnd, texu_i32 move_times)
 {
-    texu_treewnd* tc = 0;
-    texu_treewnd_item* data = 0;
-    texu_list_item* iter = 0;
-    texu_treeview_item* view = 0;
-    texu_i32 i = 0;
-    texu_i32 firstvisibleindex = 0;
-    texu_i32 curindex = 0;
-    texu_list_item* first_iter = 0;
-    texu_list_item* cur_iter = 0;
-    texu_rect rc;
-    texu_i32 first_moves = 0;
-    texu_i32 cur_moves = 0;
-    texu_bool movefirst = TEXU_FALSE;
+  texu_treewnd* tc = 0;
+  texu_treewnd_item* data = 0;
+  texu_list_item* iter = 0;
+  texu_treeview_item* view = 0;
+  texu_i32 i = 0;
+  texu_i32 firstvisibleindex = 0;
+  texu_i32 curindex = 0;
+  texu_list_item* first_iter = 0;
+  texu_list_item* cur_iter = 0;
+  texu_rect rc;
+  texu_i32 first_moves = 0;
+  texu_i32 cur_moves = 0;
+  texu_bool movefirst = TEXU_FALSE;
 
-    texu_wnd_get_rect(wnd, &rc);
-    tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
+  texu_wnd_get_rect(wnd, &rc);
+  tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
 
-    /* change selection item */
-    /* find the current selection index */
-    firstvisibleindex = 0;
-    iter = texu_list_first(tc->visibleitems);
-    while (iter)
-    {
-        view = (texu_treeview_item*)iter->data;
-        data = (texu_treewnd_item*)view->item->data;
-        
-        if (view->item == tc->firstvisibleitem)
-        {
-            first_iter = iter;
-            break;
-        }
-        iter = iter->next;
-        ++firstvisibleindex;
-    }
-    if (0 == first_iter)
-    {
-        return tc->curselitem;
-    }
-
-    /* find the current index */
-    cur_iter = first_iter;
-    curindex = firstvisibleindex;
-    while (iter)
-    {
-        view = (texu_treeview_item*)iter->data;
-        data = (texu_treewnd_item*)view->item->data;
-
-        if (view->item == tc->curselitem)
-        {
-            cur_iter = iter;
-            break;
-        }
-        iter = iter->next;
-        ++curindex;
-    }
-
-    /* un-highlighting the old item */
-    
-    data = (texu_treewnd_item*)tc->curselitem->data;
-    data->selected = TEXU_FALSE;
-    
-
-    /* highlighting the new item */
-    iter = cur_iter;
-    cur_moves = 0;
-    for (i = 0; i < move_times && iter != 0; ++i, ++cur_moves)
-    {
-        iter = iter->prev;
-    }
-
-    if (firstvisibleindex > 0 && curindex - cur_moves < firstvisibleindex)
-    {
-        movefirst = TEXU_TRUE;
-    }
-    else if (0 == firstvisibleindex && cur_moves >= curindex)
-    {
-        iter = texu_list_first(tc->visibleitems);
-    }
-
+  /* change selection item */
+  /* find the current selection index */
+  firstvisibleindex = 0;
+  iter = texu_list_first(tc->visibleitems);
+  while (iter)
+  {
     view = (texu_treeview_item*)iter->data;
     data = (texu_treewnd_item*)view->item->data;
     
-    
-    tc->curselitem = view->item;
-    /*tc->tree->GetItemData(tc->curselitem, &data, sizeof (data));*/
-    data->selected = TEXU_TRUE;
-    
-
-    if (movefirst)
+    if (view->item == tc->firstvisibleitem)
     {
-        /* how actual many movements */
-        first_moves = TEXU_MIN(cur_moves, move_times);
-        iter = first_iter;
-        for (i = 0; i < first_moves && iter; ++i)
-        {
-            iter = iter->prev;
-        }
-        
-        view = (texu_treeview_item*)iter->data;
-        tc->firstvisibleitem = view->item;
+      first_iter = iter;
+      break;
     }
+    iter = iter->next;
+    ++firstvisibleindex;
+  }
+  if (0 == first_iter)
+  {
     return tc->curselitem;
+  }
+
+  /* find the current index */
+  cur_iter = first_iter;
+  curindex = firstvisibleindex;
+  while (iter)
+  {
+    view = (texu_treeview_item*)iter->data;
+    data = (texu_treewnd_item*)view->item->data;
+
+    if (view->item == tc->curselitem)
+    {
+      cur_iter = iter;
+      break;
+    }
+    iter = iter->next;
+    ++curindex;
+  }
+
+  /* un-highlighting the old item */
+  
+  data = (texu_treewnd_item*)tc->curselitem->data;
+  data->selected = TEXU_FALSE;
+  
+  /* highlighting the new item */
+  iter = cur_iter;
+  cur_moves = 0;
+  for (i = 0; i < move_times && iter != 0; ++i, ++cur_moves)
+  {
+    iter = iter->prev;
+  }
+
+  if (firstvisibleindex > 0 && curindex - cur_moves < firstvisibleindex)
+  {
+    movefirst = TEXU_TRUE;
+  }
+  else if (0 == firstvisibleindex && cur_moves >= curindex)
+  {
+    iter = texu_list_first(tc->visibleitems);
+  }
+
+  view = (texu_treeview_item*)iter->data;
+  data = (texu_treewnd_item*)view->item->data;
+    
+  tc->curselitem = view->item;
+  data->selected = TEXU_TRUE;
+  
+  if (movefirst)
+  {
+    /* how actual many movements */
+    first_moves = TEXU_MIN(cur_moves, move_times);
+    iter = first_iter;
+    for (i = 0; i < first_moves && iter; ++i)
+    {
+        iter = iter->prev;
+    }
+    
+    view = (texu_treeview_item*)iter->data;
+    tc->firstvisibleitem = view->item;
+  }
+  return tc->curselitem;
 }
 
 void _TexuTreeCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
-    texu_treewnd* tc = 0;
-    texu_rect rc;
-    texu_treewnd_item* data = 0;
-    texu_tree_item* selitem = 0;
+  texu_treewnd* tc = 0;
+  texu_rect rc;
+  texu_treewnd_item* data = 0;
+  texu_tree_item* selitem = 0;
 
-    tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
-    if (0 == tc->visibleitems)
-    {
-        /* no item */
-        return;
-    }
-    texu_wnd_get_rect(wnd, &rc);
+  tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
+  if (0 == tc->visibleitems)
+  {
+    /* no item */
+    return;
+  }
+  texu_wnd_get_rect(wnd, &rc);
 
-    switch (ch)
-    {
+  switch (ch)
+  {
     case 0x20:/*SPACE*/
     {
-        /* expand or collapse the current selection item */
-        
-        data = (texu_treewnd_item*)tc->curselitem->data;
-        if (data->children > 0)
+      /* expand or collapse the current selection item */        
+      data = (texu_treewnd_item*)tc->curselitem->data;
+      if (data->children > 0)
+      {
+        /* toggle item */
+        if (data->expanded)
         {
-            /* toggle item */
-            if (data->expanded)
-            {
-                _TexuTreeCtrlProc_OnCollapseItem(wnd, tc->curselitem);
-            }
-            else
-            {
-                _TexuTreeCtrlProc_OnExpandItem(wnd, tc->curselitem);
-            }
+            _TexuTreeCtrlProc_OnCollapseItem(wnd, tc->curselitem);
         }
-        break;
+        else
+        {
+            _TexuTreeCtrlProc_OnExpandItem(wnd, tc->curselitem);
+        }
+      }
+      break;
     }
 
     case KEY_UP:
     {
-        /* check if the last visible item */
-        selitem = _TexuTreeCtrlProc_MovePrev(wnd, 1);
-        /* notify select item */
-        _TexuTreeCtrlProc_OnSetSelItem(wnd, selitem);
-        break;
+      /* check if the last visible item */
+      selitem = _TexuTreeCtrlProc_MovePrev(wnd, 1);
+      /* notify select item */
+      _TexuTreeCtrlProc_OnSetSelItem(wnd, selitem);
+      break;
     }
 
     case KEY_DOWN:
     {
-        selitem = _TexuTreeCtrlProc_MoveNext(wnd, 1);
-        _TexuTreeCtrlProc_OnSetSelItem(wnd, selitem);
-        break;
+      selitem = _TexuTreeCtrlProc_MoveNext(wnd, 1);
+      _TexuTreeCtrlProc_OnSetSelItem(wnd, selitem);
+      break;
     }
 
     case KEY_NPAGE:
     {
-        selitem = _TexuTreeCtrlProc_MoveNext(wnd, rc.lines);
-        _TexuTreeCtrlProc_OnSetSelItem(wnd, selitem);
-        break;
+      selitem = _TexuTreeCtrlProc_MoveNext(wnd, rc.lines);
+      _TexuTreeCtrlProc_OnSetSelItem(wnd, selitem);
+      break;
     }
 
         /* move up 1 page */
     case KEY_PPAGE:
     {
-        selitem = _TexuTreeCtrlProc_MovePrev(wnd, rc.lines);
-        _TexuTreeCtrlProc_OnSetSelItem(wnd, selitem);
-        break;
+      selitem = _TexuTreeCtrlProc_MovePrev(wnd, rc.lines);
+      _TexuTreeCtrlProc_OnSetSelItem(wnd, selitem);
+      break;
     }
 
     case KEY_RIGHT:
     {
-        tc->shifted_right = TEXU_MIN(rc.cols, tc->shifted_right + tc->shifted);
-        /* update item on the screen */
-        _TexuTreeCtrlProc_RefreshView(wnd);
-        break;
+      tc->shifted_right = TEXU_MIN(rc.cols, tc->shifted_right + tc->shifted);
+      /* update item on the screen */
+      _TexuTreeCtrlProc_RefreshView(wnd);
+      break;
     }
 
     case KEY_LEFT:
     {
-        tc->shifted_right = TEXU_MAX(0, tc->shifted_right - tc->shifted);
-        /* update item on the screen */
-        _TexuTreeCtrlProc_RefreshView(wnd);
-        break;
+      tc->shifted_right = TEXU_MAX(0, tc->shifted_right - tc->shifted);
+      /* update item on the screen */
+      _TexuTreeCtrlProc_RefreshView(wnd);
+      break;
     }
 
     default:
     {
-        break;
+      break;
     }
-    }
+  }
 }
 
 texu_tree_find_proc _TexuTreeCtrlProc_OnSetFindItemProc(texu_wnd* wnd, texu_tree_find_proc findproc)
 {
-    texu_tree_find_proc oldproc = 0;
-    texu_treewnd* tc = 0;
+  texu_tree_find_proc oldproc = 0;
+  texu_treewnd* tc = 0;
 
-    tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
-    oldproc = tc->findproc;
-    tc->findproc = findproc;
-    return oldproc;
+  tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
+  oldproc = tc->findproc;
+  tc->findproc = findproc;
+  return oldproc;
 }
 
 void _TexuTreeCtrlProc_DestroyTreeProc(texu_i64 data, void* userdata)
@@ -3153,33 +3142,33 @@ void _TexuTreeCtrlProc_DestroyTreeProc(texu_i64 data, void* userdata)
 
 void _TexuTreeCtrlProc_OnDestroy(texu_wnd* wnd)
 {
-    texu_treewnd* tc = 0;
-    tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
-    if (tc->visibleitems)
-    {
-      texu_list_cb_free(tc->visibleitems, _texu_treeview_item_del, 0);
-    }
-    texu_list_del(tc->visibleitems);
-    
-    
-    texu_tree_cb_remove_item(tc->tree, 
-      texu_tree_get_root(tc->tree), _TexuTreeCtrlProc_DestroyTreeProc, 0);
-    texu_tree_del(tc->tree);
-    free(tc);
+  texu_treewnd* tc = 0;
+  tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
+  if (tc->visibleitems)
+  {
+    texu_list_cb_free(tc->visibleitems, _texu_treeview_item_del, 0);
+  }
+  texu_list_del(tc->visibleitems);
+  
+  
+  texu_tree_cb_remove_item(tc->tree, 
+    texu_tree_get_root(tc->tree), _TexuTreeCtrlProc_DestroyTreeProc, 0);
+  texu_tree_del(tc->tree);
+  free(tc);
 }
 
 void _TexuTreeCtrlProc_OnSetFocus(texu_wnd* wnd, texu_wnd* prevwnd)
 {
-    _TexuWndProc_Notify(wnd, TEXU_TCN_SETFOCUS);
+  _TexuWndProc_Notify(wnd, TEXU_TCN_SETFOCUS);
 }
 
 texu_i32 _TexuTreeCtrlProc_OnKillFocus(texu_wnd* wnd, texu_wnd* prevwnd)
 {
-    texu_i32 rc = TEXU_OK;
-    
-    _TexuWndProc_Notify(wnd, TEXU_TCN_KILLFOCUS);
+  texu_i32 rc = TEXU_OK;
+  
+  _TexuWndProc_Notify(wnd, TEXU_TCN_KILLFOCUS);
 
-    return rc;
+  return rc;
 }
 
 texu_tree_item* _TexuTreeCtrlProc_OnInsertItem(
@@ -3187,49 +3176,49 @@ texu_tree_item* _TexuTreeCtrlProc_OnInsertItem(
   texu_tree_item* parentitem,
   const texu_treewnd_item* insertitem)
 {
-    texu_treewnd* tc = 0;
-    texu_i32 children = 0;
-    texu_tree_item* newitem = 0;
-    texu_treewnd_item* parentdata = 0;
-    texu_treewnd_item* data = 0;
+  texu_treewnd* tc = 0;
+  texu_i32 children = 0;
+  texu_tree_item* newitem = 0;
+  texu_treewnd_item* parentdata = 0;
+  texu_treewnd_item* data = 0;
 
-    if (0 == insertitem)
-    {
-        return 0;
-    }
+  if (0 == insertitem)
+  {
+    return 0;
+  }
 
-    tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
-    /* get a number of children before inserting the new one */
-    children = texu_tree_count(tc->tree);
+  tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
+  /* get a number of children before inserting the new one */
+  children = texu_tree_count(tc->tree);
 
-    /* insert the new item */
-    data = _texu_treewnd_item_new(insertitem);
+  /* insert the new item */
+  data = _texu_treewnd_item_new(insertitem);
+  if (0 == children)
+  {
+    data->selected = 1;
+  }
+  
+  newitem = texu_tree_add_item(tc->tree, parentitem, (texu_i64)data);
+
+  if (newitem)
+  {
+    /* set the first visible item if need */
     if (0 == children)
     {
-        data->selected = 1;
+      tc->firstvisibleitem = tc->curselitem = (texu_tree_item*) newitem;
     }
-    
-    newitem = texu_tree_add_item(tc->tree, parentitem, (texu_i64)data);
-
-    if (newitem)
+    /* update parent */
+    if (parentitem)
     {
-        /* set the first visible item if need */
-        if (0 == children)
-        {
-            tc->firstvisibleitem = tc->curselitem = (texu_tree_item*) newitem;
-        }
-        /* update parent */
-        if (parentitem)
-        {
-          parentdata = (texu_treewnd_item*)parentitem->data;
-            ++parentdata->children;
-            
-        }
-        /* update item on the screen */
-        /*_TexuTreeCtrlProc_RefreshView(wnd);*/
+      parentdata = (texu_treewnd_item*)parentitem->data;
+      ++parentdata->children;
+        
     }
+    /* update item on the screen */
+    /*_TexuTreeCtrlProc_RefreshView(wnd);*/
+  }
 
-    return (texu_tree_item*) newitem;
+  return (texu_tree_item*) newitem;
 }
 
 texu_treewnd_item*
@@ -3268,7 +3257,7 @@ texu_i32 _TexuTreeCtrlProc_OnDeleteItem(texu_wnd* wnd, texu_tree_item* item)
   /* set non-visible if need */
   if (0 == children)
   {
-      tc->firstvisibleitem = tc->lastvisibleitem = tc->curselitem = 0;
+    tc->firstvisibleitem = tc->lastvisibleitem = tc->curselitem = 0;
   }
   /* update item on the screen */
   _TexuTreeCtrlProc_RefreshView(wnd);
@@ -3287,10 +3276,8 @@ texu_i32 _TexuTreeCtrlProc_OnExpandItem(texu_wnd* wnd, texu_tree_item* item)
   
   if (data->children > 0)
   {
-      data->expanded = TEXU_TRUE;
+    data->expanded = TEXU_TRUE;
   }
-  
-
   _TexuTreeProc_Notify(wnd, TEXU_TCN_ITEMEXPANDED, item);
 
   /* update item on the screen */
@@ -3315,11 +3302,11 @@ void _TexuTreeCtrlProc_OnSetIndentText(texu_wnd* wnd, texu_i32 indent)
   tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
   if (indent < 2)
   {
-      indent = 2;
+    indent = 2;
   }
   else if (indent >= rc.cols)
   {
-      indent = rc.cols - 1;
+    indent = rc.cols - 1;
   }
   tc->indent = indent;
 }
@@ -3341,11 +3328,11 @@ void _TexuTreeCtrlProc_OnSetShiftedText(texu_wnd* wnd, texu_i32 shifted)
   tc = (texu_treewnd*) texu_wnd_get_userdata(wnd);
   if (shifted < 1)
   {
-      shifted = 1;
+    shifted = 1;
   }
   else if (shifted >= rc.cols)
   {
-      shifted = rc.cols - 1;
+    shifted = rc.cols - 1;
   }
   tc->shifted = shifted;
 }
@@ -3359,12 +3346,11 @@ void _TexuTreeCtrlProc_OnExpandAllItems(texu_wnd* wnd)
   root = texu_tree_get_root(tc->tree);
   
   texu_tree_populate(
-                  tc->tree,
-                  root->firstchild,
-                  TEXU_TPO_PRE,
-                  _TexuTreeCtrlProc_ExpandAllItemsProc,
-                  wnd);
-
+      tc->tree,
+      root->firstchild,
+      TEXU_TPO_PRE,
+      _TexuTreeCtrlProc_ExpandAllItemsProc,
+      wnd);
 
   _TexuTreeCtrlProc_OnExpandItem(wnd, root);
 }
@@ -3378,11 +3364,11 @@ void _TexuTreeCtrlProc_OnCollapseAllItems(texu_wnd* wnd)
   root = texu_tree_get_root(tc->tree);
   
   texu_tree_populate(
-                  tc->tree,
-                  root->firstchild,
-                  TEXU_TPO_PRE,
-                  _TexuTreeCtrlProc_CollapseAllItemsProc,
-                  wnd);
+      tc->tree,
+      root->firstchild,
+      TEXU_TPO_PRE,
+      _TexuTreeCtrlProc_CollapseAllItemsProc,
+      wnd);
 
 
   _TexuTreeCtrlProc_OnCollapseItem(wnd, root);
@@ -3399,10 +3385,8 @@ texu_i32 _TexuTreeCtrlProc_OnCollapseItem(texu_wnd* wnd, texu_tree_item* item)
   
   if (data->children > 0)
   {
-      data->expanded = TEXU_FALSE;
+    data->expanded = TEXU_FALSE;
   }
-
-
   _TexuTreeProc_Notify(wnd, TEXU_TCN_ITEMCOLLAPSED, item);
 
   /* update item on the screen */
@@ -3419,10 +3403,8 @@ texu_i32 _TexuTreeCtrlProc_OnSetSelItem(texu_wnd* wnd, texu_tree_item* setitem)
   /* remove the highlighting */
   if (tc->curselitem)
   {
-    
-      data = (texu_treewnd_item*)tc->curselitem;
-      data->selected = TEXU_FALSE;
-    
+    data = (texu_treewnd_item*)tc->curselitem;
+    data->selected = TEXU_FALSE;    
   }
 
   /* new selected item */
@@ -3431,10 +3413,8 @@ texu_i32 _TexuTreeCtrlProc_OnSetSelItem(texu_wnd* wnd, texu_tree_item* setitem)
   /* set the highlighting */
   if (tc->curselitem)
   {
-      
-      data = (texu_treewnd_item*)tc->curselitem;
-      data->selected = TEXU_TRUE;
-
+    data = (texu_treewnd_item*)tc->curselitem;
+    data->selected = TEXU_TRUE;
   }
   /* update item on the screen */
   _TexuTreeCtrlProc_RefreshView(wnd);
@@ -3479,11 +3459,11 @@ texu_i32 _TexuTreeCtrlProc_OnGetItem(texu_wnd* wnd, texu_tree_item* item, texu_t
 {
   if (!item)
   {
-      return -1;
+    return -1;
   }
   if (!getitem)
   {
-      return -2;
+    return -2;
   }
 
   getitem = (texu_treewnd_item*)item->data;
@@ -3533,7 +3513,7 @@ texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   texu_env* env = texu_wnd_get_env(wnd);
   if (!tc)
   {
-      return TEXU_NOMEM;
+    return TEXU_NOMEM;
   }
   memset(tc, 0, sizeof (texu_treewnd));
   tc->indent = 2;
@@ -3546,8 +3526,8 @@ texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd* wnd, texu_wnd_attrs* attrs)
   tc->tree = texu_tree_new();
   if (!tc->tree)
   {
-      free(tc);
-      return TEXU_NOMEM;
+    free(tc);
+    return TEXU_NOMEM;
   }
   /* set tree */
   texu_wnd_set_userdata(wnd, tc);
@@ -3587,18 +3567,18 @@ void _TexuTreeCtrlProc_GetDisplayedText(
   {
     if (file)
     {
-        memset(buf, '\t', xpos);
+      memset(buf, '\t', xpos);
     }
     else
     {
-        xpos *= tc->indent;
-        memset(buf, ' ', xpos);
+      xpos *= tc->indent;
+      memset(buf, ' ', xpos);
     }
     *startx = xpos;
   }
   else
   {
-      return;
+    return;
   }
   /* extend 2 characters for node displayed */
   children = item->nchildren;
@@ -3608,18 +3588,18 @@ void _TexuTreeCtrlProc_GetDisplayedText(
   {
     if (data->expanded)
     {
-        buf[xpos - tc->indent] = '-';
+      buf[xpos - tc->indent] = '-';
     }
     else
     {
-        buf[xpos - tc->indent] = '+';
+      buf[xpos - tc->indent] = '+';
     }
   }
   /* print text */
   textlen = strlen(data->itemtext);
   if (textlen > 0)
   {
-      memcpy(&buf[xpos], data->itemtext, textlen);
+    memcpy(&buf[xpos], data->itemtext, textlen);
   }
   xpos += textlen;
 
@@ -3627,20 +3607,20 @@ void _TexuTreeCtrlProc_GetDisplayedText(
   /* copy to output */
   if (!file)
   {
-      shifted_right = tc->shifted_right;
+    shifted_right = tc->shifted_right;
   }
   if (shifted_right > 0)
   {
-      *endx = TEXU_MAX(0, *endx - shifted_right);
-      *startx = TEXU_MAX(0, *startx - shifted_right);
+    *endx = TEXU_MAX(0, *endx - shifted_right);
+    *startx = TEXU_MAX(0, *startx - shifted_right);
   }
   memcpy(outtext, &buf[shifted_right], xpos);
 
   len = strlen(outtext);
   if (len < maxlen)
   {
-      memset(&outtext[len], ' ', maxlen - len);
-      outtext[maxlen] = 0;
+    memset(&outtext[len], ' ', maxlen - len);
+    outtext[maxlen] = 0;
   }
 }
 
@@ -3793,94 +3773,94 @@ _TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
   {
     case TEXU_WM_PAINT:
     {
-        _TexuTreeCtrlProc_OnPaint(wnd, (texu_cio*)param1);
-        return 0;
+      _TexuTreeCtrlProc_OnPaint(wnd, (texu_cio*)param1);
+      return 0;
     }
     case TEXU_WM_CREATE:
     {
-        return _TexuTreeCtrlProc_OnCreate(wnd, (texu_wnd_attrs*)param1);
+      return _TexuTreeCtrlProc_OnCreate(wnd, (texu_wnd_attrs*)param1);
     }
     case TEXU_WM_DESTROY:
     {
-        /* release memory of static control */
-        _TexuTreeCtrlProc_OnDestroy(wnd);
-        return 0;
+      /* release memory of static control */
+      _TexuTreeCtrlProc_OnDestroy(wnd);
+      return 0;
     }
     case TEXU_WM_SETFOCUS:
     {
-        _TexuTreeCtrlProc_OnSetFocus(wnd, (texu_wnd*)param1);
-        break;
+      _TexuTreeCtrlProc_OnSetFocus(wnd, (texu_wnd*)param1);
+      break;
     }
     case TEXU_WM_KILLFOCUS:
     {
-        return _TexuTreeCtrlProc_OnKillFocus(wnd, (texu_wnd*)param1);
+      return _TexuTreeCtrlProc_OnKillFocus(wnd, (texu_wnd*)param1);
     }
     case TEXU_WM_CHAR:
     {
-        _TexuTreeCtrlProc_OnChar(wnd, (texu_i32) param1, (texu_i32)param2);
-        break;
+      _TexuTreeCtrlProc_OnChar(wnd, (texu_i32) param1, (texu_i32)param2);
+      break;
     }
     case TEXU_TCM_INSERTITEM:
     {
-        return (texu_i32) _TexuTreeCtrlProc_OnInsertItem(wnd, (texu_tree_item*) param1, (const texu_treewnd_item*) param2);
+      return (texu_i32) _TexuTreeCtrlProc_OnInsertItem(wnd, (texu_tree_item*) param1, (const texu_treewnd_item*) param2);
     }
     case TEXU_TCM_DELETEITEM:
     {
-        return _TexuTreeCtrlProc_OnDeleteItem(wnd, (texu_tree_item*) param1);
+      return _TexuTreeCtrlProc_OnDeleteItem(wnd, (texu_tree_item*) param1);
     }
     case TEXU_TCM_SETITEM:
     {
-        return _TexuTreeCtrlProc_OnSetItem(wnd, (texu_tree_item*) param1, (const texu_treewnd_item*) param2);
+      return _TexuTreeCtrlProc_OnSetItem(wnd, (texu_tree_item*) param1, (const texu_treewnd_item*) param2);
     }
     case TEXU_TCM_GETITEM:
     {
-        return _TexuTreeCtrlProc_OnGetItem(wnd, (texu_tree_item*) param1, (texu_treewnd_item*) param2);
+      return _TexuTreeCtrlProc_OnGetItem(wnd, (texu_tree_item*) param1, (texu_treewnd_item*) param2);
     }
     case TEXU_TCM_FINDITEM:
     {
-        return (texu_i32) _TexuTreeCtrlProc_OnFindItem(wnd, (texu_treewnd_item*) param1, (void*)param2);
+      return (texu_i32) _TexuTreeCtrlProc_OnFindItem(wnd, (texu_treewnd_item*) param1, (void*)param2);
     }
     case TEXU_TCM_FINDNEXTITEM:
     {
-        return (texu_i32) _TexuTreeCtrlProc_OnFindNextItem(wnd, (texu_tree_item*) param1, (texu_treewnd_item*) param2);
+      return (texu_i32) _TexuTreeCtrlProc_OnFindNextItem(wnd, (texu_tree_item*) param1, (texu_treewnd_item*) param2);
     }
     case TEXU_TCM_EXPANDITEM:
     {
-        return _TexuTreeCtrlProc_OnExpandItem(wnd, (texu_tree_item*) param1);
+      return _TexuTreeCtrlProc_OnExpandItem(wnd, (texu_tree_item*) param1);
     }
     case TEXU_TCM_COLLAPSEITEM:
     {
-        return _TexuTreeCtrlProc_OnCollapseItem(wnd, (texu_tree_item*) param1);
+      return _TexuTreeCtrlProc_OnCollapseItem(wnd, (texu_tree_item*) param1);
     }
     case TEXU_TCM_SETFINDITEMPROC:
     {
-        return (texu_i32) _TexuTreeCtrlProc_OnSetFindItemProc(wnd, (texu_tree_find_proc) param1);
+      return (texu_i32) _TexuTreeCtrlProc_OnSetFindItemProc(wnd, (texu_tree_find_proc) param1);
     }
     case TEXU_TCM_SETSELITEM:
     {
-        return _TexuTreeCtrlProc_OnSetSelItem(wnd, (texu_tree_item*) param1);
+      return _TexuTreeCtrlProc_OnSetSelItem(wnd, (texu_tree_item*) param1);
     }
     case TEXU_TCM_GETSELITEM:
     {
-        return (texu_i32) _TexuTreeCtrlProc_OnGetSelItem(wnd);
+      return (texu_i32) _TexuTreeCtrlProc_OnGetSelItem(wnd);
     }
     case TEXU_TCM_EXPORTTOFILE:
     {
-        return _TexuTreeCtrlProc_OnExportToFile(wnd, (FILE*) param1, (texu_tree_exp_proc) param2);
+      return _TexuTreeCtrlProc_OnExportToFile(wnd, (FILE*) param1, (texu_tree_exp_proc) param2);
     }
     case TEXU_TCM_IMPORTFROMFILE:
     {
-        return _TexuTreeCtrlProc_OnImportFromFile(wnd, (FILE*) param1, (texu_tree_imp_proc) param2);
+      return _TexuTreeCtrlProc_OnImportFromFile(wnd, (FILE*) param1, (texu_tree_imp_proc) param2);
     }
     case TEXU_TCM_COLLAPSEALLITEMS:
     {
-        _TexuTreeCtrlProc_OnCollapseAllItems(wnd);
-        break;
+      _TexuTreeCtrlProc_OnCollapseAllItems(wnd);
+      break;
     }
     case TEXU_TCM_EXPANDALLITEMS:
     {
-        _TexuTreeCtrlProc_OnExpandAllItems(wnd);
-        break;
+      _TexuTreeCtrlProc_OnExpandAllItems(wnd);
+      break;
     }
   }
   return TexuDefWndProc(wnd, msg, param1, param2);
@@ -3902,6 +3882,7 @@ struct texu_udwnd
   texu_i32        page;
   texu_i32        min;
   texu_i32        max;
+  void*           exparam;
 };
 typedef struct texu_udwnd texu_udwnd;
 
@@ -4299,7 +4280,7 @@ _TexuUpDownCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 para
 
 /*
 #-------------------------------------------------------------------------------
-# TexU up/down ctrl
+# TexU progress bar ctrl
 #
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
@@ -4310,6 +4291,7 @@ struct texu_pgbwnd
   texu_i32        step;
   texu_i32        pos;
   texu_i32        max;
+  void*           exparam;
 };
 typedef struct texu_pgbwnd texu_pgbwnd;
 
@@ -4598,23 +4580,24 @@ _TexuProgressBarProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 par
 
 struct texu_pagewnd_page
 {
-  texu_wnd*      page;
-  texu_wnd*      firstchild;
-  texu_wnd*      lastchild;
-  texu_wnd*      activechild;
+  texu_wnd*     page;
+  texu_wnd*     firstchild;
+  texu_wnd*     lastchild;
+  texu_wnd*     activechild;
+  void*         userdata;
 };
 typedef struct texu_pagewnd_page texu_pagewnd_page;
 
 struct texu_pagewnd
 {
-  texu_wnd*      curpage;
-  /*texu_i32       curidx;*/
-  texu_wnd*      firstactive;
-  texu_wnd*      lastactive;
-  texu_wnd*      activewnd;
-
-  texu_array*         pages;
-  texu_i32            curidx;
+  texu_wnd*       curpage;
+  texu_wnd*       firstactive;
+  texu_wnd*       lastactive;
+  texu_wnd*       activewnd;
+  texu_array*     pages;
+  texu_i32        curidx;
+  void*           exparam;
+  texu_bool       ctl_k_pressed;
 };
 typedef struct texu_pagewnd texu_pagewnd;
 
@@ -4954,13 +4937,40 @@ _TexuPageCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
   texu_cio* cio = 0;
   texu_status rc = TEXU_OK;
   
+  if ((TEXU_KEYPRESSED_CTRL & alt) && (('k' == ch) || ('K' == ch)))
+  {
+    pgctl->ctl_k_pressed = !pgctl->ctl_k_pressed;
+  }
   switch(ch)
   {
+    case 'p':
+    case 'P':
+    {
+      if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+      {
+        /* continue as KEY_PPAGE doing */
+        newpage = _TexuPageCtrlProc_GetPrevPageEnabled(wnd, curpage);
+        pgctl->ctl_k_pressed = TEXU_FALSE;
+      }
+      break;
+    }
     case KEY_PPAGE:
     {
       if (alt & TEXU_KEYPRESSED_ALT)
       {
         newpage = _TexuPageCtrlProc_GetPrevPageEnabled(wnd, curpage);
+        pgctl->ctl_k_pressed = TEXU_FALSE;
+      }
+      break;
+    }
+    case 'n':
+    case 'N':
+    {
+      if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+      {
+        /* continue as KEY_NPAGE doing */
+        newpage = _TexuPageCtrlProc_GetNextPageEnabled(wnd, curpage);
+        pgctl->ctl_k_pressed = TEXU_FALSE;
       }
       break;
     }
@@ -4969,6 +4979,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
       if (alt & TEXU_KEYPRESSED_ALT)
       {
         newpage = _TexuPageCtrlProc_GetNextPageEnabled(wnd, curpage);
+        pgctl->ctl_k_pressed = TEXU_FALSE;
       }
       break;
     }

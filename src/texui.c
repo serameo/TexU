@@ -270,7 +270,7 @@ texu_env_register_cls(
 }
 
 texu_env*
-texu_env_new()
+texu_env_new(texu_i32 lines, texu_i32 cols)
 {
   texu_status rc = TEXU_OK;
   texu_env* env = (texu_env*)malloc(sizeof(texu_env));
@@ -280,7 +280,7 @@ texu_env_new()
 
     /* console input/output */
     env->cio = texu_cio_new();
-    texu_cio_init(env->cio);
+    texu_cio_init(env->cio, lines, cols);
     
     env->scrfp = _texu_env_init_screen(env);
     _texu_env_init_syscolors(env);
@@ -337,6 +337,7 @@ texu_env_run(texu_env* env)
   while (!(env->exit))
   {
     altpressed = 0;
+    ctlpressed = 0;
     ch = texu_cio_getch(env->cio);
     keypressed = keyname(ch);
     if ('^' == keypressed[0] && keypressed[1] != 0)
@@ -721,16 +722,17 @@ _TexuDefWndProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
 void
 _TexuDefWndProc_OnEraseBg(texu_wnd* wnd, texu_cio* cio)
 {
-  texu_char zblank[256];
+  texu_char zblank[TEXU_MAX_WNDTEXT+1];
   texu_i32 width = 0;
   texu_i32 height = 0;
   texu_i32 line = 0;
+  texu_i32 maxwidth = COLS;
 
-  width = (wnd->width > COLS ? COLS : wnd->width);
+  width = (wnd->width > maxwidth ? maxwidth : wnd->width);
   height = wnd->height;
 
+  memset(zblank, 0, sizeof(zblank));
   memset(zblank, ' ', width);
-  zblank[width] = 0;
 
   for (line = 0; line < height; ++line)
   {
@@ -738,7 +740,7 @@ _TexuDefWndProc_OnEraseBg(texu_wnd* wnd, texu_cio* cio)
       cio,
       line + wnd->y, wnd->x,
       zblank,
-      COLOR_PAIR(wnd->normalcolor));
+      texu_cio_get_color(cio, wnd->normalcolor));
   }
 }
 
@@ -762,8 +764,6 @@ void
 _TexuDefWndProc_OnSetText(texu_wnd* wnd, const texu_char* text)
 {
   texu_ui32 textlen = strlen(text);
-  /*texu_ui32 len = strlen(wnd->text); */
-  
   texu_wnd* frame = texu_wnd_get_frame(wnd);
   texu_wnd* activewnd = texu_wnd_get_activechild(frame);
   texu_i32 y = 0;

@@ -37,9 +37,9 @@ struct texu_msgbox
   texu_i32        cancelcolor;
   texu_i32        yescolor;
   texu_i32        nocolor;
+  void*           userdata;
   texu_char       text[TEXU_MAX_WNDTEXT+1];
   texu_char       caption[TEXU_MAX_WNDTEXT+1];
-  void*           userdata;
 };
 typedef struct texu_msgbox texu_msgbox;
 
@@ -1107,6 +1107,20 @@ _TexuEditProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
   texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
   texu_wnd_get_color(wnd, &normcolor, &discolor);
 
+  /*select all*/
+  if ((alt & TEXU_KEYPRESSED_CTRL) && (('a' == ch) || ('A' == ch)))
+  {
+    edit->firstvisit = 1;
+    edit->selected   = 1;
+    texu_wnd_invalidate(wnd);
+    return;
+  }
+
+  /*simulate escape pressed*/
+  if ((alt & TEXU_KEYPRESSED_CTRL) && (('e' == ch) || ('E' == ch)))
+  {
+    ch = TEXU_KEY_ESCAPE;
+  }
   if (TEXU_KEY_ESCAPE == ch)/* == KEY_ESCAPE)*/
   {
     if (edit->firstvisit == 0)
@@ -1509,6 +1523,7 @@ struct texu_lbwnd_item
   texu_i32                normcolor;
   texu_i32                discolor;
   texu_i32                selcolor;
+  void*                   userdata;
   struct texu_lbwnd_item *prev;
   struct texu_lbwnd_item *next;
 };
@@ -2091,10 +2106,6 @@ void
 _TexuListBoxProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
 {
   texu_lbwnd* lb = texu_wnd_get_userdata(wnd);
-  if (!(texu_wnd_is_visible(wnd)))
-  {
-    return;
-  }
   texu_char buf[TEXU_MAX_WNDTEXT+1];
   texu_char text[TEXU_MAX_WNDTEXT+1];
   texu_i32 y = texu_wnd_get_y(wnd);
@@ -2110,6 +2121,10 @@ _TexuListBoxProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
   texu_i32 lines = 0;
   texu_lbwnd_item* item = 0;
 
+  if (!(texu_wnd_is_visible(wnd)))
+  {
+    return;
+  }
   texu_wnd_get_color(wnd, &normcolor, &discolor);
   color = (enable ? normcolor : discolor);
   /* draw */
@@ -2128,26 +2143,27 @@ _TexuListBoxProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
       else if (i - lb->firstvisible < lines)
       {
         memset(buf, 0, sizeof(buf));
+        strcpy(buf, " ");
         if (style & TEXU_LBS_CHECKBOX)
         {
           if (item->checked)
           {
-            strcpy(buf, "[X] ");
+            strcat(buf, "[X] ");
           }
           else
           {
-            strcpy(buf, "[ ] ");
+            strcat(buf, "[ ] ");
           }
         }
         else if (style & TEXU_LBS_RADIOBOX)
         {
           if (item->checked)
           {
-            strcpy(buf, "(*) ");
+            strcat(buf, "(O) ");
           }
           else
           {
-            strcpy(buf, "( ) ");
+            strcat(buf, "( ) ");
           }
         }          
           
@@ -2155,7 +2171,8 @@ _TexuListBoxProc_OnPaint(texu_wnd* wnd, texu_cio* cio)
         strcat(buf, item->itemtext);
           
         memset(text, 0, sizeof(text));
-        texu_printf_alignment(text, buf, width, style);
+        texu_printf_alignment(text, buf, width-1, style);
+        strcat(text, " ");
           
         if (i == lb->cursel && item->enable)
         {
@@ -2447,7 +2464,8 @@ _TexuListBoxProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 */
 struct texu_cbwnd
 {
-  texu_wnd* lb;
+  texu_wnd*       lb;
+  void*           exparam;
 };
 typedef struct texu_cbwnd texu_cbwnd;
 
@@ -2849,6 +2867,7 @@ struct texu_sbwnd_part
   texu_i32    color;
   texu_i32    align;
   texu_char   text[TEXU_MAX_WNDTEXT+1];
+  void*       userdata;
 };
 typedef struct texu_sbwnd_part texu_sbwnd_part;
 
@@ -2856,6 +2875,7 @@ struct texu_sbwnd
 {
   texu_list*        parts;
   texu_sbwnd_part*  firstpart;
+  void*             exparam;
 };
 typedef struct texu_sbwnd texu_sbwnd;
 

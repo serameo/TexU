@@ -27,9 +27,9 @@ texu_env*  genv = 0;
 
 
 texu_status
-TexuStartup()
+TexuStartup(texu_i32 lines, texu_i32 cols)
 {
-  genv = texu_env_new();
+  genv = texu_env_new(lines, cols);
   return (genv ? TEXU_OK : TEXU_ERROR);
 }
 
@@ -388,6 +388,97 @@ TexuRestoreCursorPosition(texu_wnd* wnd)
 {
   texu_wnd_restore_curpos(wnd);
 }
+
+/*menus*/
+texu_menu*
+TexuCreateMenu(texu_wnd* owner, texu_ui32 id)
+{
+  return texu_menu_new(owner, id);
+}
+
+texu_popup_menu*
+TexuAddPopupMenu(
+  texu_menu* menu,
+  const texu_char* text,
+  texu_bool enable,
+  const texu_char* info)
+{
+  return texu_menu_add_menu_info(
+            menu,
+            text,
+            enable,
+            info);
+}
+texu_popup_menu_item*
+TexuAddPopupMenuItem(
+  texu_menu* menu,
+  texu_tree_item* popup,
+  const texu_char* text,
+  texu_ui32 id,
+  texu_bool enable,
+  const texu_char* info)
+{
+  return texu_menu_add_item_info(
+            menu,
+            popup,
+            text,
+            id,
+            enable,
+            info);
+}
+
+texu_popup_menu*
+TexuGetPopupMenu(texu_menu* menu, texu_ui32 idx)
+{
+  return texu_menu_get_menu(menu, idx);
+}
+
+texu_popup_menu_item*
+TexuGetPopupMenuItem(
+  texu_menu* menu,
+  texu_popup_menu* popup,
+  texu_ui32 id)
+{
+  return texu_menu_get_menuitem(menu, popup, id);
+}
+
+texu_bool
+TexuEnablePopupMenu(texu_menu* menu, texu_ui32 idx, texu_bool enable)
+{
+  return texu_menu_enable_menu(menu, idx, enable);
+}
+
+texu_bool
+TexuEnablePopupMenuItem(texu_menu* menu, texu_popup_menu* popup, texu_ui32 id, texu_bool enable)
+{
+  return texu_menu_enable_menuitem(menu, popup, id, enable);
+}
+
+/*device context*/
+texu_i32
+TexuGetColor(texu_cio* cio, texu_i32 clridx)
+{
+  return texu_cio_get_color(cio, clridx);
+}
+
+texu_i32
+TexuDrawHRects(texu_cio* cio, texu_rect* rect, texu_i32* widths, texu_i32 nwidth, texu_i32 attrs)
+{
+  return texu_cio_draw_hrects(cio, rect, widths, nwidth, attrs);
+}
+
+texu_i32
+TexuDrawVRects(texu_cio* cio, texu_rect* rect, texu_i32* heights, texu_i32 nheight, texu_i32 attrs)
+{
+  return texu_cio_draw_vrects(cio, rect, heights, nheight, attrs);
+}
+
+texu_i32
+TexuDrawFrame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_i32 attrs)
+{
+  return  texu_cio_draw_frame(cio, text, rect, attrs);
+}
+
 
 
 #ifdef __cplusplus

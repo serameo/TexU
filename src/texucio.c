@@ -160,7 +160,7 @@ _texu_cio_init_colors(texu_cio* cio)
 }
 
 texu_i32
-texu_cio_init(texu_cio* cio)
+texu_cio_init(texu_cio* cio, texu_i32 lines, texu_i32 cols)
 {
   initscr();
   /*raw();*/
@@ -170,6 +170,11 @@ texu_cio_init(texu_cio* cio)
 
   start_color();
   _texu_cio_init_colors(cio);
+
+  if (lines > 0 && cols > 0)
+  {
+    resizeterm(lines, cols);
+  }
 
   /*save window*/
   cio->wndscr = stdscr;
@@ -256,13 +261,13 @@ texu_cio_putch_attr2(texu_cio* cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i3
 
 
 texu_i32
-texu_cio_putstr(texu_cio* cio, texu_i32 y, texu_i32 x, texu_char* str)
+texu_cio_putstr(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* str)
 {
   return mvwprintw(cio->wndscr, y, x, str);
 }
 
 texu_i32
-texu_cio_putstr_attr(texu_cio* cio, texu_i32 y, texu_i32 x, texu_char* str, texu_i32 attrs)
+texu_cio_putstr_attr(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* str, texu_i32 attrs)
 {
   texu_cio_attron(cio, attrs);
   mvwprintw(cio->wndscr, y, x, str);
@@ -270,7 +275,7 @@ texu_cio_putstr_attr(texu_cio* cio, texu_i32 y, texu_i32 x, texu_char* str, texu
 }
 
 texu_i32
-texu_cio_putstr_attr2(texu_cio* cio, texu_i32 y, texu_i32 x, texu_char* str, texu_i32 color, texu_i32 attrs)
+texu_cio_putstr_attr2(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* str, texu_i32 color, texu_i32 attrs)
 {
   return texu_cio_putstr_attr(cio, y, x, str, color | attrs);
 }
@@ -296,7 +301,7 @@ texu_cio_refresh(texu_cio* cio)
 }
 
 texu_i32
-texu_cio_draw_frame(texu_cio* cio, texu_char* text, texu_rect* rect, texu_i32 attrs)
+texu_cio_draw_frame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_i32 attrs)
 {
   texu_i32 len = 0;
   
@@ -457,5 +462,3 @@ texu_cio_restore_screen(texu_cio* cio, FILE* fp)
 #ifdef __cplusplus
 }
 #endif
-
-

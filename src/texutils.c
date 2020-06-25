@@ -88,6 +88,11 @@ texu_printf_alignment(
   texu_i32 firstlen = 0;
   texu_i32 lastlen = 0;
   
+  if (limit < 1)
+  {
+    strcpy(out, in);
+    return TEXU_OK;
+  }
   len = strlen(in);
   if (len > limit)
   {
@@ -508,4 +513,3 @@ texu_dblog_drop_logname(texu_dblog* log, texu_char* name)
 #ifdef __cplusplus
 }
 #endif
-

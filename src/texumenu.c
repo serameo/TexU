@@ -323,7 +323,35 @@ texu_menu_set_curmenuitem(texu_menu* menu, texu_tree_item* item)
   return olditem;
 }
 
+texu_bool
+texu_menu_enable_menu(texu_menu* menu, texu_ui32 idx, texu_bool enable)
+{
+  texu_menu_item* menuitem = 0;
+  texu_bool oldenable = TEXU_FALSE;
+  texu_tree_item* item = texu_menu_get_menu(menu, idx);
+  if (item)
+  {
+    menuitem = (texu_menu_item*)item->data;
+    oldenable = menuitem->enable;
+    menuitem->enable = enable;
+  }
+  return oldenable;
+}
 
+texu_bool
+texu_menu_enable_menuitem(texu_menu* menu, texu_tree_item* baritem, texu_ui32 id, texu_bool enable)
+{
+  texu_menu_item* menuitem = 0;
+  texu_bool oldenable = TEXU_FALSE;
+  texu_tree_item* item = texu_menu_get_menuitem(menu, baritem, id);
+  if (item)
+  {
+    menuitem = (texu_menu_item*)item->data;
+    oldenable = menuitem->enable;
+    menuitem->enable = enable;
+  }
+  return oldenable;
+}
 
 
 
