@@ -52,7 +52,6 @@ typedef struct texu_env_wndcls texu_env_wndcls;
 texu_i64          _TexuDesktopProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuMsgBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
-
 texu_i64          _TexuLabelProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuEditProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuListBoxProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
@@ -65,13 +64,11 @@ texu_i64          _TexuTreeCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuUpDownCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuProgressBarProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuPageCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-
+texu_i64          _TexuTextCtrlProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 /* menu texumenu.c */
 texu_i64          _TexuMenuProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          _TexuMenuWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-
-
 
 
 void              _texu_env_init_cls(texu_env*);
@@ -107,33 +104,33 @@ _texu_env_init_syscolors(texu_env* env)
   env->syscolors[TEXU_COLOR_LABEL]              = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LABEL_DISABLED]     = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_STATUSBAR]          = TEXU_CIO_COLOR_WHITE_BLUE;
-  env->syscolors[TEXU_COLOR_EDIT]               = TEXU_CIO_COLOR_BLUE_WHITE;
-  env->syscolors[TEXU_COLOR_EDIT_DISABLED]      = TEXU_CIO_COLOR_BLACK_WHITE;
-  env->syscolors[TEXU_COLOR_EDIT_SELECTED]      = TEXU_CIO_COLOR_WHITE_BLUE;
-  env->syscolors[TEXU_COLOR_LISTBOX]            = TEXU_CIO_COLOR_BLUE_WHITE;
-  env->syscolors[TEXU_COLOR_LISTBOX_DISABLED]   = TEXU_CIO_COLOR_BLACK_WHITE;
-  env->syscolors[TEXU_COLOR_LISTBOX_SELECTED]   = TEXU_CIO_COLOR_WHITE_BLUE;
+  env->syscolors[TEXU_COLOR_EDIT]               = TEXU_CIO_COLOR_CYAN_BLACK;
+  env->syscolors[TEXU_COLOR_EDIT_DISABLED]      = TEXU_CIO_COLOR_WHITE_BLACK;
+  env->syscolors[TEXU_COLOR_EDIT_SELECTED]      = TEXU_CIO_COLOR_BLACK_CYAN;
+  env->syscolors[TEXU_COLOR_LISTBOX]            = TEXU_CIO_COLOR_CYAN_BLACK;
+  env->syscolors[TEXU_COLOR_LISTBOX_DISABLED]   = TEXU_CIO_COLOR_WHITE_BLACK;
+  env->syscolors[TEXU_COLOR_LISTBOX_SELECTED]   = TEXU_CIO_COLOR_BLUE_CYAN;
   env->syscolors[TEXU_COLOR_COMBOBOX]           = TEXU_CIO_COLOR_BLUE_WHITE;
-  env->syscolors[TEXU_COLOR_COMBOBOX_DISABLED]  = TEXU_CIO_COLOR_BLACK_WHITE;
+  env->syscolors[TEXU_COLOR_COMBOBOX_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_COMBOBOX_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLUE;
   env->syscolors[TEXU_COLOR_LISTCTRL]           = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LISTCTRL_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_LISTCTRL_ITEM]           = TEXU_CIO_COLOR_WHITE_BLACK;
-  env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_DISABLED]  = TEXU_CIO_COLOR_BLACK_WHITE;
-  env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLUE;
+  env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
+  env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELECTED]  = TEXU_CIO_COLOR_BLUE_CYAN;
   env->syscolors[TEXU_COLOR_TREECTRL]           = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_TREECTRL_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_TREECTRL_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLACK;
   env->syscolors[TEXU_COLOR_TREECTRL_ITEM]           = TEXU_CIO_COLOR_WHITE_BLACK;
-  env->syscolors[TEXU_COLOR_TREECTRL_ITEM_DISABLED]  = TEXU_CIO_COLOR_BLACK_WHITE;
-  env->syscolors[TEXU_COLOR_TREECTRL_ITEM_SELECTED]  = TEXU_CIO_COLOR_WHITE_BLUE;
+  env->syscolors[TEXU_COLOR_TREECTRL_ITEM_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
+  env->syscolors[TEXU_COLOR_TREECTRL_ITEM_SELECTED]  = TEXU_CIO_COLOR_BLUE_CYAN;
   env->syscolors[TEXU_COLOR_UPDOWNCTRL]             = TEXU_CIO_COLOR_BLUE_WHITE;
-  env->syscolors[TEXU_COLOR_UPDOWNCTRL_DISABLED]    = TEXU_CIO_COLOR_BLACK_WHITE;
-  env->syscolors[TEXU_COLOR_UPDOWNCTRL_SELECTED]    = TEXU_CIO_COLOR_WHITE_BLUE;
-  env->syscolors[TEXU_COLOR_PROGRESSBAR]            = TEXU_CIO_COLOR_BLUE_WHITE;
-  env->syscolors[TEXU_COLOR_PROGRESSBAR_DISABLED]   = TEXU_CIO_COLOR_BLACK_WHITE;
-  env->syscolors[TEXU_COLOR_PROGRESSBAR_SELECTED]   = TEXU_CIO_COLOR_WHITE_BLUE;
+  env->syscolors[TEXU_COLOR_UPDOWNCTRL_DISABLED]    = TEXU_CIO_COLOR_WHITE_BLACK;
+  env->syscolors[TEXU_COLOR_UPDOWNCTRL_SELECTED]    = TEXU_CIO_COLOR_BLUE_CYAN;
+  env->syscolors[TEXU_COLOR_PROGRESSBAR]            = TEXU_CIO_COLOR_CYAN_BLACK;
+  env->syscolors[TEXU_COLOR_PROGRESSBAR_DISABLED]   = TEXU_CIO_COLOR_WHITE_BLACK;
+  env->syscolors[TEXU_COLOR_PROGRESSBAR_SELECTED]   = TEXU_CIO_COLOR_BLUE_CYAN;
 
 
   env->syscolors[TEXU_COLOR_DEFAULT] = TEXU_CIO_COLOR_WHITE_BLACK;
@@ -155,7 +152,7 @@ _texu_env_init_cls(texu_env* env)
   texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);
   texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);
   texu_env_register_cls(env, TEXU_PAGECTRL_CLASS,     _TexuPageCtrlProc);
-  
+  texu_env_register_cls(env, TEXU_TEXTCTRL_CLASS,     _TexuTextCtrlProc);
   
   texu_env_register_cls(env, TEXU_MENU_CLASS,         _TexuMenuProc);
   texu_env_register_cls(env, TEXU_MENUWND_CLASS,      _TexuMenuWndProc);
