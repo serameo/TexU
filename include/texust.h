@@ -200,7 +200,6 @@ struct texu_wnd_template
 typedef struct texu_wnd_template texu_wnd_template;
 
 
-
 #ifdef __cplusplus
 }
 #endif

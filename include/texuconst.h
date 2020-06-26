@@ -265,14 +265,29 @@
 #define TEXU_CBM_ENABLEITEM             (TEXU_CBM_FIRST + 14)
 #define TEXU_CBM_GETLISTBOX             (TEXU_CBM_FIRST + 15)
 
-/* listbox notification */
+/* combobox notification */
 #define TEXU_CBN_FIRST                  1100
 #define TEXU_CBN_SETFOCUS               (TEXU_CBN_FIRST +  1)
 #define TEXU_CBN_KILLFOCUS              (TEXU_CBN_FIRST +  2)
 #define TEXU_CBN_DELETEITEM             (TEXU_CBN_FIRST +  3)
 #define TEXU_CBN_SELCHANGED             (TEXU_CBN_FIRST +  4)
 
+/* TEXT CTRL */
+#define TEXU_TXCM_FIRST                 1200
+#define TEXU_TXCM_ADDSENTENCE           (TEXU_TXCM_FIRST +  1)
+#define TEXU_TXCM_REMOVESENTENCE        (TEXU_TXCM_FIRST +  2)
+#define TEXU_TXCM_INSERTSENTENCE        (TEXU_TXCM_FIRST +  3)
+#define TEXU_TXCM_SETSENTENCE           (TEXU_TXCM_FIRST +  4)
+#define TEXU_TXCM_GETSENTENCE           (TEXU_TXCM_FIRST +  5)
+#define TEXU_TXCM_ADDPARAGRAPH          (TEXU_TXCM_FIRST +  6)
+#define TEXU_TXCM_REMOVEPARAGRAPH       (TEXU_TXCM_FIRST +  7)
+#define TEXU_TXCM_INSERTPARAGRAPH       (TEXU_TXCM_FIRST +  8)
+#define TEXU_TXCM_SETPARAGRAPH          (TEXU_TXCM_FIRST +  9)
+#define TEXU_TXCM_GETPARAGRAPH          (TEXU_TXCM_FIRST + 10)
+#define TEXU_TXCM_SETCURPARAGRAPH       (TEXU_TXCM_FIRST + 11)
+#define TEXU_TXCM_GETCURPARAGRAPH       (TEXU_TXCM_FIRST + 12)
 
+#define TEXU_TXCN_FIRST                 1200
 
 /*MENU */
 #define TEXU_MNM_FIRST                  10000
@@ -309,6 +324,7 @@
 #define TEXU_UPDOWNCTRL_CLASS         "TexuUpDownCtrlClass"
 #define TEXU_PROGRESSBAR_CLASS        "TexuProgressBarClass"
 #define TEXU_PAGECTRL_CLASS           "TexuPageCtrlClass"
+#define TEXU_TEXTCTRL_CLASS           "TexuTextCtrlClass"
 
 #define TEXU_MENU_CLASS               "TexuMenuClass"
 #define TEXU_MENUWND_CLASS            "TexuMenuWndClass"
