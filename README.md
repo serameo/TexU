@@ -19,7 +19,7 @@ These files are included many text objects by the following:
 
 All text objects are implemented by using a simple library (TexU_List, TexU_Stack, TexU_Queue, TexU_Tree, etc.) See also include/texulib.h. Also, some utilities such as texu_dblog object is using sqlite library to handle a database log file.
 
-This library concept is likely Win32 API concept. All window classes are required to register into the TexU environment. And then, you could implement your message by your procedure.
+This library concept is the same as Win32 API concept. All window classes are required to register into the TexU environment. And then, you could implement your message by your procedure.
 
 How to build:
 - $ make
