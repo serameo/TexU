@@ -167,6 +167,7 @@ texu_popup_menu_item* TexuGetPopupMenuItem(
                         texu_ui32 popupid);
 texu_bool             TexuEnablePopupMenu(texu_menu* menu, texu_ui32 idx, texu_bool enable);
 texu_bool             TexuEnablePopupMenuItem(texu_menu* menu, texu_popup_menu* popup, texu_ui32 id, texu_bool enable);
+texu_menu*            TexuCreateMenus(texu_wnd* wnd, texu_ui32 id, const texu_menu_template* templ, texu_i32 npopups);
 
 /* device context */
 texu_cio*           TexuGetDC();

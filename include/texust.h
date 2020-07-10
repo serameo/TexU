@@ -200,6 +200,27 @@ struct texu_wnd_template
 typedef struct texu_wnd_template texu_wnd_template;
 
 
+struct texu_menuitem_template
+{
+  const texu_char*  text;
+  texu_ui32         id;
+  texu_i32          enabled;
+  const texu_char*  info;
+};
+typedef struct texu_menuitem_template texu_menuitem_template;
+
+#define TEXU_MAX_MENUITEMS    32
+struct texu_menu_template
+{
+  const texu_char*  text;
+  texu_i32          enabled;
+  const texu_char*  info;
+  texu_i32          nitems;
+  texu_menuitem_template   items[TEXU_MAX_MENUITEMS];
+};
+typedef struct texu_menu_template texu_menu_template;
+
+
 #ifdef __cplusplus
 }
 #endif
