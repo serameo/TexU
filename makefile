@@ -4,16 +4,18 @@
 # Date: 06-MAY-2020
 #
 
-TARGET = test_texu
-TARGET2 = test_texulib
+TESTUI  = test_texu
+TESTLIB = test_texulib
+LIBTEXU = libtexu.a
 CC     = gcc
 CFLAGS = -g -Wall -m32
 LFLAGS = -lm -lcurses -lpthread -lsqlite3
 
 .PHONY: default all clean
 
-default: $(TARGET)
-testlib: $(TARGET2)
+default: $(TESTUI)
+testlib: $(TESTLIB)
+libtexu: $(LIBTEXU)
 all: default
 
 TEXU_SRC_DIR = ./src
@@ -31,7 +33,7 @@ TEXU_SOURCES = $(TEXU_SRC_DIR)/texulib.c \
 
 TEXU_OBJECTS  = $(TEXU_SOURCES:.c=.o)
 TEXU_INCLUDES = -I$(TEXU_INC_DIR)
-TEXU_LIBS     =
+TEXU_LIBS     = -L$(TEXU_LIB_DIR) $(TEXU_LIB_DIR)/$(LIBTEXU)
 
 TEST_SRC_DIR = ./src
 TEST_INC_DIR = ./include
@@ -46,13 +48,17 @@ DEFINES = -DXTERM_256COLOR
 %.o: %.c
 	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
 
-$(TARGET): $(TEXU_OBJECTS) $(TEST_OBJECTS)
+
+$(LIBTEXU): $(TEXU_OBJECTS)
+	ar r $(TEXU_LIB_DIR)/$@ $^
+
+$(TESTUI): $(TEST_OBJECTS)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
 
-$(TARGET2): $(TEXU_OBJECTS) $(TESTLIB_OBJECTS)
+$(TESTLIB): $(TESTLIB_OBJECTS)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
 
 clean:
-	rm -f src/*.o $(TARGET)*
+	rm -f src/*.o $(TESTUI)* lib/libtexu*
 
 
