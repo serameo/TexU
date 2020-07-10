@@ -67,6 +67,16 @@ TexuExit()
   }
 }
 
+void
+TexuSetThemeColor(texu_i32 (*setcolor)(texu_i32))
+{
+  if (genv && setcolor)
+  {
+    texu_env_set_syscolors(genv, setcolor);
+  }
+}
+
+
 texu_status
 TexuRegisterClass(
   texu_char*   clsname,

@@ -132,6 +132,66 @@ texu_wnd_template templ5_p2[] =
 };
 
 
+
+texu_i32
+SetMySysColor(texu_i32 sysidx)
+{
+  switch (sysidx)
+  {
+    /*
+    case TEXU_COLOR_WINDOW:                   return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_DESKTOP:                  return TEXU_CIO_COLOR_WHITE_BLACK;  
+    case TEXU_COLOR_DIALOG:                   return TEXU_CIO_COLOR_BLACK_WHITE;
+    case TEXU_COLOR_TITLE_WINDOW:             return TEXU_CIO_COLOR_WHITE_BLUE;
+    case TEXU_COLOR_BUTTON_OK:                return TEXU_CIO_COLOR_BLACK_GREEN;
+    case TEXU_COLOR_BUTTON_YES:               return TEXU_CIO_COLOR_WHITE_BLUE;
+    case TEXU_COLOR_BUTTON_NO:                return TEXU_CIO_COLOR_BLACK_RED;
+    case TEXU_COLOR_BUTTON_CANCEL:            return TEXU_CIO_COLOR_BLACK_YELLOW;
+    */
+    case TEXU_COLOR_MENU:                     return TEXU_CIO_COLOR_RED_WHITE;
+    case TEXU_COLOR_MENU_DISABLED:            return TEXU_CIO_COLOR_BLACK_WHITE;
+    case TEXU_COLOR_MENU_SELECTED:            return TEXU_CIO_COLOR_RED_CYAN;
+    case TEXU_COLOR_MENUITEM:                 return TEXU_CIO_COLOR_RED_WHITE;
+    case TEXU_COLOR_MENUITEM_DISABLED:        return TEXU_CIO_COLOR_BLACK_WHITE;
+    case TEXU_COLOR_MENUITEM_SELECTED:        return TEXU_CIO_COLOR_WHITE_RED;
+    /*
+    case TEXU_COLOR_LABEL:                    return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_LABEL_DISABLED:           return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_STATUSBAR:                return TEXU_CIO_COLOR_WHITE_BLUE;
+    case TEXU_COLOR_EDIT:                     return TEXU_CIO_COLOR_CYAN_BLACK;
+    case TEXU_COLOR_EDIT_DISABLED:            return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_EDIT_SELECTED:            return TEXU_CIO_COLOR_BLACK_CYAN;
+    case TEXU_COLOR_LISTBOX:                  return TEXU_CIO_COLOR_CYAN_BLACK;
+    case TEXU_COLOR_LISTBOX_DISABLED:         return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_LISTBOX_SELECTED:         return TEXU_CIO_COLOR_BLUE_CYAN;
+    case TEXU_COLOR_COMBOBOX:                 return TEXU_CIO_COLOR_BLUE_WHITE;
+    case TEXU_COLOR_COMBOBOX_DISABLED:        return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_COMBOBOX_SELECTED:        return TEXU_CIO_COLOR_WHITE_BLUE;
+    case TEXU_COLOR_LISTCTRL:                 return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_LISTCTRL_DISABLED:        return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_LISTCTRL_SELECTED:        return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_LISTCTRL_ITEM:            return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_LISTCTRL_ITEM_DISABLED:   return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_LISTCTRL_ITEM_SELECTED:   return TEXU_CIO_COLOR_BLUE_CYAN;
+    case TEXU_COLOR_TREECTRL:                 return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_TREECTRL_DISABLED:        return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_TREECTRL_SELECTED:        return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_TREECTRL_ITEM:            return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_TREECTRL_ITEM_DISABLED:   return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_TREECTRL_ITEM_SELECTED:   return TEXU_CIO_COLOR_BLUE_CYAN;
+    case TEXU_COLOR_UPDOWNCTRL:               return TEXU_CIO_COLOR_BLUE_WHITE;
+    case TEXU_COLOR_UPDOWNCTRL_DISABLED:      return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_UPDOWNCTRL_SELECTED:      return TEXU_CIO_COLOR_BLUE_CYAN;
+    case TEXU_COLOR_PROGRESSBAR:              return TEXU_CIO_COLOR_CYAN_BLACK;
+    case TEXU_COLOR_PROGRESSBAR_DISABLED:     return TEXU_CIO_COLOR_WHITE_BLACK;
+    case TEXU_COLOR_PROGRESSBAR_SELECTED:     return TEXU_CIO_COLOR_BLUE_CYAN;
+    case TEXU_COLOR_DEFAULT:                  return TEXU_CIO_COLOR_WHITE_BLACK;
+    */
+  }
+  return -1;
+}
+
+
 int main()
 {
   texu_status rc = 0;
@@ -143,6 +203,8 @@ int main()
     printf("cannot initialized environment\n");
     return -1;
   }
+  
+  TexuSetThemeColor(SetMySysColor);
 
   rc = TexuRegisterClass(
          MyWndClass,
@@ -1481,8 +1543,12 @@ MyWndProc5_Page2(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
 
 
+#include <termios.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
-int main3()
+int main2()
 {
   /*texu_env* env = 0;*/
   texu_cio* cio = 0;
@@ -1490,6 +1556,8 @@ int main3()
   texu_i32 ch = 0;
   texu_char text[80];
   texu_char* key;
+
+  const char* params = "\0x4";
 
   rc = TexuStartup(25, 100);/*25 lines x 100 characters per line*/
   if (rc != TEXU_OK)
@@ -1505,6 +1573,7 @@ int main3()
   texu_cio_putstr(cio, 0, 0, "press F1 to exit");
   texu_cio_gotoyx(cio, 1, 0);
 
+  ioctl(0, TIOCSTI, params);
   while (TEXU_TRUE)
   {
     ch = texu_cio_getch(cio);
