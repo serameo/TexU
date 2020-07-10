@@ -464,6 +464,39 @@ TexuEnablePopupMenuItem(texu_menu* menu, texu_popup_menu* popup, texu_ui32 id, t
   return texu_menu_enable_menuitem(menu, popup, id, enable);
 }
 
+
+texu_menu*
+TexuCreateMenus(texu_wnd* wnd, texu_ui32 id, const texu_menu_template* templ, texu_i32 npopups)
+{
+  texu_menu* menu = 0;
+  texu_popup_menu* popup = 0;
+  texu_popup_menu_item* item = 0;
+  texu_i32 i = 0;
+  texu_i32 j = 0;
+  texu_i32 nitems = 0;
+  
+  menu = TexuCreateMenu(wnd, id);
+  for(i = 0; i < npopups; ++i)
+  {
+    popup = TexuAddPopupMenu(
+              menu,
+              templ[i].text,
+              templ[i].enabled,
+              templ[i].info);
+
+    nitems = templ[i].nitems;
+    for(j = 0; j < nitems; ++j)
+    {
+      item = TexuAddPopupMenuItem(menu, popup,
+                templ[i].items[j].text,
+                templ[i].items[j].id,
+                templ[i].items[j].enabled,
+                templ[i].items[j].info);
+    }
+  }
+  return menu;
+}
+
 /*device context*/
 texu_i32
 TexuGetColor(texu_cio* cio, texu_i32 clridx)

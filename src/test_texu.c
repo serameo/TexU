@@ -134,7 +134,7 @@ texu_wnd_template templ5_p2[] =
 
 
 texu_i32
-SetMySysColor(texu_i32 sysidx)
+SetMyThemeColor(texu_i32 sysidx)
 {
   switch (sysidx)
   {
@@ -204,7 +204,7 @@ int main()
     return -1;
   }
   
-  TexuSetThemeColor(SetMySysColor);
+  TexuSetThemeColor(SetMyThemeColor);
 
   rc = TexuRegisterClass(
          MyWndClass,
@@ -350,9 +350,9 @@ void _MyWndProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify)
   if (notify->id == IDC_UPDOWN)
   {
     val = TexuSendMessage(udctl, TEXU_UDCM_GETINT, 0, 0);
-    TexuSaveCursorPosition(udctl);
+    /*TexuSaveCursorPosition(udctl);*/
     TexuSendMessage(pgb, TEXU_PGBM_SETPOS, val, 0);
-    TexuRestoreCursorPosition(udctl);
+    /*TexuRestoreCursorPosition(udctl);*/
     
     TexuSendMessage(pgb, TEXU_WM_GETTEXT, (texu_i64)text, TEXU_MAX_WNDTEXT);
     TexuSendMessage(status, TEXU_SBM_SETTEXT, 1, (texu_i64)text);
@@ -412,13 +412,52 @@ texu_status _MyWndProc_OnCreate1(texu_wnd* wnd)
   return TEXU_OK;
 }
 
+
+texu_menu_template mainmenu1[] = 
+{
+  {/*File*/
+    " File ", TEXU_TRUE, "File", 4,
+    {
+      { " New          ", ID_ADD,     TEXU_TRUE,  "New window" },
+      { " Open         ", 2,          TEXU_TRUE,  "Open window" },
+      { "--------------", 0,          TEXU_FALSE, "" },
+      { " Exit   Alt+X ", ID_DELETE,  TEXU_TRUE,  "Exit a program" }
+    }
+  },
+  {/*Edit*/
+    " Edit ", TEXU_TRUE, "Edit", 3,
+    {
+      { " Cut          ", 11,         TEXU_TRUE,  "Cut selection" },
+      { " Copy         ", 12,         TEXU_TRUE,  "Copy selection" },
+      { " Paste        ", 13,         TEXU_TRUE,  "Paste selection copied" }
+    }
+  },
+  {/*Search*/
+    " Search ", TEXU_FALSE, "Search", 2, 
+    {
+      { " Find         ", 21,         TEXU_TRUE,  "Find text" },
+      { " Find Next    ", 22,         TEXU_TRUE,  "Find next text" }
+    }
+  },
+  {/*View*/
+    " View ", TEXU_TRUE, "View", 3,
+    {
+      { " Help      F1 ", ID_HELP,    TEXU_TRUE , "" },
+      { "--------------", 0,          TEXU_FALSE, "" },
+      { " About        ", ID_MSGBOX,  TEXU_TRUE , "About test_texu demo" }
+    }
+  }
+};
+
 texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
 {
   texu_wnd* child = 0;
-  texu_menu* menu = 0;
   texu_i32 starty = 1;
+  texu_menu* menu = 0;
   texu_popup_menu *item = 0;
   
+  menu = TexuCreateMenus(wnd, ID_MAINMENU, mainmenu1, 4);
+#if 0
   menu = TexuCreateMenu(wnd, ID_MAINMENU);
   item = TexuAddPopupMenu(menu, " File ", TEXU_TRUE, "File");
   TexuAddPopupMenuItem(menu, item, " New          ", ID_ADD,     TEXU_TRUE,  "New window");
@@ -440,7 +479,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   TexuAddPopupMenuItem(menu, item, " Help      F1 ", ID_HELP,    TEXU_TRUE , "");
   TexuAddPopupMenuItem(menu, item, "--------------", -1,         TEXU_FALSE, "");
   TexuAddPopupMenuItem(menu, item, " About        ", ID_MSGBOX,  TEXU_TRUE , "About test_texu demo");
-  
+#endif
   child = TexuCreateWindow(
           "Text:",
           TEXU_LABEL_CLASS,
