@@ -57,6 +57,7 @@ texu_i32           TexuGetMaxY();
 texu_i32           TexuGetMaxX();
 
 void               TexuExit();
+void               TexuSetThemeColor(texu_i32 (*setcolor)(texu_i32));
 
 texu_status        TexuRegisterClass(
                      texu_char*   clsname,
