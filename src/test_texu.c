@@ -433,7 +433,7 @@ texu_menu_template mainmenu1[] =
     }
   },
   {/*Search*/
-    " Search ", TEXU_FALSE, "Search", 2, 
+    " Search ", TEXU_TRUE, "Search", 2, 
     {
       { " Find         ", 21,         TEXU_TRUE,  "Find text" },
       { " Find Next    ", 22,         TEXU_TRUE,  "Find next text" }
@@ -454,7 +454,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   texu_wnd* child = 0;
   texu_i32 starty = 1;
   texu_menu* menu = 0;
-  texu_popup_menu *item = 0;
+  /*texu_popup_menu *item = 0;*/
   
   menu = TexuCreateMenus(wnd, ID_MAINMENU, mainmenu1, 4);
 #if 0
@@ -480,6 +480,8 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   TexuAddPopupMenuItem(menu, item, "--------------", -1,         TEXU_FALSE, "");
   TexuAddPopupMenuItem(menu, item, " About        ", ID_MSGBOX,  TEXU_TRUE , "About test_texu demo");
 #endif
+  TexuEnablePopupMenu(menu, 2, TEXU_FALSE);
+  
   child = TexuCreateWindow(
           "Text:",
           TEXU_LABEL_CLASS,

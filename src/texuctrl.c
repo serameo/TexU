@@ -5455,17 +5455,21 @@ _TexuTextCtrlProc_OnDestroy(texu_wnd* wnd)
 void
 _TexuTextCtrlProc_OnPaint(texu_wnd* wnd, texu_cio* dc)
 {
+  /*
   texu_textwnd* txt = (texu_textwnd*)texu_wnd_get_userdata(wnd);
   if (!(texu_wnd_is_visible(wnd)))
   {
     return;
   }
+  */
 }
 
 void
 _TexuTextCtrlProc_OnChar(texu_wnd* wnd, texu_i32 ch, texu_i32 alt)
 {
+  /*
   texu_textwnd* txt = (texu_textwnd*)texu_wnd_get_userdata(wnd);
+  */
 }
 
 

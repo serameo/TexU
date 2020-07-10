@@ -470,7 +470,7 @@ TexuCreateMenus(texu_wnd* wnd, texu_ui32 id, const texu_menu_template* templ, te
 {
   texu_menu* menu = 0;
   texu_popup_menu* popup = 0;
-  texu_popup_menu_item* item = 0;
+  /*texu_popup_menu_item* item = 0;*/
   texu_i32 i = 0;
   texu_i32 j = 0;
   texu_i32 nitems = 0;
@@ -487,7 +487,7 @@ TexuCreateMenus(texu_wnd* wnd, texu_ui32 id, const texu_menu_template* templ, te
     nitems = templ[i].nitems;
     for(j = 0; j < nitems; ++j)
     {
-      item = TexuAddPopupMenuItem(menu, popup,
+      /*item =*/ TexuAddPopupMenuItem(menu, popup,
                 templ[i].items[j].text,
                 templ[i].items[j].id,
                 templ[i].items[j].enabled,
