@@ -3802,7 +3802,7 @@ _TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_TCM_INSERTITEM:
     {
-      return (texu_i32) _TexuTreeCtrlProc_OnInsertItem(wnd, (texu_tree_item*) param1, (const texu_treewnd_item*) param2);
+      return (texu_i64) _TexuTreeCtrlProc_OnInsertItem(wnd, (texu_tree_item*) param1, (const texu_treewnd_item*) param2);
     }
     case TEXU_TCM_DELETEITEM:
     {
@@ -3818,11 +3818,11 @@ _TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_TCM_FINDITEM:
     {
-      return (texu_i32) _TexuTreeCtrlProc_OnFindItem(wnd, (texu_treewnd_item*) param1, (void*)param2);
+      return (texu_i64) _TexuTreeCtrlProc_OnFindItem(wnd, (texu_treewnd_item*) param1, (void*)param2);
     }
     case TEXU_TCM_FINDNEXTITEM:
     {
-      return (texu_i32) _TexuTreeCtrlProc_OnFindNextItem(wnd, (texu_tree_item*) param1, (texu_treewnd_item*) param2);
+      return (texu_i64) _TexuTreeCtrlProc_OnFindNextItem(wnd, (texu_tree_item*) param1, (texu_treewnd_item*) param2);
     }
     case TEXU_TCM_EXPANDITEM:
     {
@@ -3834,7 +3834,7 @@ _TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_TCM_SETFINDITEMPROC:
     {
-      return (texu_i32) _TexuTreeCtrlProc_OnSetFindItemProc(wnd, (texu_tree_find_proc) param1);
+      return (texu_i64) _TexuTreeCtrlProc_OnSetFindItemProc(wnd, (texu_tree_find_proc) param1);
     }
     case TEXU_TCM_SETSELITEM:
     {
@@ -3842,7 +3842,7 @@ _TexuTreeCtrlProc(texu_wnd* wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     }
     case TEXU_TCM_GETSELITEM:
     {
-      return (texu_i32) _TexuTreeCtrlProc_OnGetSelItem(wnd);
+      return (texu_i64) _TexuTreeCtrlProc_OnGetSelItem(wnd);
     }
     case TEXU_TCM_EXPORTTOFILE:
     {
