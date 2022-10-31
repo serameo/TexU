@@ -60,7 +60,7 @@
 #define TEXU_WM_REDRAWMENU              (TEXU_WM_FIRST + 16)
 #define TEXU_WM_ENTERMENU               (TEXU_WM_FIRST + 17)
 #define TEXU_WM_LEAVEMENU               (TEXU_WM_FIRST + 18)
-
+#define TEXU_WM_IDLE                    (TEXU_WM_FIRST + 19)
 
 /* EDIT */
 #define TEXU_EM_FIRST                   200
@@ -335,7 +335,7 @@
 #define TEXU_WS_LEFT                   0x00000001          /* shared controls style */
 #define TEXU_WS_CENTER                 0x00000002
 #define TEXU_WS_RIGHT                  0x00000004
-
+#define TEXU_WS_DISABLED               0x00000008
 
 #define TEXU_ALIGN_LEFT                TEXU_WS_LEFT
 #define TEXU_ALIGN_CENTER              TEXU_WS_CENTER
