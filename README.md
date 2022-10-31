@@ -15,6 +15,7 @@ These files are included many text objects by the following:
 - Up/down control (TEXU_UPDOWNCTRL_CLASS)
 - Progress bar control (TEXU_PROGRESSBAR_CLASS)
 - Menu (TEXU_MENU_CLASS / TEXU_MENUWND_CLASS)
+- Page control (TEXU_PAGECTRL_CLASS)
 - Simple console I/O (e.g. writing/reading a character, drawing a line, drawing a rectangle etc.)
 
 All text objects are implemented by using a simple library (TexU_List, TexU_Stack, TexU_Queue, TexU_Tree, etc.) See also include/texulib.h. Also, some utilities such as texu_dblog object is using sqlite library to handle a database log file.
