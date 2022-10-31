@@ -167,6 +167,7 @@ texu_cio_init(texu_cio* cio, texu_i32 lines, texu_i32 cols)
   cbreak();
   keypad(stdscr, TRUE);
   noecho();
+  timeout(500); /*if there is no key pressed*/
 
   start_color();
   _texu_cio_init_colors(cio);

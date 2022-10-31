@@ -553,6 +553,19 @@ texu_env_run(texu_env* env)
     }
 #else
     ch = texu_cio_getch(env->cio);
+    if (-1 == ch)
+    {
+      /*no key pressed*/
+      /*handle idle time by calling TEXU_WM_IDLE at the top of window*/
+      activewnd = (texu_wnd*)texu_stack_top(env->frames);
+      if (!activewnd)
+      {
+        /*no more windows active*/
+        break;
+      }
+      texu_wnd_send_msg(activewnd, TEXU_WM_IDLE, 0, 0);
+      continue;
+    }
     keypressed = keyname(ch);
     if ('^' == keypressed[0] && keypressed[1] != 0)
     {
