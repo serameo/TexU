@@ -3062,6 +3062,7 @@ extern "C"
         while (item)
         {
             part = (texu_sbwnd_part *)item->data;
+            memset(buf, 0, sizeof(buf));
             texu_printf_alignment(buf, part->text, part->width, part->align);
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_color(dc, part->color));

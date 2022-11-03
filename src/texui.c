@@ -58,6 +58,8 @@ extern "C"
         texu_i32          initial;
         texu_i32          repeat;
         */
+        texu_i32          cols;
+        texu_i32          lines;
 #if USE_TCL_AUTOMATION
         pthread_mutex_t shared_msgs;
         pthread_cond_t notempty_msgs;
@@ -459,6 +461,17 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         if (env)
         {
             memset(env, 0, sizeof(texu_env));
+
+            /* desktop */
+            rc = _texu_env_create_desktop(env);
+            if (rc != TEXU_OK)
+            {
+                texu_list_del(env->wndcls);
+                texu_cio_release(env->cio);
+                free(env);
+                env = 0;
+                return env;
+            }
 /*
     rc = _texu_env_init_signals(env);
     if (TEXU_OK != rc)
@@ -485,16 +498,8 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
             /* register internal classes */
             _texu_env_init_cls(env);
 
-            /* desktop */
-            rc = _texu_env_create_desktop(env);
-            if (rc != TEXU_OK)
-            {
-                texu_list_del(env->wndcls);
-                texu_cio_release(env->cio);
-                free(env);
-                env = 0;
-                return env;
-            }
+            env->cols = cols;
+            env->lines = lines;
 
             /* window frames */
             env->frames = texu_stack_new(TEXU_ENV_MAX_FRAMES + 1);
@@ -933,6 +938,7 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
     void
     _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio)
     {
+        texu_env *env = texu_wnd_get_env(wnd);
         texu_char zblank[TEXU_MAX_WNDTEXT + 1];
         texu_i32 width = 0;
         texu_i32 height = 0;
@@ -945,13 +951,21 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         memset(zblank, 0, sizeof(zblank));
         memset(zblank, ' ', width);
 
-        for (line = 0; line < height; ++line)
+        for (line = 0; line < height+1; ++line)
         {
             texu_cio_putstr_attr(
                 cio,
                 line + wnd->y, wnd->x,
                 zblank,
                 texu_cio_get_color(cio, wnd->normalcolor));
+        }
+        if (line + wnd->y >= env->lines)
+        {
+            texu_cio_putstr_attr(
+                cio,
+                line + wnd->y, wnd->x,
+                ' ',
+                texu_cio_get_color(cio, TEXU_CIO_COLOR_WHITE_BLACK));
         }
     }
 
