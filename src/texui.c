@@ -252,48 +252,48 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         {
             env->syscolors[i] = TEXU_CIO_COLOR_WHITE_BLACK;
         }
-        env->syscolors[TEXU_COLOR_WINDOW] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_DESKTOP] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_DIALOG] = TEXU_CIO_COLOR_BLACK_WHITE;
-        env->syscolors[TEXU_COLOR_TITLE_WINDOW] = TEXU_CIO_COLOR_WHITE_BLUE;
-        env->syscolors[TEXU_COLOR_BUTTON_OK] = TEXU_CIO_COLOR_BLACK_GREEN;
-        env->syscolors[TEXU_COLOR_BUTTON_YES] = TEXU_CIO_COLOR_WHITE_BLUE;
-        env->syscolors[TEXU_COLOR_BUTTON_NO] = TEXU_CIO_COLOR_BLACK_RED;
-        env->syscolors[TEXU_COLOR_BUTTON_CANCEL] = TEXU_CIO_COLOR_BLACK_YELLOW;
-        env->syscolors[TEXU_COLOR_MENU] = TEXU_CIO_COLOR_BLUE_WHITE;
-        env->syscolors[TEXU_COLOR_MENU_DISABLED] = TEXU_CIO_COLOR_BLACK_WHITE;
-        env->syscolors[TEXU_COLOR_MENU_SELECTED] = TEXU_CIO_COLOR_BLUE_CYAN;
-        env->syscolors[TEXU_COLOR_MENUITEM] = TEXU_CIO_COLOR_BLUE_WHITE;
-        env->syscolors[TEXU_COLOR_MENUITEM_DISABLED] = TEXU_CIO_COLOR_BLACK_WHITE;
-        env->syscolors[TEXU_COLOR_MENUITEM_SELECTED] = TEXU_CIO_COLOR_WHITE_BLUE;
-        env->syscolors[TEXU_COLOR_LABEL] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_LABEL_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_STATUSBAR] = TEXU_CIO_COLOR_WHITE_BLUE;
-        env->syscolors[TEXU_COLOR_EDIT] = TEXU_CIO_COLOR_CYAN_BLACK;
-        env->syscolors[TEXU_COLOR_EDIT_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_EDIT_SELECTED] = TEXU_CIO_COLOR_BLACK_CYAN;
-        env->syscolors[TEXU_COLOR_LISTBOX] = TEXU_CIO_COLOR_CYAN_BLACK;
-        env->syscolors[TEXU_COLOR_LISTBOX_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_LISTBOX_SELECTED] = TEXU_CIO_COLOR_BLUE_CYAN;
-        env->syscolors[TEXU_COLOR_COMBOBOX] = TEXU_CIO_COLOR_BLUE_WHITE;
-        env->syscolors[TEXU_COLOR_COMBOBOX_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_COMBOBOX_SELECTED] = TEXU_CIO_COLOR_WHITE_BLUE;
-        env->syscolors[TEXU_COLOR_LISTCTRL] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_LISTCTRL_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_LISTCTRL_ITEM] = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_WINDOW]               = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_DESKTOP]              = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_DIALOG]               = TEXU_CIO_COLOR_BLACK_WHITE;
+        env->syscolors[TEXU_COLOR_TITLE_WINDOW]         = TEXU_CIO_COLOR_WHITE_BLUE;
+        env->syscolors[TEXU_COLOR_BUTTON_OK]            = TEXU_CIO_COLOR_BLACK_GREEN;
+        env->syscolors[TEXU_COLOR_BUTTON_YES]           = TEXU_CIO_COLOR_WHITE_BLUE;
+        env->syscolors[TEXU_COLOR_BUTTON_NO]            = TEXU_CIO_COLOR_BLACK_RED;
+        env->syscolors[TEXU_COLOR_BUTTON_CANCEL]        = TEXU_CIO_COLOR_BLACK_YELLOW;
+        env->syscolors[TEXU_COLOR_MENU]                 = TEXU_CIO_COLOR_BLUE_WHITE;
+        env->syscolors[TEXU_COLOR_MENU_DISABLED]        = TEXU_CIO_COLOR_BLACK_WHITE;
+        env->syscolors[TEXU_COLOR_MENU_SELECTED]        = TEXU_CIO_COLOR_BLUE_CYAN;
+        env->syscolors[TEXU_COLOR_MENUITEM]             = TEXU_CIO_COLOR_BLUE_WHITE;
+        env->syscolors[TEXU_COLOR_MENUITEM_DISABLED]    = TEXU_CIO_COLOR_BLACK_WHITE;
+        env->syscolors[TEXU_COLOR_MENUITEM_SELECTED]    = TEXU_CIO_COLOR_WHITE_BLUE;
+        env->syscolors[TEXU_COLOR_LABEL]                = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_LABEL_DISABLED]       = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_STATUSBAR]            = TEXU_CIO_COLOR_WHITE_BLUE;
+        env->syscolors[TEXU_COLOR_EDIT]                 = TEXU_CIO_COLOR_CYAN_BLACK;
+        env->syscolors[TEXU_COLOR_EDIT_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_EDIT_SELECTED]        = TEXU_CIO_COLOR_BLACK_CYAN;
+        env->syscolors[TEXU_COLOR_LISTBOX]              = TEXU_CIO_COLOR_CYAN_BLACK;
+        env->syscolors[TEXU_COLOR_LISTBOX_DISABLED]     = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_LISTBOX_SELECTED]     = TEXU_CIO_COLOR_BLUE_CYAN;
+        env->syscolors[TEXU_COLOR_COMBOBOX]             = TEXU_CIO_COLOR_BLUE_WHITE;
+        env->syscolors[TEXU_COLOR_COMBOBOX_DISABLED]    = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_COMBOBOX_SELECTED]    = TEXU_CIO_COLOR_WHITE_BLUE;
+        env->syscolors[TEXU_COLOR_LISTCTRL]             = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_LISTCTRL_DISABLED]    = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED]    = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_LISTCTRL_ITEM]        = TEXU_CIO_COLOR_WHITE_BLACK;
         env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
         env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELECTED] = TEXU_CIO_COLOR_BLUE_CYAN;
-        env->syscolors[TEXU_COLOR_TREECTRL] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_TREECTRL_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_TREECTRL_SELECTED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_TREECTRL_ITEM] = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_TREECTRL]             = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_TREECTRL_DISABLED]    = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_TREECTRL_SELECTED]    = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_TREECTRL_ITEM]        = TEXU_CIO_COLOR_WHITE_BLACK;
         env->syscolors[TEXU_COLOR_TREECTRL_ITEM_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
         env->syscolors[TEXU_COLOR_TREECTRL_ITEM_SELECTED] = TEXU_CIO_COLOR_BLUE_CYAN;
-        env->syscolors[TEXU_COLOR_UPDOWNCTRL] = TEXU_CIO_COLOR_BLUE_WHITE;
-        env->syscolors[TEXU_COLOR_UPDOWNCTRL_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
-        env->syscolors[TEXU_COLOR_UPDOWNCTRL_SELECTED] = TEXU_CIO_COLOR_BLUE_CYAN;
-        env->syscolors[TEXU_COLOR_PROGRESSBAR] = TEXU_CIO_COLOR_CYAN_BLACK;
+        env->syscolors[TEXU_COLOR_UPDOWNCTRL]           = TEXU_CIO_COLOR_BLUE_WHITE;
+        env->syscolors[TEXU_COLOR_UPDOWNCTRL_DISABLED]  = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_UPDOWNCTRL_SELECTED]  = TEXU_CIO_COLOR_BLUE_CYAN;
+        env->syscolors[TEXU_COLOR_PROGRESSBAR]          = TEXU_CIO_COLOR_CYAN_BLACK;
         env->syscolors[TEXU_COLOR_PROGRESSBAR_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
         env->syscolors[TEXU_COLOR_PROGRESSBAR_SELECTED] = TEXU_CIO_COLOR_BLUE_CYAN;
 
@@ -461,17 +461,6 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         if (env)
         {
             memset(env, 0, sizeof(texu_env));
-
-            /* desktop */
-            rc = _texu_env_create_desktop(env);
-            if (rc != TEXU_OK)
-            {
-                texu_list_del(env->wndcls);
-                texu_cio_release(env->cio);
-                free(env);
-                env = 0;
-                return env;
-            }
 /*
     rc = _texu_env_init_signals(env);
     if (TEXU_OK != rc)
@@ -500,6 +489,17 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
 
             env->cols = cols;
             env->lines = lines;
+
+            /* desktop */
+            rc = _texu_env_create_desktop(env);
+            if (rc != TEXU_OK)
+            {
+                texu_list_del(env->wndcls);
+                texu_cio_release(env->cio);
+                free(env);
+                env = 0;
+                return env;
+            }
 
             /* window frames */
             env->frames = texu_stack_new(TEXU_ENV_MAX_FRAMES + 1);
@@ -634,6 +634,16 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
     texu_env_get_desktop(texu_env *env)
     {
         return env->desktop;
+    }
+    texu_i32
+    texu_env_screen_height(texu_env* env)
+    {
+        return env->lines;
+    }
+    texu_i32
+    texu_env_screen_width(texu_env* env)
+    {
+        return env->cols;
     }
 
     texu_status
@@ -938,7 +948,7 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
     void
     _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio)
     {
-        texu_env *env = texu_wnd_get_env(wnd);
+        /*texu_env *env = texu_wnd_get_env(wnd);*/
         texu_char zblank[TEXU_MAX_WNDTEXT + 1];
         texu_i32 width = 0;
         texu_i32 height = 0;
@@ -951,21 +961,13 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         memset(zblank, 0, sizeof(zblank));
         memset(zblank, ' ', width);
 
-        for (line = 0; line < height+1; ++line)
+        for (line = 0; line < height; ++line)
         {
             texu_cio_putstr_attr(
                 cio,
                 line + wnd->y, wnd->x,
                 zblank,
                 texu_cio_get_color(cio, wnd->normalcolor));
-        }
-        if (line + wnd->y >= env->lines)
-        {
-            texu_cio_putstr_attr(
-                cio,
-                line + wnd->y, wnd->x,
-                ' ',
-                texu_cio_get_color(cio, TEXU_CIO_COLOR_WHITE_BLACK));
         }
     }
 

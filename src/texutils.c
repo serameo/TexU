@@ -167,11 +167,12 @@ extern "C"
     _texu_xcnf_parse(texu_xcnf *xcnf, texu_char *line, texu_char *key, texu_char *val)
     {
         texu_status rc = TEXU_OK;
-        texu_char *tok = 0;
+        char *tok;
         texu_char *q1 = 0;
         texu_char *q2 = 0;
         texu_char buf[TEXU_MAX_WNDTEXT + 1];
-        texu_char *brkb, *brkl;
+        char *brkb, *brkl;
+        char* psz = (char*)buf;
 
         /* empty string or a comment line, then ignore it */
         if (0 == strlen(line) || ';' == line[0] || '#' == line[0] || '!' == line[0])
@@ -180,7 +181,7 @@ extern "C"
         }
         /* white spaces line */
         strcpy(buf, line);
-        tok = strtok_r(buf, " \t\n", &brkb);
+        tok = strtok_r(buf, " \t\n", (char**)&brkb);
         if (!tok)
         {
             return TEXU_XCNF_SKIP;
@@ -200,7 +201,8 @@ extern "C"
         }
 
         /* read a key */
-        tok = strtok_r(line, " \t=\n", &brkl);
+        psz = (char*)line;
+        tok = strtok_r(psz, " \t=\n", (char**)&brkl);
         if (tok)
         {
             strcpy(key, tok);
@@ -336,7 +338,7 @@ extern "C"
         }
         return def;
     }
-
+#ifdef DECLARE_SQLITE3
     /*
     # TexU dblog
     #
@@ -815,6 +817,7 @@ texu_safedb_bool     texu_safedb_is_existing(texu_safedb_ptr _db, texu_safedb_cs
     fExisting = (row > 0);
     return fExisting;
 }
+#endif /*DECLARE_SQLITE3*/
 
 #ifdef __cplusplus
 }

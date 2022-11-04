@@ -574,7 +574,7 @@ extern "C"
     texu_status _TexuLabelProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
 
     void
-    _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+    _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     {
         if (texu_wnd_is_visible(wnd))
         {
@@ -598,9 +598,9 @@ extern "C"
             {
                 color = discolor;
             }
+            texu_cio_putstr_attr(cio, y, x, buf,
+                                 texu_cio_get_color(cio, color));
 
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
             return;
         }
     }
@@ -671,7 +671,7 @@ extern "C"
     texu_status _TexuEditProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
     void _TexuEditProc_OnChar(texu_wnd *, texu_i32 ch, texu_i32 alt);
     void _TexuEditProc_OnDestroy(texu_wnd *);
-    void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+    void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio);
     texu_i32 _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd);
     void _TexuEditProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
     void _TexuEditProc_OnLimitText(texu_wnd *wnd, texu_i32 limit);
@@ -1346,7 +1346,7 @@ extern "C"
         return TEXU_OK;
     }
 
-    void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+    void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     {
         texu_env *env = texu_wnd_get_env(wnd);
         texu_editwnd *edit = 0;
@@ -1380,7 +1380,7 @@ extern "C"
                     memset(buf, ' ', len);
                 }
                 buf[len] = 0;
-                texu_cio_putstr_attr(dc, y, x, buf, texu_cio_get_color(dc, color));
+                texu_cio_putstr_attr(cio, y, x, buf, texu_cio_get_color(cio, color));
                 return;
             }
 
@@ -1395,9 +1395,14 @@ extern "C"
             }
             texu_printf_alignment(text, buf, width, style);
             color = (edit->selected ? texu_wnd_get_focuscolor(wnd) : color);
-            texu_cio_putstr_attr(dc, y, x, text,
-                                 texu_cio_get_color(dc, color));
-            texu_cio_gotoyx(dc, y, x + len);
+#ifdef TEXU_CIO_COLOR_MONO
+            texu_cio_putstr_attr(cio, y, x, text,
+                                 texu_cio_get_reverse(cio, color));
+#else
+            texu_cio_putstr_attr(cio, y, x, text,
+                                 texu_cio_get_color(cio, color));
+#endif /* TEXU_CIO_COLOR_MONO*/
+            texu_cio_gotoyx(cio, y, x + len);
         }
     }
 
@@ -1656,57 +1661,57 @@ extern "C"
         {
             return;
         }
-        item = _TexuListBoxProc_GetFirstItemEnabled(lb);
-        if (!item)
-        {
-            return;
-        }
+        item = _TexuListBoxProc_FindItemByIndex(lb, lb->cursel);
 
         switch (ch)
         {
-        case 0x20:
-        {
-            if ((style & TEXU_LBS_CHECKBOX) ||
-                (style & TEXU_LBS_RADIOBOX))
+            case 0x20: /*space bar*/
             {
-                /* get current and check it */
-                _TexuListBoxProc_OnSetItemChecked(wnd, lb->cursel, TEXU_LB_CHECKED);
+                if (!item->enable)
+                {
+                    return;
+                }
+                if ((style & TEXU_LBS_CHECKBOX) ||
+                     (style & TEXU_LBS_RADIOBOX))
+                {
+                    /* get current and check it */
+                    _TexuListBoxProc_OnSetItemChecked(wnd, lb->cursel, TEXU_LB_CHECKED);
+                    ++repaint;
+                }
+                break;
             }
-            ++repaint;
-            break;
-        }
 
-        case KEY_DOWN:
-        {
-            ++lines;
-            ++repaint;
-            break;
-        }
+            case KEY_DOWN:
+            {
+                ++lines;
+                ++repaint;
+                break;
+            }
 
-        case KEY_UP:
-        {
-            --lines;
-            ++repaint;
-            break;
-        }
+            case KEY_UP:
+            {
+                --lines;
+                ++repaint;
+                break;
+            }
 
-        case KEY_PPAGE:
-        {
-            lines -= height;
-            ++repaint;
-            break;
-        }
+            case KEY_PPAGE:
+            {
+                lines -= height;
+                ++repaint;
+                break;
+            }
 
-        case KEY_NPAGE:
-        {
-            lines += height;
-            ++repaint;
-            break;
-        }
-        default:
-        {
-            break;
-        }
+            case KEY_NPAGE:
+            {
+                lines += height;
+                ++repaint;
+                break;
+            }
+            default:
+            {
+                break;
+            }
         }
         if (repaint)
         {
@@ -1722,53 +1727,13 @@ extern "C"
             }
             cursel = lb->cursel;
 
-            item = _TexuListBoxProc_FindItemByIndex(lb, lb->cursel);
-            if (item && !(item->enable))
-            {
-                if (lines < 0)
-                {
-                    item = _TexuListBoxProc_GetPrevItemEnabled(lb, item);
-                    if (!item)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        lb->cursel = _TexuListBoxProc_FindIndexByItem(lb, item);
-                    }
-                }
-                else
-                {
-                    item = _TexuListBoxProc_GetNextItemEnabled(lb, item);
-                    if (!item)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        lb->cursel = _TexuListBoxProc_FindIndexByItem(lb, item);
-                    }
-                }
-            }
-
             /* find the new first visible */
             if (height > 1)
             {
-                if (lb->cursel >= lb->firstvisible + height)
+                lb->firstvisible = cursel - height + 1;
+                if (lb->firstvisible < 0)
                 {
-                    lb->firstvisible += lines + (cursel - prevsel);
-                    if (lb->firstvisible > lb->nitems - height)
-                    {
-                        lb->firstvisible = lb->nitems - height;
-                    }
-                }
-                else if (lb->firstvisible > lb->cursel)
-                {
-                    lb->firstvisible += lines + (cursel - prevsel);
-                    if (lb->firstvisible < 0)
-                    {
-                        lb->firstvisible = 0;
-                    }
+                    lb->firstvisible = 0;
                 }
             }
             else
@@ -2111,10 +2076,17 @@ extern "C"
                 else if (i - lb->firstvisible < lines)
                 {
                     memset(buf, 0, sizeof(buf));
-                    strcpy(buf, " ");
+                    if (!item->enable)
+                    {
+                        strcat(buf, "*");
+                    }
+                    else
+                    {
+                        strcpy(buf, " ");
+                    }
                     if (style & TEXU_LBS_CHECKBOX)
                     {
-                        if (item->checked)
+                        if (item->checked && item->enable)
                         {
                             strcat(buf, "[X] ");
                         }
@@ -2125,7 +2097,7 @@ extern "C"
                     }
                     else if (style & TEXU_LBS_RADIOBOX)
                     {
-                        if (item->checked)
+                        if (item->checked && item->enable)
                         {
                             strcat(buf, "(O) ");
                         }
@@ -2137,29 +2109,45 @@ extern "C"
 
                     /* copy from item text */
                     strcat(buf, item->itemtext);
+                    if (!item->enable)
+                    {
+                        strcat(buf, "*");
+                    }
 
                     memset(text, 0, sizeof(text));
                     texu_printf_alignment(text, buf, width - 1, style);
                     strcat(text, " ");
 
-                    if (i == lb->cursel && item->enable)
+                    if (i == lb->cursel)/* && item->enable)*/
                     {
                         color = lb->selcolor;
                         if (style & TEXU_LBS_OWNERCOLOR)
                         {
                             color = item->selcolor;
                         }
+#ifdef TEXU_CIO_COLOR_MONO
+                    texu_cio_putstr_attr(cio, y + (i - lb->firstvisible), x, text,
+                                         texu_cio_get_reverse(cio, color));
+#else
+                    texu_cio_putstr_attr(cio, y + (i - lb->firstvisible), x, text,
+                                         texu_cio_get_color(cio, color));
+#endif /* TEXU_CIO_COLOR_MONO*/
                     }
                     else
                     {
+#ifdef TEXU_CIO_COLOR_MONO
+                        color = normcolor;
+#else
                         color = (item->enable ? normcolor : discolor);
                         if (style & TEXU_LBS_OWNERCOLOR)
                         {
                             color = (item->enable ? item->normcolor : item->discolor);
                         }
+#endif /* TEXU_CIO_COLOR_MONO*/
+                        texu_cio_putstr_attr(cio, y + (i - lb->firstvisible), x, text,
+                                             texu_cio_get_color(cio, color));
                     }
-                    texu_cio_putstr_attr(cio, y + (i - lb->firstvisible), x, text,
-                                         texu_cio_get_color(cio, color));
+
                 } /* not owner draw */
             }     /* for each item */
         }         /* items are valid */
@@ -3064,8 +3052,13 @@ extern "C"
             part = (texu_sbwnd_part *)item->data;
             memset(buf, 0, sizeof(buf));
             texu_printf_alignment(buf, part->text, part->width, part->align);
+            #ifdef TEXU_CIO_COLOR_MONO
+            texu_cio_putstr_attr(dc, y, x, buf,
+                                 texu_cio_get_reverse(dc, part->color));
+            #else
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_color(dc, part->color));
+            #endif
 
             x += part->width;
             item = item->next;

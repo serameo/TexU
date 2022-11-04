@@ -71,6 +71,94 @@ extern "C"
     }
 
     void
+    _texu_cio_init_colors_mono(texu_cio *cio)
+    {
+        init_color(COLOR_WHITE, 1000, 1000, 1000);
+
+        init_pair(TEXU_CIO_COLOR_BLACK_BLACK,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLACK_RED,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLACK_GREEN,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLACK_YELLOW,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLACK_BLUE,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLACK_MAGENTA,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLACK_CYAN,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLACK_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_RED_BLACK,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_RED_RED,           COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_RED_GREEN,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_RED_YELLOW,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_RED_BLUE,          COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_RED_MAGENTA,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_RED_CYAN,          COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_RED_WHITE,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_GREEN_BLACK,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_GREEN_RED,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_GREEN_GREEN,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_GREEN_YELLOW,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_GREEN_BLUE,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_GREEN_MAGENTA,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_GREEN_CYAN,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_GREEN_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_YELLOW_BLACK,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_YELLOW_RED,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_YELLOW_GREEN,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_YELLOW_YELLOW,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_YELLOW_BLUE,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_YELLOW_MAGENTA,    COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_YELLOW_CYAN,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_YELLOW_WHITE,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLUE_BLACK,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLUE_RED,          COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLUE_GREEN,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLUE_YELLOW,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLUE_BLUE,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLUE_MAGENTA,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLUE_CYAN,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_BLUE_WHITE,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_MAGENTA_BLACK,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_MAGENTA_RED,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_MAGENTA_GREEN,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_MAGENTA_YELLOW,    COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_MAGENTA_BLUE,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_MAGENTA_MAGENTA,   COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_MAGENTA_CYAN,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_MAGENTA_WHITE,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_CYAN_BLACK,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_CYAN_RED,          COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_CYAN_GREEN,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_CYAN_YELLOW,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_CYAN_BLUE,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_CYAN_MAGENTA,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_CYAN_CYAN,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_CYAN_WHITE,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_WHITE_BLACK,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_WHITE_RED,         COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_WHITE_GREEN,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_WHITE_YELLOW,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_WHITE_BLUE,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_WHITE_MAGENTA,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_WHITE_CYAN,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_COLOR_WHITE_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+
+        /*BRIGHT WHITE*/
+        init_pair(TEXU_CIO_BRIGHT_WHITE_BLACK,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BRIGHT_WHITE_RED,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BRIGHT_WHITE_GREEN,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BRIGHT_WHITE_YELLOW,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BRIGHT_WHITE_BLUE,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BRIGHT_WHITE_MAGENTA,    COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BRIGHT_WHITE_CYAN,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BRIGHT_WHITE_WHITE,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BLACK_BRIGHT_WHITE,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_RED_BRIGHT_WHITE,        COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_GREEN_BRIGHT_WHITE,      COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_YELLOW_BRIGHT_WHITE,     COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_BLUE_BRIGHT_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_MAGENTA_BRIGHT_WHITE,    COLOR_WHITE,    COLOR_BLACK);
+        init_pair(TEXU_CIO_CYAN_BRIGHT_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+    }
+
+    void
     _texu_cio_init_colors(texu_cio *cio)
     {
         init_color(COLOR_WHITE, 1000, 1000, 1000);
@@ -169,13 +257,18 @@ extern "C"
         timeout(500); /*if there is no key pressed, make TEXU_MW_IDLE msg sent to the top window*/
 
         start_color();
+#ifdef TEXU_CIO_COLOR_MONO
+        _texu_cio_init_colors_mono(cio);
+#else
         _texu_cio_init_colors(cio);
+#endif
 
+#ifdef __LINUX__
         if (lines > 0 && cols > 0)
         {
             resizeterm(lines, cols);
         }
-
+#endif
         /*save window*/
         cio->wndscr = stdscr;
         return TEXU_OK;
@@ -324,6 +417,16 @@ extern "C"
         /* draw right vertical line */
         texu_cio_draw_vline(cio, rect->y, rect->x + rect->cols, rect->lines, attrs);
 
+        #ifdef TEXU_CIO_COLOR_MONO
+        /* draw upper left*/
+        texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
+        /* draw lower left*/
+        texu_cio_putch_attr(cio, rect->y + rect->lines, rect->x, '+', attrs);
+        /* draw upper right*/
+        texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols, '+', attrs);
+        /* draw lower right*/
+        texu_cio_putch_attr(cio, rect->y + rect->lines, rect->x + rect->cols, '+', attrs);
+        #else
         /* draw upper left*/
         texu_cio_putch_attr(cio, rect->y, rect->x, ACS_ULCORNER, attrs);
         /* draw lower left*/
@@ -332,6 +435,7 @@ extern "C"
         texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols, ACS_URCORNER, attrs);
         /* draw lower right*/
         texu_cio_putch_attr(cio, rect->y + rect->lines, rect->x + rect->cols, ACS_LRCORNER, attrs);
+        #endif
 
         return texu_cio_attroff(cio, attrs);
     }
@@ -343,7 +447,11 @@ extern "C"
         texu_cio_attron(cio, attrs);
         for (i = 0; i < width; ++i)
         {
+            #ifdef TEXU_CIO_COLOR_MONO
+            texu_cio_putch_attr(cio, y, x + i, '-', attrs);
+            #else
             texu_cio_putch_attr(cio, y, x + i, ACS_HLINE, attrs);
+            #endif
         }
         return texu_cio_attroff(cio, attrs);
     }
@@ -355,7 +463,11 @@ extern "C"
         texu_cio_attron(cio, attrs);
         for (i = 0; i < height; ++i)
         {
+            #ifdef TEXU_CIO_COLOR_MONO
+            texu_cio_putch_attr(cio, y + i, x, '|', attrs);
+            #else
             texu_cio_putch_attr(cio, y + i, x, ACS_VLINE, attrs);
+            #endif
         }
         return texu_cio_attroff(cio, attrs);
     }
@@ -370,14 +482,22 @@ extern "C"
         {
             rc.cols = widths[i];
             texu_cio_draw_rect(cio, &rc, attrs);
-
+            #ifdef TEXU_CIO_COLOR_MONO
+            texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
+            texu_cio_putch_attr(cio, rc.y + rc.lines, rc.x, '+', attrs);
+            #else
             texu_cio_putch_attr(cio, rc.y, rc.x, ACS_TTEE, attrs);
             texu_cio_putch_attr(cio, rc.y + rc.lines, rc.x, ACS_BTEE, attrs);
+            #endif
             rc.x += widths[i];
         }
+        #ifdef TEXU_CIO_COLOR_MONO
+        texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
+        texu_cio_putch_attr(cio, rect->y + rect->lines, rect->x, '+', attrs);
+        #else
         texu_cio_putch_attr(cio, rect->y, rect->x, ACS_ULCORNER, attrs);
         texu_cio_putch_attr(cio, rect->y + rect->lines, rect->x, ACS_LLCORNER, attrs);
-
+        #endif
         return TEXU_OK;
     }
 
@@ -392,13 +512,22 @@ extern "C"
             rc.lines = heights[i];
             texu_cio_draw_rect(cio, &rc, attrs);
 
+            #ifdef TEXU_CIO_COLOR_MONO
+            texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
+            texu_cio_putch_attr(cio, rc.y + rc.lines, rc.x, '+', attrs);
+            #else
             texu_cio_putch_attr(cio, rc.y, rc.x, ACS_LTEE, attrs);
             texu_cio_putch_attr(cio, rc.y, rc.x + rc.cols, ACS_RTEE, attrs);
+            #endif
             rc.y += heights[i];
         }
+        #ifdef TEXU_CIO_COLOR_MONO
+        texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
+        texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols, '+', attrs);
+        #else
         texu_cio_putch_attr(cio, rect->y, rect->x, ACS_ULCORNER, attrs);
         texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols, ACS_URCORNER, attrs);
-
+        #endif
         return TEXU_OK;
     }
 

@@ -374,6 +374,16 @@ extern "C"
         {
             return;
         }
+        /*draw bar*/
+        memset(buf, 0, sizeof(buf));
+        memset(buf, ' ', texu_env_screen_width(env));
+#ifdef TEXU_CIO_COLOR_MONO
+        texu_cio_putstr_attr(dc, y, x, buf,
+                             texu_cio_get_reverse(dc, normcolor));
+#else
+        texu_cio_putstr_attr(dc, y, x, buf,
+                             texu_cio_get_color(dc, normcolor));
+#endif
 
         while (treeitem)
         {
@@ -384,14 +394,35 @@ extern "C"
             if (menuitem->enable)
             {
                 color = normcolor;
-                color = (treeitem == menu->curbaritem ? selcolor : color);
+                /*color = (treeitem == menu->curbaritem ? selcolor : color);*/
+                if (treeitem == menu->curbaritem)
+                {
+                    color = selcolor;
+                    texu_cio_putstr_attr(dc, y, x, buf,
+                                         texu_cio_get_color(dc, color));
+                }
+                else
+                {
+#ifdef TEXU_CIO_COLOR_MONO
+                    texu_cio_putstr_attr(dc, y, x, buf,
+                                         texu_cio_get_reverse(dc, color));
+#else
+                    texu_cio_putstr_attr(dc, y, x, buf,
+                                         texu_cio_get_color(dc, color));
+#endif
+                }
             }
             else
             {
                 color = discolor;
+#ifdef TEXU_CIO_COLOR_MONO
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_reverse(dc, color));
+#else
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_color(dc, color));
+#endif
             }
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
             treeitem = treeitem->next;
 
             x += len;
@@ -683,14 +714,31 @@ extern "C"
             if (item == menu->curitem)
             {
                 color = menuitem->selcolor;
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_color(dc, color));
+            }
+            else
+            {
+#ifdef TEXU_CIO_COLOR_MONO
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_reverse(dc, color));
+#else
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_color(dc, color));
+#endif
             }
             if (!(menuitem->enable))
             {
+#ifdef TEXU_CIO_COLOR_MONO
+                color = menuitem->normcolor;
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_reverse(dc, color));
+#else
                 color = menuitem->discolor;
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_color(dc, color));
+#endif
             }
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-
             item = item->next;
             ++y;
         }
@@ -725,6 +773,16 @@ extern "C"
         {
             return;
         }
+        /*draw bar*/
+        memset(buf, 0, sizeof(buf));
+        memset(buf, ' ', texu_env_screen_width(env));
+#ifdef TEXU_CIO_COLOR_MONO
+        texu_cio_putstr_attr(dc, y, x, buf,
+                             texu_cio_get_reverse(dc, normcolor));
+#else
+        texu_cio_putstr_attr(dc, y, x, buf,
+                             texu_cio_get_color(dc, normcolor));
+#endif
 
         while (treeitem)
         {
@@ -735,9 +793,18 @@ extern "C"
             if (baritem->enable)
             {
                 color = normcolor;
+#ifdef TEXU_CIO_COLOR_MONO
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_reverse(dc, color));
+#else
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_color(dc, color));
+#endif
                 /* draw popup menu */
                 if (treeitem == menu->curbaritem)
                 {
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_color(dc, color));
                     color = selcolor;
                     _TexuMenuWndProc_DrawPopupMenu(
                         wnd,
@@ -753,10 +820,16 @@ extern "C"
             }
             else
             {
+#ifdef TEXU_CIO_COLOR_MONO
+                color = normcolor;
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_reverse(dc, color));
+#else
                 color = discolor;
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_color(dc, color));
+#endif
             }
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
             treeitem = treeitem->next;
 
             x += len;

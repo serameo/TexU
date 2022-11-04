@@ -6,16 +6,15 @@
 #include "texutils.h"
 
 char *s[] =
-{
-    "Hello world",
-    "Aloha",
-    "Sawasdee",
-    "Magenta",
-    "Navy blue",
-    "Channel Five",
-    "Banana",
-    "MacOS"
-};
+    {
+        "Hello world",
+        "Aloha",
+        "Sawasdee",
+        "Magenta",
+        "Navy blue",
+        "Channel Five",
+        "Banana",
+        "MacOS"};
 /*
 char* s1 = "Hello world";
 char* s2 = "Aloha";
