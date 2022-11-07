@@ -93,6 +93,8 @@ texu_wnd*         texu_env_pop_wnd(texu_env*);
 texu_wnd*         texu_env_top_wnd(texu_env*);
 texu_wnd*         texu_env_get_desktop(texu_env*);
 void              texu_env_exit(texu_env*);
+texu_i32          texu_env_screen_height(texu_env*);
+texu_i32          texu_env_screen_width(texu_env*);
 
 texu_status       texu_env_save_curpos(texu_env* env, texu_i32 ypos, texu_i32 xpos);
 texu_status       texu_env_restore_curpos(texu_env*);

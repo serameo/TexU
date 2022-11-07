@@ -335,6 +335,6 @@
     (texu_i32) texu_wnd_send_msg(wnd, TEXU_PGM_COUNTPAGE, 0, 0)
 
 #define TexuPageCtrl_GetPageIndex(wnd, page) \
-  (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGM_GETPAGEINDEX, (texu_i32)page), 0)
+    (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGM_GETPAGEINDEX, (texu_i32)page), 0)
 
 #endif /*_TEXUIX_H_*/

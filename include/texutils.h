@@ -56,7 +56,7 @@ texu_char*         texu_xcnf_get_string(texu_xcnf*, texu_char*, texu_char*);
 texu_i64           texu_xcnf_get_int(texu_xcnf*, texu_char*, texu_i64);
 texu_f64           texu_xcnf_get_float(texu_xcnf*, texu_char*, texu_f64);
 
-
+#ifdef DECLARE_SQLITE3
 /*
 # TexU dblog
 #
@@ -353,10 +353,12 @@ texu_safedb_float    texu_safedb_aggregate(texu_safedb_ptr db, texu_safedb_cstr 
 texu_safedb_status   texu_safedb_last_errno();
 texu_safedb_bool     texu_safedb_is_existing(texu_safedb_ptr db, texu_safedb_cstr tabname);
 
+#endif /*DECLARE_SQLITE3*/
 
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif /* _TEXUTILS_H_ */
 
