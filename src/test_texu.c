@@ -74,7 +74,7 @@ struct texu_wnd_template
 texu_wnd_template templ5[] =
 {
   { "Label1:",        TEXU_LABEL_CLASS,       TEXU_WS_RIGHT, 0, 1, 0, 1, 20, IDC_LABEL1 },
-  { "Edit1",          TEXU_EDIT_CLASS,        TEXU_ES_AUTOHSCROLL|TEXU_ES_A2Z, 0, 1, 21, 1, 10, IDC_EDIT1 },
+  { "Edit1",          TEXU_EDIT_CLASS,        TEXU_ES_AUTOHSCROLL|TEXU_ES_A2Z|TEXU_ES_CENTER, 0, 1, 21, 1, 10, IDC_EDIT1 },
   { "0",              TEXU_UPDOWNCTRL_CLASS,  0, 0, 1, 42, 1, 10, IDC_UPDOWN1 },
   { "Label2:",        TEXU_LABEL_CLASS,       TEXU_WS_CENTER, 0, 2, 1, 1, 20, IDC_LABEL2 },
   { "Edit2",          TEXU_EDIT_CLASS,        TEXU_ES_AUTOHSCROLL|TEXU_ES_NUMBER, 0, 2, 21, 1, 10, IDC_EDIT2 },
@@ -416,35 +416,43 @@ texu_status _MyWndProc_OnCreate1(texu_wnd* wnd)
 texu_menu_template mainmenu1[] = 
 {
   {/*File*/
-    " File ", TEXU_TRUE, "File", 4,
+    " File ", TEXU_TRUE, "File", 6,
     {
-      { " New          ", ID_ADD,     TEXU_TRUE,  "New window" },
-      { " Open         ", 2,          TEXU_TRUE,  "Open window" },
-      { "--------------", 0,          TEXU_FALSE, "" },
-      { " Exit   Alt+X ", ID_DELETE,  TEXU_TRUE,  "Exit a program" }
+      { "+--------------+", 0,          TEXU_FALSE, "" },
+      { "| New          |", ID_ADD,     TEXU_TRUE,  "New window" },
+      { "| Open         |", 2,          TEXU_TRUE,  "Open window" },
+      { "|--------------|", 0,          TEXU_FALSE, "" },
+      { "| Exit   Alt+X |", ID_DELETE,  TEXU_TRUE,  "Exit a program" },
+      { "+--------------+", 0,          TEXU_FALSE, "" },
     }
   },
   {/*Edit*/
-    " Edit ", TEXU_TRUE, "Edit", 3,
+    " Edit ", TEXU_TRUE, "Edit", 5,
     {
-      { " Cut          ", 11,         TEXU_TRUE,  "Cut selection" },
-      { " Copy         ", 12,         TEXU_TRUE,  "Copy selection" },
-      { " Paste        ", 13,         TEXU_TRUE,  "Paste selection copied" }
+      { "+--------------+", 0,          TEXU_FALSE, "" },
+      { "| Cut          |", 11,         TEXU_TRUE,  "Cut selection" },
+      { "| Copy         |", 12,         TEXU_TRUE,  "Copy selection" },
+      { "| Paste        |", 13,         TEXU_TRUE,  "Paste selection copied" },
+      { "+--------------+", 0,          TEXU_FALSE, "" },
     }
   },
   {/*Search*/
-    " Search ", TEXU_TRUE, "Search", 2, 
+    " Search ", TEXU_TRUE, "Search", 4, 
     {
-      { " Find         ", 21,         TEXU_TRUE,  "Find text" },
-      { " Find Next    ", 22,         TEXU_TRUE,  "Find next text" }
+      { "+--------------+", 0,          TEXU_FALSE, "" },
+      { "| Find         |", 21,         TEXU_TRUE,  "Find text" },
+      { "| Find Next    |", 22,         TEXU_TRUE,  "Find next text" },
+      { "+--------------+", 0,          TEXU_FALSE, "" },
     }
   },
   {/*View*/
-    " View ", TEXU_TRUE, "View", 3,
+    " View ", TEXU_TRUE, "View", 5,
     {
-      { " Help      F1 ", ID_HELP,    TEXU_TRUE , "" },
-      { "--------------", 0,          TEXU_FALSE, "" },
-      { " About        ", ID_MSGBOX,  TEXU_TRUE , "About test_texu demo" }
+      { "+--------------+", 0,          TEXU_FALSE, "" },
+      { "| Help      F1 |", ID_HELP,    TEXU_TRUE , "" },
+      { "|--------------|", 0,          TEXU_FALSE, "" },
+      { "| About        |", ID_MSGBOX,  TEXU_TRUE , "About test_texu demo" },
+      { "+--------------+", 0,          TEXU_FALSE, "" },
     }
   }
 };
@@ -498,7 +506,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd* wnd)
   child = TexuCreateWindow(
           "Text",
           TEXU_EDIT_CLASS,
-          TEXU_ES_AUTOHSCROLL|TEXU_ES_A2Z, /* style*/
+          TEXU_ES_AUTOHSCROLL|TEXU_ES_A2Z|TEXU_ES_CENTER, /* style*/
           0, /* exstyle*/
           starty, /* y */
           21, /* x */

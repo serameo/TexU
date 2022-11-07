@@ -5051,11 +5051,13 @@ extern "C"
         texu_wnd *newpage = 0;
         texu_wnd *activewnd = pgctl->activewnd;
         texu_wnd *nextwnd = 0;
+        texu_wnd *firstactive = pgctl->firstactive;
         texu_i32 y = 0;
         texu_i32 x = 0;
         texu_i32 width = 0;
         texu_cio *cio = 0;
         texu_status rc = TEXU_OK;
+        texu_wnd* lastactive = pgctl->lastactive;
 
         if ((TEXU_KEYPRESSED_CTRL & alt) && (('k' == ch) || ('K' == ch)))
         {
@@ -5131,24 +5133,36 @@ extern "C"
                 }
 
                 /* kill and set the new active window */
-                if (nextwnd)
+                if (activewnd)
                 {
-                    rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
-                    if (rc != TEXU_OK)
+                    if (activewnd == lastactive && !nextwnd && ch == TEXU_KEY_NEXTWND)
                     {
+                        nextwnd = firstactive;
+                    }
+                    if (nextwnd)
+                    {
+                        rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                        if (rc != TEXU_OK)
+                        {
+                            return;
+                        }
+                        rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
+                        y = texu_wnd_get_y(nextwnd);
+                        x = texu_wnd_get_x(nextwnd);
+                        width = texu_wnd_get_width(nextwnd);
+
+                        cio = texu_wnd_get_cio(curpage);
+                        texu_cio_gotoyx(cio, y, x + width - 1);
+
+                        /* the new active window */
+                        pgctl->activewnd = nextwnd;
                         return;
                     }
-                    rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
-                    y = texu_wnd_get_y(nextwnd);
-                    x = texu_wnd_get_x(nextwnd);
-                    width = texu_wnd_get_width(nextwnd);
-
-                    cio = texu_wnd_get_cio(curpage);
-                    texu_cio_gotoyx(cio, y, x + width - 1);
-
-                    /* the new active window */
-                    pgctl->activewnd = nextwnd;
-                    return;
+                    else
+                    {
+                        texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                        return;
+                    }
                 }
                 else
                 {

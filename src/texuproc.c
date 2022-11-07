@@ -1126,8 +1126,13 @@ extern "C"
                     edit->editbuf[0] = 0;
                     memset(buf, ' ', width);
                     buf[width] = 0;
+                    #ifdef TEXU_CIO_COLOR_MONO
+                    texu_cio_putstr_attr(dc, y, x, buf,
+                                         texu_cio_get_reverse(dc, normcolor));
+                    #else
                     texu_cio_putstr_attr(dc, y, x, buf,
                                          texu_cio_get_color(dc, normcolor));
+                    #endif
                     texu_cio_gotoyx(dc, y, x);
 
                     len = 0;
@@ -1236,6 +1241,8 @@ extern "C"
                         }
                         changed = 1;
                         texu_cio_gotoyx(dc, y, x + len);
+                        /* editing */
+                        edit->editing = 1;
                         texu_wnd_invalidate(wnd);
                         return;
                     }
@@ -1301,6 +1308,8 @@ extern "C"
                     }
                     len = TEXU_MIN(len, width);
                     texu_cio_gotoyx(dc, y, x + len);
+                    /* editing */
+                    edit->editing = 1;
                     texu_wnd_invalidate(wnd);
                     return;
                 }
@@ -1384,10 +1393,14 @@ extern "C"
                 return;
             }
 
-            len = TEXU_MIN(strlen(edit->editbuf), width);
+            /*len = TEXU_MIN(strlen(edit->editbuf), width);*/
             memset(buf, 0, sizeof(buf));
             memset(text, 0, sizeof(buf));
             strncpy(buf, &edit->editbuf[edit->firstchar], width);
+            if (0 == strlen(buf))
+            {
+                memset(buf, ' ', width);
+            }
 
             if (edit->editing)
             {
@@ -1402,6 +1415,7 @@ extern "C"
             texu_cio_putstr_attr(cio, y, x, text,
                                  texu_cio_get_color(cio, color));
 #endif /* TEXU_CIO_COLOR_MONO*/
+            len = TEXU_MIN(strlen(buf), width);
             texu_cio_gotoyx(cio, y, x + len);
         }
     }
@@ -2053,6 +2067,8 @@ extern "C"
         texu_i32 i = 0;
         texu_i32 lines = 0;
         texu_lbwnd_item *item = 0;
+        texu_i32  movey = y;
+        texu_i32  movex = x;
 
         if (!(texu_wnd_is_visible(wnd)))
         {
@@ -2109,10 +2125,6 @@ extern "C"
 
                     /* copy from item text */
                     strcat(buf, item->itemtext);
-                    if (!item->enable)
-                    {
-                        strcat(buf, "*");
-                    }
 
                     memset(text, 0, sizeof(text));
                     texu_printf_alignment(text, buf, width - 1, style);
@@ -2132,6 +2144,8 @@ extern "C"
                     texu_cio_putstr_attr(cio, y + (i - lb->firstvisible), x, text,
                                          texu_cio_get_color(cio, color));
 #endif /* TEXU_CIO_COLOR_MONO*/
+                        movey = y + (i - lb->firstvisible);
+                        movex = x + width;
                     }
                     else
                     {
@@ -2151,6 +2165,7 @@ extern "C"
                 } /* not owner draw */
             }     /* for each item */
         }         /* items are valid */
+        texu_cio_gotoyx(cio, movey, movex);
     }
 
     texu_status
@@ -3038,6 +3053,7 @@ extern "C"
         texu_sbwnd *sb = 0;
         texu_list_item *item = 0;
         texu_sbwnd_part *part = 0;
+        texu_char filler[TEXU_MAX_WNDTEXT + 1];
 
         if (!texu_wnd_is_visible(wnd))
         {
@@ -3050,12 +3066,16 @@ extern "C"
         while (item)
         {
             part = (texu_sbwnd_part *)item->data;
+            memset(filler, 0, sizeof(filler));
+            memset(filler, ' ', part->width);
             memset(buf, 0, sizeof(buf));
             texu_printf_alignment(buf, part->text, part->width, part->align);
             #ifdef TEXU_CIO_COLOR_MONO
+            texu_cio_putstr_attr(dc, y, x, filler, texu_cio_get_reverse(dc, part->color));
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, part->color));
             #else
+            texu_cio_putstr_attr(dc, y, x, filler, texu_cio_get_color(dc, part->color));
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_color(dc, part->color));
             #endif

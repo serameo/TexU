@@ -555,54 +555,54 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
                 continue;
             }
 #else
-        ch = texu_cio_getch(env->cio);
-        if (-1 == ch)
-        {
-            /*no key pressed*/
-            /*handle idle time by calling TEXU_WM_IDLE at the top of window*/
-            activewnd = (texu_wnd *)texu_stack_top(env->frames);
-            if (!activewnd)
+            ch = texu_cio_getch(env->cio);
+            if (-1 == ch)
             {
-                /*no more windows active*/
-                break;
-            }
-            texu_wnd_send_msg(activewnd, TEXU_WM_IDLE, 0, 0);
-            continue;
-        }
-        keypressed = keyname(ch);
-        if ('^' == keypressed[0] && keypressed[1] != 0)
-        {
-            if ('[' == keypressed[1])
-            {
-                texu_cio_nodelay(env->cio, TEXU_TRUE);
-                ch2 = texu_cio_getch(env->cio);
-                texu_cio_nodelay(env->cio, TEXU_FALSE);
-
-                keypressed = keyname(ch2);
-                if (-1 != ch2)
+                /*no key pressed*/
+                /*handle idle time by calling TEXU_WM_IDLE at the top of window*/
+                activewnd = (texu_wnd *)texu_stack_top(env->frames);
+                if (!activewnd)
                 {
-                    altpressed = 1;
-                    if ('^' == keypressed[0])
+                    /*no more windows active*/
+                    break;
+                }
+                texu_wnd_send_msg(activewnd, TEXU_WM_IDLE, 0, 0);
+                continue;
+            }
+            keypressed = keyname(ch);
+            if ('^' == keypressed[0] && keypressed[1] != 0)
+            {
+                if ('[' == keypressed[1])
+                {
+                    texu_cio_nodelay(env->cio, TEXU_TRUE);
+                    ch2 = texu_cio_getch(env->cio);
+                    texu_cio_nodelay(env->cio, TEXU_FALSE);
+
+                    keypressed = keyname(ch2);
+                    if (-1 != ch2)
                     {
-                        ctlpressed = 2;
-                        ch = keypressed[1];
-                    }
-                    else
-                    {
-                        ch = ch2;
+                        altpressed = 1;
+                        if ('^' == keypressed[0])
+                        {
+                            ctlpressed = 2;
+                            ch = keypressed[1];
+                        }
+                        else
+                        {
+                            ch = ch2;
+                        }
                     }
                 }
+                else if ('J' == keypressed[1] || 10 == ch)
+                {
+                    /* enter key LF */
+                }
+                else
+                {
+                    ctlpressed = 2;
+                    ch = keypressed[1];
+                }
             }
-            else if ('J' == keypressed[1] || 10 == ch)
-            {
-                /* enter key LF */
-            }
-            else
-            {
-                ctlpressed = 2;
-                ch = keypressed[1];
-            }
-        }
 #endif /*#else NOT USE_TCL_AUTOMATION*/
 
             activewnd = (texu_wnd *)texu_stack_top(env->frames);
@@ -1053,7 +1053,7 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         texu_i32 y = 0;
         texu_i32 x = 0;
         texu_i32 width = 0;
-        texu_cio *cio = 0;
+        /*texu_cio *cio = 0;*/
         texu_wnd_keycmd *keycmd = 0;
         texu_menu *menu = 0;
 
@@ -1098,8 +1098,8 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
                     x = texu_wnd_get_x(nextwnd);
                     width = texu_wnd_get_width(nextwnd);
 
-                    cio = texu_wnd_get_cio(wnd);
-                    texu_cio_gotoyx(cio, y, x + width - 1);
+                        /*cio = texu_wnd_get_cio(wnd);
+                        texu_cio_gotoyx(cio, y, x + width - 1);*/
 
                     /* the new active window */
                     wnd->activechild = nextwnd;
@@ -1392,7 +1392,7 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         texu_i32 y = 0;
         texu_i32 x = 0;
         texu_i32 width = 0;
-        texu_cio *cio = 0;
+        /*texu_cio *cio = 0;*/
 
         if (!wnd || !texu_wnd_is_visible(wnd))
         {
@@ -1427,8 +1427,8 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
             x = texu_wnd_get_x(wnd);
             width = texu_wnd_get_width(wnd);
         }
-        cio = texu_wnd_get_cio(wnd);
-        texu_cio_gotoyx(cio, y, x + width - 1);
+        /*cio = texu_wnd_get_cio(wnd);
+        texu_cio_gotoyx(cio, y, x + width - 1);*/
         return 0;
     }
 
