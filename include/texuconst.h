@@ -61,6 +61,8 @@
 #define TEXU_WM_ENTERMENU               (TEXU_WM_FIRST + 17)
 #define TEXU_WM_LEAVEMENU               (TEXU_WM_FIRST + 18)
 #define TEXU_WM_IDLE                    (TEXU_WM_FIRST + 19)
+#define TEXU_WM_QUERYNEXTWND            (TEXU_WM_FIRST + 20)
+#define TEXU_WM_QUERYPREVWND            (TEXU_WM_FIRST + 21)
 
 /* EDIT */
 #define TEXU_EM_FIRST                   200
@@ -287,6 +289,12 @@
 #define TEXU_TXCM_SETCURPARAGRAPH       (TEXU_TXCM_FIRST + 11)
 #define TEXU_TXCM_GETCURPARAGRAPH       (TEXU_TXCM_FIRST + 12)
 
+/* REBAR */
+#define TEXU_RBM_FIRST                  1300
+#define TEXU_RBM_ADDBAND                (TEXU_RBM_FIRST +   1)
+#define TEXU_RBM_REMOVEBAND             (TEXU_RBM_FIRST +   2)
+#define TEXU_RBM_SETINFOWIDTH           (TEXU_RBM_FIRST +   3)
+
 #define TEXU_TXCN_FIRST                 1200
 
 /*MENU */
@@ -312,22 +320,23 @@
 
 #define TEXU_ENV_MAX_FRAMES            256
 
-#define TEXU_MSGBOX_CLASS             "TexuMsgBoxClass"
-#define TEXU_DESKTOP_CLASS            "TexuDesktopClass"
-#define TEXU_LABEL_CLASS              "TexuLabelClass"
-#define TEXU_STATUSBAR_CLASS          "TexuStatusBarClass"
-#define TEXU_EDIT_CLASS               "TexuEditClass"
-#define TEXU_LISTBOX_CLASS            "TexuListBoxClass"
-#define TEXU_COMBOBOX_CLASS           "TexuComboBoxClass"
-#define TEXU_LISTCTRL_CLASS           "TexuListCtrlClass"
-#define TEXU_TREECTRL_CLASS           "TexuTreeCtrlClass"
-#define TEXU_UPDOWNCTRL_CLASS         "TexuUpDownCtrlClass"
-#define TEXU_PROGRESSBAR_CLASS        "TexuProgressBarClass"
-#define TEXU_PAGECTRL_CLASS           "TexuPageCtrlClass"
-#define TEXU_TEXTCTRL_CLASS           "TexuTextCtrlClass"
+#define TEXU_MSGBOX_CLASS               "TexuMsgBoxClass"
+#define TEXU_DESKTOP_CLASS              "TexuDesktopClass"
+#define TEXU_LABEL_CLASS                "TexuLabelClass"
+#define TEXU_STATUSBAR_CLASS            "TexuStatusBarClass"
+#define TEXU_EDIT_CLASS                 "TexuEditClass"
+#define TEXU_LISTBOX_CLASS              "TexuListBoxClass"
+#define TEXU_COMBOBOX_CLASS             "TexuComboBoxClass"
+#define TEXU_LISTCTRL_CLASS             "TexuListCtrlClass"
+#define TEXU_TREECTRL_CLASS             "TexuTreeCtrlClass"
+#define TEXU_UPDOWNCTRL_CLASS           "TexuUpDownCtrlClass"
+#define TEXU_PROGRESSBAR_CLASS          "TexuProgressBarClass"
+#define TEXU_PAGECTRL_CLASS             "TexuPageCtrlClass"
+#define TEXU_TEXTCTRL_CLASS             "TexuTextCtrlClass"
+#define TEXU_REBAR_CLASS                "TexuReBarClass"
 
-#define TEXU_MENU_CLASS               "TexuMenuClass"
-#define TEXU_MENUWND_CLASS            "TexuMenuWndClass"
+#define TEXU_MENU_CLASS                 "TexuMenuClass"
+#define TEXU_MENUWND_CLASS              "TexuMenuWndClass"
 
 
 

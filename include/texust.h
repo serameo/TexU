@@ -215,6 +215,21 @@ extern "C"
     };
     typedef struct texu_menu_template texu_menu_template;
 
+    /*REBAR*/
+    struct texu_rbwnd_band
+    {
+        texu_char   caption[TEXU_MAX_WNDTEXT + 1];
+        texu_i32    align;
+        texu_i32    normcolor;  /* text attributes          */
+        texu_i32    discolor;   /* text attributes          */
+        texu_i32    selcolor;   /* text attributes          */
+        texu_wnd*   childwnd;   /* child window for each cell*/
+                                /* it could be editbox/listbox/combobox etc*/
+        texu_i32    width;
+        texu_i32    height;
+    };
+    typedef struct texu_rbwnd_band texu_rbwnd_band;
+
 #ifdef __cplusplus
 }
 #endif
