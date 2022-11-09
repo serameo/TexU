@@ -1320,7 +1320,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         child2 = TexuCreateWindow(
             "This is the second window",
             TEXU_EDIT_CLASS,
-            0,             /* style*/
+            TEXU_ES_AUTOHSCROLL,             /* style*/
             0,             /* exstyle*/
             0,            /* y */
             0,             /* x */
@@ -1333,7 +1333,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         
         memset(&band, 0, sizeof(band));
         strcpy(band.caption, "Band1:");
-        band.align = TEXU_ALIGN_RIGHT;
+        band.align = TEXU_ALIGN_LEFT;
         band.normcolor = TEXU_CIO_COLOR_BLACK_CYAN;
         band.discolor = TEXU_CIO_COLOR_BLACK_CYAN;
         band.selcolor = TEXU_CIO_COLOR_BLACK_CYAN;
@@ -1368,7 +1368,6 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         
         memset(&band, 0, sizeof(band));
         strcpy(band.caption, "Band2:");
-        band.align = TEXU_ALIGN_RIGHT;
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;
@@ -1402,7 +1401,6 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         
         memset(&band, 0, sizeof(band));
         strcpy(band.caption, "Band3:");
-        band.align = TEXU_ALIGN_RIGHT;
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;
@@ -1436,7 +1434,6 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         
         memset(&band, 0, sizeof(band));
         strcpy(band.caption, "Band4:");
-        band.align = TEXU_ALIGN_RIGHT;
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;

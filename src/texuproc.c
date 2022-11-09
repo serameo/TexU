@@ -1318,11 +1318,11 @@ extern "C"
                     texu_cio_gotoyx(dc, y, x + len);
                     edit->cury = y;
                     edit->curx = x + len;
-            /* editing */
-            edit->editing = 1;
-                    texu_wnd_invalidate(wnd);
-                    return;
                 }
+                /* editing */
+                edit->editing = 1;
+                texu_wnd_invalidate(wnd);
+                return;
             }
 
             /* editing */
