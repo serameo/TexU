@@ -658,8 +658,6 @@ extern "C"
         void *exparam;
         texu_char validstr[TEXU_MAX_WNDTEXT + 1];
         texu_char editbuf[TEXU_MAX_WNDTEXT + 1];
-        texu_i32  cury; /*current cursor y pos*/
-        texu_i32  curx; /*current cursor x pos*/
     };
     typedef struct texu_editwnd texu_editwnd;
 
@@ -1136,8 +1134,6 @@ extern "C"
                                          texu_cio_get_color(dc, normcolor));
                     #endif
                     texu_cio_gotoyx(dc, y, x);
-                    edit->cury = y;
-                    edit->curx = x;
 
                     len = 0;
                 }
@@ -1245,10 +1241,8 @@ extern "C"
                         }
                         changed = 1;
                         texu_cio_gotoyx(dc, y, x + len);
-                    edit->cury = y;
-                    edit->curx = x + len;
-            /* editing */
-            edit->editing = 1;
+                        /* editing */
+                        edit->editing = 1;
                         texu_wnd_invalidate(wnd);
                         return;
                     }
@@ -1289,8 +1283,6 @@ extern "C"
                     texu_printf_alignment(text, buf, width, style);
                     texu_cio_putstr_attr(dc, y, x, text, texu_cio_get_color(dc, selcolor));
                     texu_cio_gotoyx(dc, y, x);
-                    edit->cury = y;
-                    edit->curx = x;
                 }
                 else if (TEXU_ES_AUTOHSCROLL & style)
                 {
@@ -1316,8 +1308,6 @@ extern "C"
                     }
                     len = TEXU_MIN(len, width);
                     texu_cio_gotoyx(dc, y, x + len);
-                    edit->cury = y;
-                    edit->curx = x + len;
                 }
                 /* editing */
                 edit->editing = 1;
@@ -1427,7 +1417,6 @@ extern "C"
 #endif /* TEXU_CIO_COLOR_MONO*/
             len = TEXU_MIN(strlen(buf), width);
             texu_cio_gotoyx(cio, y, x + len);
-            /*texu_cio_gotoyx(cio, edit->cury, edit->curx);*/
         }
     }
 
