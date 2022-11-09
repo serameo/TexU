@@ -747,12 +747,12 @@ extern "C"
             buf,
             texu_cio_get_reverse(dc, color));
 #else
-    texu_cio_putstr_attr(
-        dc,
-        rccell.y,
-        rccell.x,
-        buf,
-        texu_cio_get_color(dc, color));
+        texu_cio_putstr_attr(
+            dc,
+            rccell.y,
+            rccell.x,
+            buf,
+            texu_cio_get_color(dc, color));
 #endif
     }
     void
@@ -780,12 +780,12 @@ extern "C"
             buf,
             texu_cio_get_reverse(dc, color));
 #else
-    texu_cio_putstr_attr(
-        dc,
-        rccell.y,
-        rccell.x,
-        buf,
-        texu_cio_get_color(dc, color));
+        texu_cio_putstr_attr(
+            dc,
+            rccell.y,
+            rccell.x,
+            buf,
+            texu_cio_get_color(dc, color));
 #endif
     }
 
@@ -827,12 +827,12 @@ extern "C"
                 buf,
                 texu_cio_get_reverse(dc, color));
 #else
-        texu_cio_putstr_attr(
-            dc,
-            y,
-            x,
-            buf,
-            texu_cio_get_color(dc, color));
+            texu_cio_putstr_attr(
+                dc,
+                y,
+                x,
+                buf,
+                texu_cio_get_color(dc, color));
 #endif
         }
         else
@@ -862,6 +862,10 @@ extern "C"
         texu_i32 border = 0;
         texu_i32 col = 0;
 
+        if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
 
         /* if no headers or control is hiding */
@@ -3805,10 +3809,14 @@ extern "C"
         texu_i32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
         texu_i32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU_SELECTED);
 
+        if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+        {
+            return;
+        }
         tc = (texu_treewnd *)texu_wnd_get_userdata(wnd);
 
         /* visible window & there is a visible item */
-        if (texu_wnd_is_visible(wnd) && tc->firstvisibleitem)
+        if (tc->firstvisibleitem)
         {
             texu_wnd_get_rect(wnd, &rc);
             y = rc.y;
@@ -4318,12 +4326,17 @@ extern "C"
         texu_i32 width = texu_wnd_get_width(wnd);
         texu_env *env = texu_wnd_get_env(wnd);
         texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
+
+        if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+        {
+            return;
+        }
 #ifdef TEXU_CIO_COLOR_MONO
         texu_cio_putch_attr(dc, y, x + width - 1, '+',
                             texu_cio_get_color(dc, color));
 #else
-    texu_cio_putch_attr(dc, y, x + width - 1, ACS_PLMINUS,
-                        texu_cio_get_color(dc, color));
+        texu_cio_putch_attr(dc, y, x + width - 1, ACS_PLMINUS,
+                            texu_cio_get_color(dc, color));
 #endif
     }
 
@@ -4587,6 +4600,11 @@ extern "C"
         texu_f32 pct = 0.0;
         texu_pgbwnd *pgb = 0;
         texu_i32 pgwidth = 0;
+
+        if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+        {
+            return;
+        }
 
         pgb = (texu_pgbwnd *)texu_wnd_get_userdata(wnd);
 
@@ -5041,6 +5059,10 @@ extern "C"
     void
     _TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     {
+        if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+        {
+            return;
+        }
     }
 
     void
@@ -5051,13 +5073,16 @@ extern "C"
         texu_wnd *newpage = 0;
         texu_wnd *activewnd = pgctl->activewnd;
         texu_wnd *nextwnd = 0;
-        texu_wnd *firstactive = pgctl->firstactive;
         texu_i32 y = 0;
         texu_i32 x = 0;
         texu_i32 width = 0;
         texu_cio *cio = 0;
         texu_status rc = TEXU_OK;
+        texu_wnd* qnextwnd = 0;
+        /*
         texu_wnd* lastactive = pgctl->lastactive;
+        texu_wnd *firstactive = pgctl->firstactive;
+        */
 
         if ((TEXU_KEYPRESSED_CTRL & alt) && (('k' == ch) || ('K' == ch)))
         {
@@ -5065,46 +5090,116 @@ extern "C"
         }
         switch (ch)
         {
-        case 'p':
-        case 'P':
-        {
-            if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+            case 'r':
+            case 'R':
             {
-                /* continue as KEY_PPAGE doing */
-                newpage = _TexuPageCtrlProc_GetPrevPageEnabled(wnd, curpage);
-                pgctl->ctl_k_pressed = TEXU_FALSE;
+                /*reverse move*/
+                if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+                {
+                    nextwnd = texu_wnd_get_prev_activechild(curpage, activewnd);
+                    if (nextwnd)
+                    {
+                        rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                        if (rc != TEXU_OK)
+                        {
+                            return;
+                        }
+                        rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
+                        y = texu_wnd_get_y(nextwnd);
+                        x = texu_wnd_get_x(nextwnd);
+                        width = texu_wnd_get_width(nextwnd);
+
+                        cio = texu_wnd_get_cio(curpage);
+                        texu_cio_gotoyx(cio, y, x + width - 1);
+
+                        /* the new active window */
+                        pgctl->activewnd = nextwnd;
+                        return;
+                    }
+                }
+                break;
             }
-            break;
-        }
-        case KEY_PPAGE:
-        {
-            if (alt & TEXU_KEYPRESSED_ALT)
+            case 'f':
+            case 'F':
+            case 'l':
+            case 'L':
             {
-                newpage = _TexuPageCtrlProc_GetPrevPageEnabled(wnd, curpage);
-                pgctl->ctl_k_pressed = TEXU_FALSE;
+                if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+                {
+                    if ('f' == ch || 'F' == ch)
+                    {
+                        /*goto the first active child*/
+                        nextwnd = texu_wnd_get_first_activechild(curpage);
+                    }
+                    else /*if (ch == '1')*/
+                    {
+                        /*goto the first active child*/
+                        nextwnd = texu_wnd_get_last_activechild(curpage);
+                    }
+                    
+                    pgctl->ctl_k_pressed = TEXU_FALSE;
+                    if (nextwnd)
+                    {
+                        rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                        if (rc != TEXU_OK)
+                        {
+                            return;
+                        }
+                        rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
+                        y = texu_wnd_get_y(nextwnd);
+                        x = texu_wnd_get_x(nextwnd);
+                        width = texu_wnd_get_width(nextwnd);
+
+                        cio = texu_wnd_get_cio(curpage);
+                        texu_cio_gotoyx(cio, y, x + width - 1);
+
+                        /* the new active window */
+                        pgctl->activewnd = nextwnd;
+                        return;
+                    }
+                }
+                break;
             }
-            break;
-        }
-        case 'n':
-        case 'N':
-        {
-            if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+            case 'p':
+            case 'P':
             {
-                /* continue as KEY_NPAGE doing */
-                newpage = _TexuPageCtrlProc_GetNextPageEnabled(wnd, curpage);
-                pgctl->ctl_k_pressed = TEXU_FALSE;
+                if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+                {
+                    /* continue as KEY_PPAGE doing */
+                    newpage = _TexuPageCtrlProc_GetPrevPageEnabled(wnd, curpage);
+                    pgctl->ctl_k_pressed = TEXU_FALSE;
+                }
+                break;
             }
-            break;
-        }
-        case KEY_NPAGE:
-        {
-            if (alt & TEXU_KEYPRESSED_ALT)
+            case KEY_PPAGE:
             {
-                newpage = _TexuPageCtrlProc_GetNextPageEnabled(wnd, curpage);
-                pgctl->ctl_k_pressed = TEXU_FALSE;
+                if (alt & TEXU_KEYPRESSED_ALT)
+                {
+                    newpage = _TexuPageCtrlProc_GetPrevPageEnabled(wnd, curpage);
+                    pgctl->ctl_k_pressed = TEXU_FALSE;
+                }
+                break;
             }
-            break;
-        }
+            case 'n':
+            case 'N':
+            {
+                if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+                {
+                    /* continue as KEY_NPAGE doing */
+                    newpage = _TexuPageCtrlProc_GetNextPageEnabled(wnd, curpage);
+                    pgctl->ctl_k_pressed = TEXU_FALSE;
+                }
+                break;
+            }
+            case KEY_NPAGE:
+            {
+                if (alt & TEXU_KEYPRESSED_ALT)
+                {
+                    newpage = _TexuPageCtrlProc_GetNextPageEnabled(wnd, curpage);
+                    pgctl->ctl_k_pressed = TEXU_FALSE;
+                }
+                break;
+            }
         }
         if (newpage)
         {
@@ -5125,20 +5220,28 @@ extern "C"
             {
                 if (ch == TEXU_KEY_NEXTWND)
                 {
-                    nextwnd = texu_wnd_get_next_activechild(curpage, activewnd);
+                    qnextwnd = (texu_wnd*)texu_wnd_send_msg(activewnd, TEXU_WM_QUERYNEXTWND, 0, 0);
+                    if (0 == qnextwnd)
+                    {
+                        nextwnd = texu_wnd_get_next_activechild(curpage, activewnd);
+                    }
                 }
                 else if (ch == TEXU_KEY_PREVWND)
                 {
-                    nextwnd = texu_wnd_get_prev_activechild(curpage, activewnd);
+                    qnextwnd = (texu_wnd*)texu_wnd_send_msg(activewnd, TEXU_WM_QUERYPREVWND, 0, 0);
+                    if (0 == qnextwnd)
+                    {
+                        nextwnd = texu_wnd_get_prev_activechild(curpage, activewnd);
+                    }
                 }
 
                 /* kill and set the new active window */
                 if (activewnd)
                 {
-                    if (activewnd == lastactive && !nextwnd && ch == TEXU_KEY_NEXTWND)
+                    /*if (activewnd == lastactive && !nextwnd && ch == TEXU_KEY_NEXTWND)
                     {
                         nextwnd = firstactive;
-                    }
+                    }*/
                     if (nextwnd)
                     {
                         rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
@@ -5819,6 +5922,532 @@ extern "C"
             return 0;
         case TEXU_TXCM_GETCURPARAGRAPH:
             return 0;
+        }
+        return TexuDefWndProc(wnd, msg, param1, param2);
+    }
+
+    /*
+    #-------------------------------------------------------------------------------
+    # TexU ReBar
+    #
+             1         2         3         4         5         6         7         8
+    12345678901234567890123456789012345678901234567890123456789012345678901234567890
+    */
+#if 0
+    struct texu_rbwnd_band
+    {
+        texu_char   caption[TEXU_MAX_WNDTEXT + 1];
+        texu_i32    align;
+        texu_i32    normcolor;  /* text attributes          */
+        texu_i32    discolor;   /* text attributes          */
+        texu_i32    selcolor;   /* text attributes          */
+        texu_wnd*   childwnd;   /* child window for each cell*/
+                                /* it could be editbox/listbox/combobox etc*/
+        texu_i32    width;
+        texu_i32    height;
+    };
+    typedef struct texu_rbwnd_band texu_rbwnd_band;
+#endif
+
+    struct texu_rbwnd
+    {
+        texu_list           *bands;
+        texu_i32            nbands;
+        texu_i32            capwidth;
+
+        texu_rbwnd_band     *firstvisibleband;
+        texu_rbwnd_band     *lastvisibleband;
+        texu_rbwnd_band     *curband;
+
+        void *exparam;
+    };
+    typedef struct texu_rbwnd texu_rbwnd;
+
+    void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+    void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+    texu_i32 _TexuReBarProc_OnAddBand(texu_wnd *wnd, const texu_rbwnd_band* band);
+    void _TexuReBarProc_OnDestroy(texu_wnd *wnd);
+    texu_status _TexuReBarProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
+    texu_i32 _TexuReBarProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd);
+    void     _TexuReBarProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
+    texu_wnd* _TexuReBarProc_OnQueryNextWnd(texu_wnd* wnd);
+    texu_wnd* _TexuReBarProc_OnQueryPrevWnd(texu_wnd* wnd);
+
+
+    void _TexuReBarProc_SetFirstVisibleBand(texu_rbwnd *rbwnd, texu_wnd *childwnd);
+    void _TexuReBarProc_SetCurBand(texu_rbwnd *rbwnd, texu_wnd *childwnd);
+    void _TexuReBarProc_SetCurBandByBand(texu_rbwnd *rbwnd, texu_rbwnd_band *band);
+    texu_list_item *_TexuReBarProc_FindBand(texu_rbwnd *rbwnd, texu_wnd *childwnd);
+    texu_list_item *_TexuReBarProc_FindBandByBand(texu_rbwnd *rbwnd, texu_rbwnd_band *band);
+    texu_rbwnd_band *_TexuReBarProc_GetNextActiveBand(texu_rbwnd *rbwnd, texu_rbwnd_band *band);
+    texu_rbwnd_band *_TexuReBarProc_GetPrevActiveBand(texu_rbwnd *rbwnd, texu_rbwnd_band *band);
+    texu_rbwnd_band *_TexuListCtrlProc_GetBestFirstBand(texu_wnd *wnd, texu_rbwnd_band *band);
+
+    texu_rbwnd_band *_TexuListCtrlProc_GetBestFirstBand(texu_wnd *wnd, texu_rbwnd_band *curband)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd*)texu_wnd_get_userdata(wnd);
+        texu_list_item *item = _TexuReBarProc_FindBandByBand(rbwnd, curband);
+        texu_rbwnd_band *band = 0;
+        texu_rbwnd_band *prevband = 0;
+        texu_i32 height = texu_wnd_get_height(wnd);
+        texu_i32 h = 0;
+        texu_i32 hchilds = 0;
+
+        while (item)
+        {
+            band = (texu_rbwnd_band*)item->data;
+            h = band->height;
+            
+            /* draw caption if need*/
+            if (1 > h)
+            {
+                h = 1;
+            }
+            /* check if there are row left to draw a childwnd*/
+            if ((hchilds + h) > height)
+            {
+                return prevband; /*the previous band is the best first visible*/
+            }
+            
+            /*get prev band*/
+            prevband = band;
+            
+            item = item->prev;
+
+            hchilds += h;
+        }
+        return curband;
+    }
+
+    texu_rbwnd_band *_TexuReBarProc_GetNextActiveBand(texu_rbwnd *rbwnd, texu_rbwnd_band *band)
+    {
+        texu_list_item* item = _TexuReBarProc_FindBandByBand(rbwnd, band);
+        if (item && item->next)
+        {
+            item = item->next;
+            band = (texu_rbwnd_band*)item->data;
+        }
+        return band;
+    }
+    
+    texu_rbwnd_band *_TexuReBarProc_GetPrevActiveBand(texu_rbwnd *rbwnd, texu_rbwnd_band *band)
+    {
+        texu_list_item* item = _TexuReBarProc_FindBandByBand(rbwnd, band);
+        if (item && item->prev)
+        {
+            item = item->prev;
+            band = (texu_rbwnd_band*)item->data;
+        }
+        return band;
+    }
+
+    void _TexuReBarProc_SetCurBand(texu_rbwnd *rbwnd, texu_wnd *childwnd)
+    {
+        texu_list_item *item = _TexuReBarProc_FindBand(rbwnd, childwnd);
+
+        if (item)
+        {
+            rbwnd->curband = (texu_rbwnd_band*)item->data;
+        }
+    }
+    
+    void _TexuReBarProc_SetCurBandByBand(texu_rbwnd *rbwnd, texu_rbwnd_band* band)
+    {
+        rbwnd->curband = band;
+    }
+    
+    void _TexuReBarProc_SetFirstVisibleBand(texu_rbwnd *rbwnd, texu_wnd *childwnd)
+    {
+        texu_list_item *item = _TexuReBarProc_FindBand(rbwnd, childwnd);
+
+        if (item)
+        {
+            rbwnd->firstvisibleband = (texu_rbwnd_band*)item->data;
+        }
+    }
+    
+    texu_list_item *_TexuReBarProc_FindBandByBand(texu_rbwnd *rbwnd, texu_rbwnd_band *findband)
+    {
+        texu_list_item *item = texu_list_first(rbwnd->bands);
+        texu_rbwnd_band *band = 0;
+
+        while (item)
+        {
+            band = (texu_rbwnd_band*)item->data;
+            if (band == findband)
+            {
+                return item;
+            }
+            item = item->next;
+        }
+        return 0;
+    }
+    
+    texu_list_item *_TexuReBarProc_FindBand(texu_rbwnd *rbwnd, texu_wnd *childwnd)
+    {
+        texu_list_item *item = texu_list_first(rbwnd->bands);
+        texu_rbwnd_band *band = 0;
+
+        while (item)
+        {
+            band = (texu_rbwnd_band*)item->data;
+            if (band->childwnd == childwnd)
+            {
+                return item;
+            }
+            item = item->next;
+        }
+        return 0;
+    }
+    
+    texu_wnd* _TexuReBarProc_OnQueryNextWnd(texu_wnd* wnd)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
+        texu_list_item *item = _TexuReBarProc_FindBandByBand(rbwnd, rbwnd->curband);
+        texu_rbwnd_band *band = 0;
+        if (item && item->next != 0)
+        {
+            item = item->next;
+            band = (texu_rbwnd_band*)item->data;
+            return band->childwnd;
+        }
+        return 0;
+    }
+    
+    texu_wnd* _TexuReBarProc_OnQueryPrevWnd(texu_wnd* wnd)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
+        texu_list_item *item = _TexuReBarProc_FindBandByBand(rbwnd, rbwnd->curband);
+        texu_rbwnd_band *band = 0;
+        if (item && item->prev != 0)
+        {
+            item = item->prev;
+            band = (texu_rbwnd_band*)item->data;
+            return band->childwnd;
+        }
+        return 0;
+    }
+    void _TexuReBarProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
+        texu_list_item *item = texu_list_first(rbwnd->bands);
+        if (item)
+        {
+            rbwnd->firstvisibleband = rbwnd->curband = (texu_rbwnd_band*)item->data;
+        }
+    }
+    
+    texu_i32 _TexuReBarProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
+        texu_list_item *item = texu_list_first(rbwnd->bands);
+        if (item)
+        {
+            rbwnd->firstvisibleband = rbwnd->curband = (texu_rbwnd_band*)item->data;
+            texu_wnd_invalidate(wnd);
+        }
+        return TEXU_OK;
+    }
+    
+    void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
+        texu_i32 y = 0;
+        texu_i32 x = 0;
+        texu_i32 width = 0;
+        texu_cio *cio = 0;
+        texu_status rc = TEXU_OK;
+        texu_wnd *activewnd = rbwnd->curband->childwnd;
+        texu_wnd *nextwnd = 0;
+        texu_rbwnd_band* nextband = 0;
+
+        if (activewnd && activewnd != wnd)
+        {
+            if (ch == TEXU_KEY_NEXTWND)
+            {
+                nextband = _TexuReBarProc_GetNextActiveBand(rbwnd, rbwnd->curband);
+                nextwnd = nextband->childwnd;
+            }
+            else if (ch == TEXU_KEY_PREVWND)
+            {
+                nextband = _TexuReBarProc_GetPrevActiveBand(rbwnd, rbwnd->curband);
+                nextwnd = nextband->childwnd;
+            }
+
+            /* kill and set the new active window */
+            if (activewnd)
+            {
+                if (nextwnd)
+                {
+                    rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                    if (rc != TEXU_OK)
+                    {
+                        return;
+                    }
+                    rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
+                    y = texu_wnd_get_y(nextwnd);
+                    x = texu_wnd_get_x(nextwnd);
+                    width = texu_wnd_get_width(nextwnd);
+
+                    cio = texu_wnd_get_cio(wnd);
+                    texu_cio_gotoyx(cio, y, x + width - 1);
+
+                    /* the new active window */
+                    _TexuReBarProc_SetCurBandByBand(rbwnd, nextband);
+                    
+                    /*if the last visible and the next band */
+                    if (rbwnd->lastvisibleband && 
+                        nextband == _TexuReBarProc_GetNextActiveBand(rbwnd, rbwnd->lastvisibleband))
+                    {
+                        /* find the best first visible */
+                        /*rbwnd->firstvisibleband = _TexuReBarProc_GetNextActiveBand(rbwnd, rbwnd->firstvisibleband);*/
+                        rbwnd->firstvisibleband = _TexuListCtrlProc_GetBestFirstBand(wnd, nextband);
+                        texu_wnd_invalidate(wnd);
+                    }
+                    return;
+                }
+                else
+                {
+                    texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                    return;
+                }
+            }
+            else
+            {
+                texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                return;
+            }
+        } /* child window is active */
+        else
+        {
+            /* the current frame window is active */
+            if (activewnd)
+            {
+                activewnd = texu_wnd_get_activechild(activewnd);
+                texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                return;
+            }
+        }
+
+    }
+    
+    void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd*)texu_wnd_get_userdata(wnd);
+        texu_list_item *item = texu_list_first(rbwnd->bands);
+        texu_rbwnd_band *band = 0;
+        texu_i32 y = texu_wnd_get_y(wnd);
+        texu_i32 x = texu_wnd_get_x(wnd);
+        texu_i32 width = texu_wnd_get_width(wnd);
+        texu_i32 height = texu_wnd_get_height(wnd);
+        texu_env *env = texu_wnd_get_env(wnd);
+        texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_REBAR);
+        texu_i32 len = 0;
+        texu_char caption[TEXU_MAX_WNDTEXT + 1];
+        texu_i32 h = 0;
+        texu_i32 w = 0;
+        texu_i32 hchilds = 0;
+        texu_bool skip = TEXU_TRUE;
+
+        if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+        {
+            return;
+        }
+        while (item)
+        {
+            band = (texu_rbwnd_band*)item->data;
+            if (skip && band != rbwnd->firstvisibleband)
+            {
+                /*hide child wnd if not found the first visible band*/
+                texu_wnd_move(band->childwnd, 0, 0, 0, 0, TEXU_TRUE);
+                item = item->next;
+                continue;
+            }
+            else if (band == rbwnd->firstvisibleband)
+            {
+                if (skip)
+                {
+                    skip = TEXU_FALSE;
+                }
+            }
+            h = band->height;
+            w = band->width;
+            
+            /* draw caption if need*/
+            if (1 > h)
+            {
+                h = 1;
+            }
+            /* check if there are row left to draw a childwnd*/
+            if ((hchilds + h) > height)
+            {
+                /*try if the next band height = 1*/
+                if (h != 1)
+                {
+                    h = height - hchilds;
+                }
+                if ((hchilds + h) > height)
+                {
+                    texu_wnd_move(band->childwnd, 0, 0, 0, 0, TEXU_TRUE);
+                }
+                else
+                {
+                    /*draw caption*/
+                    len = texu_printf_alignment(
+                            caption,
+                            band->caption,
+                            rbwnd->capwidth,
+                            band->align);
+
+#ifdef TEXU_CIO_COLOR_MONO
+                    texu_cio_putstr_attr(dc, y, x, caption,
+                                        texu_cio_get_color(dc, color));
+#else
+                    texu_cio_putstr_attr(dc, y, x, caption,
+                                        texu_cio_get_color(dc, color));
+#endif
+                    /*clip window*/
+                    if (width < x+rbwnd->capwidth+1+w)
+                    {
+                        w = width - (x+rbwnd->capwidth+1);
+                        if (w < 0)
+                        {
+                            w = 0;
+                        }
+                    }
+                    texu_wnd_move(band->childwnd, y, x+rbwnd->capwidth+1, h, w, TEXU_TRUE);
+                }
+                item = item->next;
+                continue; /*no more draw*/
+            }
+            /*draw caption*/
+            len = texu_printf_alignment(
+                    caption,
+                    band->caption,
+                    rbwnd->capwidth,
+                    band->align);
+
+#ifdef TEXU_CIO_COLOR_MONO
+            texu_cio_putstr_attr(dc, y, x, caption,
+                                texu_cio_get_color(dc, color));
+#else
+            texu_cio_putstr_attr(dc, y, x, caption,
+                                texu_cio_get_color(dc, color));
+#endif
+            
+            /*draw window*/
+            texu_wnd_move(band->childwnd, y, x+rbwnd->capwidth+1, h, w, TEXU_TRUE);
+
+            /*save the last visible band*/
+            rbwnd->lastvisibleband = band;
+            
+            /*get next band*/
+            item = item->next;
+
+            /*increment y*/
+            y += h;
+            hchilds += h;
+        }
+    }
+    
+    texu_i32 _TexuReBarProc_OnAddBand(texu_wnd *wnd, const texu_rbwnd_band* band)
+    {
+        texu_rbwnd *rbwnd = texu_wnd_get_userdata(wnd);
+        texu_rbwnd_band *newband = (texu_rbwnd_band*)malloc(sizeof(texu_rbwnd_band));
+        if (!newband)
+        {
+            return -1;
+        }
+        memcpy(newband, band, sizeof(texu_rbwnd_band));
+        
+        texu_list_insert_last(rbwnd->bands, (texu_i64)newband);
+        if (!rbwnd->firstvisibleband)
+        {
+            rbwnd->firstvisibleband = newband;
+            rbwnd->curband = newband;
+            rbwnd->lastvisibleband = newband;
+        }
+
+        ++rbwnd->nbands;
+        return 0;
+    }
+    
+    void _TexuReBarProc_OnDestroy(texu_wnd *wnd)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd*)texu_wnd_get_userdata(wnd);
+        texu_list_item *item = texu_list_first(rbwnd->bands);
+        texu_rbwnd_band *band = 0;
+
+        while (item)
+        {
+            band = (texu_rbwnd_band*)item->data;
+            texu_wnd_destroy(band->childwnd);
+            item = item->next;
+        }
+        texu_list_del(rbwnd->bands);
+        free(rbwnd);
+    }
+    
+    texu_status _TexuReBarProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd *)malloc(sizeof(texu_rbwnd));
+        if (!rbwnd)
+        {
+            return TEXU_NOMEM;
+        }
+        memset(rbwnd, 0, sizeof(texu_rbwnd));
+        rbwnd->bands = texu_list_new();
+        rbwnd->capwidth = attrs->width/2;
+
+        texu_wnd_set_userdata(wnd, rbwnd);
+        return TEXU_OK;
+    }
+    
+    void _TexuReBarProc_OnSetInfoWidth(texu_wnd *wnd, texu_i32 width)
+    {
+        texu_rbwnd *rbwnd = (texu_rbwnd*)texu_wnd_get_userdata(wnd);
+        rbwnd->capwidth = width;
+    }
+
+    texu_i64
+    _TexuReBarProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+    {
+        switch (msg)
+        {
+            case TEXU_WM_CREATE:
+                return _TexuReBarProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+
+            case TEXU_WM_PAINT:
+                _TexuReBarProc_OnPaint(wnd, (texu_cio *)param1);
+                return 0;
+
+            case TEXU_WM_DESTROY:
+                _TexuReBarProc_OnDestroy(wnd);
+                break;
+
+            case TEXU_WM_CHAR:
+                _TexuReBarProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+                return 0;
+
+            case TEXU_WM_QUERYNEXTWND:
+                return (texu_i64)_TexuReBarProc_OnQueryNextWnd(wnd);
+
+            case TEXU_WM_QUERYPREVWND:
+                return (texu_i64)_TexuReBarProc_OnQueryPrevWnd(wnd);
+
+            case TEXU_WM_KILLFOCUS:
+                return _TexuReBarProc_OnKillFocus(wnd, (texu_wnd*)param1);
+
+            case TEXU_WM_SETFOCUS:
+                _TexuReBarProc_OnSetFocus(wnd, (texu_wnd*)param1);
+                return 0;
+
+            case TEXU_RBM_ADDBAND:
+                return _TexuReBarProc_OnAddBand(wnd, (const texu_rbwnd_band*)param1);
+
+            case TEXU_RBM_SETINFOWIDTH:
+                _TexuReBarProc_OnSetInfoWidth(wnd, param1);
+                return 0;
         }
         return TexuDefWndProc(wnd, msg, param1, param2);
     }

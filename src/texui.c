@@ -102,7 +102,8 @@ extern "C"
     texu_i64 _TexuUpDownCtrlProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
     texu_i64 _TexuProgressBarProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
     texu_i64 _TexuPageCtrlProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
-    texu_i64 _TexuTextCtrlProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
+    /*texu_i64 _TexuTextCtrlProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);*/
+    texu_i64 _TexuReBarProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
 
     /* menu texumenu.c */
     texu_i64 _TexuMenuProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
@@ -296,8 +297,11 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         env->syscolors[TEXU_COLOR_PROGRESSBAR]          = TEXU_CIO_COLOR_CYAN_BLACK;
         env->syscolors[TEXU_COLOR_PROGRESSBAR_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
         env->syscolors[TEXU_COLOR_PROGRESSBAR_SELECTED] = TEXU_CIO_COLOR_BLUE_CYAN;
-
-        env->syscolors[TEXU_COLOR_DEFAULT] = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_REBAR]                = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_REBAR_DISABLED]       = TEXU_CIO_COLOR_WHITE_BLACK;
+        env->syscolors[TEXU_COLOR_REBAR_SELECTED]       = TEXU_CIO_COLOR_WHITE_BLACK;
+        /*default*/
+        env->syscolors[TEXU_COLOR_DEFAULT]              = TEXU_CIO_COLOR_WHITE_BLACK;
     }
 
     void
@@ -316,7 +320,9 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS, _TexuProgressBarProc);
         texu_env_register_cls(env, TEXU_STATUSBAR_CLASS, _TexuStatusBarProc);
         texu_env_register_cls(env, TEXU_PAGECTRL_CLASS, _TexuPageCtrlProc);
-        texu_env_register_cls(env, TEXU_TEXTCTRL_CLASS, _TexuTextCtrlProc);
+        /*texu_env_register_cls(env, TEXU_TEXTCTRL_CLASS, _TexuTextCtrlProc);*/
+        texu_env_register_cls(env, TEXU_REBAR_CLASS, _TexuReBarProc);
+        
 
         texu_env_register_cls(env, TEXU_MENU_CLASS, _TexuMenuProc);
         texu_env_register_cls(env, TEXU_MENUWND_CLASS, _TexuMenuWndProc);
@@ -782,6 +788,8 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
     void _TexuDefWndProc_OnRedrawMenu(texu_wnd *);
     void _TexuDefWndProc_OnEnterMenu(texu_wnd *, texu_i32, texu_i32);
     void _TexuDefWndProc_OnLeaveMenu(texu_wnd *);
+    texu_wnd* _TexuDefWndProc_OnQueryNextWnd(texu_wnd* wnd);
+    texu_wnd* _TexuDefWndProc_OnQueryPrevWnd(texu_wnd* wnd);
 
     texu_wnd *
     _TexuDefWndProc_OpenMenuWnd(
@@ -1041,6 +1049,16 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
     _TexuDefWndProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     {
     }
+    
+    texu_wnd* _TexuDefWndProc_OnQueryNextWnd(texu_wnd* wnd)
+    {
+        return 0;
+    }
+
+    texu_wnd* _TexuDefWndProc_OnQueryPrevWnd(texu_wnd* wnd)
+    {
+        return 0;
+    }
 
     texu_i32
     _TexuDefWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
@@ -1172,6 +1190,12 @@ void              _texu_env_enable_keyboard_signals(texu_env* env);
         case TEXU_WM_CHAR:
             return _TexuDefWndProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
 
+        case TEXU_WM_QUERYNEXTWND:
+            return (texu_i64)_TexuDefWndProc_OnQueryNextWnd(wnd);
+
+        case TEXU_WM_QUERYPREVWND:
+            return (texu_i64)_TexuDefWndProc_OnQueryPrevWnd(wnd);
+            
         case TEXU_WM_SETFOCUS:
             _TexuDefWndProc_OnSetFocus(wnd, (texu_wnd *)param1);
             break;
