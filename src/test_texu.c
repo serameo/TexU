@@ -1525,12 +1525,12 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             0, /* y */
             0, /* x */
             20,
-            100,
+            78,
             wnd, /* parent */
             1,   /* id */
             0    /* user data */
         );
-
+#if 0
         memset(&header, 0, sizeof(header));
         header.caption = "Header 1";
         header.cols = 20;
@@ -1593,6 +1593,65 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         subitem.selcolor = TEXU_CIO_COLOR_YELLOW_RED;
 
         TexuSendMessage(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
+#endif
+    
+        memset(&header, 0, sizeof(header));
+        header.normcolor = TEXU_CIO_COLOR_BLUE_CYAN;
+        header.discolor  = TEXU_CIO_COLOR_BLUE_YELLOW;
+        header.selcolor  = TEXU_CIO_COLOR_YELLOW_BLUE;
+        header.editstyle = TEXU_ES_AUTOHSCROLL;
+        header.decwidth  = 2;
+
+        header.caption = "No";
+        header.align = TEXU_ALIGN_RIGHT;
+        header.cols = 4;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        header.caption = "IP Address";
+        header.align = TEXU_ALIGN_CENTER;
+        header.cols = 18;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        header.align = TEXU_ALIGN_RIGHT;
+        header.caption = "Port";
+        header.cols = 8;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        header.align = TEXU_ALIGN_CENTER;
+        header.caption = "St";
+        header.cols = 4;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        header.caption = "Total Packets";
+        header.cols = 16;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        header.caption = "Recv Packets";
+        header.cols = 16;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        header.caption = "Start Packet";
+        header.cols = 16;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        header.align = TEXU_ALIGN_RIGHT;
+        header.caption = "Start";
+        header.cols = 8;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        header.align = TEXU_ALIGN_RIGHT;
+        header.caption = "End";
+        header.cols = 8;
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t1\t10.138.61.107\t49305\tA\t71869\t845  \t71024\t105954\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t2\t10.138.61.107\t65408\tA\t71869\t28534\t43335\t102309\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t3\t10.138.61.107\t65387\tA\t71869\t31193\t40676\t102028\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t4\t10.242.11.6  \t51949\tA\t71869\t28996\t42873\t102242\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t5\t10.138.61.118\t50000\tA\t71869\t29408\t42461\t102212\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t6\t10.138.61.118\t50001\tA\t71869\t29408\t42461\t102212\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t7\t10.138.61.118\t49987\tA\t71869\t31193\t40676\t102028\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t8\t10.242.11.6  \t51940\tA\t71869\t31192\t40677\t102028\t0", 9);
 
         child = TexuCreateWindow(
             "F2 - Tree Demo",
