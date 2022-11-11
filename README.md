@@ -33,15 +33,15 @@ How to enable terminal supported 256 colors:
 
 How to implement a simple TexU application:
 -------------------------------------------
-- 0. Call TexuStartup()
-- 1.1 Register all classes calls TexuRegisterClass()
-- 1.2 Create a main window calls TexuCreateWindow()
-- 2. Create a page control under the main window
-- 3. Add pages that already registered classed above
-- 3.1 Add a rebar object if you application would like to be able to scroll many controls.
-- 4. Update the main window calls TexuShowWindow() and then TexuInvalidateWindow() to display the first time
-- 5. Run TexuRun()
-- 6. End of program calls TexuShutdown()
+0. Call TexuStartup()
+1. Register all classes calls TexuRegisterClass()
+2. Create a main window calls TexuCreateWindow()
+3. Create a page control under the main window
+4. Add pages that already registered classed above
+5. Add a rebar object if you application would like to be able to scroll many controls.
+6. Update the main window calls TexuShowWindow() and then TexuInvalidateWindow() to display the first time
+7. Run TexuRun()
+8. End of program calls TexuShutdown()
 
 <p align="center">
   <img src="https://github.com/serameo/TexU/blob/master/samples/TexU_sample06.png" width="640" title="Sample1">
