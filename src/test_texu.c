@@ -1603,16 +1603,19 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         header.decwidth  = 2;
 
         header.caption = "No";
+        header.normcolor = TEXU_CIO_COLOR_BLUE_CYAN;
         header.align = TEXU_ALIGN_RIGHT;
         header.cols = 4;
         TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
 
         header.caption = "IP Address";
+        header.normcolor = TEXU_CIO_COLOR_BLUE_YELLOW;
         header.align = TEXU_ALIGN_CENTER;
         header.cols = 18;
         TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
 
         header.align = TEXU_ALIGN_RIGHT;
+        header.normcolor = TEXU_CIO_COLOR_BLUE_CYAN;
         header.caption = "Port";
         header.cols = 8;
         TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);

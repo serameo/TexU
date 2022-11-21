@@ -5,13 +5,17 @@
 # Date: 14-MAY-2020
 #
 */
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "texulib.h"
 #include "texutils.h"
 #include "texucio.h"
+
+#ifdef __USE_TTY__
+#include "texutty.h"
+#endif
 
 #ifdef __cplusplus
 extern "C"
@@ -26,7 +30,11 @@ extern "C"
     */
     struct texu_cio
     {
-        WINDOW *wndscr;
+#ifdef __USE_TTY__
+        FILE    *wndscr;
+#else
+        WINDOW  *wndscr;
+#endif
     };
 
     void _texu_cio_init_colors(texu_cio *cio);
@@ -53,11 +61,19 @@ extern "C"
         }
     }
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_nodelay(texu_cio *cio, texu_i32 delay)
+    {
+        return 0;
+    }
+#else
     texu_i32
     texu_cio_nodelay(texu_cio *cio, texu_i32 delay)
     {
         return nodelay(cio->wndscr, delay);
     }
+#endif
 
     void
     _texu_cio_init_keys(texu_cio *cio)
@@ -70,6 +86,16 @@ extern "C"
         */
     }
 
+#ifdef __USE_TTY__
+    void
+    _texu_cio_init_colors_mono(texu_cio *cio)
+    {
+    }
+    void
+    _texu_cio_init_colors(texu_cio *cio)
+    {
+    }
+#else
     void
     _texu_cio_init_colors_mono(texu_cio *cio)
     {
@@ -246,6 +272,19 @@ extern "C"
         init_pair(TEXU_CIO_CYAN_BRIGHT_WHITE,   COLOR_CYAN,     TEXU_CIO_BRIGHT_WHITE);
     }
 
+#endif
+
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
+    {
+        texu_tty_init();
+        texu_tty_init_colors();
+        
+        cio->wndscr = stdout;
+        return TEXU_OK;
+    }
+#else
     texu_i32
     texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
     {
@@ -273,7 +312,15 @@ extern "C"
         cio->wndscr = stdscr;
         return TEXU_OK;
     }
+#endif /*__USE_TTY__*/
 
+#ifdef __USE_TTY__
+    void
+    texu_cio_release(texu_cio *cio)
+    {
+        texu_tty_release();
+    }
+#else
     void
     texu_cio_release(texu_cio *cio)
     {
@@ -281,7 +328,19 @@ extern "C"
         /* release window */
         cio->wndscr = 0;
     }
+#endif
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_echo(texu_cio *cio, texu_bool echo_)
+    {
+        if (echo_)
+        {
+            return texu_tty_echo();
+        }
+        return texu_tty_noecho();
+    }
+#else
     texu_i32
     texu_cio_echo(texu_cio *cio, texu_bool echo_)
     {
@@ -291,50 +350,119 @@ extern "C"
         }
         return noecho();
     }
+#endif
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_getch(texu_cio *cio)
+    {
+        return texu_tty_getch(0, 5000);
+    }
+#else
     texu_i32
     texu_cio_getch(texu_cio *cio)
     {
         return getch();
     }
+#endif
 
+
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_getstr(texu_cio *cio, texu_char *str)
+    {
+        return 0;
+    }
+#else
     texu_i32
     texu_cio_getstr(texu_cio *cio, texu_char *str)
     {
         return wgetstr(cio->wndscr, str);
     }
+#endif
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
+    {
+        return texu_tty_gotoyx(y, x);
+    }
+#else
     texu_i32
     texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
     {
         return wmove(cio->wndscr, y, x);
     }
+#endif /*__USE_TTY__*/
 
+
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_getyx(texu_cio *cio, texu_i32 y, texu_i32 x)
+    {
+        return 0;
+    }
+#else
     texu_i32
     texu_cio_getyx(texu_cio *cio, texu_i32 y, texu_i32 x)
     {
         return getyx(cio->wndscr, y, x);
     }
+#endif
 
+
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_clear(texu_cio *cio)
+    {
+        return texu_tty_clear();
+    }
+#else
     texu_i32
     texu_cio_clear(texu_cio *cio)
     {
         return wclear(cio->wndscr);
     }
+#endif /*__USE_TTY__*/
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_clearln(texu_cio *cio, texu_i32 y)
+    {
+        return texu_tty_clearln(y);
+    }
+#else
     texu_i32
     texu_cio_clearln(texu_cio *cio, texu_i32 y)
     {
         texu_cio_gotoyx(cio, y, 0);
         return wclrtoeol(cio->wndscr);
     }
+#endif /*__USE_TTY__*/
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_putch(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch)
+    {
+        return texu_tty_putch(y, x, ch);
+    }
+#else
     texu_i32
     texu_cio_putch(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch)
     {
         return mvwaddch(cio->wndscr, y, x, ch);
     }
+#endif /*__USE_TTY__*/
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
+    {
+        texu_tty_attron(attrs);
+        texu_tty_putch(y, x, ch);
+        return texu_tty_attroff(cio, attrs);
+    }
+#else
     texu_i32
     texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
     {
@@ -342,19 +470,46 @@ extern "C"
         mvwaddch(cio->wndscr, y, x, ch);
         return texu_cio_attroff(cio, attrs);
     }
+#endif /*__USE_TTY__*/
 
+
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_putch_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 color, texu_i32 attrs)
+    {
+        return texu_cio_putch_attr(cio, y, x, ch, attrs);
+    }
+#else
     texu_i32
     texu_cio_putch_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 color, texu_i32 attrs)
     {
         return texu_cio_putch_attr(cio, y, x, ch, color | attrs);
     }
+#endif
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
+    {
+        return texu_tty_putstr(y, x, str);
+    }
+#else
     texu_i32
     texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
     {
         return mvwprintw(cio->wndscr, y, x, str);
     }
+#endif
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs)
+    {
+        texu_tty_attron(attrs);
+        texu_tty_putstr(y, x, str);
+        return texu_tty_attroff(cio, attrs);
+    }
+#else
     texu_i32
     texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs)
     {
@@ -362,13 +517,37 @@ extern "C"
         mvwprintw(cio->wndscr, y, x, str);
         return texu_cio_attroff(cio, attrs);
     }
+#endif
 
+
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_putstr_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 color, texu_i32 attrs)
+    {
+        return texu_cio_putstr_attr(cio, y, x, str, attrs);
+    }
+#else
     texu_i32
     texu_cio_putstr_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 color, texu_i32 attrs)
     {
         return texu_cio_putstr_attr(cio, y, x, str, color | attrs);
     }
+#endif
 
+
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_attron(texu_cio *cio, texu_i32 attrs)
+    {
+        return texu_tty_attron(attrs);
+    }
+
+    texu_i32
+    texu_cio_attroff(texu_cio *cio, texu_i32 attrs)
+    {
+        return texu_tty_attroff();
+    }
+#else
     texu_i32
     texu_cio_attron(texu_cio *cio, texu_i32 attrs)
     {
@@ -380,12 +559,21 @@ extern "C"
     {
         return wattroff(cio->wndscr, attrs);
     }
+#endif
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_refresh(texu_cio *cio)
+    {
+        return 0;
+    }
+#else
     texu_i32
     texu_cio_refresh(texu_cio *cio)
     {
         return wrefresh(cio->wndscr);
     }
+#endif
 
     texu_i32
     texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_i32 attrs)
@@ -397,8 +585,15 @@ extern "C"
         if (text)
         {
             len = strlen(text);
+
+#ifdef __USE_TTY__
+            texu_cio_get_reverse(cio, attrs);
+            texu_cio_putstr_attr(cio, rect->y,
+                                 rect->x + (rect->cols - len) / 2, text, attrs);
+#else
             texu_cio_putstr_attr(cio, rect->y,
                                  rect->x + (rect->cols - len) / 2, text, attrs | A_REVERSE);
+#endif
         }
         return TEXU_OK;
     }
@@ -417,7 +612,7 @@ extern "C"
         /* draw right vertical line */
         texu_cio_draw_vline(cio, rect->y, rect->x + rect->cols, rect->lines, attrs);
 
-        #ifdef TEXU_CIO_COLOR_MONO
+        #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
         /* draw upper left*/
         texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
         /* draw lower left*/
@@ -447,7 +642,7 @@ extern "C"
         texu_cio_attron(cio, attrs);
         for (i = 0; i < width; ++i)
         {
-            #ifdef TEXU_CIO_COLOR_MONO
+            #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
             texu_cio_putch_attr(cio, y, x + i, '-', attrs);
             #else
             texu_cio_putch_attr(cio, y, x + i, ACS_HLINE, attrs);
@@ -463,7 +658,7 @@ extern "C"
         texu_cio_attron(cio, attrs);
         for (i = 0; i < height; ++i)
         {
-            #ifdef TEXU_CIO_COLOR_MONO
+            #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
             texu_cio_putch_attr(cio, y + i, x, '|', attrs);
             #else
             texu_cio_putch_attr(cio, y + i, x, ACS_VLINE, attrs);
@@ -482,7 +677,7 @@ extern "C"
         {
             rc.cols = widths[i];
             texu_cio_draw_rect(cio, &rc, attrs);
-            #ifdef TEXU_CIO_COLOR_MONO
+            #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
             texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
             texu_cio_putch_attr(cio, rc.y + rc.lines, rc.x, '+', attrs);
             #else
@@ -491,7 +686,7 @@ extern "C"
             #endif
             rc.x += widths[i];
         }
-        #ifdef TEXU_CIO_COLOR_MONO
+        #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
         texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
         texu_cio_putch_attr(cio, rect->y + rect->lines, rect->x, '+', attrs);
         #else
@@ -512,7 +707,7 @@ extern "C"
             rc.lines = heights[i];
             texu_cio_draw_rect(cio, &rc, attrs);
 
-            #ifdef TEXU_CIO_COLOR_MONO
+            #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
             texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
             texu_cio_putch_attr(cio, rc.y + rc.lines, rc.x, '+', attrs);
             #else
@@ -521,7 +716,7 @@ extern "C"
             #endif
             rc.y += heights[i];
         }
-        #ifdef TEXU_CIO_COLOR_MONO
+        #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
         texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
         texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols, '+', attrs);
         #else
@@ -530,7 +725,31 @@ extern "C"
         #endif
         return TEXU_OK;
     }
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_get_color(texu_cio *cio, texu_i32 clridx)
+    {
+        return texu_tty_get_color(clridx);
+    }
 
+    texu_i32
+    texu_cio_get_underline(texu_cio *cio, texu_i32 clridx)
+    {
+        return texu_tty_get_underline(clridx);
+    }
+
+    texu_i32
+    texu_cio_get_reverse(texu_cio *cio, texu_i32 clridx)
+    {
+        return texu_tty_get_reverse(clridx);
+    }
+
+    texu_i32
+    texu_cio_get_blink(texu_cio *cio, texu_i32 clridx)
+    {
+        return texu_tty_get_blink(clridx);
+    }
+#else
     texu_i32
     texu_cio_get_color(texu_cio *cio, texu_i32 clridx)
     {
@@ -554,7 +773,27 @@ extern "C"
     {
         return COLOR_PAIR(clridx) | A_BLINK;
     }
+#endif
 
+#ifdef __USE_TTY__
+    texu_i32
+    texu_cio_get_color_attr(texu_cio *cio, texu_i32 clridx, texu_i32 attrs)
+    {
+        return texu_tty_get_color(clridx);
+    }
+
+    texu_i32
+    texu_cio_save_screen(texu_cio *cio, FILE *fp)
+    {
+        return 0;
+    }
+
+    texu_i32
+    texu_cio_restore_screen(texu_cio *cio, FILE *fp)
+    {
+        return 0;
+    }
+#else
     texu_i32
     texu_cio_get_color_attr(texu_cio *cio, texu_i32 clridx, texu_i32 attrs)
     {
@@ -573,6 +812,7 @@ extern "C"
         WINDOW *wndscr = getwin(fp);
         return wrefresh(wndscr);
     }
+#endif
 
 #ifdef __cplusplus
 }

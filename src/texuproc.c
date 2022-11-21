@@ -658,6 +658,7 @@ extern "C"
         void *exparam;
         texu_char validstr[TEXU_MAX_WNDTEXT + 1];
         texu_char editbuf[TEXU_MAX_WNDTEXT + 1];
+        texu_i32  (*on_validate)(texu_wnd*, texu_char*);
     };
     typedef struct texu_editwnd texu_editwnd;
 
@@ -919,6 +920,7 @@ extern "C"
         texu_f64 decimal = 0.0;
         texu_i32 number = 0;
         texu_i32 rcminmax = TEXU_OK;
+        texu_i32 rc = TEXU_OK;
 
         /* check if style is TEXU_ES_DECIMAL */
         if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
@@ -957,6 +959,15 @@ extern "C"
         if (TEXU_ES_AUTODECIMALCOMMA & style)
         {
             _TexuEditProc_AddDecimalFormat(edit);
+        }
+
+        if (edit->on_validate)
+        {
+            rc = edit->on_validate(wnd, edit->editbuf);
+            if (rc != TEXU_OK)
+            {
+                return rc;
+            }
         }
         /* update text */
         edit->firstvisit = 1;
@@ -1351,6 +1362,8 @@ extern "C"
                            texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED));
         texu_wnd_set_userdata(wnd, edit);
         texu_wnd_set_focuscolor(wnd, texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED));
+        
+        edit->on_validate = attrs->on_validate;
 
         return TEXU_OK;
     }
@@ -1382,6 +1395,7 @@ extern "C"
             {
                 if (edit->showpass == TEXU_TRUE)
                 {
+                    len = strlen(edit->editbuf);
                     memset(buf, edit->passchar, len);
                 }
                 else

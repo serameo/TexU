@@ -23,12 +23,21 @@ extern "C"
     /* global variables */
     texu_env *genv = 0;
 
+#ifdef USE_TCL_AUTOMATION
+    texu_status
+    TexuStartup(texu_i32 lines, texu_i32 cols, const char* pathname)
+    {
+        genv = texu_env_new(lines, cols, pathname);
+        return (genv ? TEXU_OK : TEXU_ERROR);
+    }
+#else
     texu_status
     TexuStartup(texu_i32 lines, texu_i32 cols)
     {
         genv = texu_env_new(lines, cols);
         return (genv ? TEXU_OK : TEXU_ERROR);
     }
+#endif /*USE_TCL_AUTOMATION*/
 
     texu_status
     TexuShutdown()
@@ -175,6 +184,36 @@ extern "C"
         return rc;
     }
 
+    texu_status
+    TexuCreateControls2(texu_wnd *wnd, texu_wnd_template2 *templ, texu_i32 nitems)
+    {
+        texu_status rc = TEXU_OK;
+        texu_i32 i = 0;
+
+        for (i = 0; i < nitems; ++i)
+        {
+            if (!(templ[i].clsname) || strlen(templ[i].clsname) == 0)
+            {
+                break;
+            }
+            TexuCreateWindow2(
+                templ[i].text,
+                templ[i].clsname,
+                templ[i].style,
+                templ[i].exstyle,
+                templ[i].y,
+                templ[i].x,
+                templ[i].h,
+                templ[i].w,
+                wnd,
+                templ[i].id,
+                0,
+                templ[i].on_validate);
+        }
+        return rc;
+    }
+
+
     texu_wnd *
     TexuCreateWindow(
         const texu_char *text,
@@ -220,6 +259,80 @@ extern "C"
         attrs.userdata = userdata;
         attrs.style = style;
         attrs.exstyle = exstyle;
+
+        if (!(parent))
+        {
+            parent = desktop;
+        }
+        rc = texu_wnd_create(wnd, parent, &attrs);
+
+        if (rc != TEXU_OK)
+        {
+            texu_wnd_del(wnd);
+            return 0;
+        }
+
+        if (parent == desktop)
+        {
+            TexuPushWindow(wnd);
+
+            childwnd = texu_wnd_get_activechild(wnd);
+            if (childwnd)
+            {
+                texu_wnd_send_msg(childwnd, TEXU_WM_SETFOCUS, 0, 0);
+            }
+        }
+
+        return wnd;
+    }
+
+    texu_wnd *
+    TexuCreateWindow2(
+        const texu_char *text,
+        const texu_char *clsname,
+        texu_ui32 style,
+        texu_ui32 exstyle,
+        texu_i32 y,
+        texu_i32 x,
+        texu_i32 h,
+        texu_i32 w,
+        texu_wnd *parent,
+        texu_i32 id,
+        void *userdata,
+        texu_i32 (*on_validate)(texu_wnd*, texu_char*))
+    {
+        texu_wnd *wnd = 0;
+        texu_wnd_attrs attrs;
+        texu_status rc = TEXU_OK;
+        texu_env *env = genv;
+        texu_wnd *desktop = texu_env_get_desktop(env);
+        texu_wnd *childwnd = 0;
+
+        if (!genv)
+        {
+            return 0;
+        }
+        wnd = texu_wnd_new(genv);
+        if (!wnd)
+        {
+            return 0;
+        }
+        memset(&attrs, 0, sizeof(attrs));
+        attrs.y = y;
+        attrs.x = x;
+        attrs.height = h;
+        attrs.width = w;
+        attrs.enable = TEXU_TRUE;
+        attrs.visible = TEXU_TRUE;
+        attrs.text = text;
+        attrs.normalcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+        attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+        attrs.id = id;
+        attrs.clsname = clsname;
+        attrs.userdata = userdata;
+        attrs.style = style;
+        attrs.exstyle = exstyle;
+        attrs.on_validate = on_validate;
 
         if (!(parent))
         {
@@ -332,6 +445,13 @@ extern "C"
     {
         return texu_wnd_find_child(wnd, id);
     }
+    
+    texu_wnd *
+    TexuGetParent(
+        texu_wnd *wnd)
+    {
+        return texu_wnd_get_parent(wnd);
+    }
 
     void
     TexuSetWindowText(
@@ -340,7 +460,16 @@ extern "C"
     {
         texu_wnd_set_text(wnd, (text ? text : ""));
     }
-
+    texu_i32
+    TexuGetWindowText(
+      texu_wnd*         wnd,
+      texu_char*        text,
+      texu_i32          len
+    )
+    {
+        TexuSendMessage(wnd, TEXU_WM_GETTEXT, (texu_i64)text, len);
+        return strlen(text);
+    }
     void
     TexuSetColor(
         texu_wnd *wnd,
