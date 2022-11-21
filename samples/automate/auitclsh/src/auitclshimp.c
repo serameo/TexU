@@ -121,7 +121,7 @@ _auitclsh_request(int msgid, char* req, cJSON **res)
 }
 
 int
-atr_sendmsg(
+aui_sendmsg(
   ClientData      cd,
   Tcl_Interp*     interp,
   int             objc,
@@ -174,7 +174,7 @@ atr_sendmsg(
 }
 
 int
-atr_settext(
+aui_settext(
   ClientData      cd,
   Tcl_Interp*     interp,
   int             objc,
@@ -223,7 +223,7 @@ atr_settext(
 }
 
 int
-atr_gettext(
+aui_gettext(
   ClientData      cd,
   Tcl_Interp*     interp,
   int             objc,
@@ -299,20 +299,20 @@ auitclsh_init(
     Tcl_SetVar( interp, "tcl_interactive", "1", 0 );
 
     Tcl_CreateObjCommand( interp,
-        "atr_sendmsg",
-        atr_sendmsg,
+        "aui_sendmsg",
+        aui_sendmsg,
         ( ClientData* )&g_auitclsh,
         ( Tcl_CmdDeleteProc* )NULL
         );
     Tcl_CreateObjCommand( interp,
-        "atr_settext",
-        atr_settext,
+        "aui_settext",
+        aui_settext,
         ( ClientData* )&g_auitclsh,
         ( Tcl_CmdDeleteProc* )NULL
         );
     Tcl_CreateObjCommand( interp,
-        "atr_gettext",
-        atr_gettext,
+        "aui_gettext",
+        aui_gettext,
         ( ClientData* )&g_auitclsh,
         ( Tcl_CmdDeleteProc* )NULL
         );
