@@ -13,7 +13,7 @@
 #include "auitclsh.h"
 
 /*global variables*/
-extern auitclsh_t g_auitclsh;
+auitclsh_t g_auitclsh;
 
 /*this is a helper function to request and get response to/from TexU server*/
 texu_i64    _auitclsh_request(int msgid, char* req, cJSON **res);
@@ -297,6 +297,9 @@ auitclsh_init(
     }
     /* set tcl_interactive, lets us run unix commands as from a shell*/
     Tcl_SetVar( interp, "tcl_interactive", "1", 0 );
+
+    g_auitclsh.msgkey = ftok("autoui", 65); /*the name is the same as TexU server*/
+    g_auitclsh.msgid  = msgget(g_auitclsh.msgkey, 0666 | IPC_CREAT);
 
     Tcl_CreateObjCommand( interp,
         "aui_sendmsg",
