@@ -17,21 +17,21 @@ struct _auitclsh
 typedef struct _auitclsh auitclsh_t;
 
 int
-atr_sendmsg(
+aui_sendmsg(
   ClientData      cd,
   Tcl_Interp*     interp,
   int             objc,
   Tcl_Obj *CONST  objv[]
 );
 int
-atr_settext(
+aui_settext(
   ClientData      cd,
   Tcl_Interp*     interp,
   int             objc,
   Tcl_Obj *CONST  objv[]
 );
 int
-atr_gettext(
+aui_gettext(
   ClientData      cd,
   Tcl_Interp*     interp,
   int             objc,
