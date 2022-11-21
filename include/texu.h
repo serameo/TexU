@@ -43,12 +43,21 @@
 #include "texucio.h"
 #include "texust.h"
 #include "texumenu.h"
+#include "texuconst.h"
+#include "texumacros.h"
+#include "texutypes.h"
+#include "texuix.h"
 
 /*
 # TexU interface functions
 #
 */
+#ifdef USE_TCL_AUTOMATION
+texu_status        TexuStartup(texu_i32 lines, texu_i32 cols, const char* pathname);
+#else
 texu_status        TexuStartup(texu_i32 lines, texu_i32 cols);
+#endif /*USE_TCL_AUTOMATION*/
+
 texu_status        TexuShutdown();
 texu_status        TexuRun();
 
@@ -77,10 +86,26 @@ texu_wnd*           TexuCreateWindow(
                       texu_i32   id,
                       void*      userdata
                     );
+                    
+texu_wnd*           TexuCreateWindow2(
+                      const texu_char* text,
+                      const texu_char* clsname,
+                      texu_ui32  style,
+                      texu_ui32  exstyle,
+                      texu_i32   y,
+                      texu_i32   x,
+                      texu_i32   h,
+                      texu_i32   w,
+                      texu_wnd*  parent,
+                      texu_i32   id,
+                      void*      userdata,
+                      texu_i32   (*on_validate)(texu_wnd*, texu_char*)
+                    );
 void                TexuDestroyWindow(
                       texu_wnd*  wnd
                     );
 texu_status         TexuCreateControls(texu_wnd* wnd, texu_wnd_template*, texu_i32);
+texu_status         TexuCreateControls2(texu_wnd* wnd, texu_wnd_template2*, texu_i32);
 
 #define TEXU_WS_HIDE            0
 #define TEXU_WS_SHOW            1
@@ -115,10 +140,20 @@ TexuGetWindowItem(
   texu_ui32     id
 );
 
+texu_wnd *
+    TexuGetParent(
+        texu_wnd *wnd);
 void
 TexuSetWindowText(
   texu_wnd*         wnd,
   const texu_char*  text
+);
+
+texu_i32
+TexuGetWindowText(
+  texu_wnd*         wnd,
+  texu_char*        text,
+  texu_i32          len
 );
 
 void

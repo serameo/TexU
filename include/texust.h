@@ -24,6 +24,9 @@ extern "C"
     struct texu_wnd;
     typedef struct texu_wnd texu_wnd;
 
+    struct texu_cio;
+    typedef struct texu_cio texu_cio;
+
     struct texu_wnd_attrs
     {
         texu_i32 y;
@@ -41,6 +44,7 @@ extern "C"
         texu_ui32 id;
         const texu_char *clsname;
         void *userdata;
+        texu_i32 (*on_validate)(texu_wnd*, texu_char*);
     };
     typedef struct texu_wnd_attrs texu_wnd_attrs;
 
@@ -52,6 +56,16 @@ extern "C"
         texu_i32 cols;
     };
     typedef struct texu_rect texu_rect;
+    
+    #define TEXU_ENV_MSGTYPE_REQUEST    1
+    #define TEXU_ENV_MSGTYPE_RESPONSE   2
+    struct texu_env_msg
+    {
+        texu_i32    type;   /*1 = request, 2 = response */
+        texu_char   json[256];
+    };
+    typedef struct texu_env_msg texu_env_msg;
+
 
     struct texu_wnd_notify
     {
@@ -194,6 +208,21 @@ extern "C"
         texu_i32 id;
     };
     typedef struct texu_wnd_template texu_wnd_template;
+    
+    struct texu_wnd_template2
+    {
+        const texu_char *text;
+        const texu_char *clsname;
+        texu_ui32 style;
+        texu_ui32 exstyle;
+        texu_i32 y;
+        texu_i32 x;
+        texu_i32 h;
+        texu_i32 w;
+        texu_i32 id;
+        texu_i32 (*on_validate)(texu_wnd*, texu_char*);
+    };
+    typedef struct texu_wnd_template2 texu_wnd_template2;
 
     struct texu_menuitem_template
     {

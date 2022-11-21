@@ -82,7 +82,11 @@ typedef texu_i64  (*texu_wndproc)(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuDefWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 
+#ifdef USE_TCL_AUTOMATION
+texu_env*         texu_env_new(texu_i32 lines, texu_i32 cols, const char* pathname);
+#else
 texu_env*         texu_env_new(texu_i32, texu_i32);
+#endif /*USE_TCL_AUTOMATION*/
 void              texu_env_del(texu_env*);
 
 texu_status       texu_env_register_cls(
@@ -109,10 +113,6 @@ void              texu_env_set_syscolors(texu_env* env, texu_i32 (*setcolor)(tex
 texu_i32          texu_env_get_syscolor(texu_env*, texu_i32);
 
 texu_i32          texu_env_set_timer(texu_env*, texu_i32, texu_i32, texu_i32);
-#if USE_TCL_AUTOMATION
-void              texu_env_send_msg(texu_env* env, texu_i64 wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2);
-
-#endif /*USE_TCL_AUTOMATION*/
 
 /*
 # TexU window object
@@ -163,6 +163,7 @@ texu_status       texu_wnd_visible(texu_wnd*, texu_bool);
 texu_status       texu_wnd_enable(texu_wnd*, texu_bool);
 texu_bool         texu_wnd_is_visible(texu_wnd*);
 texu_bool         texu_wnd_is_enable(texu_wnd*);
+texu_bool         texu_wnd_is_active(texu_wnd *wnd);
 void              texu_wnd_set_text(texu_wnd*, const texu_char*);
 texu_i32          texu_wnd_get_text(texu_wnd*, texu_char*, texu_i32);
 void              texu_wnd_set_color(texu_wnd*, texu_i32, texu_i32);
