@@ -16,6 +16,13 @@ struct _auitclsh
 };
 typedef struct _auitclsh auitclsh_t;
 
+/*initial Tcl command interfaces*/
+int
+auitclsh_init(
+  Tcl_Interp* interp
+);
+
+/* Send message to the autoui app*/
 int
 aui_sendmsg(
   ClientData      cd,
@@ -23,6 +30,8 @@ aui_sendmsg(
   int             objc,
   Tcl_Obj *CONST  objv[]
 );
+
+/* set text to a window object in the autoui app*/
 int
 aui_settext(
   ClientData      cd,
@@ -30,6 +39,8 @@ aui_settext(
   int             objc,
   Tcl_Obj *CONST  objv[]
 );
+
+/* get text from a window object in the autoui app*/
 int
 aui_gettext(
   ClientData      cd,
