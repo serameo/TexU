@@ -69,6 +69,16 @@ void Login_OnLogin(texu_wnd *wnd)
     rc = _login_validate_passwd(edit, passwd);
 }
 
+void Login_OnPaint(texu_wnd *wnd, texu_cio *dc)
+{
+
+    static texu_rect rect  = {0,  0, 24, 79};    /*outer frame*/
+    static texu_rect rect2 = {8, 25,  6, 31};    /*inner frame*/
+
+    TexuDrawFrame(dc, "Sample Login App", &rect, TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE));
+    TexuDrawFrame(dc, "", &rect2, TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE));
+}
+
 texu_i64 Login_WndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
     texu_wnd* edit = 0;
@@ -88,6 +98,11 @@ texu_i64 Login_WndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 p
                     break;
                 }
             }
+            break;
+        }
+        case TEXU_WM_PAINT:    /* 6 */
+        {
+            Login_OnPaint(wnd, (texu_cio *)param1);
             break;
         }
         case TEXU_WM_CREATE:    /* 7 */
