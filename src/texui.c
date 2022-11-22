@@ -307,6 +307,8 @@ void    _texu_env_cmd_gettext(texu_env *env, cJSON *req)
     texu_wnd *wnd = texu_env_top_wnd(env);
     texu_wnd *child = 0;
     texu_i64 rc = 0;
+    texu_ui32 style = 0;
+    texu_char* clsname;
 
     cJSON *parms = cJSON_GetObjectItem(req, "parms");
     cJSON *val = 0;
@@ -330,6 +332,15 @@ void    _texu_env_cmd_gettext(texu_env *env, cJSON *req)
             child = texu_wnd_find_child(wnd, lwnd);
         }
         rc = texu_wnd_get_text(child, text, 256);
+        style = texu_wnd_get_style(child);
+        clsname = texu_wnd_get_clsname(child);
+        
+        if (0 == strcmp(clsname, TEXU_EDIT_CLASS) 
+            && (style & TEXU_ES_PASSWORD))
+        {
+            /* DO NOT SHOW THE PASSWORD BETWEEN INTER PROCESS COMMUNICATION */
+            strcpy(text, "********");
+        }
 
         cJSON_AddNumberToObject(res, "code", 0);
         cJSON_AddStringToObject(res, "text", text);

@@ -680,6 +680,9 @@ extern "C"
     void _TexuEditProc_OnShowPasswdChar(texu_wnd *wnd, texu_i32 show);
     void _TexuEditProc_OnSetDecWidth(texu_wnd *wnd, texu_i32 width);
     void _TexuEditProc_OnSetValidMinMax(texu_wnd *wnd, texu_i32 on, texu_editminmax *vmm);
+    void _TexuEditProc_OnSetText(texu_wnd *wnd, const texu_char *text);
+    texu_i32    _TexuEditProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
+
 
     texu_status _TexuEditProc_ValidateNumberStyle(texu_wnd *wnd, texu_editwnd *edit, texu_i32 ch);
     texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit, texu_i32 ch);
@@ -750,7 +753,38 @@ extern "C"
         texu_editwnd *edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
         edit->decwidth = width;
     }
+/*
+    texu_i32
+    _TexuEditProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen)
+    {
+        texu_editwnd *edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
+        texu_ui32 style = (wnd ? texu_wnd_get_style(wnd) : 0);
+        texu_ui32 len = strlen(edit ? edit->editbuf : "");
+        
+        if (!wnd)
+        {
+            return -1;
+        }
+        if (textlen < 0 || 0 == text)
+        {
+            return len;
+        }
 
+        memset(text, 0, textlen);
+        if (style & TEXU_ES_PASSWORD)
+        {
+            
+            memset(text, (edit ? edit->passchar : '*'), 8);
+        }
+        else
+        {
+           TexuDefWndProc(wnd, TEXU_WM_GETTEXT, (texu_i64)text, textlen);
+        }
+
+        return textlen;
+    }
+*/
+    
     void _TexuEditProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     {
         texu_editwnd *edit = 0;
@@ -1509,6 +1543,10 @@ extern "C"
         case TEXU_WM_SETTEXT:
             _TexuEditProc_OnSetText(wnd, (const texu_char *)param1);
             return 0;
+/*
+        case TEXU_WM_GETTEXT:
+            return _TexuEditProc_OnGetText(wnd, (texu_char *)param1, param2);
+            */
         }
         return TexuDefWndProc(wnd, msg, param1, param2);
     }
