@@ -23,6 +23,8 @@ All text objects are implemented by using a simple library (TexU_List, TexU_Stac
 
 This library concept is the same as Win32 API concept. All window classes are required to register into the TexU environment. And then, you could implement your message by your procedure.
 
+TexU could simply be applied with Tcl script to run simple automate test. See samples/TermUI and samples/auitclsh.
+
 How to build:
 -------------
 - $ make
