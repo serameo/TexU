@@ -1,4 +1,4 @@
-#
+
 # File Name: makefile
 # Author: Seree Rakwong
 # Date: 06-MAY-2020
@@ -9,14 +9,20 @@ TESTLIB = test_texulib
 LIBTEXU = libtexu.a
 CC     = gcc
 CFLAGS = -g -Wall -m32
-LFLAGS = -lm -lcurses -lpthread -lsqlite3
+LFLAGS = -lm -lcurses -lpthread -lsqlite3 -ltexu
 
 .PHONY: default all clean
 
-default: $(TESTUI)
+default: $(LIBTEXU)
+testui: $(TESTUI)
 testlib: $(TESTLIB)
 libtexu: $(LIBTEXU)
 all: default
+
+CJSON_SRC_DIR= ./src
+CJSON_INC_DIR= ./include
+CJSON_SOURCES= $(CJSON_SRC_DIR)/cJSON.c
+CJSON_OBJECTS= $(CJSON_SOURCES:.c=.o)
 
 TEXU_SRC_DIR = ./src
 TEXU_INC_DIR = ./include
@@ -43,14 +49,15 @@ TEST_OBJECTS = $(TEST_SOURCES:.c=.o)
 TESTLIB_SOURCES = $(TEST_SRC_DIR)/test_texulib.c
 TESTLIB_OBJECTS = $(TESTLIB_SOURCES:.c=.o)
 
-DEFINES = -DXTERM_256COLOR
+DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__LINUX__ -DUSE_TCL_AUTOMATION
+#DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__LINUX__ 
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
 
 
-$(LIBTEXU): $(TEXU_OBJECTS)
-	ar r $(TEXU_LIB_DIR)/$@ $^
+$(LIBTEXU): $(TEXU_OBJECTS) $(CJSON_OBJECTS)
+	ar -rus $(TEXU_LIB_DIR)/$@ $^
 
 $(TESTUI): $(TEST_OBJECTS)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
@@ -59,6 +66,6 @@ $(TESTLIB): $(TESTLIB_OBJECTS)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
 
 clean:
-	rm -f src/*.o $(TESTUI)* lib/libtexu*
+	rm -f $(TEXU_SRC_DIR)/*.o $(TESTUI)* $(TEXU_LIB_DIR)/$(LIBTEXU)
 
 
