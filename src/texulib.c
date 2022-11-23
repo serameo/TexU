@@ -10,6 +10,10 @@
 #include <string.h>
 #include "texulib.h"
 
+#ifdef TEXU_THREAD_SAFE
+#include <pthread.h>
+#endif
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -52,6 +56,9 @@ extern "C"
         texu_ui64 nitems;
         texu_list_item *first;
         texu_list_item *last;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_t mutex;
+        #endif
     };
 
     texu_list *
@@ -63,6 +70,9 @@ extern "C"
             return 0;
         }
         memset(list, 0, sizeof(texu_list));
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_init(&list->mutex, NULL);
+        #endif
         return list;
     }
 
@@ -72,6 +82,9 @@ extern "C"
         if (list)
         {
             texu_list_free(list);
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_destroy(&list->mutex);
+            #endif
             free(list);
             list = 0;
         }
@@ -90,7 +103,11 @@ extern "C"
         void *user)
     {
         texu_list_item *delitem = 0;
-        texu_list_item *item = list->first;
+        texu_list_item *item = 0;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&list->mutex);
+        #endif
+        item = list->first;
 
         while (item)
         {
@@ -106,6 +123,9 @@ extern "C"
         /* reset all pointers */
         list->first = list->last = 0;
         list->nitems = 0;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&list->mutex);
+        #endif
     }
 
     texu_status
@@ -116,6 +136,9 @@ extern "C"
         {
             return TEXU_NOMEM;
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&list->mutex);
+        #endif
         if (list->first)
         {
             newitem->next = list->first->next;
@@ -128,6 +151,9 @@ extern "C"
         }
 
         ++list->nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&list->mutex);
+        #endif
         return TEXU_OK;
     }
 
@@ -149,6 +175,9 @@ extern "C"
         {
             return TEXU_NOMEM;
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&list->mutex);
+        #endif
 
         if (after == list->first)
         {
@@ -169,6 +198,9 @@ extern "C"
             after->prev = newitem;
         }
         ++list->nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&list->mutex);
+        #endif
         return TEXU_OK;
     }
 
@@ -180,6 +212,9 @@ extern "C"
         {
             return TEXU_NOMEM;
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&list->mutex);
+        #endif
         if (list->first)
         {
             newitem->prev = list->last;
@@ -192,6 +227,9 @@ extern "C"
         }
 
         ++list->nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&list->mutex);
+        #endif
         return TEXU_OK;
     }
 
@@ -216,7 +254,10 @@ extern "C"
             return TEXU_OK;
         }
         /* make a new link */
-        if (item == list->first)
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&list->mutex);
+        #endif
+       if (item == list->first)
         {
             list->first = list->first->next;
             if (list->first)
@@ -253,25 +294,52 @@ extern "C"
         }
         _texu_list_item_del(item);
         --list->nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&list->mutex);
+        #endif
         return TEXU_OK;
     }
 
     texu_list_item *
     texu_list_first(texu_list *list)
     {
-        return list->first;
+        texu_list_item *item = 0;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&list->mutex);
+        #endif
+        item = list->first;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&list->mutex);
+        #endif
+        return item;
     }
 
     texu_list_item *
     texu_list_last(texu_list *list)
     {
-        return list->last;
+        texu_list_item *item = 0;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&list->mutex);
+        #endif
+        item = list->last;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&list->mutex);
+        #endif
+        return item;
     }
 
     texu_ui64
     texu_list_count(texu_list *list)
     {
-        return list->nitems;
+        texu_ui64 nitems = 0;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&list->mutex);
+        #endif
+        nitems = list->nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&list->mutex);
+        #endif
+        return nitems;
     }
 
     texu_list_item *
@@ -438,6 +506,9 @@ extern "C"
     {
         texu_ui64 nitems;
         texu_i64 *items;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_t mutex;
+        #endif
     };
 
     texu_array *
@@ -464,6 +535,9 @@ extern "C"
             }
             memset(items, 0, size);
             array->items = items;
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_init(&array->mutex, NULL);
+            #endif
         }
         return array;
     }
@@ -474,6 +548,9 @@ extern "C"
         if (array)
         {
             texu_array_free(array);
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_destroy(&array->mutex);
+            #endif
             free(array);
             array = 0;
         }
@@ -500,7 +577,13 @@ extern "C"
             }
         }
         /* reset all items */
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&array->mutex);
+        #endif
         memset(array->items, 0, sizeof(texu_i64) * array->nitems);
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&array->mutex);
+        #endif
     }
 
     texu_i64
@@ -520,7 +603,13 @@ extern "C"
         {
             return;
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&array->mutex);
+        #endif
         array->items[idx] = data;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&array->mutex);
+        #endif
     }
 
     texu_status
@@ -547,9 +636,15 @@ extern "C"
         memcpy(items, array->items, size);
 
         /* delete the old memory */
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&array->mutex);
+        #endif
         free(array->items);
         array->items = items;
         array->nitems = nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&array->mutex);
+        #endif
 
         return TEXU_OK;
     }
@@ -571,6 +666,9 @@ extern "C"
         texu_i64 index;
         texu_i64 nitems;
         texu_i64 *items;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_t mutex;
+        #endif
     };
 
     texu_stack *
@@ -602,6 +700,9 @@ extern "C"
             }
             memset(items, 0, size);
             stack->items = items;
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_init(&stack->mutex, NULL);
+            #endif
         }
         return stack;
     }
@@ -612,6 +713,9 @@ extern "C"
         if (stack)
         {
             texu_stack_free(stack);
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_destroy(&stack->mutex);
+            #endif
             free(stack);
             stack = 0;
         }
@@ -638,8 +742,14 @@ extern "C"
             }
         }
         /* reset all items */
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&stack->mutex);
+        #endif
         memset(stack->items, 0, sizeof(texu_i64) * stack->nitems);
         stack->index = -1;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&stack->mutex);
+        #endif
     }
 
     texu_bool
@@ -671,8 +781,14 @@ extern "C"
         {
             return TEXU_NOMEM;
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&stack->mutex);
+        #endif
         ++stack->index;
         stack->items[stack->index] = data;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&stack->mutex);
+        #endif
         return TEXU_OK;
     }
 
@@ -696,9 +812,14 @@ extern "C"
         {
             cb(stack->items[stack->index], user);
         }
-
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&stack->mutex);
+        #endif
         stack->items[stack->index] = 0;
         --stack->index;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&stack->mutex);
+        #endif
 
         return TEXU_OK;
     }
@@ -718,6 +839,9 @@ extern "C"
     {
         texu_tree_item *root;
         texu_ui64 nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_t mutex;
+        #endif
     };
 
     texu_tree_item *_texu_tree_item_new(texu_i64);
@@ -881,6 +1005,9 @@ extern "C"
                 free(tree);
                 return 0;
             }
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_init(&tree->mutex, NULL);
+            #endif
         }
         return tree;
     }
@@ -891,6 +1018,9 @@ extern "C"
         if (tree)
         {
             texu_tree_remove_item(tree, tree->root);
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_destroy(&tree->mutex);
+            #endif
             free(tree);
             tree = 0;
         }
@@ -910,6 +1040,9 @@ extern "C"
         }
 
         newitem->parent = parent;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&tree->mutex);
+        #endif
         if (!parent->firstchild)
         {
             parent->firstchild = newitem;
@@ -927,6 +1060,9 @@ extern "C"
 
         /* items counted */
         ++tree->nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&tree->mutex);
+        #endif
         return newitem;
     }
 
@@ -950,6 +1086,9 @@ extern "C"
         {
             return TEXU_OK;
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&tree->mutex);
+        #endif
         /* save infos */
         parent = delitem->parent;
         next = delitem->next;
@@ -993,6 +1132,9 @@ extern "C"
             --parent->nchildren;
         }
         --tree->nitems;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&tree->mutex);
+        #endif
 
         return TEXU_OK;
     }
@@ -1119,6 +1261,9 @@ extern "C"
         texu_i64 nkeys;
         texu_i64 ndels;
         texu_bool sorted;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_t mutex;
+        #endif
     };
 #define TEXU_MAP_INCREMENTAL_ITEMS 256
 
@@ -1179,6 +1324,9 @@ extern "C"
             map->nitems = TEXU_MAP_INCREMENTAL_ITEMS;
             map->nkeys = 0;
             map->sorted = TEXU_TRUE;
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_init(&map->mutex, NULL);
+            #endif
         }
         return map;
     }
@@ -1190,6 +1338,9 @@ extern "C"
         {
             texu_map_free(map);
             free(map->keyvals);
+            #ifdef TEXU_THREAD_SAFE
+            pthread_mutex_destroy(&map->mutex);
+            #endif
             free(map);
             map = 0;
         }
@@ -1219,11 +1370,17 @@ extern "C"
                 }
             }
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&map->mutex);
+        #endif
         size = sizeof(texu_map_keyval) * map->nitems;
         memset(map->keyvals, 0, size);
         map->nkeys = 0;
         map->ndels = 0;
         map->sorted = TEXU_TRUE;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&map->mutex);
+        #endif
     }
 
     texu_i32
@@ -1303,6 +1460,9 @@ extern "C"
             /* there is existing one */
             return TEXU_ERROR;
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&map->mutex);
+        #endif
 
         if (map->nkeys >= map->nitems)
         {
@@ -1318,6 +1478,9 @@ extern "C"
         map->keyvals[map->nkeys].used = TEXU_TRUE;
         ++map->nkeys;
         map->sorted = TEXU_FALSE;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&map->mutex);
+        #endif
 
         return rc;
     }
@@ -1360,10 +1523,16 @@ extern "C"
         {
             cb(kv->key, kv->value, user);
         }
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_lock(&map->mutex);
+        #endif
 
         memset(kv, 0, sizeof(texu_map_keyval));
         ++map->ndels;
         map->sorted = TEXU_FALSE;
+        #ifdef TEXU_THREAD_SAFE
+        pthread_mutex_unlock(&map->mutex);
+        #endif
 
         if (map->ndels == map->nkeys)
         {

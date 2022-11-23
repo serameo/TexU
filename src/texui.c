@@ -22,6 +22,9 @@
 #include <sys/msg.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define TEXU_THREAD_SAFE    1
+
 #include "texulib.h"
 #include "texutils.h"
 #include "texui.h"
@@ -40,36 +43,39 @@ extern "C"
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-#define TEXU_ENV_SCRFILE "./.texuenv"
+#define TEXU_ENV_SCRFILE    "./.texuenv"
 
-#define TEXU_MAX_COLOR (TEXU_COLOR_DEFAULT + 1)
-#define TEXU_ENV_INITIAL (250)
-#define TEXU_ENV_REPEAT (250)
+#define TEXU_MAX_COLOR      (TEXU_COLOR_DEFAULT + 1)
+#define TEXU_ENV_INITIAL    (250)
+#define TEXU_ENV_REPEAT     (250)
+
+    struct texu_msg
+    {
+        texu_wnd    *wnd;
+        texu_ui32   msg;
+        texu_i64    param1;
+        texu_i64    param2;
+    };
 
     struct texu_env
     {
-        texu_stack *frames; /* hold window frames */
-        texu_cio *cio;      /* console input/output */
-        texu_wnd *desktop;  /* the root of all window frames */
-        texu_list *wndcls;  /* the registered classes */
-        texu_bool exit;
-        texu_i32 ypos; /* cursor position */
-        texu_i32 xpos; /* cursor position */
-        FILE *scrfp;   /* to write/read screen */
+        texu_stack  *frames;    /* hold window frames */
+        texu_cio    *cio;       /* console input/output */
+        texu_wnd    *desktop;   /* the root of all window frames */
+        texu_list   *wndcls;    /* the registered classes */
+        texu_bool   exit;       /* main loop*/
+        texu_i32    ypos;       /* cursor position */
+        texu_i32    xpos;       /* cursor position */
+        FILE        *scrfp;     /* to write/read screen */
         /* system color */
         texu_i32 syscolors[TEXU_MAX_COLOR];
-        /* asynchonous input*/
-        /*
-        texu_i32          initial;
-        texu_i32          repeat;
-        */
-        texu_i32          cols;
-        texu_i32          lines;
-#if USE_TCL_AUTOMATION
-        key_t           msgkey;
-        int             msgid;
-        texu_bool       attached;
+        texu_i32          cols; /* width*/
+        texu_i32          lines;/* height*/
+#ifdef USE_TCL_AUTOMATION
+        key_t           msgkey; /* commu key */
+        int             msgid;  /* commu id */
 #endif
+        texu_queue      *msgques;   /* hold the posted msg to be called after*/
     };
 
     struct texu_env_wndcls
@@ -78,8 +84,6 @@ extern "C"
         texu_wndproc proc;
     };
     typedef struct texu_env_wndcls texu_env_wndcls;
-    /* asynchonous input */
-    volatile sig_atomic_t input_ready = 0;
 
     /* internally window procedure */
     /* see texuproc.c */
@@ -119,7 +123,8 @@ extern "C"
     char*   _texu_env_get_minify(cJSON *root);
     void    _texu_env_cmd_attach(texu_env *env);
     void    _texu_env_cmd_detach(texu_env *env);
-    void    _texu_env_cmd_sndmsg(texu_env *env, cJSON *req);
+    void    _texu_env_cmd_sendmsg(texu_env *env, cJSON *req);
+    void    _texu_env_cmd_postmsg(texu_env *env, cJSON *req);
     void    _texu_env_cmd_settext(texu_env *env, cJSON *req);
     void    _texu_env_cmd_gettext(texu_env *env, cJSON *req);
 #endif /*USE_TCL_AUTOMATION*/
@@ -139,7 +144,7 @@ _texu_env_get_minify(cJSON *root)
     }
     return out;
 }
-
+#if 0
 void
 _texu_env_cmd_attach(texu_env *env)
 {
@@ -193,8 +198,8 @@ _texu_env_cmd_detach(texu_env *env)
     free(resjson);
     cJSON_Delete(res);
 }
-
-void    _texu_env_cmd_sndmsg(texu_env *env, cJSON *req)
+#endif
+void    _texu_env_cmd_sendmsg(texu_env *env, cJSON *req)
 {
     char *resjson = NULL;
     cJSON *res = cJSON_CreateObject();
@@ -249,6 +254,61 @@ void    _texu_env_cmd_sndmsg(texu_env *env, cJSON *req)
     cJSON_Delete(res);
 }
 
+
+void    _texu_env_cmd_postmsg(texu_env *env, cJSON *req)
+{
+    char *resjson = NULL;
+    cJSON *res = cJSON_CreateObject();
+    texu_i64 lwnd = 0;
+    texu_i32 lmsg = 0;
+    texu_i64 lparam1 = 0;
+    texu_i64 lparam2 = 0;
+    texu_wnd *wnd = texu_env_top_wnd(env);
+    texu_wnd *child = 0;
+    texu_i64 rc = 0;
+
+    cJSON *parms = cJSON_GetObjectItem(req, "parms");
+    cJSON *val = 0;
+    
+    if (!parms)
+    {
+        cJSON_AddNumberToObject(res, "code", -1);
+        cJSON_AddStringToObject(res, "errmsg", "no parameters");
+    }
+    else
+    {
+        val = cJSON_GetObjectItem(parms, "wnd");
+        lwnd = (texu_i64)cJSON_GetNumberValue(val);
+
+        val = cJSON_GetObjectItem(parms, "msg");
+        lmsg = (texu_i64)cJSON_GetNumberValue(val);
+
+        val = cJSON_GetObjectItem(parms, "param1");
+        lparam1 = (texu_i64)cJSON_GetNumberValue(val);
+
+        val = cJSON_GetObjectItem(parms, "param2");
+        lparam2 = (texu_i64)cJSON_GetNumberValue(val);
+
+        if (lwnd <= 0)
+        {
+            child = wnd;
+        }
+        else
+        {
+            child = texu_wnd_find_child(wnd, lwnd);
+        }
+        rc = texu_wnd_post_msg(child, lmsg, lparam1, lparam2);
+
+        cJSON_AddNumberToObject(res, "code", 0);
+        cJSON_AddNumberToObject(res, "rescode", rc);
+    }
+    
+    resjson = _texu_env_get_minify(res);
+    _texu_env_reply_tcl_output(env, resjson);
+    
+    free(resjson);
+    cJSON_Delete(res);
+}
 
 void    _texu_env_cmd_settext(texu_env *env, cJSON *req)
 {
@@ -382,6 +442,7 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         return;
     }
     /*reply cmd here*/
+    /*
     if (0 == strcmp("attach", cJSON_GetStringValue(cmd)))
     {
         _texu_env_cmd_attach(env);
@@ -390,9 +451,14 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     {
         _texu_env_cmd_detach(env);
     }
-    else if (0 == strcmp("sendmsg", cJSON_GetStringValue(cmd)))
+    else */
+    if (0 == strcmp("sendmsg", cJSON_GetStringValue(cmd)))
     {
-        _texu_env_cmd_sndmsg(env, req);
+        _texu_env_cmd_sendmsg(env, req);
+    }
+    else if (0 == strcmp("postmsg", cJSON_GetStringValue(cmd)))
+    {
+        _texu_env_cmd_postmsg(env, req);
     }
     else if (0 == strcmp("settext", cJSON_GetStringValue(cmd)))
     {
@@ -432,7 +498,7 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
 
     texu_bool _texu_env_read_tcl_input(texu_env *env, texu_env_msg *envmsg)
     {
-        struct timeval tv = { 1, 0 };
+        struct timeval tv = { 0, 5000 };
         int rc = 0;
         
         memset(envmsg, 0, sizeof(texu_env_msg));
@@ -526,25 +592,23 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     void
     _texu_env_init_cls(texu_env *env)
     {
-        texu_env_register_cls(env, TEXU_DESKTOP_CLASS, _TexuDesktopProc);
-        texu_env_register_cls(env, TEXU_MSGBOX_CLASS, _TexuMsgBoxProc);
-
-        texu_env_register_cls(env, TEXU_LABEL_CLASS, _TexuLabelProc);
-        texu_env_register_cls(env, TEXU_EDIT_CLASS, _TexuEditProc);
-        texu_env_register_cls(env, TEXU_LISTBOX_CLASS, _TexuListBoxProc);
+        texu_env_register_cls(env, TEXU_DESKTOP_CLASS,  _TexuDesktopProc);
+        texu_env_register_cls(env, TEXU_MSGBOX_CLASS,   _TexuMsgBoxProc);
+        /*controls*/
+        texu_env_register_cls(env, TEXU_LABEL_CLASS,    _TexuLabelProc);
+        texu_env_register_cls(env, TEXU_EDIT_CLASS,     _TexuEditProc);
+        texu_env_register_cls(env, TEXU_LISTBOX_CLASS,  _TexuListBoxProc);
         texu_env_register_cls(env, TEXU_COMBOBOX_CLASS, _TexuComboBoxProc);
         texu_env_register_cls(env, TEXU_LISTCTRL_CLASS, _TexuListCtrlProc);
         texu_env_register_cls(env, TEXU_TREECTRL_CLASS, _TexuTreeCtrlProc);
-        texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS, _TexuUpDownCtrlProc);
-        texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS, _TexuProgressBarProc);
-        texu_env_register_cls(env, TEXU_STATUSBAR_CLASS, _TexuStatusBarProc);
-        texu_env_register_cls(env, TEXU_PAGECTRL_CLASS, _TexuPageCtrlProc);
-        /*texu_env_register_cls(env, TEXU_TEXTCTRL_CLASS, _TexuTextCtrlProc);*/
-        texu_env_register_cls(env, TEXU_REBAR_CLASS, _TexuReBarProc);
-        
-
-        texu_env_register_cls(env, TEXU_MENU_CLASS, _TexuMenuProc);
-        texu_env_register_cls(env, TEXU_MENUWND_CLASS, _TexuMenuWndProc);
+        texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);
+        texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);
+        texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);
+        texu_env_register_cls(env, TEXU_PAGECTRL_CLASS,     _TexuPageCtrlProc);
+        texu_env_register_cls(env, TEXU_REBAR_CLASS,        _TexuReBarProc);
+        /*menu*/
+        texu_env_register_cls(env, TEXU_MENU_CLASS,     _TexuMenuProc);
+        texu_env_register_cls(env, TEXU_MENUWND_CLASS,  _TexuMenuWndProc);
     }
 
     FILE *
@@ -726,6 +790,9 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
             /* window frames */
             env->frames = texu_stack_new(TEXU_ENV_MAX_FRAMES + 1);
             texu_stack_push(env->frames, (texu_i64)env->desktop);
+            
+            /* msg ques */
+            env->msgques = texu_queue_new();
         }
         return env;
     }
@@ -743,6 +810,9 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
             texu_stack_del(env->frames);
             texu_wnd_del(env->desktop);
             texu_cio_release(env->cio);
+            
+            texu_queue_del(env->msgques);
+            
             free(env);
             env = 0;
         }
@@ -761,6 +831,8 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         texu_env_msg envmsg;
         texu_bool rb = TEXU_TRUE;
 #endif
+        struct texu_msg    *msg;
+
 
         while (!(env->exit))
         {
@@ -768,6 +840,18 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
             ctlpressed = 0;
             ch = -1;
             rb = TEXU_FALSE;
+            
+            /* if there are any posted msg*/
+            while (TEXU_FALSE == texu_queue_empty(env->msgques))
+            {
+                msg = (struct texu_msg*)texu_queue_first(env->msgques);
+                if (msg)
+                {
+                    texu_wnd_send_msg(msg->wnd, msg->msg, msg->param1, msg->param2);
+                    free(msg);
+                }
+                texu_queue_dequeue(env->msgques);
+            }
 
 #if USE_TCL_AUTOMATION
             rb = _texu_env_read_tcl_input(env, &envmsg);
@@ -1309,7 +1393,7 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         texu_wnd *activewnd = texu_wnd_get_activechild(wnd);
         texu_wnd *nextwnd = 0;
         texu_wnd *parent = texu_wnd_get_parent(wnd);
-        texu_wnd *desktop = texu_env_get_desktop(wnd->env);
+        texu_wnd *desktop = (wnd ? texu_env_get_desktop(wnd->env) : 0);
         texu_i32 y = 0;
         texu_i32 x = 0;
         texu_i32 width = 0;
@@ -1636,6 +1720,28 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         {
             texu_wnd_remove_child(parent, wnd);
         }
+    }
+
+    texu_i64
+    texu_wnd_post_msg(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+    {
+        texu_i64 rc = 0;
+        struct texu_msg* umsg = 0;
+
+        if (wnd && wnd->wndproc)
+        {
+            texu_env *env = wnd->env;
+            umsg = (struct texu_msg*)malloc(sizeof(struct texu_msg));
+            if (umsg)
+            {
+                umsg->wnd = wnd;
+                umsg->msg = msg;
+                umsg->param1 = param1;
+                umsg->param2 = param2;
+                texu_queue_enqueue(env->msgques, (texu_i64)umsg);
+            }
+        }
+        return rc;
     }
 
     texu_i64
