@@ -141,8 +141,9 @@ texu_wnd*         texu_wnd_is_window(texu_wnd*);
 texu_status       texu_wnd_add_keycmd(texu_wnd*, texu_i32, texu_ui32, texu_i32);
 texu_wnd_keycmd*  texu_wnd_find_keycmd(texu_wnd*, texu_i32, texu_i32);
 
-texu_i64          texu_wnd_send_msg(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          texu_wnd_send_msg(texu_wnd*, texu_ui32, texu_i64, texu_i64);  /*synchronous*/
 texu_i64          texu_wnd_invalidate(texu_wnd*);
+texu_i64          texu_wnd_post_msg(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 texu_wnd*         texu_wnd_get_frame(texu_wnd*);
 texu_ui32         texu_wnd_get_id(texu_wnd*);
