@@ -31,6 +31,15 @@ aui_sendmsg(
   Tcl_Obj *CONST  objv[]
 );
 
+/* Post message to the autoui app*/
+int
+aui_postmsg(
+  ClientData      cd,
+  Tcl_Interp*     interp,
+  int             objc,
+  Tcl_Obj *CONST  objv[]
+);
+
 /* set text to a window object in the autoui app*/
 int
 aui_settext(
