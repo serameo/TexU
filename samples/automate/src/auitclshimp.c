@@ -10,16 +10,47 @@
 #include "tcl.h"
 #include "texu.h"
 #include "texust.h"
+#include "texuconst.h"
 #include "auitclsh.h"
 
 /*global variables*/
 extern auitclsh_t *g_auitclsh_ptr;
 extern auitclsh_t g_auitclsh;
 
+
+
+struct msg_map
+{
+    const char  *msgtext;
+    texu_ui32   msgid;
+};
+struct msg_map a_msg_map[] = 
+{
+    { "TEXU_WM_CHAR",           TEXU_WM_CHAR },
+    { "TEXU_WM_ENABLE",         TEXU_WM_ENABLE },
+    { "TEXU_WM_SHOW",           TEXU_WM_SHOW },
+    { "TEXU_WM_COMMAND",        TEXU_WM_COMMAND }
+};
+#define MAX_MSG_MAP     (sizeof(a_msg_map) / sizeof(a_msg_map[0]))
+
 /*this is a helper function to request and get response to/from TexU server*/
 texu_i64    _auitclsh_request(int msgid, char* req, cJSON **res);
 texu_i64    _auitclsh_request_json(int msgid, cJSON *req, cJSON **res);
 char        *_auitclsh_get_minify(cJSON *json);
+texu_ui32   _auitclsh_getmsgid(const char *msgtext);
+
+texu_ui32   _auitclsh_getmsgid(const char *msgtext)
+{
+    texu_i32 i = 0;
+    for (i = 0; i < MAX_MSG_MAP; ++i)
+    {
+        if (0 == strcmp(msgtext, a_msg_map[i].msgtext))
+        {
+            return a_msg_map[i].msgid;
+        }
+    }
+    return 0;
+}
 
 char*
 _auitclsh_get_minify(cJSON *root)
@@ -56,7 +87,7 @@ texu_i64
 _auitclsh_request(int msgid, char* req, cJSON **res) 
 {
     texu_env_msg msg;
-    struct timeval tv = { 0, 5000 };
+    struct timeval tv = { 0, 2500 };
     int rc = 0;
     texu_i64 rescode = 0;   /* 0 - should be ok*/
     
@@ -141,22 +172,138 @@ aui_sendmsg(
     cJSON *parms = NULL;
     cJSON *res;
     texu_i64 rescode = 0;
+    char *wndmsg;
+    char *parm;
     
-    if (objc < 5)
+    if (objc < 2)
     {
         Tcl_AppendStringsToObj( Tcl_GetObjResult( interp ),
-            "shell> ", gblcmd, " ?i_wnd ?i_msg ?i_p1 ?i_p2", (char*)NULL );
+            "shell> ", gblcmd, " ?i_wnd ?i_msg [?i_p1 [?i_p2]]", (char*)NULL );
         return TCL_ERROR;
     }
     
-    Tcl_GetLongFromObj(interp, objv[1], &lwnd);
-    Tcl_GetLongFromObj(interp, objv[2], &lmsg);
-    Tcl_GetLongFromObj(interp, objv[3], &lp1);
-    Tcl_GetLongFromObj(interp, objv[4], &lp2);
+    /*Tcl_GetLongFromObj(interp, objv[1], &lwnd);*/
+    parm = Tcl_GetStringFromObj( objv[1], NULL );
+    lwnd = atoll(parm);
+    /*Tcl_GetLongFromObj(interp, objv[2], &lmsg);*/
+    wndmsg = Tcl_GetStringFromObj( objv[2], NULL );
+    lmsg = atol(wndmsg);
+    if (lmsg <= 0)
+    {
+        lmsg = _auitclsh_getmsgid(wndmsg);
+    }
+    
+    if (objc > 3)
+    {
+        /*Tcl_GetLongFromObj(interp, objv[3], &lp1);*/
+        parm = Tcl_GetStringFromObj( objv[3], NULL );
+        lp1 = atoll(parm);
+    }
+    else
+    {
+        lp1 = 0;
+    }
+    if (objc > 4)
+    {
+        /*Tcl_GetLongFromObj(interp, objv[4], &lp2);*/
+        parm = Tcl_GetStringFromObj( objv[4], NULL );
+        lp2 = atoll(parm);
+    }
+    else
+    {
+        lp2 = 0;
+    }
+
 
     /*first write: to get texu_env object */
     req = cJSON_CreateObject();
     cJSON_AddStringToObject(req, "cmd", "sendmsg"); /* req = {cmd:'sendmsg',parms:{wnd:%ld,msg:%ld,param1:%ld,param2:%ld}} */
+    parms= cJSON_CreateObject();
+    cJSON_AddNumberToObject(parms, "wnd", lwnd);
+    cJSON_AddNumberToObject(parms, "msg", lmsg);
+    cJSON_AddNumberToObject(parms, "param1", lp1);
+    cJSON_AddNumberToObject(parms, "param2", lp2);
+    cJSON_AddItemToObject(req, "parms", parms);
+
+    rescode = _auitclsh_request_json(auitclsh->msgid, req, &res); /*synchronous request and respond*/
+    if (rescode != 0)
+    {
+    }
+    
+    cJSON_Delete(res);
+    cJSON_Delete(req);
+    return (rescode != 0 ? TCL_ERROR : TCL_OK);
+}
+
+
+int
+aui_postmsg(
+  ClientData      cd,
+  Tcl_Interp*     interp,
+  int             objc,
+  Tcl_Obj *CONST  objv[]
+)
+{
+    char *gblcmd  = Tcl_GetStringFromObj( objv[0], NULL );
+    auitclsh_t *auitclsh = (auitclsh_t*)cd;
+    texu_i64 lwnd = 0;  /*control id of the current window*/
+    texu_i64 lmsg = 0;
+    texu_i64 lp1 = 0;
+    texu_i64 lp2 = 0;
+    
+    texu_env_msg msg;
+    cJSON *req = NULL;
+    cJSON *parms = NULL;
+    cJSON *res;
+    texu_i64 rescode = 0;
+    
+    char* wndmsg;
+    char* parm;
+    
+    if (objc < 2)
+    {
+        Tcl_AppendStringsToObj( Tcl_GetObjResult( interp ),
+            "shell> ", gblcmd, " ?i_wnd ?i_msg [?i_p1 [?i_p2]]", (char*)NULL );
+        return TCL_ERROR;
+    }
+    
+    /*Tcl_GetLongFromObj(interp, objv[1], &lwnd);*/
+    parm = Tcl_GetStringFromObj( objv[1], NULL );
+    lwnd = atoll(parm);
+/*    Tcl_GetLongFromObj(interp, objv[2], &lmsg);*/
+    wndmsg = Tcl_GetStringFromObj( objv[2], NULL );
+    lmsg = atol(wndmsg);
+    if (lmsg <= 0)
+    {
+        lmsg = _auitclsh_getmsgid(wndmsg);
+    }
+    
+        if (objc > 3)
+    {
+        /*Tcl_GetLongFromObj(interp, objv[3], &lp1);*/
+        parm = Tcl_GetStringFromObj( objv[3], NULL );
+        lp1 = atoll(parm);
+    }
+    else
+    {
+        lp1 = 0;
+    }
+    if (objc > 4)
+    {
+        /*Tcl_GetLongFromObj(interp, objv[4], &lp2);*/
+        parm = Tcl_GetStringFromObj( objv[4], NULL );
+        lp2 = atoll(parm);
+    }
+
+    else
+    {
+        lp2 = 0;
+    }
+    
+
+    /*first write: to get texu_env object */
+    req = cJSON_CreateObject();
+    cJSON_AddStringToObject(req, "cmd", "postmsg"); /* req = {cmd:'postmsg',parms:{wnd:%ld,msg:%ld,param1:%ld,param2:%ld}} */
     parms= cJSON_CreateObject();
     cJSON_AddNumberToObject(parms, "wnd", lwnd);
     cJSON_AddNumberToObject(parms, "msg", lmsg);
@@ -185,7 +332,7 @@ aui_settext(
     char *gblcmd  = Tcl_GetStringFromObj( objv[0], NULL );
     auitclsh_t *auitclsh = (auitclsh_t*)cd;
     texu_i64 lwnd = 0;  /*control id of the current window*/
-    texu_char *text;
+    char *text;
     int len = 256;
     
     texu_env_msg msg;
@@ -194,6 +341,7 @@ aui_settext(
     cJSON *res;
     texu_i64 rescode = 0;
     
+    char *parm;
     if (objc < 2)
     {
         Tcl_AppendStringsToObj( Tcl_GetObjResult( interp ),
@@ -201,10 +349,18 @@ aui_settext(
         return TCL_ERROR;
     }
     
-    Tcl_GetLongFromObj(interp, objv[1], &lwnd);
+/*    Tcl_GetLongFromObj(interp, objv[1], &lwnd);*/
+    parm = Tcl_GetStringFromObj( objv[1], NULL );
+    lwnd = atoll(parm);
 
-    text = Tcl_GetStringFromObj(objv[2], &len);
-    
+    if (objc > 2)
+    {
+        text = Tcl_GetStringFromObj(objv[2], NULL);
+    }
+    else
+    {
+        text = "";
+    }
     /*first write: to get texu_env object */
     req = cJSON_CreateObject();
     cJSON_AddStringToObject(req, "cmd", "settext"); /* req = {cmd:'settext',parms:{wnd:%ld,text:%s}} */
@@ -243,6 +399,8 @@ aui_gettext(
     cJSON *res;
     texu_i64 rescode = 0;
     
+    char *parm;
+    
     if (objc < 2)
     {
         Tcl_AppendStringsToObj( Tcl_GetObjResult( interp ),
@@ -250,7 +408,9 @@ aui_gettext(
         return TCL_ERROR;
     }
     
-    Tcl_GetLongFromObj(interp, objv[1], &lwnd);
+/*    Tcl_GetLongFromObj(interp, objv[1], &lwnd);*/
+    parm = Tcl_GetStringFromObj( objv[1], NULL );
+    lwnd = atoll(parm);
     
     /*first write: to get texu_env object */
     req = cJSON_CreateObject();
@@ -302,6 +462,12 @@ auitclsh_init(
     Tcl_CreateObjCommand( interp,
         "aui_sendmsg",
         aui_sendmsg,
+        ( ClientData* )&g_auitclsh,
+        ( Tcl_CmdDeleteProc* )NULL
+        );
+    Tcl_CreateObjCommand( interp,
+        "aui_postmsg",
+        aui_postmsg,
         ( ClientData* )&g_auitclsh,
         ( Tcl_CmdDeleteProc* )NULL
         );
