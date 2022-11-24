@@ -8,16 +8,11 @@
 
 
 #define ID_LOGIN                (TEXU_WM_USER +  1)
-#define ID_DISCONNECT           (TEXU_WM_USER +  2)
-#define ID_DISCONNECTALL        (TEXU_WM_USER +  3)
-#define ID_EXIT                 (TEXU_WM_USER +  4)
-#define ID_HELP                 (TEXU_WM_USER +  5)
-#define IDC_PAGECTRL1           (TEXU_WM_USER +  6)
-#define IDC_PAGE1               (TEXU_WM_USER +  7)
-#define IDC_USER                (TEXU_WM_USER +  8)
-#define IDC_PASSWD              (TEXU_WM_USER +  9)
-#define IDC_TOTALOUTPACKS       (TEXU_WM_USER + 10)
-#define IDC_INFO                (TEXU_WM_USER + 11)
+#define ID_EXIT                 (TEXU_WM_USER +  2)
+#define ID_HELP                 (TEXU_WM_USER +  3)
+#define IDC_USER                (TEXU_WM_USER +  4)
+#define IDC_PASSWD              (TEXU_WM_USER +  5)
+#define IDC_INFO                (TEXU_WM_USER +  6)
 
 #define IDC_LABEL1              (TEXU_WM_USER + 101)
 #define IDC_LABEL2              (TEXU_WM_USER + 102)
