@@ -34,7 +34,6 @@ TEXU_SOURCES = $(TEXU_SRC_DIR)/texulib.c \
                $(TEXU_SRC_DIR)/texuproc.c \
                $(TEXU_SRC_DIR)/texuctrl.c \
                $(TEXU_SRC_DIR)/texumenu.c \
-               $(TEXU_SRC_DIR)/texufrm.c \
                $(TEXU_SRC_DIR)/texu.c
 
 
@@ -50,8 +49,8 @@ TEST_OBJECTS = $(TEST_SOURCES:.c=.o)
 TESTLIB_SOURCES = $(TEST_SRC_DIR)/test_texulib.c
 TESTLIB_OBJECTS = $(TESTLIB_SOURCES:.c=.o)
 
-DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__LINUX__ -DUSE_TCL_AUTOMATION
-#DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__LINUX__ 
+DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__LINUX__ -DTEXU_THREAD_SAFE
+#DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__LINUX__  -DTEXU_THREAD_SAFE
 
 %.o: %.c
 	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
