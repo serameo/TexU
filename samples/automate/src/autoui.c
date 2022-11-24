@@ -36,7 +36,11 @@ int main(int argc, char* argv[])
     texu_wnd *wnd = 0;
     
     /*TexuStartup(25, 80, argv[0]);*/
+#ifdef USE_TCL_AUTOMATION
     TexuStartup(25, 80, "autoui");
+#else
+    TexuStartup(25, 80);
+#endif
    
     /*register class*/
     rc = TexuRegisterClass(

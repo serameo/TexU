@@ -8,17 +8,20 @@ texu_i32 _login_validate_passwd(texu_wnd *wnd, texu_char* sPasswd);
 
 texu_wnd_template2 templ_login2[] =
 {
-  { "User Id  :",               TEXU_LABEL_CLASS,       TEXU_WS_RIGHT,  0, 10, 27,  1,  10, IDC_LABEL4, 0 },
+  { "User Id  :",               TEXU_LABEL_CLASS,       TEXU_WS_RIGHT,  0, 10, 27,  1,  10, IDC_LABEL1, 0 },
   { "",                         TEXU_EDIT_CLASS,        TEXU_ES_LEFT|TEXU_ES_UPPERCASE,
-                                                                        0, 10, 38,  1,  16, IDC_USER,   /*10008*/
-                                                                        _login_validate_user },
-  { "Password :",               TEXU_LABEL_CLASS,       TEXU_ES_LEFT,   0, 12, 27,  1,  10, IDC_LABEL5, 0 },
+                                                                        0, 10, 38,  1,  16, IDC_USER,   /*10004*/
+                                                                        0 },
+  { "Password :",               TEXU_LABEL_CLASS,       TEXU_ES_LEFT,   0, 12, 27,  1,  10, IDC_LABEL2, 0 },
   { "",                         TEXU_EDIT_CLASS,        TEXU_ES_LEFT|TEXU_ES_UPPERCASE|TEXU_ES_PASSWORD|
                                                         TEXU_ES_AUTOHSCROLL,
-                                                                        0, 12, 38,  1,  16, IDC_PASSWD, /*10009*/
-                                                                        _login_validate_passwd },
-
-  { "",                         TEXU_LABEL_CLASS,       TEXU_WS_CENTER, 0, 20,  1,  1,  78, IDC_INFO,   /* 10011*/
+                                                                        0, 12, 38,  1,  16, IDC_PASSWD, /*10005*/
+                                                                        0 },
+  { "Login",                    TEXU_BUTTON_CLASS,      TEXU_WS_CENTER, 0, 16, 30,  1,  10, ID_LOGIN,   /* 10001*/
+                                                                        0 },
+  { "Cancel",                   TEXU_BUTTON_CLASS,      TEXU_WS_CENTER, 0, 16, 42,  1,  10, ID_EXIT,    /* 10002*/
+                                                                        0 },
+  { "",                         TEXU_LABEL_CLASS,       TEXU_WS_CENTER, 0, 20,  1,  1,  78, IDC_INFO,   /* 10006*/
                                                                         0 },
   /*last control is nil*/
   { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
@@ -53,7 +56,6 @@ texu_i32 _login_validate_passwd(texu_wnd *wnd, texu_char* sPasswd)
         TexuSetWindowText(edit, "Invalid user or password");
     }
     
-    
     edit = TexuGetWindowItem(parent, IDC_USER);
     TexuSendMessage(edit, TEXU_WM_SETFOCUS, 0, 0);
     return TEXU_ERROR;
@@ -67,6 +69,11 @@ void Login_OnLogin(texu_wnd *wnd)
     
     TexuGetWindowText(edit, passwd, TEXU_MAX_WNDTEXT);
     rc = _login_validate_passwd(edit, passwd);
+}
+
+void Login_OnExit(texu_wnd *wnd)
+{
+    TexuExit();
 }
 
 void Login_OnPaint(texu_wnd *wnd, texu_cio *dc)
@@ -88,13 +95,27 @@ texu_i64 Login_WndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 p
         {
             break;
         }
-        case TEXU_WM_COMMAND:   /* 12 */
+        case TEXU_WM_NOTIFY:    /* enter the next wnd */
+        {
+            texu_wnd_notify *notify = (texu_wnd_notify*)param1;
+            if (TEXU_WN_GOFIRSTCHILD == notify->code)
+            {
+                Login_OnLogin(wnd);
+            }
+            break;
+        }
+        case TEXU_WM_COMMAND:   /* 12 *//* support Tcl script*/
         {
             switch (param1)
             {
                 case ID_LOGIN:  /* 10001 */
                 {
                     Login_OnLogin(wnd);
+                    break;
+                }
+                case ID_EXIT:
+                {
+                    Login_OnExit(wnd);
                     break;
                 }
             }
@@ -119,6 +140,6 @@ texu_i64 Login_WndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 p
             return TEXU_OK;
         }
     }
-    return TexuDefWndProc(wnd, msg, param1, param2);
+    return TexuFrameWndProc(wnd, msg, param1, param2);
 }
 

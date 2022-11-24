@@ -29,7 +29,8 @@ struct msg_map a_msg_map[] =
     { "TEXU_WM_CHAR",           TEXU_WM_CHAR },
     { "TEXU_WM_ENABLE",         TEXU_WM_ENABLE },
     { "TEXU_WM_SHOW",           TEXU_WM_SHOW },
-    { "TEXU_WM_COMMAND",        TEXU_WM_COMMAND }
+    { "TEXU_WM_COMMAND",        TEXU_WM_COMMAND },
+    { "TEXU_BM_PUSH",           TEXU_BM_PUSH },
 };
 #define MAX_MSG_MAP     (sizeof(a_msg_map) / sizeof(a_msg_map[0]))
 
