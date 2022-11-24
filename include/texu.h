@@ -134,6 +134,14 @@ TexuSendMessage(
   texu_i64      param2
 );
 
+texu_i64
+TexuPostMessage(
+  texu_wnd*     wnd,
+  texu_ui32     msg,
+  texu_i64      param1,
+  texu_i64      param2
+);
+
 texu_wnd*
 TexuGetWindowItem(
   texu_wnd*     wnd,
@@ -211,6 +219,6 @@ texu_i32            TexuDrawHRects(texu_cio* cio, texu_rect* rect, texu_i32* wid
 texu_i32            TexuDrawVRects(texu_cio* cio, texu_rect* rect, texu_i32* heights, texu_i32 nheight, texu_i32 attrs);
 texu_i32            TexuDrawFrame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_i32 attrs);
 
-
+texu_i64            TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
 
 #endif /*_TEXU_H_*/

@@ -75,11 +75,14 @@ enum
   TEXU_COLOR_REBAR,
   TEXU_COLOR_REBAR_DISABLED,
   TEXU_COLOR_REBAR_SELECTED,
+  TEXU_COLOR_BUTTON,
+  TEXU_COLOR_BUTTON_DISABLED,
   TEXU_COLOR_DEFAULT
 };
 
 typedef texu_i64  (*texu_wndproc)(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_i64          TexuDefWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_i64          TexuFrameWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 
 
 #ifdef USE_TCL_AUTOMATION
