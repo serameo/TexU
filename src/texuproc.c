@@ -636,6 +636,138 @@ extern "C"
 
     /*
     #-------------------------------------------------------------------------------
+    # TexU button
+    #
+             1         2         3         4         5         6         7         8
+    12345678901234567890123456789012345678901234567890123456789012345678901234567890
+    */
+    struct texu_btnwnd
+    {
+        texu_i32    state;  /*focus = 1, normal = 0*/
+    };
+    typedef struct texu_btnwnd texu_btnwnd;
+
+    void _TexuButtonProc_OnPaint(texu_wnd *, texu_cio *);
+    texu_status _TexuButtonProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
+    void _TexuButtonProc_OnPush(texu_wnd *wnd);
+
+    void
+    _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
+    {
+        texu_char   buf[TEXU_MAX_WNDTEXT + 1];
+        texu_char   text[TEXU_MAX_WNDTEXT + 1];
+        texu_i32    y = texu_wnd_get_y(wnd);
+        texu_i32    x = texu_wnd_get_x(wnd);
+        texu_i32    width = texu_wnd_get_width(wnd);
+        texu_env    *env = texu_wnd_get_env(wnd);
+        texu_i32    normcolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON);
+        texu_i32    discolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_DISABLED);
+        texu_ui32   style = texu_wnd_get_style(wnd);
+        texu_i32    color = TEXU_CIO_COLOR_CYAN_BLACK;
+        size_t      len = 0;
+        texu_btnwnd *btnwnd = (texu_btnwnd*)texu_wnd_get_userdata(wnd);
+        
+        if (!texu_wnd_is_visible(wnd))
+        {
+            return;
+        }
+
+        texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
+        texu_printf_alignment(buf, text, width, TEXU_ALIGN_CENTER);
+
+        texu_wnd_get_color(wnd, &normcolor, &discolor);
+        color = normcolor;
+        if (!(texu_wnd_is_enable(wnd)))
+        {
+            color = discolor;
+        }
+        if (1 == btnwnd->state)
+        {
+            len = strlen(buf);
+            buf[0] = '[';
+            buf[len-1] = ']';
+        }
+        texu_cio_putstr_attr(cio, y, x, buf,
+                             texu_cio_get_color(cio, color));
+
+    }
+
+    texu_status
+    _TexuButtonProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
+    {
+        texu_env *env = texu_wnd_get_env(wnd);
+        texu_wnd_set_color(wnd,
+                           texu_env_get_syscolor(env, TEXU_COLOR_BUTTON),
+                           texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_DISABLED));
+        texu_btnwnd *btnwnd = (texu_btnwnd*)malloc(sizeof(texu_btnwnd));
+        if (!btnwnd)
+        {
+            return TEXU_ERROR;
+        }
+        btnwnd->state = 0;  /*normal*/
+        texu_wnd_set_userdata(wnd, (texu_i64)btnwnd);
+        
+        return TEXU_OK;
+    }
+    
+    void _TexuButtonProc_OnPush(texu_wnd *wnd)
+    {
+        texu_wnd *parent = texu_wnd_get_parent(wnd);
+        texu_wnd_send_msg(parent, TEXU_WM_COMMAND, texu_wnd_get_id(wnd), 0);
+    }
+
+    texu_i64
+    _TexuButtonProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+    {
+        switch (msg)
+        {
+            case TEXU_WM_CREATE:
+                return _TexuButtonProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+
+            case TEXU_WM_PAINT:
+                _TexuButtonProc_OnPaint(wnd, (texu_cio *)param1);
+                return 0;
+                
+            case TEXU_WM_SETFOCUS:
+            {
+                texu_btnwnd *btnwnd = (texu_btnwnd*)texu_wnd_get_userdata(wnd);
+                btnwnd->state = 1; /*focus*/
+                _TexuWndProc_Notify(wnd, TEXU_BN_SETFOCUS);
+                texu_wnd_invalidate(wnd);
+                break;
+            }
+            
+            case TEXU_WM_KILLFOCUS:
+            {
+                texu_btnwnd *btnwnd = (texu_btnwnd*)texu_wnd_get_userdata(wnd);
+                btnwnd->state = 0; /*normal*/
+                _TexuWndProc_Notify(wnd, TEXU_BN_SETFOCUS);
+                texu_wnd_invalidate(wnd);
+                break;
+            }
+            
+            case TEXU_WM_CHAR:
+            {
+                texu_char ch = (texu_char)param1;
+                if (' ' == ch) /*space bar*/
+                {
+                    _TexuButtonProc_OnPush(wnd);
+                    return 0;
+                }
+                break;
+            }
+            
+            case TEXU_BM_PUSH:
+            {
+                _TexuButtonProc_OnPush(wnd);
+                break;
+            }
+        }
+        return TexuDefWndProc(wnd, msg, param1, param2);
+    }
+
+    /*
+    #-------------------------------------------------------------------------------
     # TexU edit
     #
              1         2         3         4         5         6         7         8

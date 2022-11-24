@@ -438,6 +438,16 @@ extern "C"
         return texu_wnd_send_msg(wnd, msg, param1, param2);
     }
 
+    texu_i64
+    TexuPostMessage(
+        texu_wnd *wnd,
+        texu_ui32 msg,
+        texu_i64 param1,
+        texu_i64 param2)
+    {
+        return texu_wnd_post_msg(wnd, msg, param1, param2);
+    }
+
     texu_wnd *
     TexuGetWindowItem(
         texu_wnd *wnd,
@@ -477,6 +487,17 @@ extern "C"
         texu_i32 discolor)
     {
         texu_wnd_set_color(wnd, color, discolor);
+    }
+    
+    texu_i64
+    TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
+    {
+        texu_i64 rc = TexuSendMessage(prevwnd, TEXU_WM_KILLFOCUS, 0, 0);
+        if (rc != TEXU_OK)            
+        {
+            return rc;
+        }
+        return TexuSendMessage(wnd, TEXU_WM_SETFOCUS, (texu_i64)prevwnd, 0);
     }
 
     void

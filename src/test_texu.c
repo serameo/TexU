@@ -730,7 +730,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
     TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)3, (texu_i64)TEXU_FALSE);
     TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)5, (texu_i64)TEXU_FALSE);
     TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)7, (texu_i64)TEXU_FALSE);
-
+#if 0
     child = TexuCreateWindow(
         "F1 - Help",
         TEXU_LABEL_CLASS,
@@ -745,6 +745,24 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         0               /* user data */
     );
     TexuSetColor(child, TEXU_CIO_COLOR_YELLOW_BLUE, TEXU_CIO_COLOR_YELLOW_BLUE);
+    
+#else
+    child = TexuCreateWindow(
+        "F1 - Help",
+        TEXU_BUTTON_CLASS,
+        TEXU_WS_CENTER, /* style*/
+        0,              /* exstyle*/
+        starty + 22,    /* y */
+        0,              /* x */
+        1,              /* height */
+        16,             /* width */
+        wnd,            /* parent */
+        10,             /* id */
+        0               /* user data */
+    );
+#endif
+
+#if 0
     child = TexuCreateWindow(
         "F2 - Add",
         TEXU_LABEL_CLASS,
@@ -759,7 +777,24 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         0               /* user data */
     );
     TexuSetColor(child, TEXU_CIO_COLOR_YELLOW_BLUE, TEXU_CIO_COLOR_YELLOW_BLUE);
+    
+#else
+    child = TexuCreateWindow(
+        "F2 - Add",
+        TEXU_BUTTON_CLASS,
+        TEXU_WS_CENTER, /* style*/
+        0,              /* exstyle*/
+        starty + 22,    /* y */
+        20,             /* x */
+        1,              /* height */
+        16,             /* width */
+        wnd,            /* parent */
+        11,             /* id */
+        0               /* user data */
+    );
+#endif
 
+#if 0
     child = TexuCreateWindow(
         "F3 - Exit",
         TEXU_LABEL_CLASS,
@@ -774,6 +809,23 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         0               /* user data */
     );
     TexuSetColor(child, TEXU_CIO_COLOR_WHITE_RED, TEXU_CIO_COLOR_WHITE_RED);
+#else
+    child = TexuCreateWindow(
+        "F3 - Exit",
+        TEXU_BUTTON_CLASS,
+        TEXU_WS_CENTER, /* style*/
+        0,              /* exstyle*/
+        starty + 22,    /* y */
+        40,             /* x */
+        1,              /* height */
+        16,             /* width */
+        wnd,            /* parent */
+        13,             /* id */
+        0               /* user data */
+    );
+    /*TexuSetColor(child, TEXU_CIO_COLOR_WHITE_RED, TEXU_CIO_COLOR_WHITE_RED);*/
+    TexuEnableWindow(child, TEXU_FALSE);
+#endif
 
     child = TexuCreateWindow(
         "Alt + X - Exit",
@@ -1841,49 +1893,49 @@ MyWndProc5(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
     switch (msg)
     {
-    case TEXU_WM_COMMAND:
-    {
-        switch (param1)
+        case TEXU_WM_COMMAND:
         {
-        case ID_HELP:
-            _MyWndProc5_OnHelp(wnd);
-            break;
-        case ID_DELETE:
-            _MyWndProc5_OnExit(wnd);
+            switch (param1)
+            {
+            case ID_HELP:
+                _MyWndProc5_OnHelp(wnd);
+                break;
+            case ID_DELETE:
+                _MyWndProc5_OnExit(wnd);
+                break;
+            }
             break;
         }
-        break;
-    }
-    case TEXU_WM_CREATE:
-    {
-        texu_wnd *child = TexuCreateWindow(
-            "",
-            TEXU_PAGECTRL_CLASS,
-            0,             /* style*/
-            0,             /* exstyle*/
-            0,             /* y */
-            0,             /* x */
-            25,            /* height */
-            100,           /* width */
-            wnd,           /* parent */
-            IDC_PAGECTRL1, /* id */
-            0              /* user data */
-        );
-        /*
-        TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass5_Page1, IDC_PAGE1);
-        TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass5_Page2, IDC_PAGE2);
-        */
-        TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass, IDC_PAGE1);
-        TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass2, IDC_PAGE2);
-        TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass3, IDC_PAGE3);
-        TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass4, IDC_PAGE4);
+        case TEXU_WM_CREATE:
+        {
+            texu_wnd *child = TexuCreateWindow(
+                "",
+                TEXU_PAGECTRL_CLASS,
+                0,             /* style*/
+                0,             /* exstyle*/
+                0,             /* y */
+                0,             /* x */
+                25,            /* height */
+                100,           /* width */
+                wnd,           /* parent */
+                IDC_PAGECTRL1, /* id */
+                0              /* user data */
+            );
+            /*
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass5_Page1, IDC_PAGE1);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass5_Page2, IDC_PAGE2);
+            */
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass,  IDC_PAGE1);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass2, IDC_PAGE2);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass3, IDC_PAGE3);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass4, IDC_PAGE4);
 
-        TexuAddHotKey(wnd, KEY_F(1), ID_HELP, 0);
-        TexuAddHotKey(wnd, KEY_F(3), ID_DELETE, 0);
-        TexuAddHotKey(wnd, 'x', ID_DELETE, 1);
-        /*TexuAddHotKey(wnd, 'X', ID_DELETE, 1);*/
-        return TEXU_OK;
-    }
+            TexuAddHotKey(wnd, KEY_F(1), ID_HELP, 0);
+            TexuAddHotKey(wnd, KEY_F(3), ID_DELETE, 0);
+            TexuAddHotKey(wnd, 'x', ID_DELETE, 1);
+            /*TexuAddHotKey(wnd, 'X', ID_DELETE, 1);*/
+            return TEXU_OK;
+        }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }

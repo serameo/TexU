@@ -5156,10 +5156,6 @@ extern "C"
         texu_cio *cio = 0;
         texu_status rc = TEXU_OK;
         texu_wnd* qnextwnd = 0;
-        /*
-        texu_wnd* lastactive = pgctl->lastactive;
-        texu_wnd *firstactive = pgctl->firstactive;
-        */
 
         if ((TEXU_KEYPRESSED_CTRL & alt) && (('k' == ch) || ('K' == ch)))
         {
@@ -6277,7 +6273,6 @@ extern "C"
                         nextband == _TexuReBarProc_GetNextActiveBand(rbwnd, rbwnd->lastvisibleband))
                     {
                         /* find the best first visible */
-                        /*rbwnd->firstvisibleband = _TexuReBarProc_GetNextActiveBand(rbwnd, rbwnd->firstvisibleband);*/
                         rbwnd->firstvisibleband = _TexuListCtrlProc_GetBestFirstBand(wnd, nextband);
                         texu_wnd_invalidate(wnd);
                     }
