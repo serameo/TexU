@@ -258,23 +258,19 @@ void    _texu_env_cmd_sendmsg(texu_env *env, cJSON *req)
 
 void    _texu_env_cmd_postmsg(texu_env *env, cJSON *req)
 {
-    char *resjson = NULL;
-    cJSON *res = cJSON_CreateObject();
     texu_i64 lwnd = 0;
     texu_i32 lmsg = 0;
     texu_i64 lparam1 = 0;
     texu_i64 lparam2 = 0;
     texu_wnd *wnd = texu_env_top_wnd(env);
     texu_wnd *child = 0;
-    texu_i64 rc = 0;
 
     cJSON *parms = cJSON_GetObjectItem(req, "parms");
     cJSON *val = 0;
     
     if (!parms)
     {
-        cJSON_AddNumberToObject(res, "code", -1);
-        cJSON_AddStringToObject(res, "errmsg", "no parameters");
+        return;
     }
     else
     {
@@ -298,36 +294,23 @@ void    _texu_env_cmd_postmsg(texu_env *env, cJSON *req)
         {
             child = texu_wnd_find_child(wnd, lwnd);
         }
-        rc = texu_wnd_post_msg(child, lmsg, lparam1, lparam2);
-
-        cJSON_AddNumberToObject(res, "code", 0);
-        cJSON_AddNumberToObject(res, "rescode", rc);
+        texu_wnd_post_msg(child, lmsg, lparam1, lparam2);
     }
-    
-    resjson = _texu_env_get_minify(res);
-    _texu_env_reply_tcl_output(env, resjson);
-    
-    free(resjson);
-    cJSON_Delete(res);
 }
 
 void    _texu_env_cmd_settext(texu_env *env, cJSON *req)
 {
-    char *resjson = NULL;
-    cJSON *res = cJSON_CreateObject();
     texu_i64 lwnd = 0;
     texu_char *text;
     texu_wnd *wnd = texu_env_top_wnd(env);
     texu_wnd *child = 0;
-    texu_i64 rc = 0;
 
     cJSON *parms = cJSON_GetObjectItem(req, "parms");
     cJSON *val = 0;
     
     if (!parms)
     {
-        cJSON_AddNumberToObject(res, "code", -1);
-        cJSON_AddStringToObject(res, "errmsg", "no parameters");
+        return;
     }
     else
     {
@@ -346,16 +329,7 @@ void    _texu_env_cmd_settext(texu_env *env, cJSON *req)
             child = texu_wnd_find_child(wnd, lwnd);
         }
         texu_wnd_set_text(child, text);
-
-        cJSON_AddNumberToObject(res, "code", 0);
-        cJSON_AddNumberToObject(res, "rescode", rc);
     }
-    
-    resjson = _texu_env_get_minify(res);
-    _texu_env_reply_tcl_output(env, resjson);
-    
-    free(resjson);
-    cJSON_Delete(res);
 }
 
 
@@ -367,9 +341,8 @@ void    _texu_env_cmd_gettext(texu_env *env, cJSON *req)
     texu_char text[256];
     texu_wnd *wnd = texu_env_top_wnd(env);
     texu_wnd *child = 0;
-    texu_i64 rc = 0;
     texu_ui32 style = 0;
-    texu_char* clsname;
+    const texu_char* clsname = "";
 
     cJSON *parms = cJSON_GetObjectItem(req, "parms");
     cJSON *val = 0;
@@ -392,18 +365,24 @@ void    _texu_env_cmd_gettext(texu_env *env, cJSON *req)
         {
             child = texu_wnd_find_child(wnd, lwnd);
         }
-        rc = texu_wnd_get_text(child, text, 256);
+        texu_wnd_get_text(child, text, 256);
         style = texu_wnd_get_style(child);
         clsname = texu_wnd_get_clsname(child);
         
-        if (0 == strcmp(clsname, TEXU_EDIT_CLASS) 
-            && (style & TEXU_ES_PASSWORD))
+        cJSON_AddNumberToObject(res, "code", 0);
+        if (child && clsname &&
+            (0 == strcmp(clsname, TEXU_EDIT_CLASS) 
+            && (style & TEXU_ES_PASSWORD)))
         {
             /* DO NOT SHOW THE PASSWORD BETWEEN INTER PROCESS COMMUNICATION */
             strcpy(text, "********");
         }
+        else if (!child || !clsname)
+        {
+            strcpy(text, "TEXU_ERROR: NOT_FOUND_WINDOW");
+            cJSON_AddNumberToObject(res, "code", -1);
+        }
 
-        cJSON_AddNumberToObject(res, "code", 0);
         cJSON_AddStringToObject(res, "text", text);
     }
     
@@ -421,7 +400,6 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     cJSON *cmd = NULL;
     char *resjson = NULL;
     cJSON *res = NULL;
-    cJSON *reply = NULL;
     
     if (!req)
     {
@@ -443,16 +421,6 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         return;
     }
     /*reply cmd here*/
-    /*
-    if (0 == strcmp("attach", cJSON_GetStringValue(cmd)))
-    {
-        _texu_env_cmd_attach(env);
-    }
-    else if (0 == strcmp("detach", cJSON_GetStringValue(cmd)))
-    {
-        _texu_env_cmd_detach(env);
-    }
-    else */
     if (0 == strcmp("sendmsg", cJSON_GetStringValue(cmd)))
     {
         _texu_env_cmd_sendmsg(env, req);
@@ -489,12 +457,14 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     void
     _texu_env_reply_tcl_output(texu_env *env, texu_char* json)
     {
-        int rc = 0;
         texu_env_msg envmsg;
+        struct timeval tv = { 0, 1500 };
         memset(&envmsg, 0, sizeof(texu_env_msg));
         envmsg.type = TEXU_ENV_MSGTYPE_RESPONSE; /* msg type = 2 (response)*/
         strcpy(envmsg.json, json);
-        rc = msgsnd(env->msgid, &envmsg, sizeof(texu_env_msg), 0);
+        msgsnd(env->msgid, &envmsg, sizeof(texu_env_msg), 0);
+        /*make a little bit delay*/
+        select(0, 0, 0, 0, &tv);
     }
 
     texu_bool _texu_env_read_tcl_input(texu_env *env, texu_env_msg *envmsg)
@@ -825,24 +795,22 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     texu_status
     texu_env_run(texu_env *env)
     {
-        texu_i32 ch = 0;
-        texu_i32 ch2 = 0;
-        texu_wnd *activewnd = 0;
-        texu_i32 altpressed = 0;
-        texu_i32 ctlpressed = 0;
-        texu_char *keypressed;
 #if USE_TCL_AUTOMATION
         texu_env_msg envmsg;
         texu_bool rb = TEXU_TRUE;
+#else
+        texu_i32 ch = 0;
+        texu_i32 ch2 = 0;
+        texu_i32 altpressed = 0;
+        texu_i32 ctlpressed = 0;
+        texu_char *keypressed = 0;
 #endif
         struct texu_msg    *msg;
+        texu_wnd *activewnd = 0;
 
 
         while (!(env->exit))
         {
-            altpressed = 0;
-            ctlpressed = 0;
-            ch = -1;
             
             /* if there are any posted msg*/
             while (TEXU_FALSE == texu_queue_empty(env->msgques))
@@ -876,7 +844,9 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
                 }
                 texu_wnd_invalidate(activewnd);
             }
-#else /*USE_TCL_AUTOMATION*/
+#else /*not USE_TCL_AUTOMATION*/
+            altpressed = 0;
+            ctlpressed = 0;
             ch = texu_cio_getch(env->cio);
             if (-1 == ch && env->frames)
             {
@@ -938,6 +908,17 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
                                   (texu_i64)(altpressed | ctlpressed));
             }
 #endif /*#else NOT USE_TCL_AUTOMATION*/
+        }
+        /* if there are any posted msg*/
+        while (TEXU_FALSE == texu_queue_empty(env->msgques))
+        {
+            msg = (struct texu_msg*)texu_queue_first(env->msgques);
+            if (msg)
+            {
+                texu_wnd_send_msg(msg->wnd, msg->msg, msg->param1, msg->param2);
+                free(msg);
+            }
+            texu_queue_dequeue(env->msgques);
         }
 
         return TEXU_OK;
@@ -1119,6 +1100,10 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     _TexuDefWndProc_OnSetMenu(texu_wnd *wnd, texu_menu *menu)
     {
         texu_menu *oldmenu = wnd->menu;
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return oldmenu;
+        }
         wnd->menu = menu;
         return oldmenu;
     }
@@ -1226,6 +1211,10 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     void
     _TexuDefWndProc_OnNotify(texu_wnd *wnd, texu_wnd_notify *notify)
     {
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
     }
 
     texu_i64
@@ -1324,7 +1313,12 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         texu_i32 x = 0;
         texu_i32 width = 0;
         texu_cio *cio = 0;
-
+        /*
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
+*/
         if (text && textlen > 0)
         {
             strcpy(wnd->text, text);
@@ -1362,7 +1356,7 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     _TexuDefWndProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
     {
         texu_wnd *parent = texu_wnd_get_parent(wnd);
-        if (parent && nextwnd && nextwnd->enable && nextwnd->visible)
+        if (parent && nextwnd && texu_wnd_is_active(nextwnd))
         {
             parent->activechild = nextwnd;
         }
@@ -1397,13 +1391,13 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         texu_wnd *nextwnd = 0;
         texu_wnd *parent = texu_wnd_get_parent(wnd);
         texu_wnd *desktop = (wnd ? texu_env_get_desktop(wnd->env) : 0);
-        texu_i32 y = 0;
-        texu_i32 x = 0;
-        texu_i32 width = 0;
-        /*texu_cio *cio = 0;*/
         texu_wnd_keycmd *keycmd = 0;
         texu_menu *menu = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         keycmd = texu_wnd_find_keycmd(wnd, ch, alt);
         if (keycmd && parent == desktop)
         {
@@ -1757,11 +1751,6 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
     texu_wnd_invalidate(texu_wnd *wnd)
     {
         texu_wnd *childwnd = 0;
-        texu_wnd *activewnd = 0;
-        texu_i32 y = 0;
-        texu_i32 x = 0;
-        texu_i32 width = 0;
-        /*texu_cio *cio = 0;*/
 
         if (!wnd || !texu_wnd_is_visible(wnd))
         {
@@ -1782,22 +1771,7 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
                 childwnd = texu_wnd_nextwnd(childwnd);
             }
         }
-        /* move cursor to the active window */
-        activewnd = texu_wnd_get_activechild(wnd);
-        if (activewnd)
-        {
-            y = texu_wnd_get_y(activewnd);
-            x = texu_wnd_get_x(activewnd);
-            width = texu_wnd_get_width(activewnd);
-        }
-        else
-        {
-            y = texu_wnd_get_y(wnd);
-            x = texu_wnd_get_x(wnd);
-            width = texu_wnd_get_width(wnd);
-        }
-        /*cio = texu_wnd_get_cio(wnd);
-        texu_cio_gotoyx(cio, y, x + width - 1);*/
+
         texu_cio_refresh(wnd->env->cio);
         return 0;
     }
@@ -2396,9 +2370,6 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         texu_wnd *nextwnd = 0;
         texu_wnd *parent = texu_wnd_get_parent(wnd);
         texu_wnd *desktop = (wnd ? texu_env_get_desktop(wnd->env) : 0);
-        texu_i32 y = 0;
-        texu_i32 x = 0;
-        texu_i32 width = 0;
         texu_wnd_keycmd *keycmd = 0;
         texu_menu *menu = 0;
 

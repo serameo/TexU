@@ -173,6 +173,8 @@ extern "C"
     void _TexuListCtrlProc_OnEndEdit(texu_wnd *wnd, texu_i32 ok);
     void _TexuListCtrlProc_OnDeleteItem(texu_wnd *wnd, texu_i32 idx);
     void _TexuListCtrlProc_OnDeleteAllColumns(texu_wnd *wnd);
+    texu_i32    _TexuListCtrlProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
+    void        _TexuListCtrlProc_OnSetText(texu_wnd *wnd, const texu_char *text);
 
     texu_i32
     _TexuListCtrlProc_FindHeaderIndex(texu_lcwnd *lctl, texu_lcwnd_header *header)
@@ -379,12 +381,20 @@ extern "C"
     void
     _TexuListCtrlProc_OnSelChanged(texu_wnd *wnd)
     {
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         _TexuWndProc_Notify(wnd, TEXU_LCN_SELCHANGED);
     }
 
     void
     _TexuListCtrlProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     {
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         _TexuWndProc_Notify(wnd, TEXU_LCN_SETFOCUS);
     }
 
@@ -393,6 +403,10 @@ extern "C"
     {
         texu_lcwnd *lctl = 0;
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         if (lctl->movingstate == TEXU_LCT_MOVINGCURSOR)
         {
             _TexuListCtrlProc_OnEndMoving(wnd);
@@ -426,6 +440,10 @@ extern "C"
         texu_lcwnd *lctl = 0;
         texu_i32 i = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         if (0 == edtcols)
         {
@@ -449,6 +467,10 @@ extern "C"
         texu_lcwnd_header *header = 0;
         texu_rect rc;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
 
         if (lctl->nitems > 0)
@@ -506,6 +528,10 @@ extern "C"
         texu_i32 i = 0;
         texu_lcwnd *lctl = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         nheaders = lctl->nheaders;
         for (i = 0; i < nheaders; ++i)
@@ -523,6 +549,10 @@ extern "C"
         texu_lcwnd_cell *nextcell = 0;
         texu_lcwnd_header *header = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         header = _TexuListCtrlProc_FindHeaderByIndex(lctl, col);
         if (!header)
@@ -574,6 +604,10 @@ extern "C"
         texu_i32 i = 0;
         texu_lcwnd *lctl = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         nitems = lctl->nitems;
         for (i = 0; i < nitems; ++i)
@@ -590,6 +624,10 @@ extern "C"
         texu_lcwnd_cell *nextcell = 0;
         texu_lcwnd_header *header = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         if (lctl->nitems <= 0 || idx < 0 || idx >= lctl->nitems)
         {
@@ -630,6 +668,10 @@ extern "C"
     _TexuListCtrlProc_OnAddItem(texu_wnd *wnd, const texu_char *text)
     {
         texu_char buf[TEXU_MAX_WNDTEXT + 1];
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         sprintf(buf, "\t%s", text);
         return _TexuListCtrlProc_OnAddItems(wnd, (texu_char *)text, 1);
     }
@@ -645,6 +687,10 @@ extern "C"
         texu_lcwnd_cell *newcell = 0;
         texu_env *env = texu_wnd_get_env(wnd);
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         if (lctl->nheaders > 0)
         {
@@ -1097,6 +1143,10 @@ extern "C"
         texu_i32 curselcol = -1;
         texu_cio *dc = texu_wnd_get_cio(wnd);
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         if (lctl->movingstate == TEXU_LCT_MOVINGCURSOR)
         {
@@ -1154,6 +1204,10 @@ extern "C"
         texu_i32 maxrows = 25;
         texu_ui32 style = texu_wnd_get_style(wnd);
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         if (lctl->movingstate != TEXU_LCT_MOVINGCURSOR)
         {
@@ -1279,6 +1333,10 @@ extern "C"
         texu_rect rccell;
         texu_cio *dc = texu_wnd_get_cio(wnd);
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         if (lctl->movingstate != TEXU_LCT_MOVINGCURSOR)
         {
@@ -1313,6 +1371,10 @@ extern "C"
     {
         texu_lcwnd *lctl = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         if (row < 0)
         {
             row = 0;
@@ -1328,9 +1390,12 @@ extern "C"
 
     void _TexuListCtrlProc_OnEndInsertRow(texu_wnd *wnd, texu_i32 row, texu_i32 ok)
     {
-
         texu_lcwnd *lctl = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         lctl->insertingstate = TEXU_LCT_ENDINSERTING;
 
@@ -1354,6 +1419,10 @@ extern "C"
         texu_lcwnd_cell *newcell = 0;
         texu_i32 i = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         if (row < 0)
         {
             row = 0;
@@ -1388,12 +1457,15 @@ extern "C"
 
     void _TexuListCtrlProc_OnEndEditRow(texu_wnd *wnd, texu_i32 row, texu_i32 ok)
     {
-
         texu_lcwnd *lctl = 0;
         texu_lcwnd_cell *cell = 0;
         texu_lcwnd_cell *nextcell = 0;
         texu_i32 i = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         if (TEXU_LC_ENDEDITCANCEL == ok)
         {
@@ -1446,6 +1518,10 @@ extern "C"
         texu_char buf[TEXU_MAX_WNDTEXT + 1];
         texu_ui32 editstyle = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         if (!(texu_wnd_get_style(wnd) & TEXU_LCS_EDITABLE))
         {
             /* if it has no EDIT style */
@@ -1490,6 +1566,10 @@ extern "C"
         texu_char buf[TEXU_MAX_WNDTEXT + 1];
         texu_i32 rc = TEXU_CONTINUE;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         if (!(texu_wnd_get_style(wnd) & TEXU_LCS_EDITABLE))
         {
             /* if it has no EDIT style */
@@ -1533,6 +1613,10 @@ extern "C"
         texu_ui32 style = texu_wnd_get_style(wnd);
         texu_i32 row = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         texu_wnd_get_rect(wnd, &rc);
 
@@ -1883,6 +1967,10 @@ extern "C"
         texu_char sz[TEXU_MAX_WNDTEXT + 1];
         texu_lcwnd *lctl = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         memset(sz, '\t', lctl->nheaders);
         sz[lctl->nheaders] = 0;
@@ -1926,6 +2014,10 @@ extern "C"
         texu_ui32 style = texu_wnd_get_style(wnd);
         texu_i32 row = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         texu_wnd_get_rect(wnd, &rc);
 
@@ -2250,6 +2342,10 @@ extern "C"
         texu_lcwnd_cell *cell = 0;
         texu_i32 rc = TEXU_ERROR;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         cell = _TexuListCtrlProc_FindCellByIndex(lctl, subitem->col, subitem->idx);
         if (cell)
@@ -2269,6 +2365,7 @@ extern "C"
                 cell->selcolor = subitem->selcolor;
             }
             rc = TEXU_OK;
+            texu_wnd_invalidate(wnd);
         }
         return rc;
     }
@@ -2353,6 +2450,10 @@ extern "C"
         texu_lcwnd *lctl = 0;
         texu_lcwnd_header *header = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         header = _TexuListCtrlProc_FindHeaderByIndex(lctl, col);
         if (header)
@@ -2381,6 +2482,10 @@ extern "C"
         texu_lcwnd *lctl = 0;
         texu_rect rcwnd;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         if (idx < 0 || idx >= lctl->nitems)
         {
@@ -2435,6 +2540,10 @@ extern "C"
         texu_lcwnd *lctl = 0;
         texu_lcwnd_header *header = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
         header = _TexuListCtrlProc_FindHeaderByIndex(lctl, col);
         if (header)
@@ -2456,6 +2565,10 @@ extern "C"
         texu_i32 idx = 0;
         texu_i32 nitemspp = _TexuListCtrlProc_OnGetItemsPerPage(wnd);
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         idx = (npage * nitemspp);
         texu_wnd_send_msg(wnd, TEXU_LCM_SETCURROW, (texu_i64)idx, 0);
     }
@@ -2487,128 +2600,182 @@ extern "C"
         texu_wnd_get_rect(wnd, &rcwnd);
         return (rcwnd.lines > 1 ? rcwnd.lines - 1 : 0);
     }
+    
+    texu_i32
+    _TexuListCtrlProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen)
+    {
+        texu_i32 curselrow = _TexuListCtrlProc_OnGetCurRow(wnd);
+        texu_i32 nitems = _TexuListCtrlProc_OnGetItemCount(wnd);
+        texu_wnd_subitem subitem;
+        texu_i32 len = 0;
+        
+        if (curselrow > -1)
+        {
+            subitem.idx  = curselrow;
+            subitem.col  = 0;
+            subitem.text = text;
+            _TexuListCtrlProc_OnGetItem(wnd, TEXU_LCFM_TEXT, &subitem);
+        }
+        else if (nitems <= 0)
+        {
+            strcpy(text, "");
+        }
+        
+        len = strlen(text);
+        if (len > 0 && textlen < len)
+        {
+            text[textlen-1] = 0;
+        }
+        return strlen(text);
+    }
+
+    void
+    _TexuListCtrlProc_OnSetText(texu_wnd *wnd, const texu_char *text)
+    {
+        texu_i32 curselrow = _TexuListCtrlProc_OnGetCurRow(wnd);
+        texu_wnd_subitem subitem;
+        
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
+        if (curselrow > -1)
+        {
+            subitem.idx  = curselrow;
+            subitem.col  = 0;
+            subitem.text = (texu_char*)text;
+            _TexuListCtrlProc_OnSetItem(wnd, TEXU_LCFM_TEXT, &subitem);
+        }
+    }
 
     texu_i64
     _TexuListCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
     {
         switch (msg)
         {
-        case TEXU_WM_CHAR:
-            _TexuListCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
-            return 0;
+            case TEXU_WM_CHAR:
+                _TexuListCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+                return 0;
 
-        case TEXU_WM_CREATE:
-            return _TexuListCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+            case TEXU_WM_CREATE:
+                return _TexuListCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
-        case TEXU_WM_PAINT:
-            _TexuListCtrlProc_OnPaint(wnd, (texu_cio *)param1);
-            return 0;
+            case TEXU_WM_PAINT:
+                _TexuListCtrlProc_OnPaint(wnd, (texu_cio *)param1);
+                return 0;
 
-        case TEXU_WM_DESTROY:
-            _TexuListCtrlProc_OnDestroy(wnd);
-            break;
+            case TEXU_WM_DESTROY:
+                _TexuListCtrlProc_OnDestroy(wnd);
+                break;
 
-        case TEXU_WM_SETFOCUS:
-            _TexuListCtrlProc_OnSetFocus(wnd, (texu_wnd *)param1);
-            break;
+            case TEXU_WM_SETFOCUS:
+                _TexuListCtrlProc_OnSetFocus(wnd, (texu_wnd *)param1);
+                break;
 
-        case TEXU_WM_KILLFOCUS:
-            return _TexuListCtrlProc_OnKillFocus(wnd, (texu_wnd *)param1);
+            case TEXU_WM_KILLFOCUS:
+                return _TexuListCtrlProc_OnKillFocus(wnd, (texu_wnd *)param1);
 
-        case TEXU_LCM_ADDCOLUMN:
-        {
-            return _TexuListCtrlProc_OnAddColumn(wnd, (texu_wnd_header *)param1);
-        }
-        case TEXU_LCM_DELETECOLUMN:
-        {
-            _TexuListCtrlProc_OnDeleteColumn(wnd, (texu_i32)param1);
-            return 0;
-        }
-        case TEXU_LCM_DELETEALLCOLUMNS:
-        {
-            _TexuListCtrlProc_OnDeleteAllColumns(wnd);
-            return 0;
-        }
-        case TEXU_LCM_ADDITEM:
-        {
-            return _TexuListCtrlProc_OnAddItem(wnd, (const texu_char *)param1);
-        }
-        case TEXU_LCM_ADDITEMS:
-        {
-            return _TexuListCtrlProc_OnAddItems(wnd, (texu_char *)param1, (texu_i32)param2);
-        }
-        case TEXU_LCM_DELETEITEM:
-        {
-            _TexuListCtrlProc_OnDeleteItem(wnd, (texu_i32)param2);
-            return 0;
-        }
-        case TEXU_LCM_DELETEALLITEMS:
-        {
-            _TexuListCtrlProc_OnDeleteAllItems(wnd);
-            return 0;
-        }
-        case TEXU_LCM_SETITEM:
-        {
-            return _TexuListCtrlProc_OnSetItem(wnd, (texu_ui32)param1, (texu_wnd_subitem *)param2);
-        }
-        case TEXU_LCM_GETITEM:
-        {
-            return _TexuListCtrlProc_OnGetItem(wnd, (texu_ui32)param1, (texu_wnd_subitem *)param2);
-        }
-        case TEXU_LCM_GETITEMCOUNT:
-        {
-            return _TexuListCtrlProc_OnGetItemCount(wnd);
-        }
-        case TEXU_LCM_INVALIDATEITEM:
-        {
-            _TexuListCtrlProc_OnInvalidateItem(wnd, (texu_i32)param1, (texu_i32)param2);
-            return 0;
-        }
-        case TEXU_LCM_SETEDITSTYLE:
-        {
-            _TexuListCtrlProc_OnSetEditStyle(wnd, (texu_i32)param1, (texu_ui32)param2);
-            return 0;
-        }
-        case TEXU_LCM_GETEDITSTYLE:
-        {
-            return _TexuListCtrlProc_OnGetEditStyle(wnd, (texu_i32)param1);
-        }
-        case TEXU_LCM_GETCURROW:
-        {
-            return _TexuListCtrlProc_OnGetCurRow(wnd);
-        }
-        case TEXU_LCM_SETCURROW:
-        {
-            _TexuListCtrlProc_OnSetCurRow(wnd, (texu_i32)param2);
-            return 0;
-        }
-        case TEXU_LCM_SETCOLWIDTH:
-        {
-            _TexuListCtrlProc_OnSetColWidth(wnd, (texu_i32)param1, (texu_i32)param2);
-            return 0;
-        }
-        case TEXU_LCM_GETEDITBOX:
-        {
-            return (texu_i32)_TexuListCtrlProc_OnGetEditBox(wnd);
-        }
-        case TEXU_LCM_SETCURPAGE:
-        {
-            _TexuListCtrlProc_OnSetCurPage(wnd, (texu_i32)param1);
-            return 0;
-        }
-        case TEXU_LCM_GETCURPAGE:
-        {
-            return _TexuListCtrlProc_OnGetCurPage(wnd);
-        }
-        case TEXU_LCM_GETITEMSPERPAGE:
-        {
-            return _TexuListCtrlProc_OnGetItemsPerPage(wnd);
-        }
-        case TEXU_LCM_SETEDITABLECOLS:
-        {
-            _TexuListCtrlProc_OnSetEditableCols(wnd, (texu_i32)param1, (const texu_i32 *)param2);
-            break;
-        }
+            case TEXU_WM_GETTEXT:
+                return _TexuListCtrlProc_OnGetText(wnd, (texu_char *)param1, (texu_i32)param2);
+
+            case TEXU_WM_SETTEXT:
+                _TexuListCtrlProc_OnSetText(wnd, (const texu_char *)param1);
+                return 0;
+
+            case TEXU_LCM_ADDCOLUMN:
+            {
+                return _TexuListCtrlProc_OnAddColumn(wnd, (texu_wnd_header *)param1);
+            }
+            case TEXU_LCM_DELETECOLUMN:
+            {
+                _TexuListCtrlProc_OnDeleteColumn(wnd, (texu_i32)param1);
+                return 0;
+            }
+            case TEXU_LCM_DELETEALLCOLUMNS:
+            {
+                _TexuListCtrlProc_OnDeleteAllColumns(wnd);
+                return 0;
+            }
+            case TEXU_LCM_ADDITEM:
+            {
+                return _TexuListCtrlProc_OnAddItem(wnd, (const texu_char *)param1);
+            }
+            case TEXU_LCM_ADDITEMS:
+            {
+                return _TexuListCtrlProc_OnAddItems(wnd, (texu_char *)param1, (texu_i32)param2);
+            }
+            case TEXU_LCM_DELETEITEM:
+            {
+                _TexuListCtrlProc_OnDeleteItem(wnd, (texu_i32)param2);
+                return 0;
+            }
+            case TEXU_LCM_DELETEALLITEMS:
+            {
+                _TexuListCtrlProc_OnDeleteAllItems(wnd);
+                return 0;
+            }
+            case TEXU_LCM_SETITEM:
+            {
+                return _TexuListCtrlProc_OnSetItem(wnd, (texu_ui32)param1, (texu_wnd_subitem *)param2);
+            }
+            case TEXU_LCM_GETITEM:
+            {
+                return _TexuListCtrlProc_OnGetItem(wnd, (texu_ui32)param1, (texu_wnd_subitem *)param2);
+            }
+            case TEXU_LCM_GETITEMCOUNT:
+            {
+                return _TexuListCtrlProc_OnGetItemCount(wnd);
+            }
+            case TEXU_LCM_INVALIDATEITEM:
+            {
+                _TexuListCtrlProc_OnInvalidateItem(wnd, (texu_i32)param1, (texu_i32)param2);
+                return 0;
+            }
+            case TEXU_LCM_SETEDITSTYLE:
+            {
+                _TexuListCtrlProc_OnSetEditStyle(wnd, (texu_i32)param1, (texu_ui32)param2);
+                return 0;
+            }
+            case TEXU_LCM_GETEDITSTYLE:
+            {
+                return _TexuListCtrlProc_OnGetEditStyle(wnd, (texu_i32)param1);
+            }
+            case TEXU_LCM_GETCURROW:
+            {
+                return _TexuListCtrlProc_OnGetCurRow(wnd);
+            }
+            case TEXU_LCM_SETCURROW:
+            {
+                _TexuListCtrlProc_OnSetCurRow(wnd, (texu_i32)param2);
+                return 0;
+            }
+            case TEXU_LCM_SETCOLWIDTH:
+            {
+                _TexuListCtrlProc_OnSetColWidth(wnd, (texu_i32)param1, (texu_i32)param2);
+                return 0;
+            }
+            case TEXU_LCM_GETEDITBOX:
+            {
+                return (texu_i32)_TexuListCtrlProc_OnGetEditBox(wnd);
+            }
+            case TEXU_LCM_SETCURPAGE:
+            {
+                _TexuListCtrlProc_OnSetCurPage(wnd, (texu_i32)param1);
+                return 0;
+            }
+            case TEXU_LCM_GETCURPAGE:
+            {
+                return _TexuListCtrlProc_OnGetCurPage(wnd);
+            }
+            case TEXU_LCM_GETITEMSPERPAGE:
+            {
+                return _TexuListCtrlProc_OnGetItemsPerPage(wnd);
+            }
+            case TEXU_LCM_SETEDITABLECOLS:
+            {
+                _TexuListCtrlProc_OnSetEditableCols(wnd, (texu_i32)param1, (const texu_i32 *)param2);
+                break;
+            }
         }
         return TexuDefWndProc(wnd, msg, param1, param2);
     }
@@ -2662,6 +2829,8 @@ extern "C"
     void _TexuTreeCtrlProc_OnSetIndentText(texu_wnd *wnd, texu_i32 indent);
     texu_i32 _TexuTreeCtrlProc_OnGetShiftedText(texu_wnd *wnd);
     void _TexuTreeCtrlProc_OnSetShiftedText(texu_wnd *wnd, texu_i32 shifted);
+    texu_i32    _TexuTreeCtrlProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
+    void        _TexuTreeCtrlProc_OnSetText(texu_wnd *wnd, const texu_char *text);
 
     void _TexuTreeCtrlProc_RefreshView(texu_wnd *wnd);
     texu_i32 _TexuTreeCtrlProc_DefFindItemProc(texu_i64, texu_i64, void *);
@@ -2746,6 +2915,10 @@ extern "C"
         texu_tree_item *newitem = 0;
         texu_i32 len = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         if (!fp)
         {
             /* nothing to do */
@@ -2886,6 +3059,10 @@ extern "C"
         texu_tree_item *root = 0;
         texu_i32 startx = 0, endx = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         if (!fp)
         {
             /* nothing to do */
@@ -3254,6 +3431,10 @@ extern "C"
         texu_treewnd_item *data = 0;
         texu_tree_item *selitem = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         tc = (texu_treewnd *)texu_wnd_get_userdata(wnd);
         if (0 == tc->visibleitems)
         {
@@ -3372,6 +3553,10 @@ extern "C"
 
     void _TexuTreeCtrlProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     {
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         _TexuWndProc_Notify(wnd, TEXU_TCN_SETFOCUS);
     }
 
@@ -3395,6 +3580,10 @@ extern "C"
         texu_treewnd_item *parentdata = 0;
         texu_treewnd_item *data = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         if (0 == insertitem)
         {
             return 0;
@@ -3457,6 +3646,10 @@ extern "C"
         texu_treewnd *tc = 0;
         texu_i32 children = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         tc = (texu_treewnd *)texu_wnd_get_userdata(wnd);
 
         texu_tree_cb_remove_item(
@@ -3481,6 +3674,10 @@ extern "C"
     {
         texu_treewnd_item *data = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         _TexuTreeProc_Notify(wnd, TEXU_TCN_ITEMEXPANDING, item);
 
         /* mark expanded */
@@ -3554,6 +3751,10 @@ extern "C"
         texu_treewnd *tc = 0;
         texu_tree_item *root = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         tc = (texu_treewnd *)texu_wnd_get_userdata(wnd);
         root = texu_tree_get_root(tc->tree);
 
@@ -3572,6 +3773,10 @@ extern "C"
         texu_treewnd *tc = 0;
         texu_tree_item *root = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         tc = (texu_treewnd *)texu_wnd_get_userdata(wnd);
         root = texu_tree_get_root(tc->tree);
 
@@ -3589,6 +3794,10 @@ extern "C"
     {
         texu_treewnd_item *data = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         _TexuTreeProc_Notify(wnd, TEXU_TCN_ITEMCOLLAPSING, item);
 
         /* mark collapse */
@@ -3610,6 +3819,10 @@ extern "C"
         texu_treewnd *tc = 0;
         texu_treewnd_item *data = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         tc = (texu_treewnd *)texu_wnd_get_userdata(wnd);
         /* remove the highlighting */
         if (tc->curselitem)
@@ -3644,6 +3857,10 @@ extern "C"
     {
         texu_treewnd_item *data = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         if (!item)
         {
             return -1;
@@ -3661,6 +3878,7 @@ extern "C"
                 _texu_treewnd_item_del((texu_i64)data, 0);
             }
             data = _texu_treewnd_item_new(setitem);
+            texu_wnd_invalidate(wnd);
         }
 
         return 0;
@@ -3687,6 +3905,10 @@ extern "C"
         texu_treewnd *tc = 0;
         texu_tree_item *founditem = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         tc = (texu_treewnd *)texu_wnd_get_userdata(wnd);
 
         founditem = texu_tree_find_item(
@@ -3706,6 +3928,10 @@ extern "C"
         texu_treewnd *tc = 0;
         texu_tree_item *founditem = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         tc = (texu_treewnd *)texu_wnd_get_userdata(wnd);
 
         founditem = texu_tree_find_next_item(
@@ -3981,102 +4207,150 @@ extern "C"
         }
     }
 
+    texu_i32
+    _TexuTreeCtrlProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen)
+    {
+        texu_tree_item *treeitem = _TexuTreeCtrlProc_OnGetSelItem(wnd);
+        texu_treewnd_item item;
+        texu_i32 len = 0;
+
+        if (treeitem)
+        {
+            _TexuTreeCtrlProc_OnGetItem(wnd, treeitem, &item);
+            strcpy(text, item.itemtext);
+        }
+        else
+        {
+            strcpy(text, "");
+        }
+        len = strlen(text);
+        if (len > 0 && textlen < len)
+        {
+            text[textlen-1] = 0;
+        }
+        return strlen(text);
+    }
+    
+    void
+    _TexuTreeCtrlProc_OnSetText(texu_wnd *wnd, const texu_char *text)
+    {
+        texu_tree_item *treeitem = _TexuTreeCtrlProc_OnGetSelItem(wnd);
+        texu_treewnd_item item;
+
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
+        if (treeitem)
+        {
+            _TexuTreeCtrlProc_OnGetItem(wnd, treeitem, &item);
+            strcpy(item.itemtext, text);
+            _TexuTreeCtrlProc_OnSetItem(wnd, treeitem, &item);
+        }
+    }
+    
     texu_i64
     _TexuTreeCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
     {
         switch (msg)
         {
-        case TEXU_WM_PAINT:
-        {
-            _TexuTreeCtrlProc_OnPaint(wnd, (texu_cio *)param1);
-            return 0;
-        }
-        case TEXU_WM_CREATE:
-        {
-            return _TexuTreeCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
-        }
-        case TEXU_WM_DESTROY:
-        {
-            /* release memory of static control */
-            _TexuTreeCtrlProc_OnDestroy(wnd);
-            return 0;
-        }
-        case TEXU_WM_SETFOCUS:
-        {
-            _TexuTreeCtrlProc_OnSetFocus(wnd, (texu_wnd *)param1);
-            break;
-        }
-        case TEXU_WM_KILLFOCUS:
-        {
-            return _TexuTreeCtrlProc_OnKillFocus(wnd, (texu_wnd *)param1);
-        }
-        case TEXU_WM_CHAR:
-        {
-            _TexuTreeCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
-            break;
-        }
-        case TEXU_TCM_INSERTITEM:
-        {
-            return (texu_i64)_TexuTreeCtrlProc_OnInsertItem(wnd, (texu_tree_item *)param1, (const texu_treewnd_item *)param2);
-        }
-        case TEXU_TCM_DELETEITEM:
-        {
-            return _TexuTreeCtrlProc_OnDeleteItem(wnd, (texu_tree_item *)param1);
-        }
-        case TEXU_TCM_SETITEM:
-        {
-            return _TexuTreeCtrlProc_OnSetItem(wnd, (texu_tree_item *)param1, (const texu_treewnd_item *)param2);
-        }
-        case TEXU_TCM_GETITEM:
-        {
-            return _TexuTreeCtrlProc_OnGetItem(wnd, (texu_tree_item *)param1, (texu_treewnd_item *)param2);
-        }
-        case TEXU_TCM_FINDITEM:
-        {
-            return (texu_i64)_TexuTreeCtrlProc_OnFindItem(wnd, (texu_treewnd_item *)param1, (void *)param2);
-        }
-        case TEXU_TCM_FINDNEXTITEM:
-        {
-            return (texu_i64)_TexuTreeCtrlProc_OnFindNextItem(wnd, (texu_tree_item *)param1, (texu_treewnd_item *)param2);
-        }
-        case TEXU_TCM_EXPANDITEM:
-        {
-            return _TexuTreeCtrlProc_OnExpandItem(wnd, (texu_tree_item *)param1);
-        }
-        case TEXU_TCM_COLLAPSEITEM:
-        {
-            return _TexuTreeCtrlProc_OnCollapseItem(wnd, (texu_tree_item *)param1);
-        }
-        case TEXU_TCM_SETFINDITEMPROC:
-        {
-            return (texu_i64)_TexuTreeCtrlProc_OnSetFindItemProc(wnd, (texu_tree_find_proc)param1);
-        }
-        case TEXU_TCM_SETSELITEM:
-        {
-            return _TexuTreeCtrlProc_OnSetSelItem(wnd, (texu_tree_item *)param1);
-        }
-        case TEXU_TCM_GETSELITEM:
-        {
-            return (texu_i64)_TexuTreeCtrlProc_OnGetSelItem(wnd);
-        }
-        case TEXU_TCM_EXPORTTOFILE:
-        {
-            return _TexuTreeCtrlProc_OnExportToFile(wnd, (FILE *)param1, (texu_tree_exp_proc)param2);
-        }
-        case TEXU_TCM_IMPORTFROMFILE:
-        {
-            return _TexuTreeCtrlProc_OnImportFromFile(wnd, (FILE *)param1, (texu_tree_imp_proc)param2);
-        }
-        case TEXU_TCM_COLLAPSEALLITEMS:
-        {
-            _TexuTreeCtrlProc_OnCollapseAllItems(wnd);
-            break;
-        }
-        case TEXU_TCM_EXPANDALLITEMS:
-        {
-            _TexuTreeCtrlProc_OnExpandAllItems(wnd);
-            break;
-        }
+            case TEXU_WM_PAINT:
+            {
+                _TexuTreeCtrlProc_OnPaint(wnd, (texu_cio *)param1);
+                return 0;
+            }
+            case TEXU_WM_CREATE:
+            {
+                return _TexuTreeCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+            }
+            case TEXU_WM_DESTROY:
+            {
+                /* release memory of static control */
+                _TexuTreeCtrlProc_OnDestroy(wnd);
+                return 0;
+            }
+            case TEXU_WM_SETFOCUS:
+            {
+                _TexuTreeCtrlProc_OnSetFocus(wnd, (texu_wnd *)param1);
+                break;
+            }
+            case TEXU_WM_KILLFOCUS:
+            {
+                return _TexuTreeCtrlProc_OnKillFocus(wnd, (texu_wnd *)param1);
+            }
+            case TEXU_WM_CHAR:
+            {
+                _TexuTreeCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+                break;
+            }
+            case TEXU_WM_GETTEXT:
+                return _TexuTreeCtrlProc_OnGetText(wnd, (texu_char *)param1, (texu_i32)param2);
+
+            case TEXU_WM_SETTEXT:
+                _TexuTreeCtrlProc_OnSetText(wnd, (const texu_char *)param1);
+                return 0;
+            case TEXU_TCM_INSERTITEM:
+            {
+                return (texu_i64)_TexuTreeCtrlProc_OnInsertItem(wnd, (texu_tree_item *)param1, (const texu_treewnd_item *)param2);
+            }
+            case TEXU_TCM_DELETEITEM:
+            {
+                return _TexuTreeCtrlProc_OnDeleteItem(wnd, (texu_tree_item *)param1);
+            }
+            case TEXU_TCM_SETITEM:
+            {
+                return _TexuTreeCtrlProc_OnSetItem(wnd, (texu_tree_item *)param1, (const texu_treewnd_item *)param2);
+            }
+            case TEXU_TCM_GETITEM:
+            {
+                return _TexuTreeCtrlProc_OnGetItem(wnd, (texu_tree_item *)param1, (texu_treewnd_item *)param2);
+            }
+            case TEXU_TCM_FINDITEM:
+            {
+                return (texu_i64)_TexuTreeCtrlProc_OnFindItem(wnd, (texu_treewnd_item *)param1, (void *)param2);
+            }
+            case TEXU_TCM_FINDNEXTITEM:
+            {
+                return (texu_i64)_TexuTreeCtrlProc_OnFindNextItem(wnd, (texu_tree_item *)param1, (texu_treewnd_item *)param2);
+            }
+            case TEXU_TCM_EXPANDITEM:
+            {
+                return _TexuTreeCtrlProc_OnExpandItem(wnd, (texu_tree_item *)param1);
+            }
+            case TEXU_TCM_COLLAPSEITEM:
+            {
+                return _TexuTreeCtrlProc_OnCollapseItem(wnd, (texu_tree_item *)param1);
+            }
+            case TEXU_TCM_SETFINDITEMPROC:
+            {
+                return (texu_i64)_TexuTreeCtrlProc_OnSetFindItemProc(wnd, (texu_tree_find_proc)param1);
+            }
+            case TEXU_TCM_SETSELITEM:
+            {
+                return _TexuTreeCtrlProc_OnSetSelItem(wnd, (texu_tree_item *)param1);
+            }
+            case TEXU_TCM_GETSELITEM:
+            {
+                return (texu_i64)_TexuTreeCtrlProc_OnGetSelItem(wnd);
+            }
+            case TEXU_TCM_EXPORTTOFILE:
+            {
+                return _TexuTreeCtrlProc_OnExportToFile(wnd, (FILE *)param1, (texu_tree_exp_proc)param2);
+            }
+            case TEXU_TCM_IMPORTFROMFILE:
+            {
+                return _TexuTreeCtrlProc_OnImportFromFile(wnd, (FILE *)param1, (texu_tree_imp_proc)param2);
+            }
+            case TEXU_TCM_COLLAPSEALLITEMS:
+            {
+                _TexuTreeCtrlProc_OnCollapseAllItems(wnd);
+                break;
+            }
+            case TEXU_TCM_EXPANDALLITEMS:
+            {
+                _TexuTreeCtrlProc_OnExpandAllItems(wnd);
+                break;
+            }
         }
         return TexuDefWndProc(wnd, msg, param1, param2);
     }
@@ -4270,6 +4544,10 @@ extern "C"
     _TexuUpDownCtrlProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     {
         texu_udwnd *udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         texu_wnd_send_msg(udctl->editwnd, TEXU_WM_SETFOCUS, 0, 0);
         _TexuWndProc_Notify(wnd, TEXU_UDCN_SETFOCUS);
     }
@@ -4324,6 +4602,10 @@ extern "C"
         texu_bool updown = TEXU_FALSE;
         texu_i32 added = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
         switch (ch)
         {
@@ -4387,6 +4669,10 @@ extern "C"
         texu_char buf[TEXU_MAX_WNDTEXT + 1];
         texu_i32 val = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
         val = atol(text);
 
@@ -4546,6 +4832,10 @@ extern "C"
     {
         texu_pgbwnd *pgb = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         pgb = (texu_pgbwnd *)texu_wnd_get_userdata(wnd);
         if (pos < 0)
         {
@@ -4591,6 +4881,10 @@ extern "C"
         pgb = (texu_pgbwnd *)texu_wnd_get_userdata(wnd);
         pos = pgb->pos;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         if (updown > 0)
         {
             pos += pgb->step;
@@ -4955,6 +5249,10 @@ extern "C"
         texu_wnd *newpage = 0;
         texu_i32 children = texu_wnd_children(wnd);
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return 0;
+        }
         if (idx < 0 || idx >= children)
         {
             return curpage;
@@ -5157,6 +5455,10 @@ extern "C"
         texu_status rc = TEXU_OK;
         texu_wnd* qnextwnd = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         if ((TEXU_KEYPRESSED_CTRL & alt) && (('k' == ch) || ('K' == ch)))
         {
             pgctl->ctl_k_pressed = !pgctl->ctl_k_pressed;
@@ -5945,6 +6247,7 @@ extern "C"
     texu_i64
     _TexuTextCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
     {
+        return 0; /*not implement this class*/
         switch (msg)
         {
         case TEXU_WM_CREATE:
@@ -6204,6 +6507,10 @@ extern "C"
     {
         texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
         texu_list_item *item = texu_list_first(rbwnd->bands);
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         if (item)
         {
             rbwnd->firstvisibleband = rbwnd->curband = (texu_rbwnd_band*)item->data;
@@ -6234,6 +6541,10 @@ extern "C"
         texu_wnd *nextwnd = 0;
         texu_rbwnd_band* nextband = 0;
 
+        if (!texu_wnd_is_enable(wnd))
+        {
+            return;
+        }
         if (activewnd && activewnd != wnd)
         {
             if (ch == TEXU_KEY_NEXTWND)
@@ -6314,7 +6625,6 @@ extern "C"
         texu_i32 height = texu_wnd_get_height(wnd);
         texu_env *env = texu_wnd_get_env(wnd);
         texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_REBAR);
-        texu_i32 len = 0;
         texu_char caption[TEXU_MAX_WNDTEXT + 1];
         texu_i32 h = 0;
         texu_i32 w = 0;
@@ -6365,7 +6675,7 @@ extern "C"
                 else
                 {
                     /*draw caption*/
-                    len = texu_printf_alignment(
+                    texu_printf_alignment(
                             caption,
                             band->caption,
                             rbwnd->capwidth,
@@ -6393,7 +6703,7 @@ extern "C"
                 continue; /*no more draw*/
             }
             /*draw caption*/
-            len = texu_printf_alignment(
+            texu_printf_alignment(
                     caption,
                     band->caption,
                     rbwnd->capwidth,
