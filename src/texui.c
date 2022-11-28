@@ -791,6 +791,23 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
             env = 0;
         }
     }
+    
+    void
+    _texu_env_exec_postmsg(texu_env *env)
+    {
+        struct texu_msg    *msg;
+        /* if there are any posted msg*/
+        while (TEXU_FALSE == texu_queue_empty(env->msgques))
+        {
+            msg = (struct texu_msg*)texu_queue_first(env->msgques);
+            if (msg)
+            {
+                texu_wnd_send_msg(msg->wnd, msg->msg, msg->param1, msg->param2);
+                free(msg);
+            }
+            texu_queue_dequeue(env->msgques);
+        }
+    }
 
     texu_status
     texu_env_run(texu_env *env)
@@ -805,25 +822,11 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         texu_i32 ctlpressed = 0;
         texu_char *keypressed = 0;
 #endif
-        struct texu_msg    *msg;
         texu_wnd *activewnd = 0;
-
 
         while (!(env->exit))
         {
-            
-            /* if there are any posted msg*/
-            while (TEXU_FALSE == texu_queue_empty(env->msgques))
-            {
-                msg = (struct texu_msg*)texu_queue_first(env->msgques);
-                if (msg)
-                {
-                    texu_wnd_send_msg(msg->wnd, msg->msg, msg->param1, msg->param2);
-                    free(msg);
-                }
-                texu_queue_dequeue(env->msgques);
-            }
-
+            _texu_env_exec_postmsg(env);
 #if USE_TCL_AUTOMATION
             rb = _texu_env_read_tcl_input(env, &envmsg);
             if (TEXU_TRUE == rb)
@@ -909,17 +912,7 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
             }
 #endif /*#else NOT USE_TCL_AUTOMATION*/
         }
-        /* if there are any posted msg*/
-        while (TEXU_FALSE == texu_queue_empty(env->msgques))
-        {
-            msg = (struct texu_msg*)texu_queue_first(env->msgques);
-            if (msg)
-            {
-                texu_wnd_send_msg(msg->wnd, msg->msg, msg->param1, msg->param2);
-                free(msg);
-            }
-            texu_queue_dequeue(env->msgques);
-        }
+        _texu_env_exec_postmsg(env);
 
         return TEXU_OK;
     }
@@ -1068,28 +1061,29 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
              1         2         3         4         5         6         7         8
     12345678901234567890123456789012345678901234567890123456789012345678901234567890
     */
-
-    texu_i32 _TexuDefWndProc_OnChar(texu_wnd *, texu_i32 ch, texu_i32 alt);
-    texu_i32 _TexuDefWndProc_OnKillFocus(texu_wnd *, texu_wnd *nextwnd);
-    void _TexuDefWndProc_OnSetFocus(texu_wnd *, texu_wnd *prevwnd);
-    void _TexuDefWndProc_OnSetText(texu_wnd *wnd, const texu_char *text);
-    texu_i32 _TexuDefWndProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
+    texu_i32    _TexuDefWndProc_OnChar(texu_wnd *, texu_i32 ch, texu_i32 alt);
+    texu_i32    _TexuDefWndProc_OnKillFocus(texu_wnd *, texu_wnd *nextwnd);
+    void        _TexuDefWndProc_OnSetFocus(texu_wnd *, texu_wnd *prevwnd);
+    void        _TexuDefWndProc_OnSetText(texu_wnd *wnd, const texu_char *text);
+    texu_i32    _TexuDefWndProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
     texu_status _TexuDefWndProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
-    void _TexuDefWndProc_OnDestroy(texu_wnd *);
-    void _TexuDefWndProc_OnPaint(texu_wnd *, texu_cio *);
-    texu_bool _TexuDefWndProc_OnShow(texu_wnd *, texu_bool);
-    texu_bool _TexuDefWndProc_OnEnable(texu_wnd *, texu_bool);
-    void _TexuDefWndProc_OnEraseBg(texu_wnd *, texu_cio *);
-    texu_i64 _TexuDefWndProc_OnMsg(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2);
-    void _TexuDefWndProc_OnMove(texu_wnd *, texu_rect *, texu_bool);
-    void _TexuDefWndProc_OnCommand(texu_wnd *, texu_ui32);
-    void _TexuDefWndProc_OnNotify(texu_wnd *, texu_wnd_notify *);
-    texu_menu *_TexuDefWndProc_OnSetMenu(texu_wnd *, texu_menu *);
-    void _TexuDefWndProc_OnRedrawMenu(texu_wnd *);
-    void _TexuDefWndProc_OnEnterMenu(texu_wnd *, texu_i32, texu_i32);
-    void _TexuDefWndProc_OnLeaveMenu(texu_wnd *);
-    texu_wnd* _TexuDefWndProc_OnQueryNextWnd(texu_wnd* wnd);
-    texu_wnd* _TexuDefWndProc_OnQueryPrevWnd(texu_wnd* wnd);
+    void        _TexuDefWndProc_OnDestroy(texu_wnd *);
+    void        _TexuDefWndProc_OnPaint(texu_wnd *, texu_cio *);
+    texu_bool   _TexuDefWndProc_OnShow(texu_wnd *, texu_bool);
+    texu_bool   _TexuDefWndProc_OnEnable(texu_wnd *, texu_bool);
+    void        _TexuDefWndProc_OnEraseBg(texu_wnd *, texu_cio *);
+    texu_i64    _TexuDefWndProc_OnMsg(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2);
+    void        _TexuDefWndProc_OnMove(texu_wnd *, texu_rect *, texu_bool);
+    void        _TexuDefWndProc_OnCommand(texu_wnd *, texu_ui32);
+    void        _TexuDefWndProc_OnNotify(texu_wnd *, texu_wnd_notify *);
+    texu_menu  *_TexuDefWndProc_OnSetMenu(texu_wnd *, texu_menu *);
+    void        _TexuDefWndProc_OnRedrawMenu(texu_wnd *);
+    void        _TexuDefWndProc_OnEnterMenu(texu_wnd *, texu_i32, texu_i32);
+    void        _TexuDefWndProc_OnLeaveMenu(texu_wnd *);
+    texu_wnd*   _TexuDefWndProc_OnQueryNextWnd(texu_wnd* wnd);
+    texu_wnd*   _TexuDefWndProc_OnQueryPrevWnd(texu_wnd* wnd);
+    texu_i64    _TexuDefWndProc_OnQueryClose(texu_wnd *wnd);
+    texu_i64    _TexuDefWndProc_OnClose(texu_wnd *wnd);
 
     texu_wnd *
     _TexuDefWndProc_OpenMenuWnd(
@@ -1464,6 +1458,26 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         }
         return 0;
     }
+    
+    texu_i64
+    _TexuDefWndProc_OnClose(texu_wnd *wnd)
+    {
+        texu_i64 rc = _TexuDefWndProc_OnQueryClose(wnd);
+        /*if the returned code is not equal to TEXU_OK, that means*/
+        /*we could destroy it then*/
+        if (rc != TEXU_OK)
+        {
+            return rc;
+        }
+        texu_wnd_destroy(wnd);
+        return rc;
+    }
+
+    texu_i64
+    _TexuDefWndProc_OnQueryClose(texu_wnd *wnd)
+    {
+        return TEXU_OK;
+    }
 
     texu_i64
     TexuDefWndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
@@ -1541,10 +1555,15 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
             case TEXU_WM_DESTROY:
                 _TexuDefWndProc_OnDestroy(wnd);
                 break;
+
+            case TEXU_WM_CLOSE:
+                return _TexuDefWndProc_OnClose(wnd);
+
+            case TEXU_WM_QUERYCLOSE:
+                return _TexuDefWndProc_OnQueryClose(wnd);
         }
         return 0;
     }
-
     /*
     #
     #
@@ -1637,26 +1656,26 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
         {
             return TEXU_NOTREGISTERED_CLASS;
         }
-        wnd->y = attrs->y;
-        wnd->x = attrs->x;
-        wnd->height = attrs->height;
-        wnd->width = attrs->width;
-        wnd->style = attrs->style;
-        wnd->exstyle = attrs->exstyle;
-        wnd->enable = attrs->enable;
-        wnd->visible = attrs->visible;
+        wnd->y  = attrs->y;
+        wnd->x  = attrs->x;
+        wnd->height     = attrs->height;
+        wnd->width      = attrs->width;
+        wnd->style      = attrs->style;
+        wnd->exstyle    = attrs->exstyle;
+        wnd->enable     = attrs->enable;
+        wnd->visible    = attrs->visible;
         if (attrs->text && strlen(attrs->text))
         {
             strcpy(wnd->text, attrs->text);
         }
-        wnd->normalcolor = attrs->normalcolor;
-        wnd->disabledcolor = attrs->disabledcolor;
-        wnd->focuscolor = attrs->focuscolor;
-        wnd->id = attrs->id;
-        wnd->clsname = attrs->clsname;
-        wnd->userdata = attrs->userdata;
-        wnd->wndproc = wndproc;
-        wnd->parent = parent;
+        wnd->normalcolor    = attrs->normalcolor;
+        wnd->disabledcolor  = attrs->disabledcolor;
+        wnd->focuscolor     = attrs->focuscolor;
+        wnd->id             = attrs->id;
+        wnd->clsname        = attrs->clsname;
+        wnd->userdata       = attrs->userdata;
+        wnd->wndproc        = wndproc;
+        wnd->parent         = parent;
         if (parent)
         {
             texu_wnd_add_child(parent, wnd);
@@ -1745,6 +1764,12 @@ _texu_env_handle_request(texu_env *env, texu_char* reqjson)
             rc = wnd->wndproc(wnd, msg, param1, param2);
         }
         return rc;
+    }
+    
+    texu_i64
+    texu_wnd_close(texu_wnd *wnd)
+    {
+        return texu_wnd_send_msg(wnd, TEXU_WM_CLOSE, 0, 0);
     }
 
     texu_i64
