@@ -166,6 +166,8 @@ enum
 #define TEXU_WM_IDLE                    (TEXU_WM_FIRST + 19)
 #define TEXU_WM_QUERYNEXTWND            (TEXU_WM_FIRST + 20)
 #define TEXU_WM_QUERYPREVWND            (TEXU_WM_FIRST + 21)
+#define TEXU_WM_CLOSE                   (TEXU_WM_FIRST + 22)
+#define TEXU_WM_QUERYCLOSE              (TEXU_WM_FIRST + 23)
 
 /* notify */
 #define TEXU_WN_FIRST                   0
