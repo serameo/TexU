@@ -18,15 +18,15 @@ auitclsh_t g_auitclsh;
 
 int main(int argc, char *argv[])
 {
-    texu_status rc = TEXU_OK;
-    texu_char *filename = "./auitclsh.cnf";
-    FILE *fp = fopen(filename, "r");
-    texu_char *key = 0;
-    texu_char *val = 0;
-    texu_i64 i64 = 0;
-    texu_f64 f64 = 0.0;
-    texu_char pathname[256] = "autoui";
-    texu_xcnf *xcnf = 0;
+    texu_status rc  = TEXU_OK;
+    texu_char   *filename = "./auitclsh.cnf";
+    FILE        *fp     = fopen(filename, "r");
+    texu_char   *key    = 0;
+    texu_char   *val    = 0;
+    texu_i64    i64     = 0;
+    texu_f64    f64     = 0.0;
+    texu_char   pathname[256] = "autoui";
+    texu_xcnf   *xcnf   = 0;
 
     if (fp)
     {

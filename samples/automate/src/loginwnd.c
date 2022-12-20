@@ -9,7 +9,7 @@ texu_i32 _login_validate_passwd(texu_wnd *wnd, texu_char* sPasswd);
 texu_wnd_template2 templ_login2[] =
 {
   { "User Id  :",               TEXU_LABEL_CLASS,       TEXU_WS_RIGHT,  0, 10, 27,  1,  10, IDC_LABEL1, 0 },
-  { "",                         TEXU_EDIT_CLASS,        TEXU_ES_LEFT|TEXU_ES_UPPERCASE,
+  { "",                         TEXU_EDIT_CLASS,        TEXU_ES_LEFT|TEXU_ES_UPPERCASE|TEXU_ES_AUTOHSCROLL,
                                                                         0, 10, 38,  1,  16, IDC_USER,   /*10004*/
                                                                         0 },
   { "Password :",               TEXU_LABEL_CLASS,       TEXU_ES_LEFT,   0, 12, 27,  1,  10, IDC_LABEL2, 0 },
@@ -84,6 +84,7 @@ void Login_OnPaint(texu_wnd *wnd, texu_cio *dc)
 
     TexuDrawFrame(dc, "Sample Login App", &rect, TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE));
     TexuDrawFrame(dc, "", &rect2, TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE));
+
 }
 
 texu_i64 Login_WndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
@@ -106,7 +107,14 @@ texu_i64 Login_WndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 p
         }
         case TEXU_WM_COMMAND:   /* 12 *//* support Tcl script*/
         {
-            switch (param1)
+            texu_ui32 id = param1;
+            texu_bool rb = TexuIsExecutableCommand(wnd, id);
+            if (TEXU_FALSE == rb)
+            {
+                /*id may be disabled*/
+                return;
+            }
+            switch (id)
             {
                 case ID_LOGIN:  /* 10001 */
                 {
@@ -123,12 +131,13 @@ texu_i64 Login_WndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 p
         }
         case TEXU_WM_PAINT:    /* 6 */
         {
+            TexuFrameWndProc(wnd, msg, param1, param2);
             Login_OnPaint(wnd, (texu_cio *)param1);
             break;
         }
         case TEXU_WM_CREATE:    /* 7 */
         {
-            texu_status rc = TexuCreateControls2(wnd, templ_login2, 50);
+            texu_status rc = TexuCreateControls2(wnd, templ_login2, 50, "loginwnd");
             if (rc != TEXU_OK)
             {
                 return rc;

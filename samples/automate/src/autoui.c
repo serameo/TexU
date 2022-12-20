@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
     wnd = TexuCreateWindow(
             "Auto UI App",
             LOGINWND_CLASS,
-            0, /* style*/
+            TEXU_WS_BORDER, /* style*/
             0, /* exstyle*/
             0, /* y */
             0, /* x */
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
             0  /* user data */
     );
 
-    TexuShowWindow(wnd, TEXU_WS_SHOW);
+    TexuShowWindow(wnd, TEXU_SW_SHOW);
     TexuInvalidateWindow(wnd);
 
     TexuRun();
