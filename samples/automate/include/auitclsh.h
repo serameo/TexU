@@ -19,43 +19,81 @@ typedef struct _auitclsh auitclsh_t;
 /*initial Tcl command interfaces*/
 int
 auitclsh_init(
-  Tcl_Interp* interp
+    Tcl_Interp* interp
 );
 
 /* Send message to the autoui app*/
 int
 aui_sendmsg(
-  ClientData      cd,
-  Tcl_Interp*     interp,
-  int             objc,
-  Tcl_Obj *CONST  objv[]
+    ClientData      cd,
+    Tcl_Interp*     interp,
+    int             objc,
+    Tcl_Obj *CONST  objv[]
 );
 
 /* Post message to the autoui app*/
 int
 aui_postmsg(
-  ClientData      cd,
-  Tcl_Interp*     interp,
-  int             objc,
-  Tcl_Obj *CONST  objv[]
+    ClientData      cd,
+    Tcl_Interp*     interp,
+    int             objc,
+    Tcl_Obj *CONST  objv[]
+);
+
+/* Send command to the autoui app*/
+int
+aui_sendcmd(
+    ClientData      cd,
+    Tcl_Interp*     interp,
+    int             objc,
+    Tcl_Obj *CONST  objv[]
 );
 
 /* set text to a window object in the autoui app*/
 int
 aui_settext(
-  ClientData      cd,
-  Tcl_Interp*     interp,
-  int             objc,
-  Tcl_Obj *CONST  objv[]
+    ClientData      cd,
+    Tcl_Interp*     interp,
+    int             objc,
+    Tcl_Obj *CONST  objv[]
 );
 
 /* get text from a window object in the autoui app*/
 int
 aui_gettext(
-  ClientData      cd,
-  Tcl_Interp*     interp,
-  int             objc,
-  Tcl_Obj *CONST  objv[]
+    ClientData      cd,
+    Tcl_Interp*     interp,
+    int             objc,
+    Tcl_Obj *CONST  objv[]
 );
+
+/* enable a window object in the autoui app*/
+int
+aui_enable(
+    ClientData      cd,
+    Tcl_Interp*     interp,
+    int             objc,
+    Tcl_Obj *CONST  objv[]
+);
+
+/* disable a window object in the autoui app*/
+int
+aui_disable(
+    ClientData      cd,
+    Tcl_Interp*     interp,
+    int             objc,
+    Tcl_Obj *CONST  objv[]
+);
+
+
+/* aui_help show the aui_xxx() */
+int
+aui_help(
+    ClientData      cd,
+    Tcl_Interp*     interp,
+    int             objc,
+    Tcl_Obj *CONST  objv[]
+);
+
 
 #endif /*_AUITCLSH_H_*/
