@@ -32,6 +32,7 @@ texu_char*         texu_copy_string(texu_char*, const texu_char*);
 texu_char*         texu_concat_string(const texu_char*, const texu_char*);
 
 texu_status        texu_printf_alignment(texu_char*, const texu_char*, texu_i32, texu_ui32);
+texu_status        texu_printf_alignment2(texu_char*, const texu_char*, texu_i32, texu_ui32, texu_bool);
 /*
 # TexU xcnf
 #
@@ -90,11 +91,11 @@ texu_status        texu_dblog_close(texu_dblog*);
 texu_status        texu_dblog_create_logname(texu_dblog*, texu_char*);
 texu_status        texu_dblog_drop_logname(texu_dblog*, texu_char*);
 texu_status        texu_dblog_log(
-                     texu_dblog*,
-                     texu_char*,
-                     texu_i32,
-                     texu_char*,
-                     texu_char*);
+                        texu_dblog*,
+                        texu_char*,
+                        texu_i32,
+                        texu_char*,
+                        texu_char*);
 
 
 /*
@@ -162,21 +163,21 @@ typedef double                  texu_safedb_f64;
 
 typedef unsigned char           texu_safedb_byte;
 typedef char                    texu_safedb_char;
-typedef texu_safedb_i64              texu_safedb_int;
-typedef texu_safedb_f64              texu_safedb_float;
-typedef texu_safedb_i32              texu_safedb_status;
+typedef texu_safedb_i64         texu_safedb_int;
+typedef texu_safedb_f64         texu_safedb_float;
+typedef texu_safedb_i32         texu_safedb_status;
 typedef const char*             texu_safedb_cstr;
 typedef char*                   texu_safedb_str;
-typedef texu_safedb_i32              texu_safedb_bool;
+typedef texu_safedb_i32         texu_safedb_bool;
 
 
-texu_safedb_ptr  texu_safedb_new();
-void        texu_safedb_del(texu_safedb_ptr db);
+texu_safedb_ptr     texu_safedb_new();
+void                texu_safedb_del(texu_safedb_ptr db);
 
-texu_safedb_status   texu_safedb_open(texu_safedb_ptr db, texu_safedb_cstr dbfile);
-texu_safedb_status   texu_safedb_open2(texu_safedb_ptr db, texu_safedb_cstr dbfile, texu_safedb_ui32 flags);
-texu_safedb_status   texu_safedb_open_read(texu_safedb_ptr db, texu_safedb_cstr dbfile);
-void            texu_safedb_close(texu_safedb_ptr db);
+texu_safedb_status      texu_safedb_open(texu_safedb_ptr db, texu_safedb_cstr dbfile);
+texu_safedb_status      texu_safedb_open2(texu_safedb_ptr db, texu_safedb_cstr dbfile, texu_safedb_ui32 flags);
+texu_safedb_status      texu_safedb_open_read(texu_safedb_ptr db, texu_safedb_cstr dbfile);
+void                    texu_safedb_close(texu_safedb_ptr db);
 
 /*****************************************************************************
 CREATE TABLE student(

@@ -104,11 +104,17 @@ texu_wnd*           TexuCreateWindow2(
 void                TexuDestroyWindow(
                         texu_wnd*  wnd
                     );
+#if USE_TCL_AUTOMATION
+texu_status         TexuCreateControls(texu_wnd *wnd, texu_wnd_template *templ, texu_i32 nitems, texu_char *templname);
+texu_status         TexuCreateControls2(texu_wnd *wnd, texu_wnd_template2 *templ, texu_i32 nitems, texu_char *templname);
+#else
 texu_status         TexuCreateControls(texu_wnd* wnd, texu_wnd_template*, texu_i32);
 texu_status         TexuCreateControls2(texu_wnd* wnd, texu_wnd_template2*, texu_i32);
+#endif
+texu_i64            TexuCloseWindow(texu_wnd *wnd);
 
-#define TEXU_WS_HIDE            0
-#define TEXU_WS_SHOW            1
+#define TEXU_SW_HIDE            0
+#define TEXU_SW_SHOW            1
 void                TexuShowWindow(
                         texu_wnd*  wnd,
                         texu_i32   show
@@ -116,6 +122,9 @@ void                TexuShowWindow(
 void                TexuInvalidateWindow(
                         texu_wnd*  wnd
                     );
+texu_bool           TexuIsExecutableCommand(
+                        texu_wnd*   wnd,
+                        texu_ui32   id);
 texu_wnd*
 TexuMessageBox(
     texu_char* caption,

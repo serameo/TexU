@@ -136,57 +136,55 @@ enum
 
 
 
-texu_cio*          texu_cio_new();
-void               texu_cio_del(texu_cio*);
+texu_cio*           texu_cio_new();
+void                texu_cio_del(texu_cio*);
 
-texu_i32           texu_cio_init(texu_cio*, texu_i32, texu_i32);
-void               texu_cio_release(texu_cio*);
+texu_i32            texu_cio_init(texu_cio*, texu_i32, texu_i32);
+void                texu_cio_release(texu_cio*);
 /* simple screen control */
-texu_i32           texu_cio_clear(texu_cio*);
-texu_i32           texu_cio_clearln(texu_cio*, texu_i32);
-texu_i32           texu_cio_echo(texu_cio*, texu_bool);
+texu_i32            texu_cio_clear(texu_cio*);
+texu_i32            texu_cio_clearln(texu_cio*, texu_i32);
+texu_i32            texu_cio_echo(texu_cio*, texu_bool);
 /* cursor */
-texu_i32           texu_cio_gotoyx(texu_cio*, texu_i32, texu_i32);
-texu_i32           texu_cio_getyx(texu_cio*, texu_i32, texu_i32);
+texu_i32            texu_cio_gotoyx(texu_cio*, texu_i32, texu_i32);
+texu_i32            texu_cio_getyx(texu_cio*, texu_i32, texu_i32);
 /* get/put */
-texu_i32           texu_cio_getch(texu_cio*);
-texu_i32           texu_cio_getstr(texu_cio*, texu_char*);
+texu_i32            texu_cio_getch(texu_cio*);
+texu_i32            texu_cio_getstr(texu_cio*, texu_char*);
 
-texu_i32           texu_cio_putch(texu_cio*, texu_i32, texu_i32, texu_i32);
-texu_i32           texu_cio_putch_attr(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
-texu_i32           texu_cio_putch_attr2(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32, texu_i32);
-texu_i32           texu_cio_putstr(texu_cio*, texu_i32, texu_i32, const texu_char*);
-texu_i32           texu_cio_putstr_attr(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32);
-texu_i32           texu_cio_putstr_attr2(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32, texu_i32);
+texu_i32            texu_cio_putch(texu_cio*, texu_i32, texu_i32, texu_i32);
+texu_i32            texu_cio_putch_attr(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
+texu_i32            texu_cio_putch_attr2(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32, texu_i32);
+texu_i32            texu_cio_putstr(texu_cio*, texu_i32, texu_i32, const texu_char*);
+texu_i32            texu_cio_putstr_attr(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32);
+texu_i32            texu_cio_putstr_attr2(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32, texu_i32);
 
-texu_i32           texu_cio_refresh(texu_cio*);
+texu_i32            texu_cio_refresh(texu_cio*);
 /* text attributes */
-texu_i32           texu_cio_attron(texu_cio*, texu_i32);
-texu_i32           texu_cio_attroff(texu_cio*, texu_i32);
+texu_i32            texu_cio_attron(texu_cio*, texu_i32);
+texu_i32            texu_cio_attroff(texu_cio*, texu_i32);
 
 
 /* border */
-texu_i32           texu_cio_draw_frame(texu_cio*, const texu_char*, texu_rect*, texu_i32);
-texu_i32           texu_cio_draw_rect(texu_cio*, texu_rect*, texu_i32);
-texu_i32           texu_cio_draw_line(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
-texu_i32           texu_cio_draw_vline(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
+texu_i32            texu_cio_draw_frame(texu_cio*, const texu_char*, texu_rect*, texu_i32);
+texu_i32            texu_cio_draw_rect(texu_cio*, texu_rect*, texu_i32);
+texu_i32            texu_cio_draw_line(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
+texu_i32            texu_cio_draw_vline(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
 
-texu_i32           texu_cio_draw_hrects(texu_cio*, texu_rect*, texu_i32*, texu_i32, texu_i32);
-texu_i32           texu_cio_draw_vrects(texu_cio*, texu_rect*, texu_i32*, texu_i32, texu_i32);
+texu_i32            texu_cio_draw_hrects(texu_cio*, texu_rect*, texu_i32*, texu_i32, texu_i32);
+texu_i32            texu_cio_draw_vrects(texu_cio*, texu_rect*, texu_i32*, texu_i32, texu_i32);
 
-texu_i32           texu_cio_get_color(texu_cio*, texu_i32);
-texu_i32           texu_cio_get_underline(texu_cio*, texu_i32);
-texu_i32           texu_cio_get_reverse(texu_cio*, texu_i32);
-texu_i32           texu_cio_get_blink(texu_cio*, texu_i32);
-texu_i32           texu_cio_get_color_attr(texu_cio*, texu_i32, texu_i32);
+texu_i32            texu_cio_get_color(texu_cio*, texu_i32);
+texu_i32            texu_cio_get_underline(texu_cio*, texu_i32);
+texu_i32            texu_cio_get_reverse(texu_cio*, texu_i32);
+texu_i32            texu_cio_get_blink(texu_cio*, texu_i32);
+texu_i32            texu_cio_get_color_attr(texu_cio*, texu_i32, texu_i32);
 
-texu_i32           texu_cio_save_screen(texu_cio*, FILE*);
-texu_i32           texu_cio_restore_screen(texu_cio*, FILE*);
+texu_i32            texu_cio_save_screen(texu_cio*, FILE*);
+texu_i32            texu_cio_restore_screen(texu_cio*, FILE*);
 
-texu_i32
-texu_cio_nodelay(texu_cio* cio, texu_i32 delay);
-
-
+texu_i32            texu_cio_nodelay(texu_cio* cio, texu_i32 delay);
+void                texu_cio_interval(texu_cio cio, texu_i32 msec /*1000 msec = 1sec*/);
 #ifdef __cplusplus
 }
 #endif

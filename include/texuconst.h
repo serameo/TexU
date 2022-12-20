@@ -462,10 +462,12 @@ enum
 
 
 /* window styles */
-#define TEXU_WS_LEFT                   0x00000001          /* shared controls style */
-#define TEXU_WS_CENTER                 0x00000002
-#define TEXU_WS_RIGHT                  0x00000004
-#define TEXU_WS_DISABLED               0x00000008
+#define TEXU_WS_LEFT                    0x00000001          /* shared controls style */
+#define TEXU_WS_CENTER                  0x00000002
+#define TEXU_WS_RIGHT                   0x00000004
+#define TEXU_WS_DISABLED                0x00000008          /* disable when created */
+#define TEXU_WS_HIDE                    0x00000010          /* hide when created */
+#define TEXU_WS_BORDER                  0x00000020          /* draw border */
 
 #define TEXU_ALIGN_LEFT                TEXU_WS_LEFT
 #define TEXU_ALIGN_CENTER              TEXU_WS_CENTER
