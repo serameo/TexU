@@ -210,7 +210,11 @@ int main()
     texu_status rc = 0;
     texu_wnd *wnd = 0;
 
+#ifdef USE_TCL_AUTOMATION
+    rc = TexuStartup(25, 100, "testui"); /*25 lines x 100 characters per line*/
+#else
     rc = TexuStartup(25, 100); /*25 lines x 100 characters per line*/
+#endif
     if (rc != TEXU_OK)
     {
         printf("cannot initialized environment\n");
@@ -256,7 +260,7 @@ int main()
         0  /* user data */
     );
 
-    TexuShowWindow(wnd, TEXU_WS_SHOW);
+    TexuShowWindow(wnd, TEXU_SW_SHOW);
     TexuInvalidateWindow(wnd);
 
     TexuRun();
@@ -286,7 +290,7 @@ void _MyWndProc_OnHelp(texu_wnd *wnd)
         0  /* user data */
     );
 
-    TexuShowWindow(newwnd, TEXU_WS_SHOW);
+    TexuShowWindow(newwnd, TEXU_SW_SHOW);
     TexuInvalidateWindow(newwnd);
 }
 
@@ -323,7 +327,7 @@ void _MyWndProc_OnAdd_test(texu_wnd *wnd)
         0  /* user data */
     );
 
-    TexuShowWindow(newwnd, TEXU_WS_SHOW);
+    TexuShowWindow(newwnd, TEXU_SW_SHOW);
     TexuInvalidateWindow(newwnd);
 }
 
@@ -955,7 +959,7 @@ void _MyWndProc2_OnAdd_test(texu_wnd *wnd)
         0  /* user data */
     );
 
-    TexuShowWindow(newwnd, TEXU_WS_SHOW);
+    TexuShowWindow(newwnd, TEXU_SW_SHOW);
     TexuInvalidateWindow(newwnd);
 }
 
@@ -1534,7 +1538,7 @@ void _MyWndProc3_OnAdd_test(texu_wnd *wnd)
         0  /* user data */
     );
 
-    TexuShowWindow(newwnd, TEXU_WS_SHOW);
+    TexuShowWindow(newwnd, TEXU_SW_SHOW);
     TexuInvalidateWindow(newwnd);
 }
 
@@ -1663,7 +1667,7 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         header.caption = "IP Address";
         header.normcolor = TEXU_CIO_COLOR_BLUE_YELLOW;
         header.align = TEXU_ALIGN_CENTER;
-        header.cols = 18;
+        header.cols = 12;
         TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
 
         header.align = TEXU_ALIGN_RIGHT;
@@ -1983,8 +1987,11 @@ int main2()
     texu_char *key;
 
     const char *params = "\0x4";
-
+#ifdef USE_TCL_AUTOMATION
+    rc = TexuStartup(25, 100, "testui"); /*25 lines x 100 characters per line*/
+#else
     rc = TexuStartup(25, 100); /*25 lines x 100 characters per line*/
+#endif
     if (rc != TEXU_OK)
     {
         printf("cannot initialized environment\n");
