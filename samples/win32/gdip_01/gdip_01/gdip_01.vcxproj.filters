@@ -1,0 +1,114 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="texu">
+      <UniqueIdentifier>{cabcda40-7b04-425c-91eb-76ff099523ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="texu\include">
+      <UniqueIdentifier>{778e8cdd-ff14-4bdc-ba12-6aa7613af864}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="texu\src">
+      <UniqueIdentifier>{c33a1e44-64cf-4add-aae8-7442d5afaafa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cJSON">
+      <UniqueIdentifier>{07bc06fb-1f34-4d3c-b172-3f86da0c13d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cJSON\include">
+      <UniqueIdentifier>{a96f385b-6425-477c-82d6-0eef0be82066}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cJSON\src">
+      <UniqueIdentifier>{76158bdf-87d6-4281-bdfb-83b68fa73bdd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="gdip_01.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="g2tctls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texuctrl.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texui.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texulib.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texumenu.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texuproc.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texutils.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\cJSON.c">
+      <Filter>cJSON\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texucio.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texu.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="gdip_02.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="g2tctls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texuconst.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texui.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texumacros.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texumenu.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texust.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texutils.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texutypes.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texucio.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\cJSON.h">
+      <Filter>cJSON\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texulib.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texu.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\texuix.h">
+      <Filter>texu\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
