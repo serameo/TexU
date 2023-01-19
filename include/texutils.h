@@ -26,13 +26,30 @@ extern "C" {
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
 
-texu_char*         texu_alloc_string(texu_ui32);
-texu_char*         texu_init_string(const texu_char*, texu_ui32);
-texu_char*         texu_copy_string(texu_char*, const texu_char*);
-texu_char*         texu_concat_string(const texu_char*, const texu_char*);
+texu_char*          texu_alloc_string(texu_ui32);
+texu_char*          texu_init_string(const texu_char*, texu_ui32);
+texu_char*          texu_copy_string(texu_char*, const texu_char*);
+texu_char*          texu_concat_string(const texu_char*, const texu_char*);
+size_t              texu_strlen(const texu_char *str);
+texu_char          *texu_strcpy(texu_char* dest, const texu_char *str);
+texu_char          *texu_strncpy(texu_char *dest, const texu_char *src, size_t size);
+texu_i32            texu_strcmp(const texu_char *s1, const texu_char *s2);
+texu_i32            texu_strncmp(const texu_char *s1, const texu_char *s2, texu_i32 len);
+texu_char          *texu_strcat(texu_char* dest, const texu_char* src);
+texu_char          *texu_strchr(const texu_char *str, texu_char ch);
+texu_char *         texu_memset(texu_char *dest, texu_char ch, size_t len);
+texu_char *         texu_memcpy(texu_char *dest, const texu_char *src, size_t len);
+texu_i32            texu_memcmp(const texu_char *dest, const texu_char *src, size_t len);
 
-texu_status        texu_printf_alignment(texu_char*, const texu_char*, texu_i32, texu_ui32);
-texu_status        texu_printf_alignment2(texu_char*, const texu_char*, texu_i32, texu_ui32, texu_bool);
+#if (defined WIN32 && defined UNICODE)
+int                 texu_a2w(wchar_t *out, int outlen, const char *ascii, int asciilen);
+#endif
+
+texu_i32            texu_atol(const texu_char *buf);
+texu_f64            texu_atof(const texu_char *buf);
+
+texu_status         texu_printf_alignment(texu_char*, const texu_char*, texu_i32, texu_ui32);
+texu_status         texu_printf_alignment2(texu_char*, const texu_char*, texu_i32, texu_ui32, texu_bool);
 /*
 # TexU xcnf
 #

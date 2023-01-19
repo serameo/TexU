@@ -11,7 +11,7 @@
 #define _TEXUIO_H_
 
 #include <stdio.h>
-#include <ncurses.h>
+/*#include <ncurses.h>*/
 
 #include "texumacros.h"
 #include "texutypes.h"
@@ -134,13 +134,36 @@ enum
 
 #endif
 
+#if (defined WIN32 && defined _WINDOWS)
+texu_env           *texu_cio_get_env(texu_cio* cio);
+texu_status     texu_env_gotoyx(texu_env *env, texu_i32 y, texu_i32 x);
+texu_status     texu_env_text_to_screen(texu_env *env, texu_pos* spos, texu_pos* tpos);
+texu_status     texu_env_screen_to_text(texu_env *env, texu_pos* tpos, texu_pos* spos);
+texu_status     texu_env_draw_text(texu_env *env,
+                                   texu_i32 y,
+                                   texu_i32 x,
+                                   texu_string text,
+                                   texu_ui32 textcolor,
+                                   texu_ui32 bgcolor);
+texu_status     texu_env_draw_char(texu_env *env,
+                                   texu_i32 y,
+                                   texu_i32 x,
+                                   texu_char ch,
+                                   texu_ui32 textcolor,
+                                   texu_ui32 bgcolor);
+#endif
 
 
 texu_cio*           texu_cio_new();
 void                texu_cio_del(texu_cio*);
 
+#if (defined WIN32 && defined _WINDOWS)
+texu_i32            texu_cio_init(texu_cio*, texu_env *env);
+#else
 texu_i32            texu_cio_init(texu_cio*, texu_i32, texu_i32);
+#endif
 void                texu_cio_release(texu_cio*);
+
 /* simple screen control */
 texu_i32            texu_cio_clear(texu_cio*);
 texu_i32            texu_cio_clearln(texu_cio*, texu_i32);

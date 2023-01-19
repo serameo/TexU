@@ -14,7 +14,7 @@
 #include "texumacros.h"
 #include "texutypes.h"
 #include "texuconst.h"
-#include "texucio.h"
+#include "texulib.h"
 #include "texust.h"
 
 #ifdef __cplusplus

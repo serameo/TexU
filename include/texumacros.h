@@ -21,6 +21,12 @@
 #define TEXU_IS_NOT_NULL(p)            (!(p))
 #define TEXU_MIN(a, b)                 ((a) < (b) ? (a) : (b))
 #define TEXU_MAX(a, b)                 ((a) > (b) ? (a) : (b))
-
+/*see winnt.h*/
+#if (defined WIN32 && defined UNICODE)
+#define __TEXUTEXT(quote) L##quote
+#else
+#define __TEXUTEXT(quote) quote
+#endif
+#define TEXUTEXT(quote) __TEXUTEXT(quote)
 
 #endif /*_TEXUMACROS_H_*/

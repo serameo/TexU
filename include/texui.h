@@ -26,6 +26,12 @@ extern "C" {
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
+#ifndef COLS
+#define COLS    (80)
+#endif
+#ifndef LINES
+#define LINES   (25)
+#endif
 enum
 {
     TEXU_COLOR_WINDOW = 0,
@@ -90,7 +96,75 @@ texu_i64          TexuFrameWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
 texu_env*       texu_env_new(texu_i32 lines, texu_i32 cols, const char* pathname);
 FILE*           texu_env_get_stdout(texu_env *env);
 #else
+#if (defined WIN32 && defined _WINDOWS)
+texu_i64        texu_env_invalidate(texu_env *env);
+HDC             texu_env_get_hdc(texu_env *env);
+void            texu_env_set_memdc(texu_env *env, HDC hmemdc);
+HDC             texu_env_get_memdc(texu_env *env);
+texu_env*       texu_env_new(HINSTANCE hinst, texu_i32 lines, texu_i32 cols);
+texu_status     texu_env_register_envcls(texu_env *env, HINSTANCE hinst, texu_i32 lines, texu_i32 cols);
+texu_status     texu_env_easy_createwnd(texu_env *env,
+                                   HWND hWndParent,
+                                   UINT nID,
+                                   LPVOID lpData);
+texu_status     texu_env_create_mainwnd(texu_env *env,
+                                   DWORD dwExStyle,
+                                   DWORD dwStyle,
+                                   int x, int y, int cx, int cy,
+                                   LPVOID lpData);
+texu_status     texu_env_create_childwnd(texu_env *env,
+                                   DWORD dwExStyle,
+                                   DWORD dwStyle,
+                                   int x, int y, int cx, int cy,
+                                   HWND hWndParent,
+                                   UINT nID,
+                                   LPVOID lpData);
+HWND            texu_env_get_hwnd(texu_env *env);
+texu_i32        texu_env_get_cxcaps(texu_env *env);
+texu_i32        texu_env_get_cyline(texu_env *env);
+texu_status     texu_env_gotoyx(texu_env *env, texu_i32 y, texu_i32 x);
+texu_status     texu_env_text_to_screen(texu_env *env, texu_pos* spos, texu_pos* tpos);
+texu_status     texu_env_screen_to_text(texu_env *env, texu_pos* tpos, texu_pos* spos);
+texu_status     texu_env_draw_text(texu_env *env,
+                                   texu_i32 y,
+                                   texu_i32 x,
+                                   texu_string text,
+                                   texu_ui32 textcolor,
+                                   texu_ui32 bgcolor);
+texu_status     texu_env_draw_char(texu_env *env,
+                                   texu_i32 y,
+                                   texu_i32 x,
+                                   texu_char ch,
+                                   texu_ui32 textcolor,
+                                   texu_ui32 bgcolor); 
+void            texu_env_set_sysbgcolors(texu_env* env, texu_i32(*setcolor)(texu_i32));
+texu_ui32       texu_env_get_sysbgcolor(texu_env*, texu_i32);
+texu_status     texu_env_update_screen(texu_env *env);
+texu_status     texu_env_draw_vframes(texu_env *env, texu_rect* rect, texu_i32* widths, texu_i32 frames, texu_ui32 textcolor, texu_ui32 bgcolor);
+texu_status     texu_env_draw_hframes(texu_env *env, texu_rect* rect, texu_i32* heights, texu_i32 frames, texu_ui32 textcolor, texu_ui32 bgcolor);
+texu_status     texu_env_draw_frame(texu_env *env, texu_rect* rect, texu_ui32 textcolor, texu_ui32 bgcolor);
+texu_status     texu_env_draw_hline(texu_env *env, texu_i32 y, texu_i32 x, texu_i32 blocks, texu_ui32 textcolor, texu_ui32 bgcolor);
+texu_status     texu_env_draw_vline(texu_env *env, texu_i32 y, texu_i32 x, texu_i32 blocks, texu_ui32 textcolor, texu_ui32 bgcolor);
+texu_status     texu_env_draw_frame_char(texu_env *env, texu_i32 y, texu_i32 x, texu_i32 ch, texu_ui32 textcolor, texu_ui32 bgcolor);
+texu_status     texu_env_draw_rect(texu_env *env, texu_rect* rect, texu_ui32 textcolor, texu_ui32 bgcolor);
+/*cursor*/
+texu_bool       texu_env_new_cursor(texu_env *env);
+texu_bool       texu_env_set_cursor(texu_env *env, texu_i32 y, texu_i32 x);
+texu_bool       texu_env_show_cursor(texu_env *env, texu_bool show);
+texu_bool       texu_env_del_cursor(texu_env *env);
+
+#else
 texu_env*       texu_env_new(texu_i32, texu_i32);
+#endif
+
+
+/*cursor*/
+texu_bool       texu_env_new_cursor(texu_env *env);
+texu_bool       texu_env_set_cursor(texu_env *env, texu_i32 y, texu_i32 x);
+texu_bool       texu_env_show_cursor(texu_env *env, texu_bool show);
+texu_bool       texu_env_del_cursor(texu_env *env);
+
+
 #endif /*USE_TCL_AUTOMATION*/
 void            texu_env_del(texu_env*);
 
@@ -98,7 +172,11 @@ texu_status     texu_env_register_cls(
                     texu_env*,
                     const texu_char*,
                     texu_wndproc);
+#if (defined WIN32 && defined _WINDOWS)
+texu_status     texu_env_run(texu_env *env, UINT message, WPARAM wParam, LPARAM lParam);
+#else
 texu_status     texu_env_run(texu_env*);
+#endif
 texu_cio*       texu_env_get_cio(texu_env*);
 texu_status     texu_env_push_wnd(texu_env*, texu_wnd*);
 texu_wnd*       texu_env_pop_wnd(texu_env*);
@@ -116,10 +194,11 @@ void            texu_env_save_screen(texu_env* env);
 void            texu_env_restore_screen(texu_env* env);
 
 void            texu_env_set_syscolors(texu_env* env, texu_i32 (*setcolor)(texu_i32));
-texu_i32        texu_env_get_syscolor(texu_env*, texu_i32);
+texu_ui32        texu_env_get_syscolor(texu_env*, texu_i32);
 
+#if 0
 texu_i32        texu_env_set_timer(texu_env*, texu_i32, texu_i32, texu_i32);
-
+#endif
 /*
 # TexU window object
 #
@@ -173,12 +252,18 @@ texu_bool           texu_wnd_is_enable(texu_wnd*);
 texu_bool           texu_wnd_is_active(texu_wnd *wnd);
 void                texu_wnd_set_text(texu_wnd*, const texu_char*);
 texu_i32            texu_wnd_get_text(texu_wnd*, texu_char*, texu_i32);
-void                texu_wnd_set_color(texu_wnd*, texu_i32, texu_i32);
-texu_status         texu_wnd_get_color(texu_wnd*, texu_i32*, texu_i32*);
+void                texu_wnd_set_color(texu_wnd*, texu_ui32, texu_ui32);
+texu_status         texu_wnd_get_color(texu_wnd*, texu_ui32*, texu_ui32*);
 const texu_char*    texu_wnd_get_clsname(texu_wnd*);
-void                texu_wnd_set_focuscolor(texu_wnd*, texu_i32);
-texu_i32            texu_wnd_get_focuscolor(texu_wnd*);
+void                texu_wnd_set_focused_color(texu_wnd*, texu_ui32);
+texu_ui32            texu_wnd_get_focused_color(texu_wnd*);
 texu_bool           texu_wnd_is_executable(texu_wnd *wnd, texu_ui32 id);
+#if (defined WIN32 && defined _WINDOWS)
+void                texu_wnd_set_bgcolor(texu_wnd*, texu_ui32, texu_ui32);
+texu_status         texu_wnd_get_bgcolor(texu_wnd*, texu_ui32*, texu_ui32*);
+void                texu_wnd_set_bgfocus(texu_wnd*, texu_ui32);
+texu_ui32           texu_wnd_get_bgfocus(texu_wnd*);
+#endif
 
 
 texu_i32            texu_wnd_get_y(texu_wnd*);

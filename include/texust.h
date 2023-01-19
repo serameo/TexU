@@ -38,9 +38,14 @@ extern "C"
         texu_bool enable;
         texu_bool visible;
         const texu_char *text;
-        texu_i32 normalcolor;
-        texu_i32 disabledcolor;
-        texu_i32 focuscolor;
+        texu_ui32 normalcolor;
+        texu_ui32 disabledcolor;
+        texu_ui32 focusedcolor;
+#if (defined WIN32 && defined _WINDOWS)
+        texu_ui32 normalbg;
+        texu_ui32 disabledbg;
+        texu_ui32 focusedbg;
+#endif
         texu_ui32 id;
         const texu_char *clsname;
         void *userdata;
@@ -48,6 +53,12 @@ extern "C"
     };
     typedef struct texu_wnd_attrs texu_wnd_attrs;
 
+    struct texu_pos
+    {
+        texu_i32 y;
+        texu_i32 x;
+    };
+    typedef struct texu_pos texu_pos;
     struct texu_rect
     {
         texu_i32 y;
@@ -102,9 +113,14 @@ extern "C"
         texu_i32 idx; /* row index, zero based    */
         texu_i32 col; /* column index, zero based */
         texu_char *text;
-        texu_i32 normcolor; /* text attributes          */
-        texu_i32 discolor;  /* text attributes          */
-        texu_i32 selcolor;  /* text attributes          */
+        texu_ui32 normcolor; /* text attributes          */
+        texu_ui32 discolor;  /* text attributes          */
+        texu_ui32 selcolor;  /* text attributes          */
+#if (defined WIN32 && defined _WINDOWS)
+        texu_ui32 normbg; /* text attributes          */
+        texu_ui32 disbg;  /* text attributes          */
+        texu_ui32 selbg;  /* text attributes          */
+#endif
         void *data;         /* user data                */
     };
     typedef struct texu_wnd_subitem texu_wnd_subitem;
@@ -125,6 +141,11 @@ extern "C"
         texu_i32 normcolor;  /* text attributes          */
         texu_i32 discolor;   /* text attributes          */
         texu_i32 selcolor;   /* text attributes          */
+#if (defined WIN32 && defined _WINDOWS)
+        texu_i32 normbg;  /* text attributes          */
+        texu_i32 disbg;   /* text attributes          */
+        texu_i32 selbg;   /* text attributes          */
+#endif
         texu_ui32 editstyle; /* edit style, see TES_XXX  */
         texu_i32 decwidth;   /* TES_DECIMAL or TES_AUTODECIMALCOMMA, default 6 */
     };
@@ -151,6 +172,11 @@ extern "C"
         texu_i32 normcolor;
         texu_i32 discolor;
         texu_i32 selcolor;
+#if (defined WIN32 && defined _WINDOWS)
+        texu_i32 normbg;
+        texu_i32 disbg;
+        texu_i32 selbg;
+#endif
     };
     typedef struct texu_treewnd_item texu_treewnd_item;
 
@@ -178,6 +204,11 @@ extern "C"
         texu_i32 normcolor;
         texu_i32 discolor;
         texu_i32 selcolor;
+#if (defined WIN32 && defined _WINDOWS)
+        texu_i32 normbg;
+        texu_i32 disbg;
+        texu_i32 selbg;
+#endif
         texu_ui32 style; /*TEXU_MS_TEXT, TEXU_MS_BREAK*/
         texu_char info[TEXU_MAX_WNDTEXT + 1];
         void *userdata;
