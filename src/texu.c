@@ -31,12 +31,21 @@ TexuStartup(texu_i32 lines, texu_i32 cols, const char* pathname)
     return (genv ? TEXU_OK : TEXU_ERROR);
 }
 #else
+#if (defined WIN32 && defined _WINDOWS)
+texu_status
+TexuStartup(HINSTANCE hinst, texu_i32 lines, texu_i32 cols)
+{
+    genv = texu_env_new(hinst, lines, cols);
+    return (genv ? TEXU_OK : TEXU_ERROR);
+}
+#else
 texu_status
 TexuStartup(texu_i32 lines, texu_i32 cols)
 {
     genv = texu_env_new(lines, cols);
     return (genv ? TEXU_OK : TEXU_ERROR);
 }
+#endif
 #endif /*USE_TCL_AUTOMATION*/
 
 texu_status
@@ -46,11 +55,62 @@ TexuShutdown()
     return TEXU_OK;
 }
 
+#if (defined WIN32 && defined _WINDOWS)
+texu_status
+TexuCreateMainEnvWnd(DWORD dwExStyle, DWORD dwStyle, 
+    int x, int y, int cx, int cy,
+    LPVOID lpData)
+{
+    texu_status rc = texu_env_create_mainwnd(genv,
+                        dwExStyle,
+                        dwStyle,
+                        x, y, cx, cy,
+                        lpData);
+    if (TEXU_OK == rc)
+    {
+        HWND hwnd = texu_env_get_hwnd(genv);
+        UpdateWindow(hwnd);
+        ShowWindow(hwnd, SW_SHOW);
+    }
+    return rc;
+}
+
+texu_status
+TexuCreateChildEnvWnd(DWORD dwExStyle, DWORD dwStyle,
+                 int x, int y, int cx, int cy,
+                 HWND hWndParent,
+                 UINT nID,
+                 LPVOID lpData)
+{
+    texu_status rc = texu_env_create_childwnd(genv,
+                                        dwExStyle,
+                                        dwStyle,
+                                        x, y, cx, cy,
+                                        hWndParent,
+                                        nID,
+                                        lpData);
+    return rc;
+}
+
+texu_status
+TexuRun()
+{
+    MSG msg;
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return msg.wParam;
+}
+#else
 texu_status
 TexuRun()
 {
     return (genv ? texu_env_run(genv) : TEXU_ERROR);
 }
+#endif
 
 texu_env *
 TexuGetEnv()
@@ -69,7 +129,11 @@ TexuExit()
 {
     if (genv)
     {
+#if (defined WIN32 && defined _WINDOWS)
+        PostQuitMessage(0);
+#else
         texu_env_exit(genv);
+#endif
     }
 }
 
@@ -125,7 +189,13 @@ TexuMessageBox(
     attrs.text          = text;
     attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
-    attrs.id            = id;
+    attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
+#if (defined WIN32 && defined _WINDOWS)
+    attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
+    attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
+    attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
+#endif
+    attrs.id = id;
     attrs.clsname       = TEXU_MSGBOX_CLASS;
     attrs.userdata      = userdata;
     attrs.style         = buttons;
@@ -178,7 +248,7 @@ TexuCreateControls(texu_wnd *wnd, texu_wnd_template *templ, texu_i32 nitems)
 
     for (i = 0; i < nitems; ++i)
     {
-        if (!(templ[i].clsname) || strlen(templ[i].clsname) == 0)
+        if (!(templ[i].clsname) || texu_strlen(templ[i].clsname) == 0)
         {
             break;
         }
@@ -246,7 +316,7 @@ TexuCreateControls2(texu_wnd *wnd, texu_wnd_template2 *templ, texu_i32 nitems)
 
     for (i = 0; i < nitems; ++i)
     {
-        if (!(templ[i].clsname) || strlen(templ[i].clsname) == 0)
+        if (!(templ[i].clsname) || texu_strlen(templ[i].clsname) == 0)
         {
             break;
         }
@@ -366,7 +436,13 @@ TexuCreateWindow2(
     attrs.text          = text;
     attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
-    attrs.id            = id;
+    attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+#if (defined WIN32 && defined _WINDOWS)
+    attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+    attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+    attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+#endif
+    attrs.id = id;
     attrs.clsname       = clsname;
     attrs.userdata      = userdata;
     attrs.style         = style;
@@ -538,7 +614,7 @@ TexuSetWindowText(
     texu_wnd *wnd,
     const texu_char *text)
 {
-    texu_wnd_set_text(wnd, (text ? text : ""));
+    texu_wnd_set_text(wnd, (text ? text : TEXUTEXT("")));
 }
 texu_i32
 TexuGetWindowText(
@@ -548,16 +624,27 @@ TexuGetWindowText(
 )
 {
     TexuSendMessage(wnd, TEXU_WM_GETTEXT, (texu_i64)text, len);
-    return strlen(text);
+    return texu_strlen(text);
 }
 void
 TexuSetColor(
     texu_wnd *wnd,
-    texu_i32 color,
-    texu_i32 discolor)
+    texu_ui32 color,
+    texu_ui32 discolor)
 {
     texu_wnd_set_color(wnd, color, discolor);
 }
+void
+TexuSetBgColor(
+texu_wnd *wnd,
+texu_ui32 color,
+texu_ui32 discolor)
+{
+#if (defined WIN32 && defined _WINDOWS)
+    texu_wnd_set_bgcolor(wnd, color, discolor);
+#endif
+}
+
 
 texu_i64
 TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
@@ -701,9 +788,55 @@ TexuCreateMenus(texu_wnd *wnd, texu_ui32 id, const texu_menu_template *templ, te
 texu_i32
 TexuGetColor(texu_cio *cio, texu_i32 clridx)
 {
+#if (defined WIN32 && defined _WINDOWS)
+    return clridx;
+#else
     return texu_cio_get_color(cio, clridx);
+#endif
 }
 
+#if (defined WIN32 && defined _WINDOWS)
+texu_i32
+TexuDrawHRects(texu_cio* cio, texu_rect* rect, texu_i32* heights, texu_i32 nheight, texu_ui32 color, texu_ui32 bgcolor)
+{
+    return texu_env_draw_hframes(
+                texu_cio_get_env(cio),
+                rect,
+                heights,
+                nheight,
+                color,
+                bgcolor);
+}
+
+texu_i32
+TexuDrawVRects(texu_cio* cio, texu_rect* rect, texu_i32* widths, texu_i32 nwidth, texu_ui32 color, texu_ui32 bgcolor)
+{
+    return texu_env_draw_vframes(
+                texu_cio_get_env(cio),
+                rect,
+                widths,
+                nwidth,
+                color,
+                bgcolor);
+}
+
+texu_i32
+TexuDrawFrame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_ui32 color, texu_ui32 bgcolor)
+{
+    return texu_env_draw_rect(
+                texu_cio_get_env(cio),
+                rect,
+                color,
+                bgcolor);
+}
+
+texu_i32
+TexuDrawRect(texu_cio* cio, texu_rect* rect, texu_ui32 textcolor, texu_ui32 bgcolor)
+{
+    return texu_env_draw_rect(texu_cio_get_env(cio), rect, textcolor, bgcolor);
+}
+
+#else
 texu_i32
 TexuDrawHRects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 nwidth, texu_i32 attrs)
 {
@@ -721,6 +854,7 @@ TexuDrawFrame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_i32 at
 {
     return texu_cio_draw_frame(cio, text, rect, attrs);
 }
+#endif
 
 #ifdef __cplusplus
 }

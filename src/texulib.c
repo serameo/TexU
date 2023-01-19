@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "texutypes.h"
 #include "texulib.h"
 
 #ifdef TEXU_THREAD_SAFE
@@ -733,7 +734,7 @@ texu_stack_cb_free(
     void (*cb)(texu_i64, void *),
     void *user)
 {
-    texu_ui64 i = 0;
+    texu_i64 i = 0;
     if (cb)
     {
         for (; i <= stack->index; ++i)
