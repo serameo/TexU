@@ -135,10 +135,10 @@ enum
 #endif
 
 #if (defined WIN32 && defined _WINDOWS)
-texu_env           *texu_cio_get_env(texu_cio* cio);
+texu_env       *texu_cio_get_env(texu_cio* cio);
 texu_status     texu_env_gotoyx(texu_env *env, texu_i32 y, texu_i32 x);
-texu_status     texu_env_text_to_screen(texu_env *env, texu_pos* spos, texu_pos* tpos);
-texu_status     texu_env_screen_to_text(texu_env *env, texu_pos* tpos, texu_pos* spos);
+texu_status     texu_env_text_to_screen(texu_env *env, texu_pos* spos, const texu_pos* tpos);
+texu_status     texu_env_screen_to_text(texu_env *env, texu_pos* tpos, const texu_pos* spos);
 texu_status     texu_env_draw_text(texu_env *env,
                                    texu_i32 y,
                                    texu_i32 x,

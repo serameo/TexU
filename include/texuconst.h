@@ -550,7 +550,7 @@ enum
 #define TEXU_KEY_SELMENU                VK_RETURN
 #define TEXU_KEY_NEXTWND                VK_RETURN
 #define TEXU_KEY_TAB                    VK_TAB
-#define TEXU_KEY_PREVWND                10
+#define TEXU_KEY_PREVWND                VK_TAB
 #define TEXU_KEY_BACKSPACE              VK_BACK
 #define TEXU_KEY_IC                     VK_INSERT
 #define TEXU_KEY_DC                     VK_DELETE
