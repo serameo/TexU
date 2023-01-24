@@ -5787,6 +5787,9 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_cio *cio = 0;
     texu_status rc = TEXU_OK;
     texu_wnd* qnextwnd = 0;
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 chNextKey = texu_env_get_movenext(env);
+    texu_i32 chPrevKey = texu_env_get_moveprev(env);
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -5926,7 +5929,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         }
         if (activewnd && activewnd != wnd)
         {
-            if (ch == TEXU_KEY_NEXTWND)
+            if (ch == chNextKey || ch == TEXU_KEY_NEXTWND)
             {
                 qnextwnd = (texu_wnd*)texu_wnd_send_msg(activewnd, TEXU_WM_QUERYNEXTWND, 0, 0);
                 if (0 == qnextwnd)
@@ -5934,7 +5937,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     nextwnd = texu_wnd_get_next_activechild(curpage, activewnd);
                 }
             }
-            else if (ch == TEXU_KEY_PREVWND)
+            else if (ch == chPrevKey || ch == TEXU_KEY_PREVWND)
             {
                 qnextwnd = (texu_wnd*)texu_wnd_send_msg(activewnd, TEXU_WM_QUERYPREVWND, 0, 0);
                 if (0 == qnextwnd)
@@ -6762,7 +6765,10 @@ void _TexuReBarProc_SetCurBand(texu_rbwnd *rbwnd, texu_wnd *childwnd)
 
 void _TexuReBarProc_SetCurBandByBand(texu_rbwnd *rbwnd, texu_rbwnd_band* band)
 {
-    rbwnd->curband = band;
+    if (band != rbwnd->curband)
+    {
+        rbwnd->curband = band;
+    }
 }
 
 void _TexuReBarProc_SetFirstVisibleBand(texu_rbwnd *rbwnd, texu_wnd *childwnd)
@@ -6874,6 +6880,11 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_wnd *activewnd = rbwnd->curband->childwnd;
     texu_wnd *nextwnd = 0;
     texu_rbwnd_band* nextband = 0;
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 chNextKey = texu_env_get_movenext(env);
+    texu_i32 chPrevKey = texu_env_get_moveprev(env);
+    texu_bool fInvalidate = TEXU_FALSE;
+    texu_bool fPrevMove = TEXU_FALSE;
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -6881,15 +6892,16 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     if (activewnd && activewnd != wnd)
     {
-        if (ch == TEXU_KEY_NEXTWND)
+        if (ch == chNextKey || ch == TEXU_KEY_NEXTWND)
         {
             nextband = _TexuReBarProc_GetNextActiveBand(rbwnd, rbwnd->curband);
             nextwnd = nextband->childwnd;
         }
-        else if (ch == TEXU_KEY_PREVWND)
+        else if (ch == chPrevKey || ch == TEXU_KEY_PREVWND)
         {
             nextband = _TexuReBarProc_GetPrevActiveBand(rbwnd, rbwnd->curband);
             nextwnd = nextband->childwnd;
+            fPrevMove = TEXU_TRUE;
         }
 
         /* kill and set the new active window */
@@ -6911,16 +6923,27 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 texu_cio_gotoyx(cio, y, x + width - 1);
 
                 /* the new active window */
-                _TexuReBarProc_SetCurBandByBand(rbwnd, nextband);
-                
+                if (nextband != rbwnd->curband)
+                {
+                    _TexuReBarProc_SetCurBandByBand(rbwnd, nextband);
+                    fInvalidate = TEXU_TRUE;
+                }
+
                 /*if the last visible and the next band */
-                if (rbwnd->lastvisibleband && 
+                if (TEXU_FALSE == fPrevMove && /*rbwnd->lastvisibleband &&*/
                     nextband == _TexuReBarProc_GetNextActiveBand(rbwnd, rbwnd->lastvisibleband))
                 {
                     /* find the best first visible */
                     rbwnd->firstvisibleband = _TexuListCtrlProc_GetBestFirstBand(wnd, nextband);
                     texu_wnd_invalidate(wnd);
                 }
+                else if (TEXU_TRUE == fPrevMove &&
+                         nextband == _TexuReBarProc_GetPrevActiveBand(rbwnd, rbwnd->firstvisibleband))
+                {
+                    rbwnd->firstvisibleband = _TexuListCtrlProc_GetBestFirstBand(wnd, nextband);
+                    texu_wnd_invalidate(wnd);
+                }
+
                 return;
             }
             else

@@ -1839,7 +1839,7 @@ _TexuEditProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED));
-    texu_wnd_set_bgfocus(wnd, texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED));
+    texu_wnd_set_bgfocused_color(wnd, texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED));
 #endif
     texu_wnd_set_userdata(wnd, edit);
 
@@ -2565,6 +2565,7 @@ _TexuListBoxProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
     texu_lbwnd_item *item = 0;
+    texu_env *env = texu_wnd_get_env(wnd);
     if (!texu_wnd_is_enable(wnd))
     {
         return;
@@ -2572,12 +2573,10 @@ _TexuListBoxProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     if (lb->cursel >= lb->nitems)
     {
         lb->cursel = lb->nitems - 1;
-        /*texu_wnd_invalidate(wnd);*/
     }
     else if (lb->cursel < 0)
     {
         lb->cursel = 0;
-        /*texu_wnd_invalidate(wnd);*/
     }
     item = _TexuListBoxProc_FindItemByIndex(lb, lb->cursel);
     if (item && !(item->enable))
@@ -2589,6 +2588,9 @@ _TexuListBoxProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
         }
     }
     texu_wnd_invalidate(wnd);
+#if (defined WIN32 && defined _WINDOWS)
+    /*InvalidateRect(texu_env_get_hwnd(env), NULL, TRUE);*/
+#endif
 
     /* send notification */
     _TexuListBoxProc_Notify(wnd, TEXU_LBN_SETFOCUS, lb->cursel);
@@ -2599,11 +2601,17 @@ _TexuListBoxProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
 {
     texu_i32 rc = TEXU_OK;
     texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
+    texu_env *env = texu_wnd_get_env(wnd);
 
     /* send notification */
     _TexuListBoxProc_Notify(wnd, TEXU_LBN_KILLFOCUS, lb->cursel);
 
     texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
+
+    texu_wnd_invalidate(wnd);
+#if (defined WIN32 && defined _WINDOWS)
+    /*InvalidateRect(texu_env_get_hwnd(env), NULL, TRUE);*/
+#endif
     return rc;
 }
 
@@ -2627,6 +2635,7 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX);
     texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_DISABLED);
     texu_ui32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_SELECTED);
+    texu_ui32 focuscolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_FOCUSED);
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_bool enable = texu_wnd_is_enable(wnd);
     texu_ui32 color = normcolor;
@@ -2635,10 +2644,13 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_lbwnd_item *item = 0;
     texu_i32  movey = y;
     texu_i32  movex = x;
+    texu_wnd *parent = texu_wnd_get_parent(wnd);
+    texu_bool fFocused = TEXU_FALSE;/*(wnd == texu_env_get_focus(env) ? TEXU_TRUE : TEXU_FALSE); */
 #if (defined WIN32 && defined _WINDOWS)
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_DISABLED);
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_SELECTED);
+    texu_ui32 focusbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_FOCUSED);
     texu_ui32 bgcolor = normbg;
 #endif
     if (!(texu_wnd_is_visible(wnd)))
@@ -2646,9 +2658,11 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
         return;
     }
     texu_wnd_get_color(wnd, &normcolor, &discolor);
+    focuscolor = texu_wnd_get_focused_color(wnd);
     color = (enable ? normcolor : discolor);
 #if (defined WIN32 && defined _WINDOWS)
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
+    focusbg = texu_wnd_get_bgfocused_color(wnd);
     bgcolor = (enable ? normbg : disbg);
 #endif
     /* draw */
@@ -2747,8 +2761,16 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
                     color = normcolor;
 #else
                     color = (item->enable ? normcolor : discolor);
+                    if (fFocused)
+                    {
+                        color = focuscolor;
+                    }
 #if (defined WIN32 && defined _WINDOWS)
                     bgcolor = (item->enable ? item->normbg : item->disbg);
+                    if (fFocused)
+                    {
+                        bgcolor = focusbg;
+                    }
 #endif
                     if (style & TEXU_LBS_OWNERCOLOR)
                     {
@@ -2800,11 +2822,15 @@ _TexuListBoxProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_set_color(wnd,
                        texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX),
                        texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_DISABLED));
+    texu_wnd_set_focused_color(wnd,
+                               texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_FOCUSED));
 #if (defined WIN32 && defined _WINDOWS)
     lb->selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_SELECTED);
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_DISABLED));
+    texu_wnd_set_bgfocused_color(wnd,
+                               texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_FOCUSED));
 #endif
 
     texu_wnd_set_userdata(wnd, lb);
@@ -3156,9 +3182,9 @@ _TexuComboBoxProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
     texu_wnd_move(cb->lb, y, x, height, width, TEXU_TRUE);
     texu_wnd_visible(cb->lb, TEXU_FALSE);
     _TexuComboBoxProc_Notify(wnd, TEXU_CBN_KILLFOCUS, cursel);
-    texu_wnd_invalidate(texu_wnd_get_parent(wnd));
 
     texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
+    texu_wnd_invalidate(texu_wnd_get_parent(wnd));
     return TEXU_OK;
 }
 
@@ -3177,10 +3203,13 @@ _TexuComboBoxProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     {
         return;
     }
+
     texu_wnd_send_msg(cb->lb, TEXU_WM_SETFOCUS, 0, 0);
-    texu_wnd_move(cb->lb, y, x, height, width, TEXU_TRUE);
+    texu_wnd_move(cb->lb, y+1, x, height, width, TEXU_TRUE);
     texu_wnd_visible(cb->lb, TEXU_TRUE);
     _TexuComboBoxProc_Notify(wnd, TEXU_CBN_SETFOCUS, cursel);
+
+    texu_wnd_invalidate(wnd);
 }
 
 texu_i32
@@ -3328,9 +3357,12 @@ _TexuComboBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
+    texu_wnd *parent = texu_wnd_get_parent(wnd);
     texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX);
+    texu_ui32 sel = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_SELECTED);
 #if (defined WIN32 && defined _WINDOWS)
     texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX);
+    texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_SELECTED);
 #endif
 
     if (!(texu_wnd_is_visible(wnd)))
@@ -3340,8 +3372,13 @@ _TexuComboBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
     texu_printf_alignment2(buf, text, width, TEXU_ALIGN_LEFT, TEXU_TRUE);
 #if (defined WIN32 && defined _WINDOWS)
+    if (texu_wnd_get_activechild(parent) == wnd)
+    {
+        color = sel;
+        bgcolor = selbg;
+    }
     texu_env_draw_text(env, y, x, buf, color, bgcolor);
-
+    /*draw selected*/
     texu_env_draw_char(env, y, x + width - 1, TEXUTEXT('V'), color, bgcolor);
 #else
     texu_cio_putstr_attr(dc, y, x, buf,
@@ -3369,7 +3406,7 @@ _TexuComboBoxProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs->height = 1; /* set to 1 */
 
     memset(&attrs2, 0, sizeof(attrs2));
-    attrs2.y = attrs->y;
+    attrs2.y = attrs->y + 1;
     attrs2.x = attrs->x;
     attrs2.height   = 1; /*attrs->height;*/
     attrs2.width    = attrs->width - 1;
