@@ -40,10 +40,12 @@ extern "C"
         const texu_char *text;
         texu_ui32 normalcolor;
         texu_ui32 disabledcolor;
+        texu_ui32 selectedcolor;
         texu_ui32 focusedcolor;
 #if (defined WIN32 && defined _WINDOWS)
         texu_ui32 normalbg;
         texu_ui32 disabledbg;
+        texu_ui32 selectedbg;
         texu_ui32 focusedbg;
 #endif
         texu_ui32 id;

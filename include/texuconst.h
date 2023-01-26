@@ -223,6 +223,8 @@ enum
 #define TEXU_VERT_HORZ       (11)
 
 /* status */
+#define TEXU_EVALID                     (texu_i32)(-3)
+#define TEXU_ENOMEM                     (texu_i32)(-2)
 #define TEXU_NOMEM                      (texu_i32)(-2)
 #define TEXU_ERROR                      (texu_i32)(-1)
 #define TEXU_OK                         (texu_i32)(0)
@@ -403,6 +405,9 @@ enum
 #define TEXU_TCN_ITEMCOLLAPSED          (TEXU_TCN_FIRST +  4)
 #define TEXU_TCN_ITEMEXPANDING          (TEXU_TCN_FIRST +  5)
 #define TEXU_TCN_ITEMEXPANDED           (TEXU_TCN_FIRST +  6)
+#define TEXU_TCN_BEGINEDIT              (TEXU_TCN_FIRST +  7)
+#define TEXU_TCN_ENDEDITOK              (TEXU_TCN_FIRST +  8)
+#define TEXU_TCN_ENDEDITCANCEL          (TEXU_TCN_FIRST +  9)
 
 
 
@@ -547,6 +552,7 @@ enum
 #define TEXU_KEY_PPAGE                  KEY_PPAGE
 #define TEXU_KEY_NPAGE                  KEY_NPAGE
 #else
+#define TEXU_KEY_ENTER                  VK_RETURN
 #define TEXU_KEY_SELMENU                VK_RETURN
 #define TEXU_KEY_NEXTWND                VK_RETURN
 #define TEXU_KEY_TAB                    VK_TAB
@@ -655,68 +661,78 @@ enum
 
 
 /* EDIT */
-#define TEXU_ES_LEFT                   TEXU_WS_LEFT
-#define TEXU_ES_CENTER                 TEXU_WS_CENTER
-#define TEXU_ES_RIGHT                  TEXU_WS_RIGHT
-#define TEXU_ES_AUTOHSCROLL            0x00010000
-#define TEXU_ES_APPENDMODE             0x00020000
-#define TEXU_ES_PASSWORD               0x00040000
-#define TEXU_ES_NUMBER                 0x00080000
-#define TEXU_ES_DECIMAL                0x00100000
-#define TEXU_ES_AUTODECIMALCOMMA       0x00200000
-#define TEXU_ES_UPPERCASE              0x00400000
-#define TEXU_ES_LOWERCASE              0x00800000
-#define TEXU_ES_A2Z                    0x01000000
+#define TEXU_ES_LEFT                    TEXU_WS_LEFT
+#define TEXU_ES_CENTER                  TEXU_WS_CENTER
+#define TEXU_ES_RIGHT                   TEXU_WS_RIGHT
+#define TEXU_ES_AUTOHSCROLL             0x00010000
+#define TEXU_ES_APPENDMODE              0x00020000
+#define TEXU_ES_PASSWORD                0x00040000
+#define TEXU_ES_NUMBER                  0x00080000
+#define TEXU_ES_DECIMAL                 0x00100000
+#define TEXU_ES_AUTODECIMALCOMMA        0x00200000
+#define TEXU_ES_UPPERCASE               0x00400000
+#define TEXU_ES_LOWERCASE               0x00800000
+#define TEXU_ES_A2Z                     0x01000000
 
 
 /* LISTBOX */
-#define TEXU_LBS_CHECKBOX              0x00010000
-#define TEXU_LBS_RADIOBOX              0x00020000
-#define TEXU_LBS_OWNERCOLOR            0x00040000
+#define TEXU_LBS_CHECKBOX               0x00010000
+#define TEXU_LBS_RADIOBOX               0x00020000
+#define TEXU_LBS_OWNERCOLOR             0x00040000
 
-#define TEXU_LB_UNCHECKED              0
-#define TEXU_LB_CHECKED                1
+#define TEXU_LB_UNCHECKED               0
+#define TEXU_LB_CHECKED                 1
 
-#define TEXU_LB_OK                     0
-#define TEXU_LB_ERROR                  -1
+#define TEXU_LB_OK                      0
+#define TEXU_LB_ERROR                   -1
 
 
 
 /* LIST CTRL */
-#define TEXU_LCS_EDITABLE             0x00010000
-#define TEXU_LCS_NOHEADER             0x00020000
-#define TEXU_LCS_NOBORDER             0x00040000
-#define TEXU_LCS_NOSELECTION          0x00080000
-#define TEXU_LCS_LINEEDIT             0x00100000
+#define TEXU_LCS_EDITABLE               0x00010000
+#define TEXU_LCS_NOHEADER               0x00020000
+#define TEXU_LCS_NOBORDER               0x00040000
+#define TEXU_LCS_NOSELECTION            0x00080000
+#define TEXU_LCS_LINEEDIT               0x00100000
+/*enum*/
+#define TEXU_LC_ENDEDITOK               0x00000000
+#define TEXU_LC_ENDEDITCANCEL           0x00000001
+/*states*/
+#define TEXU_LCT_EDITING                0x00000001
+#define TEXU_LCT_VIEW                   0x00000002
+#define TEXU_LCT_MOVINGCURSOR           0x00000003
+#define TEXU_LCT_INSERTING              0x00000004
+#define TEXU_LCT_ENDINSERTING           0x00000005
+#define TEXU_LCT_BEGINEDITING           0x00000006
+#define TEXU_LCT_ENDMOVING              0x00000007
+#define TEXU_LCT_ENDEDITING             0x00000008
 
-#define TEXU_LC_ENDEDITOK             0x00000000
-#define TEXU_LC_ENDEDITCANCEL         0x00000001
-
-#define TEXU_LCT_EDITING              0x00000001
-#define TEXU_LCT_VIEW                 0x00000002
-#define TEXU_LCT_MOVINGCURSOR         0x00000003
-#define TEXU_LCT_INSERTING            0x00000004
-#define TEXU_LCT_ENDINSERTING         0x00000005
-#define TEXU_LCT_BEGINEDITING         0x00000006
-#define TEXU_LCT_ENDMOVING            0x00000007
-#define TEXU_LCT_ENDEDITING           0x00000008
+/*cell format*/
+#define TEXU_LCFM_TEXT                  0x0001
+#define TEXU_LCFM_DATA                  0x0002
+#define TEXU_LCFM_COLOR                 0x0004
+#define TEXU_LCFM_ALL                   (TEXU_LCFM_TEXT | TEXU_LCFM_DATA | TEXU_LCFM_COLOR)
 
 
-#define TEXU_LCFM_TEXT                0x0001
-#define TEXU_LCFM_DATA                0x0002
-#define TEXU_LCFM_COLOR               0x0004
-#define TEXU_LCFM_ALL                 (TEXU_LCFM_TEXT | TEXU_LCFM_DATA | TEXU_LCFM_COLOR)
+/*TREE CTRL*/
+#define TEXU_TCS_SHOWNODE               0x00000001
+#define TEXU_TCS_NOHIGHLIGHT            0x00000002
+#define TEXU_TCS_FULLSECROW             0x00000004
+#define TEXU_TCS_EDITABLE               0x00000008
+/*enum*/
+#define TEXU_TPO_PRE                    -1
+#define TEXU_TPO_IN                     0
+#define TEXU_TPO_POST                   1
 
-
-
-#define TEXU_TCS_SHOWNODE            0x00000001
-#define TEXU_TCS_NOHIGHLIGHT         0x00000002
-#define TEXU_TCS_FULLSECROW          0x00000004
-
-#define TEXU_TPO_PRE                 -1
-#define TEXU_TPO_IN                  0
-#define TEXU_TPO_POST                1
-
+/*states*/
+#define TEXU_TCT_EDITING                0x00000001
+#define TEXU_TCT_VIEW                   0x00000002
+#define TEXU_TCT_MOVINGCURSOR           0x00000003
+#define TEXU_TCT_INSERTING              0x00000004
+#define TEXU_TCT_ENDINSERTING           0x00000005
+#define TEXU_TCT_BEGINEDITING           0x00000006
+#define TEXU_TCT_ENDMOVING              0x00000007
+#define TEXU_TCT_ENDEDITING             0x00000008
 
 
 
