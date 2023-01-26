@@ -247,11 +247,11 @@ enum
     F4_CANCEL
 };
 #if (defined WIN32 && defined UNICODE)
-static texu_char *buttons[] = { TEXUTEXT(" F1 - OK "), TEXUTEXT(" F2 - Yes  "), TEXUTEXT("  F3 - No  "), TEXUTEXT(" F4 - Cancel ") };
+static texu_char *buttons[] = { TEXUTEXT("   OK   "), TEXUTEXT("   Yes  "), TEXUTEXT("   No   "), TEXUTEXT(" Cancel ") };
 #else
 static texu_char *buttons[] = { " F1 - OK ", " F2 - Yes  ", "  F3 - No  ", " F4 - Cancel " };
 #endif
-static texu_i32 btnwidths[] = {9, 10, 9, 13};
+static texu_i32 btnwidths[] = {8, 8, 8, 8};
 
 texu_status
 _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 lines)
@@ -389,7 +389,7 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         {
             return rc;
         }
-        texu_wnd_add_keycmd(wnd, 10, TEXU_IDOK, 0);
+        texu_wnd_add_keycmd(wnd, TEXU_KEY_ENTER, TEXU_IDOK, 0);
         x += texu_strlen(caption) + 1;
     }
     if (idyes)
@@ -424,7 +424,7 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         {
             return rc;
         }
-        texu_wnd_add_keycmd(wnd, 10, TEXU_IDYES, 0);
+        texu_wnd_add_keycmd(wnd, TEXU_KEY_ENTER, TEXU_IDYES, 0);
         x += texu_strlen(caption) + 1;
     }
     if (idno)
@@ -482,7 +482,7 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         {
             return rc;
         }
-        texu_wnd_add_keycmd(wnd, 27, TEXU_IDCANCEL, 0);
+        texu_wnd_add_keycmd(wnd, TEXU_KEY_ESCAPE, TEXU_IDCANCEL, 0);
         x += texu_strlen(caption) + 1;
     }
 
@@ -1439,7 +1439,7 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit
     {
         rc = TEXU_ERROR;
     }
-#if (defined WIN32 && defined _WINDOWS)
+#if 0 /*(defined WIN32 && defined _WINDOWS)*/
     if ((rc == TEXU_OK) && (len == 0 || (edit->firstvisit == 1)) && ch == VK_OEM_MINUS)
 #else
     if ((rc == TEXU_OK) && (len == 0 || (edit->firstvisit == 1)) && ch == TEXUTEXT('-'))
@@ -1447,7 +1447,7 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit
     {
         /* ok */
     }
-#if (defined WIN32 && defined _WINDOWS)
+#if 0/*(defined WIN32 && defined _WINDOWS)*/
     else if (ch == VK_OEM_PERIOD)
 #else
     else if (ch == TEXUTEXT('.'))
@@ -1489,6 +1489,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_i32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
     texu_i32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
     texu_i32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
+    static texu_char printable_chars[] = TEXUTEXT(" ~!@#$%^&*_-+=,?/|.\\\'\"()[]{}<>abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 #endif
 
     if (!(texu_wnd_is_enable(wnd)))
@@ -1536,16 +1537,76 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         }
     }
 #if (defined WIN32 && defined _WINDOWS)
-    if ((ch >= 0x20 && ch < 0x7f) || 
-        (VK_OEM_PERIOD == ch ||
-        VK_OEM_MINUS == ch)
-        )
+    if (texu_strchr(printable_chars, ch))
 #else
     if (ch >= 0x20 && ch < 0x7f)
 #endif
     {
         /* add char */
         len = texu_strlen(edit->editbuf);
+        /*test block with its styles*/
+        do
+        {
+            ret = TEXU_OK;
+            if (TEXU_ES_NUMBER & style)
+            {
+                /* require only number input */
+                ret = _TexuEditProc_ValidateNumberStyle(wnd, edit, ch);
+                if (ret != TEXU_OK)
+                {
+                    break;
+                }
+            }
+            else if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
+            {
+                /* require only decimal input */
+                ret = _TexuEditProc_ValidateDecimalStyle(wnd, edit, ch);
+                if (ret != TEXU_OK)
+                {
+                    break;
+                }
+            }
+            else if (TEXU_ES_UPPERCASE & style)
+            {
+                /* require changing from small to CAPITAL */
+                if (ch >= TEXUTEXT('a') && ch <= TEXUTEXT('z'))
+                {
+                    ch = ch - TEXUTEXT('a') + TEXUTEXT('A');
+                }
+            }
+            else if (TEXU_ES_LOWERCASE & style)
+            {
+                if (ch >= TEXUTEXT('A') && ch <= TEXUTEXT('Z'))
+                {
+                    ch = ch - TEXUTEXT('A') + TEXUTEXT('a');
+                }
+            }
+            if (TEXU_ES_A2Z & style)
+            {
+                /* require only A-Z input */
+                ret = _TexuEditProc_ValidateA2ZStyle(wnd, edit, ch);
+                if (ret != TEXU_OK)
+                {
+                    break;
+                }
+            }
+            /* valid char if it is in valid string */
+            if (edit->validstr[0] != 0)
+            {
+                psz = texu_strchr(edit->validstr, ch);
+                if (!psz)
+                {
+                    ret = TEXU_EVALID;
+                    break;
+                }
+            }
+        } while (0);
+        /*validate failed*/
+        if (ret != TEXU_OK)
+        {
+            return;
+        }
+#if 1
         /* is the first typing? */
         if (edit->firstvisit == 1)
         {
@@ -1581,9 +1642,10 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 }
             }
         }
-
+#endif
         if (len + 1 <= edit->limitchars)
         {
+#if 0 /*validation are above*/
             if (TEXU_ES_NUMBER & style)
             {
                 /* require only number input */
@@ -1635,20 +1697,41 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     return;
                 }
             }
-
+#endif
             /* append a new char */
             len = texu_strlen(edit->editbuf);
             if (len < edit->limitchars)
             {
                 texu_env_show_cursor(env, TEXU_FALSE);
-                switch (ch)
+
+                /*no upper or lower style*/
+                if (0 == ((TEXU_ES_UPPERCASE | TEXU_ES_LOWERCASE) & style))
                 {
-                    case VK_OEM_PERIOD: ch = TEXUTEXT('.'); break;
-                    case VK_OEM_MINUS:  ch = TEXUTEXT('-'); break;
-                    case VK_OEM_PLUS:   ch = TEXUTEXT('+'); break;
-                    case VK_OEM_COMMA:  ch = TEXUTEXT(','); break;
+#if (defined WIN32 && defined _WINDOWS) /*because windows always sends a capital letter to us*/
+                    if (alt & TEXU_KEYPRESSED_SHIFT)
+                    {
+                        edit->editbuf[len] = ch;
+                    }
+                    else
+                    {
+                        /*not pressed shift key*/
+                        if (ch >= TEXUTEXT('A') && ch <= TEXUTEXT('Z'))
+                        {
+                            edit->editbuf[len] = ch - TEXUTEXT('A') + TEXUTEXT('a');
+                        }
+                        else
+                        {
+                            edit->editbuf[len] = ch;
+                        }
+                    }
+#else
+                    edit->editbuf[len] = ch;
+#endif
                 }
-                edit->editbuf[len] = ch;
+                else
+                {
+                    edit->editbuf[len] = ch;
+                }
                 edit->editbuf[len + 1] = 0;
                 edit->selected = 0;
 
@@ -1734,7 +1817,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             edit->editing = 1;
         } /*TEXU_MAX_WNDTEXT*/
     }
-    else if (0x7f == ch || TEXU_KEY_BACKSPACE == ch) /* delete char */
+    else if (0x7f == ch || VK_DELETE == ch || TEXU_KEY_BACKSPACE == ch) /* delete char */
     {
         edit->selected = 0;
         len = texu_strlen(edit->editbuf);
@@ -1777,9 +1860,10 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             edit->editbuf[len - 1] = 0;
             changed = TEXU_TRUE;
 
+            len = texu_strlen(edit->editbuf); 
             if (TEXU_ES_AUTOHSCROLL & style)
             {
-                len = texu_strlen(edit->editbuf);
+                /*len = texu_strlen(edit->editbuf);*/
                 if (len >= width)
                 {
                     edit->firstchar = len - width;/* -1;*/
@@ -1795,7 +1879,11 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             /* editing */
             edit->editing = 1;
             texu_wnd_invalidate(wnd);
-            texu_env_set_cursor(env, y, x + len);
+            if (len >= 1)
+            {
+                x += len;
+            }
+            texu_env_set_cursor(env, y, x);
             texu_env_show_cursor(env, TEXU_TRUE);
             return;
         }
@@ -2080,6 +2168,7 @@ struct texu_lbwnd
 #if (defined WIN32 && defined _WINDOWS)
     texu_ui32 selbg;
 #endif
+    texu_bool       focused;
 };
 typedef struct texu_lbwnd texu_lbwnd;
 
@@ -2578,6 +2667,7 @@ _TexuListBoxProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     {
         lb->cursel = 0;
     }
+    /*
     item = _TexuListBoxProc_FindItemByIndex(lb, lb->cursel);
     if (item && !(item->enable))
     {
@@ -2586,12 +2676,10 @@ _TexuListBoxProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
         {
             lb->cursel = _TexuListBoxProc_FindIndexByItem(lb, item);
         }
-    }
-    texu_wnd_invalidate(wnd);
-#if (defined WIN32 && defined _WINDOWS)
-    /*InvalidateRect(texu_env_get_hwnd(env), NULL, TRUE);*/
-#endif
+    }*/
+    lb->focused = TEXU_TRUE;
 
+    texu_wnd_invalidate(wnd);
     /* send notification */
     _TexuListBoxProc_Notify(wnd, TEXU_LBN_SETFOCUS, lb->cursel);
 }
@@ -2608,10 +2696,8 @@ _TexuListBoxProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
 
     texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
 
+    lb->focused = TEXU_FALSE;
     texu_wnd_invalidate(wnd);
-#if (defined WIN32 && defined _WINDOWS)
-    /*InvalidateRect(texu_env_get_hwnd(env), NULL, TRUE);*/
-#endif
     return rc;
 }
 
@@ -2645,7 +2731,7 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i32  movey = y;
     texu_i32  movex = x;
     texu_wnd *parent = texu_wnd_get_parent(wnd);
-    texu_bool fFocused = TEXU_FALSE;/*(wnd == texu_env_get_focus(env) ? TEXU_TRUE : TEXU_FALSE); */
+    texu_bool fFocused = lb->focused;
 #if (defined WIN32 && defined _WINDOWS)
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_DISABLED);
@@ -2725,6 +2811,12 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
 #if (defined WIN32 && defined _WINDOWS)
                     color = lb->selbg;
                     bgcolor = lb->selcolor;
+
+                    if (!fFocused)
+                    {
+                        color = focuscolor;
+                        bgcolor = focusbg;
+                    }
 #endif
                     if (style & TEXU_LBS_OWNERCOLOR)
                     {
@@ -2761,16 +2853,8 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
                     color = normcolor;
 #else
                     color = (item->enable ? normcolor : discolor);
-                    if (fFocused)
-                    {
-                        color = focuscolor;
-                    }
 #if (defined WIN32 && defined _WINDOWS)
                     bgcolor = (item->enable ? item->normbg : item->disbg);
-                    if (fFocused)
-                    {
-                        bgcolor = focusbg;
-                    }
 #endif
                     if (style & TEXU_LBS_OWNERCOLOR)
                     {
