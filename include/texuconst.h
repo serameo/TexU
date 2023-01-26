@@ -551,6 +551,7 @@ enum
 #define TEXU_KEY_UP                     KEY_UP
 #define TEXU_KEY_PPAGE                  KEY_PPAGE
 #define TEXU_KEY_NPAGE                  KEY_NPAGE
+#define TEXU_KEY_ESCAPE                 27
 #else
 #define TEXU_KEY_ENTER                  VK_RETURN
 #define TEXU_KEY_SELMENU                VK_RETURN
@@ -566,8 +567,8 @@ enum
 #define TEXU_KEY_UP                     VK_UP
 #define TEXU_KEY_PPAGE                  VK_PRIOR
 #define TEXU_KEY_NPAGE                  VK_NEXT
+#define TEXU_KEY_ESCAPE                 VK_ESCAPE
 #endif
-#define TEXU_KEY_ESCAPE                 27
 
 #define TEXU_KEYPRESSED_ALT             1
 #define TEXU_KEYPRESSED_CTRL            2
