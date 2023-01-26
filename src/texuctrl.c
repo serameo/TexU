@@ -5907,78 +5907,6 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     switch (ch)
     {
-#if 0
-        case TEXUTEXT('r'):
-        case TEXUTEXT('R'):
-        {
-            /*reverse move*/
-            if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
-            {
-                nextwnd = texu_wnd_get_prev_activechild(curpage, activewnd);
-                if (nextwnd)
-                {
-                    rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
-                    if (rc != TEXU_OK)
-                    {
-                        return;
-                    }
-                    rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
-                    y = texu_wnd_get_y(nextwnd);
-                    x = texu_wnd_get_x(nextwnd);
-                    width = texu_wnd_get_width(nextwnd);
-
-                    cio = texu_wnd_get_cio(curpage);
-                    texu_cio_gotoyx(cio, y, x + width - 1);
-
-                    /* the new active window */
-                    pgctl->activewnd = nextwnd;
-                    return;
-                }
-            }
-            break;
-        }
-        case TEXUTEXT('f'):
-        case TEXUTEXT('F'):
-        case TEXUTEXT('l'):
-        case TEXUTEXT('L'):
-        {
-            if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
-            {
-                if (TEXUTEXT('f') == ch || TEXUTEXT('F') == ch)
-                {
-                    /*goto the first active child*/
-                    nextwnd = texu_wnd_get_first_activechild(curpage);
-                }
-                else /*if (ch == '1')*/
-                {
-                    /*goto the first active child*/
-                    nextwnd = texu_wnd_get_last_activechild(curpage);
-                }
-                
-                pgctl->ctl_k_pressed = TEXU_FALSE;
-                if (nextwnd)
-                {
-                    rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
-                    if (rc != TEXU_OK)
-                    {
-                        return;
-                    }
-                    rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
-                    y = texu_wnd_get_y(nextwnd);
-                    x = texu_wnd_get_x(nextwnd);
-                    width = texu_wnd_get_width(nextwnd);
-
-                    cio = texu_wnd_get_cio(curpage);
-                    texu_cio_gotoyx(cio, y, x + width - 1);
-
-                    /* the new active window */
-                    pgctl->activewnd = nextwnd;
-                    return;
-                }
-            }
-            break;
-        }
-#endif
         case TEXUTEXT('p'):
         case TEXUTEXT('P'):
         {
@@ -6059,6 +5987,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             {
                 if (nextwnd)
                 {
+                    /*active child may need to be done its action*/
                     texu_wnd *activechild = texu_wnd_get_activechild(activewnd);
                     if (activechild)
                     {
@@ -6068,8 +5997,8 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                             return;
                         }
                     }
+                    /*active window need to be done something by itself*/
                     rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
-
                     if (rc != TEXU_OK)
                     {
                         return;
@@ -7099,6 +7028,17 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         {
             if (nextwnd)
             {
+                /*active child may need to be done its action*/
+                texu_wnd *activechild = texu_wnd_get_activechild(activewnd);
+                if (activechild)
+                {
+                    rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_i64)activewnd, 0);
+                    if (rc != TEXU_OK)
+                    {
+                        return;
+                    }
+                }
+                /*active window need to be done something by itself*/
                 rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                 if (rc != TEXU_OK)
                 {

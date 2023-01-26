@@ -2788,6 +2788,17 @@ _TexuDefWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             /* kill and set the new active window */
             if (nextwnd)
             {
+                /*active child may need to be done its action*/
+                texu_wnd *activechild = texu_wnd_get_activechild(activewnd);
+                if (activechild)
+                {
+                    rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_i64)activewnd, 0);
+                    if (rc != TEXU_OK)
+                    {
+                        return -1;
+                    }
+                }
+                /*active window need to be done something by itself*/
                 rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                 if (rc != TEXU_OK)
                 {
@@ -3871,6 +3882,17 @@ _TexuFrameWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             /* kill and set the new active window */
             if (nextwnd)
             {
+                /*active child may need to be done its action*/
+                texu_wnd *activechild = texu_wnd_get_activechild(activewnd);
+                if (activechild)
+                {
+                    rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_i64)activewnd, 0);
+                    if (rc != TEXU_OK)
+                    {
+                        return -1;
+                    }
+                }
+                /*active window need to be done something by itself*/
                 rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                 if (rc != TEXU_OK)
                 {
