@@ -208,8 +208,12 @@ texu_i64 _TexuTreeCtrlProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
 texu_i64 _TexuUpDownCtrlProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
 texu_i64 _TexuProgressBarProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
 texu_i64 _TexuPageCtrlProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
-/*texu_i64 _TexuTextCtrlProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);*/
 texu_i64 _TexuReBarProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
+
+/* see texuctrlx.c */
+texu_i64 _TexuIPAdressProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
+texu_i64 _TexuEditMaskProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
+
 
 /* menu texumenu.c */
 texu_i64 _TexuMenuProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
@@ -793,6 +797,14 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_BUTTON_DISABLED]          = TEXU_CIO_COLOR_BLACK_WHITE;
     env->syscolors[TEXU_COLOR_BUTTON_SELECTED]          = TEXU_CIO_COLOR_BLACK_WHITE;
     env->syscolors[TEXU_COLOR_BUTTON_FOCUSED]           = TEXU_CIO_COLOR_BLACK_WHITE;
+    env->syscolors[TEXU_COLOR_IPADDRESSCTRL]            = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->syscolors[TEXU_COLOR_IPADDRESSCTRL_DISABLED]   = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->syscolors[TEXU_COLOR_IPADDRESSCTRL_SELECTED]   = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->syscolors[TEXU_COLOR_IPADDRESSCTRL_FOCUSED]    = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->syscolors[TEXU_COLOR_EDITMASKCTRL]             = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->syscolors[TEXU_COLOR_EDITMASKCTRL_DISABLED]    = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->syscolors[TEXU_COLOR_EDITMASKCTRL_SELECTED]    = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->syscolors[TEXU_COLOR_EDITMASKCTRL_FOCUSED]     = TEXU_CIO_COLOR_CYAN_BLACK;
     /*default*/
     env->syscolors[TEXU_COLOR_DEFAULT]                  = TEXU_CIO_COLOR_WHITE_BLACK;
 }
@@ -870,6 +882,14 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_BUTTON_DISABLED]            = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_BUTTON_SELECTED]            = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_BUTTON_FOCUSED]             = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->sysbgcolors[TEXU_COLOR_IPADDRESSCTRL]              = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_IPADDRESSCTRL_DISABLED]     = TEXU_CIO_COLOR_BLACK_WHITE;
+    env->sysbgcolors[TEXU_COLOR_IPADDRESSCTRL_SELECTED]     = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->sysbgcolors[TEXU_COLOR_IPADDRESSCTRL_FOCUSED]      = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL]               = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_DISABLED]      = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_SELECTED]      = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_FOCUSED]       = TEXU_CIO_COLOR_CYAN_BLACK;
     /*default*/
     env->sysbgcolors[TEXU_COLOR_DEFAULT] = TEXU_CIO_COLOR_BLACK_WHITE;
 }
@@ -881,18 +901,21 @@ _texu_env_init_cls(texu_env *env)
     texu_env_register_cls(env, TEXU_DESKTOP_CLASS,  _TexuDesktopProc);
     texu_env_register_cls(env, TEXU_MSGBOX_CLASS,   _TexuMsgBoxProc);
     /*controls*/
-    texu_env_register_cls(env, TEXU_LABEL_CLASS,    _TexuLabelProc);
-    texu_env_register_cls(env, TEXU_BUTTON_CLASS,   _TexuButtonProc);
-    texu_env_register_cls(env, TEXU_EDIT_CLASS,     _TexuEditProc);
-    texu_env_register_cls(env, TEXU_LISTBOX_CLASS,  _TexuListBoxProc);
-    texu_env_register_cls(env, TEXU_COMBOBOX_CLASS, _TexuComboBoxProc);
-    texu_env_register_cls(env, TEXU_LISTCTRL_CLASS, _TexuListCtrlProc);
-    texu_env_register_cls(env, TEXU_TREECTRL_CLASS, _TexuTreeCtrlProc);
-    texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);
-    texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);
-    texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);
-    texu_env_register_cls(env, TEXU_PAGECTRL_CLASS,     _TexuPageCtrlProc);
-    texu_env_register_cls(env, TEXU_REBAR_CLASS,        _TexuReBarProc);
+    texu_env_register_cls(env, TEXU_LABEL_CLASS,    _TexuLabelProc);            /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_BUTTON_CLASS,   _TexuButtonProc);           /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_EDIT_CLASS,     _TexuEditProc);             /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_LISTBOX_CLASS,  _TexuListBoxProc);          /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_COMBOBOX_CLASS, _TexuComboBoxProc);         /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_LISTCTRL_CLASS, _TexuListCtrlProc);         /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_TREECTRL_CLASS, _TexuTreeCtrlProc);         /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);   /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);  /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);    /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_PAGECTRL_CLASS,     _TexuPageCtrlProc);     /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_REBAR_CLASS,        _TexuReBarProc);        /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_IPADDRESSCTRL_CLASS,    _TexuIPAdressProc);     /*texuctrlx.c*/
+    texu_env_register_cls(env, TEXU_EDITMASKCTRL_CLASS,     _TexuEditMaskProc);     /*texuctrlx.c*/
+
     /*menu*/
     texu_env_register_cls(env, TEXU_MENU_CLASS,     _TexuMenuProc);
     texu_env_register_cls(env, TEXU_MENUWND_CLASS,  _TexuMenuWndProc);
@@ -2795,6 +2818,7 @@ _TexuDefWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_i64)activewnd, 0);
                     if (rc != TEXU_OK)
                     {
+                        texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, (texu_i64)activechild, 0);
                         return -1;
                     }
                 }
@@ -2802,6 +2826,7 @@ _TexuDefWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                 if (rc != TEXU_OK)
                 {
+                    texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
                     return -1;
                 }
                 rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
@@ -3074,6 +3099,10 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
     wnd->lockedupdate = TEXU_FALSE;
 
     rc = texu_wnd_send_msg(wnd, TEXU_WM_CREATE, (texu_i64)attrs, 0);
+    if (rc != TEXU_OK)
+    {
+        /**/
+    }
     return rc;
 }
 
@@ -3082,6 +3111,7 @@ texu_wnd_del(texu_wnd *wnd)
 {
     if (wnd)
     {
+        texu_wnd_destroy(wnd);      /*delete all children*/
         texu_list_del(wnd->children);
         texu_list_del(wnd->keycmds);
         free(wnd);
@@ -3889,6 +3919,7 @@ _TexuFrameWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_i64)activewnd, 0);
                     if (rc != TEXU_OK)
                     {
+                        texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, (texu_i64)activechild, 0);
                         return -1;
                     }
                 }
@@ -3896,6 +3927,7 @@ _TexuFrameWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                 if (rc != TEXU_OK)
                 {
+                    texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
                     return -1;
                 }
                 rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
@@ -3934,6 +3966,7 @@ _TexuFrameWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                     if (rc != TEXU_OK)
                     {
+                        texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
                         return -1;
                     }
                     rc = texu_wnd_send_msg((nextwnd ? nextwnd : wnd), TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
@@ -4028,6 +4061,7 @@ _TexuManualFrameWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                 if (rc != TEXU_OK)
                 {
+                    texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
                     return -1;
                 }
                 rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
@@ -4066,6 +4100,7 @@ _TexuManualFrameWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                     if (rc != TEXU_OK)
                     {
+                        texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
                         return -1;
                     }
                     rc = texu_wnd_send_msg((nextwnd ? nextwnd : wnd), TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);

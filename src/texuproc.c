@@ -2416,6 +2416,10 @@ void _TexuListBoxProc_OnDeleteAllItems(texu_wnd *wnd)
     texu_i32 nitems = 0;
     texu_i32 i = 0;
 
+    if (!lb)
+    {
+        return;
+    }
     nitems = lb->nitems;
     for (i = 0; i < nitems; ++i)
     {

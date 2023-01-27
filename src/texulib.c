@@ -83,9 +83,9 @@ texu_list_del(texu_list *list)
     if (list)
     {
         texu_list_free(list);
-        #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
         pthread_mutex_destroy(&list->mutex);
-        #endif
+#endif
         free(list);
         list = 0;
     }

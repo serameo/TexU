@@ -4804,6 +4804,8 @@ _TexuUpDownCtrlProc_OnSetStep(texu_wnd *wnd, texu_i32 step)
 {
     texu_udwnd *udctl = 0;
     udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
+    step = TEXU_MAX(udctl->min, step);
+    step = TEXU_MIN(udctl->max, step);
     udctl->step = step;
 }
 
@@ -4833,6 +4835,8 @@ _TexuUpDownCtrlProc_OnSetPage(texu_wnd *wnd, texu_i32 page)
 {
     texu_udwnd *udctl = 0;
     udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
+    page = TEXU_MAX(udctl->min, page);
+    page = TEXU_MIN(udctl->max, page);
     udctl->page = page;
 }
 
@@ -4883,11 +4887,13 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.text     = TEXT("0");
     attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
     attrs2.disabledcolor    = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED);
-    attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
+    attrs2.selectedcolor    = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_SELECTED);
+    attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED);
 #if (defined WIN32 && defined _WINDOWS)
     attrs2.normalbg         = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
     attrs2.disabledbg       = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED);
-    attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
+    attrs2.selectedcolor    = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_SELECTED);
+    attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED);
 #endif
     attrs2.id = 1;
     attrs2.clsname = TEXU_EDIT_CLASS;
@@ -4903,7 +4909,7 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         return TEXU_ERROR;
     }
 
-    udctl = (texu_udwnd *)malloc(sizeof(texu_lcwnd));
+    udctl = (texu_udwnd *)malloc(sizeof(texu_udwnd));
     if (!udctl)
     {
         texu_wnd_del(editwnd);
@@ -4922,10 +4928,20 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_send_msg(udctl->editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
 
     /* save memory */
+    texu_wnd_set_userdata(wnd, udctl);
+    /* set default color*/
     texu_wnd_set_color(wnd,
                        texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL),
                        texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED));
-    texu_wnd_set_userdata(wnd, udctl);
+    texu_wnd_set_focused_color(wnd,
+                               texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED));
+#if (defined WIN32 && defined _WINDOWS)
+    texu_wnd_set_bgcolor(wnd,
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL),
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED));
+    texu_wnd_set_bgfocused_color(wnd,
+                               texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED));
+#endif
     return TEXU_OK;
 }
 
@@ -4977,11 +4993,7 @@ _TexuUpDownCtrlProc_OnGetInt(texu_wnd *wnd)
 
     udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
     texu_wnd_get_text(udctl->editwnd, buf, TEXU_MAX_WNDTEXT);
-#if (defined WIN32 && defined UNICODE)
-    val = wcstol(buf, NULL, 10);
-#else
-    val = atol(buf);
-#endif
+    val = texu_atol(buf);
 
     return val;
 }
@@ -5033,11 +5045,7 @@ _TexuUpDownCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, 0);
 
         texu_wnd_get_text(udctl->editwnd, buf, TEXU_MAX_WNDTEXT);
-#if (defined WIN32 && defined UNICODE)
-        val = wcstol(buf, NULL, 10);
-#else
-        val = atol(buf);
-#endif
+        val = texu_atol(buf);
         val += added;
         if (val < udctl->min)
         {
@@ -5075,13 +5083,10 @@ _TexuUpDownCtrlProc_OnSetText(texu_wnd *wnd, const texu_char *text)
         return;
     }
     udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
+    val = texu_atol(text);
 #if (defined WIN32 && defined UNICODE)
-    val = wcstol(text, NULL, 10);
-
     swprintf(buf, sizeof(buf), TEXT("%d"), val);
 #else
-    val = atol(text);
-
     sprintf(buf, "%d", val);
 #endif
     texu_wnd_set_text(udctl->editwnd, buf);
@@ -5994,6 +5999,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                         rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_i64)activewnd, 0);
                         if (rc != TEXU_OK)
                         {
+                            texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, (texu_i64)activechild, 0);
                             return;
                         }
                     }
@@ -6001,6 +6007,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                     if (rc != TEXU_OK)
                     {
+                        texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
                         return;
                     }
                     rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
@@ -7035,6 +7042,7 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_i64)activewnd, 0);
                     if (rc != TEXU_OK)
                     {
+                        texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, (texu_i64)activechild, 0);
                         return;
                     }
                 }
@@ -7042,6 +7050,7 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
                 if (rc != TEXU_OK)
                 {
+                    texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
                     return;
                 }
                 rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);

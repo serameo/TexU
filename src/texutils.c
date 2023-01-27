@@ -112,14 +112,39 @@ int MultiByteToWideChar(
     [in]            int                               cchWideChar
     );
 */
-#if (defined WIN32 && defined UNICODE)
-int
-texu_a2w(wchar_t *out, int outlen, const char *ascii, int asciilen)
+#if (defined WIN32)
+
+texu_i32
+texu_a2w(wchar_t *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen)
 {
     return MultiByteToWideChar(CP_ACP,
                                MB_PRECOMPOSED,
                                ascii, asciilen,
                                out, outlen);
+}
+/*
+int WideCharToMultiByte(
+[in]            UINT                               CodePage,
+[in]            DWORD                              dwFlags,
+[in]            _In_NLS_string_(cchWideChar)LPCWCH lpWideCharStr,
+[in]            int                                cchWideChar,
+[out, optional] LPSTR                              lpMultiByteStr,
+[in]            int                                cbMultiByte,
+[in, optional]  LPCCH                              lpDefaultChar,
+[out, optional] LPBOOL                             lpUsedDefaultChar
+);
+*/
+texu_i32
+texu_w2a(char *out, texu_i32 outlen, const wchar_t *wide, texu_i32 widelen)
+{
+    return WideCharToMultiByte(CP_ACP, 
+                WC_COMPOSITECHECK, 
+                wide,
+                widelen,
+                out,
+                outlen,
+                NULL,
+                NULL);
 }
 #endif
 
