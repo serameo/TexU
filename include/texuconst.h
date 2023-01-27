@@ -246,6 +246,7 @@ enum
 #define TEXU_CMP_GT                     (texu_i32)(1)                 /*greater than*/
 
 #define TEXU_MAX_WNDTEXT                256
+#define TEXU_MAX_BUFFER                 (TEXU_MAX_WNDTEXT * 2)
 
 #define TEXU_WM_USER                    10000
 
@@ -519,13 +520,46 @@ enum
 #define TEXU_TXCM_SETCURPARAGRAPH       (TEXU_TXCM_FIRST + 11)
 #define TEXU_TXCM_GETCURPARAGRAPH       (TEXU_TXCM_FIRST + 12)
 
+#define TEXU_TXCN_FIRST                 TEXU_TXCM_FIRST
+
 /* REBAR */
-#define TEXU_RBM_FIRST                  TEXU_TXCM_FIRST
+#define TEXU_RBM_FIRST                  1300
 #define TEXU_RBM_ADDBAND                (TEXU_RBM_FIRST +   1)
 #define TEXU_RBM_REMOVEBAND             (TEXU_RBM_FIRST +   2)
 #define TEXU_RBM_SETINFOWIDTH           (TEXU_RBM_FIRST +   3)
 
-#define TEXU_TXCN_FIRST                 1200
+#define TEXU_RBN_FIRST                  TEXU_RBM_FIRST
+
+/*IP ADDRESS CTRL*/
+#define TEXU_IPM_FIRST                 1400
+#define TEXU_IPM_SETMINMAX             (TEXU_IPM_FIRST +  1)
+#define TEXU_IPM_GETMINMAX             (TEXU_IPM_FIRST +  2)
+#define TEXU_IPM_SETSTEP               (TEXU_IPM_FIRST +  3)
+#define TEXU_IPM_GETSTEP               (TEXU_IPM_FIRST +  4)
+#define TEXU_IPM_STEP                  (TEXU_IPM_FIRST +  5)
+#define TEXU_IPM_SETPAGE               (TEXU_IPM_FIRST +  6)
+#define TEXU_IPM_GETPAGE               (TEXU_IPM_FIRST +  7)
+#define TEXU_IPM_PAGE                  (TEXU_IPM_FIRST +  8)
+#define TEXU_IPM_GETIPADDRESS          (TEXU_IPM_FIRST +  9)
+
+#define TEXU_IPN_FIRST                 TEXU_IPM_FIRST
+#define TEXU_IPN_SETFOCUS              (TEXU_IPM_FIRST +  1)
+#define TEXU_IPN_KILLFOCUS             (TEXU_IPM_FIRST +  2)
+#define TEXU_IPN_STEP                  (TEXU_IPM_FIRST +  3)
+
+
+/*EDIT MASK CTRL*/
+#define TEXU_EMM_FIRST                  1500
+#define TEXU_EMM_SETMASK                (TEXU_EMM_FIRST +  1)
+#define TEXU_EMM_GETMASK                (TEXU_EMM_FIRST +  2)
+
+#define TEXU_EMN_FIRST                  TEXU_EMM_FIRST
+#define TEXU_EMN_SETFOCUS               (TEXU_EMM_FIRST +  1)
+#define TEXU_EMN_KILLFOCUS              (TEXU_EMM_FIRST +  2)
+#define TEXU_EMN_INVALIDEXPR            (TEXU_EMM_FIRST +  3)
+
+#define TEXU_EDITMASK_EMAIL             TEXUTEXT("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$")
+
 
 /*MENU */
 #define TEXU_MNM_FIRST                  10000
@@ -604,7 +638,9 @@ enum
 #define TEXU_PAGECTRL_CLASS             L"TexuPageCtrlClassW"
 #define TEXU_TEXTCTRL_CLASS             L"TexuTextCtrlClassW"
 #define TEXU_REBAR_CLASS                L"TexuReBarClassW"
-
+#define TEXU_IPADDRESSCTRL_CLASS        L"TexuIPAddressCtrlClassW"
+#define TEXU_EDITMASKCTRL_CLASS         L"TexuEditMaskCtrlClassW"
+/*menu*/
 #define TEXU_MENU_CLASS                 L"TexuMenuClassW"
 #define TEXU_MENUWND_CLASS              L"TexuMenuWndClassW"
 #else
@@ -623,7 +659,9 @@ enum
 #define TEXU_PAGECTRL_CLASS             "TexuPageCtrlClassA"
 #define TEXU_TEXTCTRL_CLASS             "TexuTextCtrlClassA"
 #define TEXU_REBAR_CLASS                "TexuReBarClassA"
-
+#define TEXU_IPADDRESSCTRL_CLASS        "TexuIPAddressCtrlClassA"
+#define TEXU_EDITMASKCTRL_CLASS         "TexuEditMaskCtrlClassA"
+/*menu*/
 #define TEXU_MENU_CLASS                 "TexuMenuClassA"
 #define TEXU_MENUWND_CLASS              "TexuMenuWndClassA"
 #endif

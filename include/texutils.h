@@ -41,8 +41,9 @@ texu_char *         texu_memset(texu_char *dest, texu_char ch, size_t len);
 texu_char *         texu_memcpy(texu_char *dest, const texu_char *src, size_t len);
 texu_i32            texu_memcmp(const texu_char *dest, const texu_char *src, size_t len);
 
-#if (defined WIN32 && defined UNICODE)
-int                 texu_a2w(wchar_t *out, int outlen, const char *ascii, int asciilen);
+#if (defined WIN32)
+texu_i32            texu_a2w(wchar_t *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen);
+texu_i32            texu_w2a(char *out, texu_i32 outlen, const wchar_t *wide, texu_i32 widelen);
 #endif
 
 texu_i32            texu_atol(const texu_char *buf);
