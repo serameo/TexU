@@ -71,6 +71,8 @@ texu_i32   id;
 #define IDC_PAGE3 219
 #define IDC_PAGE4 220
 #define IDC_COMBO1 221
+#define IDC_IPADDRESS1 222
+#define IDC_EDITMASK1 223
 
 #define IDC_REBAR1 300
 #define IDC_REBAR2 301
@@ -90,6 +92,7 @@ texu_wnd_template templ5[] =
     { TEXUTEXT("Label1:"), TEXU_LABEL_CLASS, TEXU_WS_RIGHT, 0, 1, 0, 1, 20, IDC_LABEL1 },
     { TEXUTEXT("Edit1"), TEXU_EDIT_CLASS, TEXU_ES_AUTOHSCROLL | TEXU_ES_A2Z | TEXU_ES_CENTER, 0, 1, 21, 1, 10, IDC_EDIT1 },
     { TEXUTEXT("0"), TEXU_UPDOWNCTRL_CLASS, 0, 0, 1, 42, 1, 10, IDC_UPDOWN1 },
+    { TEXUTEXT("0.0.0.0"), TEXU_IPADDRESSCTRL_CLASS, 0, 0, 1, 52, 1, 16, IDC_IPADDRESS1 },
     { TEXUTEXT("Label2:"), TEXU_LABEL_CLASS, TEXU_WS_CENTER, 0, 2, 1, 1, 20, IDC_LABEL2 },
     { TEXUTEXT("Edit2"), TEXU_EDIT_CLASS, TEXU_ES_AUTOHSCROLL | TEXU_ES_NUMBER, 0, 2, 21, 1, 10, IDC_EDIT2 },
     { TEXUTEXT(""), TEXU_PROGRESSBAR_CLASS, 0, 0, 2, 42, 1, 30, IDC_PROGRESSBAR1 },
@@ -129,6 +132,7 @@ texu_wnd_template templ5_p2[] =
     { TEXUTEXT("Label1:"), TEXU_LABEL_CLASS, TEXU_WS_RIGHT, 0, 1, 0, 1, 20, IDC_LABEL1 },
     { TEXUTEXT("Edit1"), TEXU_EDIT_CLASS, TEXU_ES_AUTOHSCROLL | TEXU_ES_A2Z, 0, 1, 21, 1, 10, IDC_EDIT1 },
     { TEXUTEXT("0"), TEXU_UPDOWNCTRL_CLASS, 0, 0, 1, 42, 1, 10, IDC_UPDOWN1 },
+    { TEXUTEXT("0.0.0.0"), TEXU_IPADDRESSCTRL_CLASS, 0, 0, 1, 52, 1, 16, IDC_IPADDRESS1 },
     { TEXUTEXT("Label2:"), TEXU_LABEL_CLASS, TEXU_WS_CENTER, 0, 2, 1, 1, 20, IDC_LABEL2 },
     { TEXUTEXT("Edit2"), TEXU_EDIT_CLASS, TEXU_ES_AUTOHSCROLL | TEXU_ES_NUMBER, 0, 2, 21, 1, 10, IDC_EDIT2 },
     { TEXUTEXT(""), TEXU_PROGRESSBAR_CLASS, 0, 0, 2, 42, 1, 30, IDC_PROGRESSBAR1 },
@@ -559,6 +563,36 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         );
     TexuSetColor(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
     TexuSetBgColor(child, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
+
+    child = TexuCreateWindow(
+        TEXUTEXT("Text"),
+        TEXU_IPADDRESSCTRL_CLASS,
+        0,      /* style*/
+        0,      /* exstyle*/
+        starty, /* y */
+        53,     /* x */
+        1,
+        16,
+        wnd,        /* parent */
+        IDC_IPADDRESS1, /* id */
+        0           /* user data */
+        );
+
+    child = TexuCreateWindow(
+        TEXUTEXT("abc@xyz.com"),
+        TEXU_EDITMASKCTRL_CLASS,
+        0,      /* style*/
+        0,      /* exstyle*/
+        starty, /* y */
+        70,     /* x */
+        1,
+        16,
+        wnd,        /* parent */
+        IDC_EDITMASK1, /* id */
+        0           /* user data */
+        );
+    texu_wnd_send_msg(child, TEXU_EMM_SETMASK, (texu_i64)TEXU_EDITMASK_EMAIL, 0);
+
 
     child = TexuCreateWindow(
         TEXUTEXT("Number:"),
@@ -1078,7 +1112,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
                 2,   /* id */
                 0    /* user data */
                 );
-            TexuEnableWindow(child, TEXU_FALSE);
+            /*TexuEnableWindow(child, TEXU_FALSE);*/
 
             child = TexuCreateWindow(
                 TEXUTEXT("Number:"),
@@ -1275,7 +1309,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             texu_wnd* child2 = TexuCreateWindow(
                 TEXUTEXT("This is the second window"),
                 TEXU_EDIT_CLASS,
-                0,             /* style*/
+                TEXU_ES_A2Z,             /* style*/
                 0,             /* exstyle*/
                 0,            /* y */
                 0,             /* x */
@@ -1485,7 +1519,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
                 5,             /* height */
                 20,           /* width */
                 child,           /* parent */
-                IDC_CHILD_REBAR2, /* id */
+                IDC_CHILD_REBAR3, /* id */
                 0              /* user data */
                 );
             TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)TEXUTEXT("Hello world"), 0);
@@ -1518,7 +1552,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
                 5,             /* height */
                 20,           /* width */
                 child,           /* parent */
-                IDC_CHILD_REBAR3, /* id */
+                IDC_CHILD_REBAR4, /* id */
                 0              /* user data */
                 );
             TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)TEXUTEXT("Hello world"), 0);
@@ -1620,7 +1654,7 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             child = TexuCreateWindow(
                 TEXUTEXT("Text:"),
                 TEXU_LISTCTRL_CLASS,
-                0, /* style*/
+                TEXU_LCS_EDITABLE, /* style*/
                 0, /* exstyle*/
                 0, /* y */
                 0, /* x */

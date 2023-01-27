@@ -31,14 +31,17 @@
     <Filter Include="cJSON\src">
       <UniqueIdentifier>{76158bdf-87d6-4281-bdfb-83b68fa73bdd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="re">
+      <UniqueIdentifier>{5f1e756a-ecb8-437d-a130-63a9a53ec91b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="re\src">
+      <UniqueIdentifier>{06de9191-81a1-4e22-b46c-27364b274446}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="re\include">
+      <UniqueIdentifier>{00c7cfa9-573a-45f0-a09b-fff04afdd2a4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="gdip_01.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="g2tctls.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="texu\src\texuctrl.c">
       <Filter>texu\src</Filter>
     </ClCompile>
@@ -69,11 +72,17 @@
     <ClCompile Include="gdip_02.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="texu\src\re.c">
+      <Filter>re\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\texuctrlx.c">
+      <Filter>texu\src</Filter>
+    </ClCompile>
+    <ClCompile Include="texu\src\slre.c">
+      <Filter>re\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="g2tctls.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="texu\include\texuconst.h">
       <Filter>texu\include</Filter>
     </ClInclude>
@@ -110,5 +119,14 @@
     <ClInclude Include="texu\include\texuix.h">
       <Filter>texu\include</Filter>
     </ClInclude>
+    <ClInclude Include="texu\include\re.h">
+      <Filter>re\include</Filter>
+    </ClInclude>
+    <ClInclude Include="texu\include\slre.h">
+      <Filter>re\include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="texuenv.json" />
   </ItemGroup>
 </Project>
