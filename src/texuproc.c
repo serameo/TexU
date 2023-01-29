@@ -3478,11 +3478,11 @@ _TexuComboBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_wnd *parent = texu_wnd_get_parent(wnd);
-    texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX);
-    texu_ui32 sel = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_SELECTED);
+    texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX);
+    texu_ui32 sel = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX_SELECTED);
 #if (defined WIN32 && defined _WINDOWS)
-    texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX);
-    texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_SELECTED);
+    texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_COMBOBOX);
+    texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_COMBOBOX_SELECTED);
 #endif
 
     if (!(texu_wnd_is_visible(wnd)))
@@ -3499,7 +3499,7 @@ _TexuComboBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     }
     texu_env_draw_text(env, y, x, buf, color, bgcolor);
     /*draw selected*/
-    texu_env_draw_char(env, y, x + width - 1, TEXUTEXT('V'), color, bgcolor);
+    texu_env_draw_char(env, y, x + width - 1, TEXUTEXT('>'), color, bgcolor);
 #else
     texu_cio_putstr_attr(dc, y, x, buf,
                          texu_cio_get_color(dc, color));

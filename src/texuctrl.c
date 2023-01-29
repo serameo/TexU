@@ -5407,20 +5407,23 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_cio_putstr_attr(dc, y, x, buf,
                          texu_cio_get_color(dc, color));
 #endif
+    /*get percent*/
     pct = (0 == pgb->max ? 0.0f : (texu_f32)(pgb->pos * 100.0f / pgb->max));
     pct = (pct > 100.0f ? 100.0f : pct);
 #if (defined WIN32 && defined UNICODE)
-    swprintf(text, sizeof(text), TEXT("%.02f%%"), pct);
+    swprintf(text, sizeof(text), TEXUTEXT("%.02f"), pct);
 #else
-    sprintf(text, "%.02f%%", pct);
+    sprintf(text, TEXUTEXT(""%.02f"), pct);
 #endif
-
+    texu_strcat(text, TEXUTEXT("%"));
+    /*get drawable width*/
     pgwidth = (0 == pgb->max ? 0 : ((texu_i32)pct >= 100 ? width : (pgb->pos * width / pgb->max)));
+    if (pgwidth < texu_strlen(text))
+    {
+        pgwidth = texu_strlen(text);
+    }
     texu_printf_alignment2(buf, text, pgwidth, TEXU_ALIGN_RIGHT, TEXU_TRUE);
-#if (defined WIN32 && defined UNICODE)
-#else
-    texu_strcat(buf, TEXT("%%"));
-#endif
+
 #if (defined WIN32 && defined _WINDOWS)
     texu_env_draw_text(env, y, x, buf, bgcolor, color);
 #else
