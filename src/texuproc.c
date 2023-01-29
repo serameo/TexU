@@ -31,19 +31,19 @@ struct texu_msgbox
 {
     texu_wnd *owner;
     texu_ui32 id;
-    texu_i32 titlecolor;
-    texu_i32 labelcolor;
-    texu_i32 okcolor;
-    texu_i32 cancelcolor;
-    texu_i32 yescolor;
-    texu_i32 nocolor;
+    texu_ui32 titlecolor;
+    texu_ui32 labelcolor;
+    texu_ui32 okcolor;
+    texu_ui32 cancelcolor;
+    texu_ui32 yescolor;
+    texu_ui32 nocolor;
 #if (defined WIN32 && defined _WINDOWS)
-    texu_i32 titlebg;
-    texu_i32 labelbg;
-    texu_i32 okbg;
-    texu_i32 cancelbg;
-    texu_i32 yesbg;
-    texu_i32 nobg;
+    texu_ui32 titlebg;
+    texu_ui32 labelbg;
+    texu_ui32 okbg;
+    texu_ui32 cancelbg;
+    texu_ui32 yesbg;
+    texu_ui32 nobg;
 #endif
     void *userdata;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
@@ -117,6 +117,10 @@ _TexuMsgBoxProc_OnDestroy(texu_wnd *wnd)
     topwnd = texu_env_top_wnd(env);
     texu_wnd_send_msg(topwnd, TEXU_WM_SHOW, TEXU_TRUE, 0);
     texu_wnd_invalidate(topwnd);
+
+    /*remove msgbox from topwnd*/
+    texu_wnd_remove_child(topwnd, wnd);
+    /*texu_wnd_del(wnd);*/
 }
 
 void
@@ -993,6 +997,7 @@ struct texu_editwnd
     texu_i32 min;
     texu_i32 max;
     texu_i32 onminmax;
+    texu_bool invalid;
     void *exparam;
     texu_char validstr[TEXU_MAX_WNDTEXT + 1];
     texu_char editbuf[TEXU_MAX_WNDTEXT + 1];
@@ -1167,6 +1172,12 @@ _TexuEditProc_SelMinMax(texu_i32 min, texu_i32 max, texu_i32 val)
     return val;
 }
 
+void _TexuEditProc_OnInvalidate(texu_wnd *wnd)
+{
+    texu_editwnd *edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
+    edit->invalid = TEXU_TRUE;
+}
+
 void _TexuEditProc_OnSetValidMinMax(texu_wnd *wnd, texu_i32 on, texu_editminmax *vmm)
 {
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
@@ -1307,6 +1318,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
             if (decimal < (texu_f64)edit->min &&
                 decimal > (texu_f64)edit->max)
             {
+                _TexuWndProc_Notify(wnd, TEXU_EN_INVALIDMINMAX);
                 rcminmax = TEXU_ERROR;
             }
         }
@@ -1328,11 +1340,8 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
     /* validate min & max */
     if (rcminmax != TEXU_CONTINUE)
     {
+        _TexuWndProc_Notify(wnd, TEXU_EN_INVALIDMINMAX);
         return rcminmax;
-    }
-    if (TEXU_ES_AUTODECIMALCOMMA & style)
-    {
-        _TexuEditProc_AddDecimalFormat(edit);
     }
 
     if (edit->on_validate)
@@ -1340,8 +1349,14 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
         rc = edit->on_validate(wnd, edit->editbuf);
         if (rc != TEXU_OK)
         {
+            _TexuWndProc_Notify(wnd, TEXU_EN_INVALIDATE);
             return rc;
         }
+    }
+
+    if (TEXU_ES_AUTODECIMALCOMMA & style)
+    {
+        _TexuEditProc_AddDecimalFormat(edit);
     }
     /* update text */
     edit->firstvisit = 1;
@@ -1943,177 +1958,191 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i64 len = 0;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_char text[TEXU_MAX_WNDTEXT + 1];
-    texu_i32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
-    texu_i32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
-    texu_i32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
+    texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+    texu_ui32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
+    texu_ui32 invcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_INVALID);
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_i32 width = texu_wnd_get_width(wnd);
-    texu_i32 color = normcolor;
+    texu_ui32 color = normcolor;
 #if (defined WIN32 && defined _WINDOWS)
-    texu_i32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
-    texu_i32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
-    texu_i32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
-    texu_i32 bgcolor = normbg;
+    texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
+    texu_ui32 invbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_INVALID);
+    texu_ui32 bgcolor = normbg;
 #endif
 
+    if (!texu_wnd_is_visible(wnd))
+    {
+        return;
+    }
     edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
 
-    if (texu_wnd_is_visible(wnd))
+
+    texu_wnd_get_color(wnd, &normcolor, &discolor);
+    color = (texu_wnd_is_enable(wnd) ? normcolor : discolor);
+
+    len = width;
+    if (TEXU_ES_PASSWORD & style)
     {
-        texu_wnd_get_color(wnd, &normcolor, &discolor);
-        color = (texu_wnd_is_enable(wnd) ? normcolor : discolor);
-
-        len = width;
-        if (TEXU_ES_PASSWORD & style)
-        {
-            memset(buf, 0, sizeof(buf));
-            if (edit->showpass == TEXU_TRUE)
-            {
-                len = texu_strlen(edit->editbuf);
-                if (0 == len)
-                {
-                    len = 8;
-                }
-                texu_memset(buf, edit->passchar, len);
-            }
-            else
-            {
-                texu_memset(buf, TEXUTEXT(' '), len);
-            }
-            buf[len] = 0;
-            texu_printf_alignment(text, buf, width, style);
-#if (defined WIN32 && defined _WINDOWS)
-            texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
-            bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
-            if (edit->selected)
-            {
-                color = selcolor;
-                bgcolor = selbg;
-            }
-            texu_env_draw_text(env, y, x, text, color, bgcolor);
-#else
-            texu_cio_putstr_attr(cio, y, x, text, texu_cio_get_color(cio, color));
-#endif
-            return;
-        }
-
-        /*len = TEXU_MIN(texu_strlen(edit->editbuf), width);*/
         memset(buf, 0, sizeof(buf));
-        memset(text, 0, sizeof(text));
-        texu_strncpy(buf, &edit->editbuf[edit->firstchar], width);
-        if (0 == texu_strlen(buf))
+        if (edit->showpass == TEXU_TRUE)
         {
-/*            memset(buf, TEXUTEXT(' '), sizeof(texu_char)*width);*/
-            texu_strcpy(buf, TEXUTEXT(""));
+            len = texu_strlen(edit->editbuf);
+            if (0 == len)
+            {
+                len = 8;
+            }
+            texu_memset(buf, edit->passchar, len);
         }
-
-        if (edit->editing)
+        else
         {
-            style = TEXU_ALIGN_LEFT;
+            texu_memset(buf, TEXUTEXT(' '), len);
         }
+        buf[len] = 0;
         texu_printf_alignment(text, buf, width, style);
+#if (defined WIN32 && defined _WINDOWS)
+        texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
+        bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
         if (edit->selected)
         {
             color = selcolor;
             bgcolor = selbg;
         }
-#ifdef TEXU_CIO_COLOR_MONO
-        texu_cio_putstr_attr(cio, y, x, text,
-                             texu_cio_get_reverse(cio, color));
-#else
-#if (defined WIN32 && defined _WINDOWS)
         texu_env_draw_text(env, y, x, text, color, bgcolor);
 #else
-        texu_cio_putstr_attr(cio, y, x, text,
-                             texu_cio_get_color(cio, color));
+        texu_cio_putstr_attr(cio, y, x, text, texu_cio_get_color(cio, color));
+#endif
+        return;
+    }
+
+    /*len = TEXU_MIN(texu_strlen(edit->editbuf), width);*/
+    memset(buf, 0, sizeof(buf));
+    memset(text, 0, sizeof(text));
+    texu_strncpy(buf, &edit->editbuf[edit->firstchar], width);
+    if (0 == texu_strlen(buf))
+    {
+/*            memset(buf, TEXUTEXT(' '), sizeof(texu_char)*width);*/
+        texu_strcpy(buf, TEXUTEXT(""));
+    }
+
+    if (edit->editing)
+    {
+        style = TEXU_ALIGN_LEFT;
+    }
+    texu_printf_alignment(text, buf, width, style);
+    if (edit->selected)
+    {
+        color = selcolor;
+        bgcolor = selbg;
+        if (edit->invalid)
+        {
+            color = invcolor;
+            bgcolor = invbg;
+            edit->invalid = TEXU_FALSE;
+        }
+    }
+#ifdef TEXU_CIO_COLOR_MONO
+    texu_cio_putstr_attr(cio, y, x, text,
+                            texu_cio_get_reverse(cio, color));
+#else
+#if (defined WIN32 && defined _WINDOWS)
+    texu_env_draw_text(env, y, x, text, color, bgcolor);
+#else
+    texu_cio_putstr_attr(cio, y, x, text,
+                            texu_cio_get_color(cio, color));
 #endif
 #endif /* TEXU_CIO_COLOR_MONO*/
-        len = (texu_i32)TEXU_MIN(texu_strlen(buf), (texu_ui32)width);
-        texu_cio_gotoyx(cio, y, x + len);
-    }
+    len = (texu_i32)TEXU_MIN(texu_strlen(buf), (texu_ui32)width);
+    texu_cio_gotoyx(cio, y, x + len);
 }
+
 
 texu_i64
 _TexuEditProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
     switch (msg)
     {
-    case TEXU_WM_CREATE:
-    {
-        return _TexuEditProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
-    }
+        case TEXU_WM_CREATE:
+        {
+            return _TexuEditProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+        }
 
-    case TEXU_WM_CHAR:
-    {
-        _TexuEditProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
-        return 0;
-    }
+        case TEXU_WM_CHAR:
+        {
+            _TexuEditProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
+        }
 
-    case TEXU_WM_DESTROY:
-    {
-        _TexuEditProc_OnDestroy(wnd);
-        break;
-    }
+        case TEXU_WM_DESTROY:
+        {
+            _TexuEditProc_OnDestroy(wnd);
+            break;
+        }
 
-    case TEXU_WM_PAINT:
-    {
-        _TexuEditProc_OnPaint(wnd, (texu_cio *)param1);
-        return 0;
-    }
+        case TEXU_WM_PAINT:
+        {
+            _TexuEditProc_OnPaint(wnd, (texu_cio *)param1);
+            return 0;
+        }
 
-    case TEXU_WM_SETFOCUS:
-    {
-        _TexuEditProc_OnSetFocus(wnd, (texu_wnd *)param1);
-        break;
-    }
+        case TEXU_WM_SETFOCUS:
+        {
+            _TexuEditProc_OnSetFocus(wnd, (texu_wnd *)param1);
+            break;
+        }
 
-    case TEXU_WM_KILLFOCUS:
-    {
-        return _TexuEditProc_OnKillFocus(wnd, (texu_wnd *)param1);
-    }
+        case TEXU_WM_KILLFOCUS:
+        {
+            return _TexuEditProc_OnKillFocus(wnd, (texu_wnd *)param1);
+        }
 
-    case TEXU_EM_LIMITTEXT:
-    {
-        _TexuEditProc_OnLimitText(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_EM_SETPASSWDCHAR:
-    {
-        _TexuEditProc_OnSetPasswdChar(wnd, (texu_char)param1);
-        return 0;
-    }
-    case TEXU_EM_SETDECWIDTH:
-    {
-        _TexuEditProc_OnSetDecWidth(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_EM_SHOWPASSWDCHAR:
-    {
-        _TexuEditProc_OnShowPasswdChar(wnd, (texu_i32)param1);
-        return 0;
-    }
+        case TEXU_EM_LIMITTEXT:
+        {
+            _TexuEditProc_OnLimitText(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_EM_SETPASSWDCHAR:
+        {
+            _TexuEditProc_OnSetPasswdChar(wnd, (texu_char)param1);
+            return 0;
+        }
+        case TEXU_EM_SETDECWIDTH:
+        {
+            _TexuEditProc_OnSetDecWidth(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_EM_SHOWPASSWDCHAR:
+        {
+            _TexuEditProc_OnShowPasswdChar(wnd, (texu_i32)param1);
+            return 0;
+        }
 
-    case TEXU_EM_SETVALIDSTRING:
-    {
-        _TexuEditProc_OnSetValidString(wnd, (const texu_char *)param2);
-        return 0;
-    }
+        case TEXU_EM_SETVALIDSTRING:
+        {
+            _TexuEditProc_OnSetValidString(wnd, (const texu_char *)param2);
+            return 0;
+        }
 
-    case TEXU_EM_SETVALIDMINMAX:
-    {
-        _TexuEditProc_OnSetValidMinMax(wnd, (texu_i32)param1, (texu_editminmax *)param2);
-        return 0;
-    }
+        case TEXU_EM_SETVALIDMINMAX:
+        {
+            _TexuEditProc_OnSetValidMinMax(wnd, (texu_i32)param1, (texu_editminmax *)param2);
+            return 0;
+        }
 
-    case TEXU_WM_SETTEXT:
-        _TexuEditProc_OnSetText(wnd, (const texu_char *)param1);
-        return 0;
-/*
-    case TEXU_WM_GETTEXT:
-        return _TexuEditProc_OnGetText(wnd, (texu_char *)param1, param2);
-        */
+        case TEXU_WM_SETTEXT:
+            _TexuEditProc_OnSetText(wnd, (const texu_char *)param1);
+            return 0;
+    /*
+        case TEXU_WM_GETTEXT:
+            return _TexuEditProc_OnGetText(wnd, (texu_char *)param1, param2);
+            */
+        case TEXU_EM_INVALIDATE:
+            _TexuEditProc_OnInvalidate(wnd);
+            return 0;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }

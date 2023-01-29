@@ -757,6 +757,7 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_EDIT_DISABLED]            = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_EDIT_SELECTED]            = TEXU_CIO_COLOR_BLACK_CYAN;
     env->syscolors[TEXU_COLOR_EDIT_FOCUSED]             = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->syscolors[TEXU_COLOR_EDIT_INVALID]             = TEXU_CIO_COLOR_WHITE_RED;
     env->syscolors[TEXU_COLOR_LISTBOX]                  = TEXU_CIO_COLOR_CYAN_BLACK;
     env->syscolors[TEXU_COLOR_LISTBOX_DISABLED]         = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTBOX_SELECTED]         = TEXU_CIO_COLOR_BLUE_CYAN;
@@ -842,6 +843,7 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_EDIT_DISABLED]              = TEXU_CIO_COLOR_BLACK_WHITE;
     env->sysbgcolors[TEXU_COLOR_EDIT_SELECTED]              = TEXU_CIO_COLOR_CYAN_BLACK;
     env->sysbgcolors[TEXU_COLOR_EDIT_FOCUSED]               = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDIT_INVALID]               = TEXU_CIO_COLOR_RED_WHITE;
     env->sysbgcolors[TEXU_COLOR_LISTBOX]                    = TEXU_CIO_COLOR_BLACK_CYAN;
     env->sysbgcolors[TEXU_COLOR_LISTBOX_DISABLED]           = TEXU_CIO_COLOR_BLACK_WHITE;
     env->sysbgcolors[TEXU_COLOR_LISTBOX_SELECTED]           = TEXU_CIO_COLOR_CYAN_BLUE;
@@ -886,10 +888,10 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_IPADDRESSCTRL_DISABLED]     = TEXU_CIO_COLOR_BLACK_WHITE;
     env->sysbgcolors[TEXU_COLOR_IPADDRESSCTRL_SELECTED]     = TEXU_CIO_COLOR_CYAN_BLACK;
     env->sysbgcolors[TEXU_COLOR_IPADDRESSCTRL_FOCUSED]      = TEXU_CIO_COLOR_BLACK_CYAN;
-    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL]               = TEXU_CIO_COLOR_CYAN_BLACK;
-    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_DISABLED]      = TEXU_CIO_COLOR_WHITE_BLACK;
-    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_SELECTED]      = TEXU_CIO_COLOR_BLACK_CYAN;
-    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_FOCUSED]       = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL]               = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_DISABLED]      = TEXU_CIO_COLOR_BLACK_WHITE;
+    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_SELECTED]      = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_FOCUSED]       = TEXU_CIO_COLOR_BLACK_CYAN;
     /*default*/
     env->sysbgcolors[TEXU_COLOR_DEFAULT] = TEXU_CIO_COLOR_BLACK_WHITE;
 }
@@ -901,13 +903,13 @@ _texu_env_init_cls(texu_env *env)
     texu_env_register_cls(env, TEXU_DESKTOP_CLASS,  _TexuDesktopProc);
     texu_env_register_cls(env, TEXU_MSGBOX_CLASS,   _TexuMsgBoxProc);
     /*controls*/
-    texu_env_register_cls(env, TEXU_LABEL_CLASS,    _TexuLabelProc);            /*texuproc.c*/
-    texu_env_register_cls(env, TEXU_BUTTON_CLASS,   _TexuButtonProc);           /*texuproc.c*/
-    texu_env_register_cls(env, TEXU_EDIT_CLASS,     _TexuEditProc);             /*texuproc.c*/
-    texu_env_register_cls(env, TEXU_LISTBOX_CLASS,  _TexuListBoxProc);          /*texuproc.c*/
-    texu_env_register_cls(env, TEXU_COMBOBOX_CLASS, _TexuComboBoxProc);         /*texuproc.c*/
-    texu_env_register_cls(env, TEXU_LISTCTRL_CLASS, _TexuListCtrlProc);         /*texuctrl.c*/
-    texu_env_register_cls(env, TEXU_TREECTRL_CLASS, _TexuTreeCtrlProc);         /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_LABEL_CLASS,        _TexuLabelProc);        /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_BUTTON_CLASS,       _TexuButtonProc);       /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_EDIT_CLASS,         _TexuEditProc);         /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_LISTBOX_CLASS,      _TexuListBoxProc);      /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_COMBOBOX_CLASS,     _TexuComboBoxProc);     /*texuproc.c*/
+    texu_env_register_cls(env, TEXU_LISTCTRL_CLASS,     _TexuListCtrlProc);     /*texuctrl.c*/
+    texu_env_register_cls(env, TEXU_TREECTRL_CLASS,     _TexuTreeCtrlProc);     /*texuctrl.c*/
     texu_env_register_cls(env, TEXU_UPDOWNCTRL_CLASS,   _TexuUpDownCtrlProc);   /*texuctrl.c*/
     texu_env_register_cls(env, TEXU_PROGRESSBAR_CLASS,  _TexuProgressBarProc);  /*texuctrl.c*/
     texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);    /*texuctrl.c*/
@@ -3111,7 +3113,7 @@ texu_wnd_del(texu_wnd *wnd)
 {
     if (wnd)
     {
-        texu_wnd_destroy(wnd);      /*delete all children*/
+        /*texu_wnd_destroy(wnd);*/      /*delete all children*/
         texu_list_del(wnd->children);
         texu_list_del(wnd->keycmds);
         free(wnd);

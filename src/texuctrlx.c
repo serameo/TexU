@@ -715,6 +715,7 @@ struct texu_editmask
     texu_wnd *editwnd;
     char pattern[TEXU_MAX_BUFFER + 1];/*2023-01-27: re.h supports only ascii*/
     texu_char editbuf[TEXU_MAX_WNDTEXT + 1];
+    texu_char infobuf[TEXU_MAX_WNDTEXT + 1];
     void *exparam;
 };
 typedef struct texu_editmask texu_editmask;
@@ -730,6 +731,7 @@ void _TexuEditMaskProc_OnSetMask(texu_wnd *wnd, const texu_char *mask);
 texu_i32 _TexuEditMaskProc_OnGetMask(texu_wnd *wnd, texu_char *mask, texu_i32 masklen);
 void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
 texu_bool   _TexuEditMaskProc_IsValidString(texu_wnd *wnd, const texu_char *str);
+void _TexuEditMaskProc_OnSetInfo(texu_wnd *wnd, const texu_char *text);
 
 
 texu_status
@@ -787,21 +789,21 @@ _TexuEditMaskProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     emctl->editwnd = editwnd; /* no parameter */
 
     emctl->editwnd = editwnd;
-
+    texu_wnd_visible(editwnd, TEXU_FALSE);
     /* save memory */
     texu_wnd_set_userdata(wnd, emctl);
     /* set default color*/
     texu_wnd_set_color(wnd,
-                       texu_env_get_syscolor(env, TEXU_COLOR_IPADDRESSCTRL),
-                       texu_env_get_syscolor(env, TEXU_COLOR_IPADDRESSCTRL_DISABLED));
+                       texu_env_get_syscolor(env, TEXU_COLOR_EDITMASKCTRL),
+                       texu_env_get_syscolor(env, TEXU_COLOR_EDITMASKCTRL_DISABLED));
     texu_wnd_set_focused_color(wnd,
-                               texu_env_get_syscolor(env, TEXU_COLOR_IPADDRESSCTRL_FOCUSED));
+                               texu_env_get_syscolor(env, TEXU_COLOR_EDITMASKCTRL_FOCUSED));
 #if (defined WIN32 && defined _WINDOWS)
     texu_wnd_set_bgcolor(wnd,
-                         texu_env_get_sysbgcolor(env, TEXU_COLOR_IPADDRESSCTRL),
-                         texu_env_get_sysbgcolor(env, TEXU_COLOR_IPADDRESSCTRL_DISABLED));
+                         texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL),
+                         texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL_DISABLED));
     texu_wnd_set_bgfocused_color(wnd,
-                                 texu_env_get_sysbgcolor(env, TEXU_COLOR_IPADDRESSCTRL_FOCUSED));
+                                 texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL_FOCUSED));
 #endif
     return TEXU_OK;
 }
@@ -815,6 +817,7 @@ _TexuEditMaskProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
         return;
     }
     /*set focust to the first edit window*/
+    texu_wnd_visible(emctl->editwnd, TEXU_TRUE);
     texu_wnd_send_msg(emctl->editwnd, TEXU_WM_SETFOCUS, 0, 0);
     _TexuWndProc_Notify(wnd, TEXU_EMN_SETFOCUS);
 }
@@ -837,6 +840,10 @@ _TexuEditMaskProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     if (TEXU_FALSE == valid)
     {
         _TexuWndProc_Notify(wnd, TEXU_EMN_INVALIDEXPR);
+
+        /*change edit color*/
+        texu_wnd_send_msg(emctl->editwnd, TEXU_EM_INVALIDATE, 0, 0);
+        texu_wnd_invalidate(emctl->editwnd);
         return TEXU_ERROR;
     }
 
@@ -844,6 +851,9 @@ _TexuEditMaskProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 
     _TexuWndProc_Notify(wnd, TEXU_EMN_KILLFOCUS);
     texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
+
+    texu_wnd_visible(emctl->editwnd, TEXU_FALSE);
+    texu_wnd_invalidate(wnd);
     return TEXU_CONTINUE;
 }
 
@@ -853,6 +863,56 @@ _TexuEditMaskProc_OnDestroy(texu_wnd *wnd)
     texu_editmask *emctl = 0;
     emctl = (texu_editmask *)texu_wnd_get_userdata(wnd);
     free(emctl);
+}
+
+void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
+{
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_editmask *emctl = 0;
+    texu_i64 len = 0;
+    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_char text[TEXU_MAX_WNDTEXT + 1];
+    texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITMASKCTRL);
+    texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITMASKCTRL_DISABLED);
+    texu_ui32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITMASKCTRL_SELECTED);
+    texu_ui32 style = texu_wnd_get_style(wnd);
+    texu_i32 y = texu_wnd_get_y(wnd);
+    texu_i32 x = texu_wnd_get_x(wnd);
+    texu_i32 width = texu_wnd_get_width(wnd);
+    texu_ui32 color = normcolor;
+#if (defined WIN32 && defined _WINDOWS)
+    texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL);
+    texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL_DISABLED);
+    texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL_SELECTED);
+    texu_ui32 bgcolor = normbg;
+#endif
+
+    if (!texu_wnd_is_visible(wnd))
+    {
+        return;
+    }
+    emctl = (texu_editmask *)texu_wnd_get_userdata(wnd);
+
+    texu_wnd_get_text(wnd, buf, TEXU_MAX_WNDTEXT);
+    if (texu_strlen(buf) == 0)
+    {
+        texu_strcpy(buf, emctl->infobuf);
+    }
+    texu_printf_alignment(text, buf, width, style);
+
+#ifdef TEXU_CIO_COLOR_MONO
+    texu_cio_putstr_attr(cio, y, x, text,
+                         texu_cio_get_reverse(cio, color));
+#else
+#if (defined WIN32 && defined _WINDOWS)
+    texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
+    bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
+    texu_env_draw_text(env, y, x, text, color, bgcolor);
+#else
+    texu_cio_putstr_attr(cio, y, x, text,
+                         texu_cio_get_color(cio, color));
+#endif
+#endif /* TEXU_CIO_COLOR_MONO*/
 }
 
 texu_bool
@@ -960,6 +1020,19 @@ _TexuEditMaskProc_OnSetMask(texu_wnd *wnd, const texu_char *mask)
     }
 }
 
+void _TexuEditMaskProc_OnSetInfo(texu_wnd *wnd, const texu_char *text)
+{
+    texu_editmask *emctl = 0;
+
+    if (!texu_wnd_is_enable(wnd))
+    {
+        return;
+    }
+    emctl = (texu_editmask *)texu_wnd_get_userdata(wnd);
+
+    texu_strcpy(emctl->infobuf, text);
+}
+
 void
 _TexuEditMaskProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 {
@@ -1001,6 +1074,10 @@ _TexuEditMaskProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
             _TexuEditMaskProc_OnDestroy(wnd);
             break;
 
+        case TEXU_WM_PAINT:
+            _TexuEditMaskProc_OnPaint(wnd, (texu_cio *)param1);
+            return 0;
+
         case TEXU_WM_SETFOCUS:
             _TexuEditMaskProc_OnSetFocus(wnd, (texu_wnd *)param1);
             break;
@@ -1018,6 +1095,11 @@ _TexuEditMaskProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
 
         case TEXU_EMM_GETMASK:
             return _TexuEditMaskProc_OnGetMask(wnd, (texu_char *)param1, param2);
+
+        case TEXU_EMM_SETINFO:
+            _TexuEditMaskProc_OnSetInfo(wnd, (const texu_char *)param1);
+            return 0;
+
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
