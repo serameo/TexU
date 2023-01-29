@@ -1319,6 +1319,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
                 decimal > (texu_f64)edit->max)
             {
                 _TexuWndProc_Notify(wnd, TEXU_EN_INVALIDMINMAX);
+                texu_wnd_send_msg(wnd, TEXU_EM_INVALIDATE, 0, 0);
                 rcminmax = TEXU_ERROR;
             }
         }
@@ -1341,6 +1342,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
     if (rcminmax != TEXU_CONTINUE)
     {
         _TexuWndProc_Notify(wnd, TEXU_EN_INVALIDMINMAX);
+        texu_wnd_send_msg(wnd, TEXU_EM_INVALIDATE, 0, 0);
         return rcminmax;
     }
 
@@ -1350,6 +1352,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
         if (rc != TEXU_OK)
         {
             _TexuWndProc_Notify(wnd, TEXU_EN_INVALIDATE);
+            texu_wnd_send_msg(wnd, TEXU_EM_INVALIDATE, 0, 0);
             return rc;
         }
     }
