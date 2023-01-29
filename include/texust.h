@@ -140,13 +140,13 @@ struct texu_wnd_header
     texu_char *caption;
     texu_i32 cols;
     texu_i32 align;      /* column alignment         */
-    texu_i32 normcolor;  /* text attributes          */
-    texu_i32 discolor;   /* text attributes          */
-    texu_i32 selcolor;   /* text attributes          */
+    texu_ui32 normcolor;  /* text attributes          */
+    texu_ui32 discolor;   /* text attributes          */
+    texu_ui32 selcolor;   /* text attributes          */
 #if (defined WIN32 && defined _WINDOWS)
-    texu_i32 normbg;  /* text attributes          */
-    texu_i32 disbg;   /* text attributes          */
-    texu_i32 selbg;   /* text attributes          */
+    texu_ui32 normbg;  /* text attributes          */
+    texu_ui32 disbg;   /* text attributes          */
+    texu_ui32 selbg;   /* text attributes          */
 #endif
     texu_ui32 editstyle; /* edit style, see TES_XXX  */
     texu_i32 decwidth;   /* TES_DECIMAL or TES_AUTODECIMALCOMMA, default 6 */
@@ -171,13 +171,13 @@ struct texu_treewnd_item
     texu_bool selected;
     texu_i32 children;
     texu_bool populated;
-    texu_i32 normcolor;
-    texu_i32 discolor;
-    texu_i32 selcolor;
+    texu_ui32 normcolor;
+    texu_ui32 discolor;
+    texu_ui32 selcolor;
 #if (defined WIN32 && defined _WINDOWS)
-    texu_i32 normbg;
-    texu_i32 disbg;
-    texu_i32 selbg;
+    texu_ui32 normbg;
+    texu_ui32 disbg;
+    texu_ui32 selbg;
 #endif
 };
 typedef struct texu_treewnd_item texu_treewnd_item;
@@ -203,13 +203,13 @@ struct texu_menu_item
     texu_ui32 id;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_bool enable;
-    texu_i32 normcolor;
-    texu_i32 discolor;
-    texu_i32 selcolor;
+    texu_ui32 normcolor;
+    texu_ui32 discolor;
+    texu_ui32 selcolor;
 #if (defined WIN32 && defined _WINDOWS)
-    texu_i32 normbg;
-    texu_i32 disbg;
-    texu_i32 selbg;
+    texu_ui32 normbg;
+    texu_ui32 disbg;
+    texu_ui32 selbg;
 #endif
     texu_ui32 style; /*TEXU_MS_TEXT, TEXU_MS_BREAK*/
     texu_char info[TEXU_MAX_WNDTEXT + 1];
@@ -282,9 +282,9 @@ struct texu_rbwnd_band
 {
     texu_char   caption[TEXU_MAX_WNDTEXT + 1];
     texu_i32    align;
-    texu_i32    normcolor;  /* text attributes          */
-    texu_i32    discolor;   /* text attributes          */
-    texu_i32    selcolor;   /* text attributes          */
+    texu_ui32    normcolor;  /* text attributes          */
+    texu_ui32    discolor;   /* text attributes          */
+    texu_ui32    selcolor;   /* text attributes          */
     texu_wnd*   childwnd;   /* child window for each cell*/
                             /* it could be editbox/listbox/combobox etc*/
     texu_i32    width;
