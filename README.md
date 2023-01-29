@@ -8,7 +8,7 @@ These files are included many text objects by the following:
 - Label (TEXU_LABEL_CLASS)
 - Button (TEXU_BUTTON_CLASS)
 - Edit (TEXU_EDIT_CLASS)
-- List box (radio, check, or simple list box) (TEXU_LISTBOX_CLASS)
+- List box (radio (TEXU_LBS_RADIOBOX), check box (TEXU_LBS_CHECKBOK), or simple list box) (TEXU_LISTBOX_CLASS)
 - Combo box (TEXU_COMBOBOX_CLASS)
 - Status bar (TEXU_STATUSBAR_CLASS)
 - List control (TEXU_LISTCTRL_CLASS)
@@ -18,6 +18,8 @@ These files are included many text objects by the following:
 - Menu (TEXU_MENU_CLASS / TEXU_MENUWND_CLASS)
 - Page control (TEXU_PAGECTRL_CLASS) -- This class could hold many windows as same as a book object.
 - ReBar control (TEXU_REBAR_CLASS) -- This class is a simple container to add a common control to be scrollable controls in its bound.
+- IP Address control (TEXU_IPADDRESSCTRL_CLASS)
+- Edit Mask control (TEXU_EDITMASKCTRL_CLASS) -- Using regular expression to validate text (See also https://github.com/kokke/tiny-regex-c)
 - Simple console I/O (e.g. writing/reading a character, drawing a line, drawing a rectangle etc.)
 
 All text objects are implemented by using a simple library (TexU_List, TexU_Stack, TexU_Queue, TexU_Tree, etc.) See also include/texulib.h. Also, some utilities such as texu_dblog object is using sqlite library to handle a database log file.
