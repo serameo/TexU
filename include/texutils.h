@@ -40,6 +40,7 @@ texu_char          *texu_strchr(const texu_char *str, texu_char ch);
 texu_char *         texu_memset(texu_char *dest, texu_char ch, size_t len);
 texu_char *         texu_memcpy(texu_char *dest, const texu_char *src, size_t len);
 texu_i32            texu_memcmp(const texu_char *dest, const texu_char *src, size_t len);
+texu_i32            texu_fs2ls(const texu_char *_sPriceStr, texu_i32 _lSize, texu_i32 _lDec, texu_char *sLongStr_);
 
 #if (defined WIN32)
 texu_i32            texu_a2w(wchar_t *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen);

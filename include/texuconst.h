@@ -289,6 +289,8 @@ enum
 #define TEXU_EM_SETVALIDSTRING          (TEXU_EM_FIRST +  5)
 #define TEXU_EM_SETVALIDMINMAX          (TEXU_EM_FIRST +  6)
 #define TEXU_EM_INVALIDATE              (TEXU_EM_FIRST +  7)
+#define TEXU_EM_GETINT                  (TEXU_EM_FIRST +  8)
+#define TEXU_EM_GETFLOAT                (TEXU_EM_FIRST +  9)
 
 /* edit notification */
 #define TEXU_EN_FIRST                   TEXU_EM_FIRST
@@ -565,6 +567,23 @@ enum
 
 #define TEXU_EDITMASK_EMAIL             TEXUTEXT("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$")
 
+/*EDIT PRICE SPREAD CTROL*/
+#define TEXU_EPSM_FIRST                 1600
+#define TEXU_EPSM_INSERTSPREAD          (TEXU_EPSM_FIRST +  1)
+#define TEXU_EPSM_DELETESPREAD          (TEXU_EPSM_FIRST +  2)
+#define TEXU_EPSM_SETBASESPREAD         (TEXU_EPSM_FIRST +  3)
+#define TEXU_EPSM_GETBASESPREAD         (TEXU_EPSM_FIRST +  4)
+#define TEXU_EPSM_SETPRICEDECIMAL       (TEXU_EPSM_FIRST +  5)
+#define TEXU_EPSM_LOADDEFAULTSPREADS    (TEXU_EPSM_FIRST +  6)
+#define TEXU_EPSM_LOADSPREADS           (TEXU_EPSM_FIRST +  7)
+#define TEXU_EPSM_ALLOWOVERCEILINGFLOOR (TEXU_EPSM_FIRST +  8)
+
+#define TEXU_EPSN_FIRST                 TEXU_EMM_FIRST
+#define TEXU_EPSN_SETFOCUS              (TEXU_EPSN_FIRST +  1)
+#define TEXU_EPSN_KILLFOCUS             (TEXU_EPSN_FIRST +  2)
+#define TEXU_EPSN_INVALIDSPREAD         (TEXU_EPSM_FIRST +  3)
+#define TEXU_EPSN_INVALIDCEILING        (TEXU_EPSM_FIRST +  4)
+#define TEXU_EPSN_INVALIDFLOOR          (TEXU_EPSM_FIRST +  5)
 
 /*MENU */
 #define TEXU_MNM_FIRST                  10000
@@ -617,10 +636,12 @@ enum
 #define TEXU_ACS_PLMINUS                ACS_PLMINUS
 #else
 #if (defined WIN32 && defined UNICODE)
-#define TEXU_ACS_PLMINUS                L'+'
+#define TEXU_ACS_PLUS                   L'+'
+#define TEXU_ACS_MINUS                  L'-'
 #define TEXU_EMPTY_STR                  L""
 #else
-#define TEXU_ACS_PLMINUS                '+'
+#define TEXU_ACS_PLUS                   '+'
+#define TEXU_ACS_MINUS                  '-'
 #define TEXU_EMPTY_STR                  ""
 #endif
 #endif
@@ -645,6 +666,7 @@ enum
 #define TEXU_REBAR_CLASS                L"TexuReBarClassW"
 #define TEXU_IPADDRESSCTRL_CLASS        L"TexuIPAddressCtrlClassW"
 #define TEXU_EDITMASKCTRL_CLASS         L"TexuEditMaskCtrlClassW"
+#define TEXU_EDITPRICESPREADCTRL_CLASS  L"TexuEditPriceSpreadCtrlClassW"
 /*menu*/
 #define TEXU_MENU_CLASS                 L"TexuMenuClassW"
 #define TEXU_MENUWND_CLASS              L"TexuMenuWndClassW"
@@ -666,6 +688,7 @@ enum
 #define TEXU_REBAR_CLASS                "TexuReBarClassA"
 #define TEXU_IPADDRESSCTRL_CLASS        "TexuIPAddressCtrlClassA"
 #define TEXU_EDITMASKCTRL_CLASS         "TexuEditMaskCtrlClassA"
+#define TEXU_EDITPRICESPREADCTRL_CLASS  "TexuEditPriceSpreadCtrlClassA"
 /*menu*/
 #define TEXU_MENU_CLASS                 "TexuMenuClassA"
 #define TEXU_MENUWND_CLASS              "TexuMenuWndClassA"
@@ -778,6 +801,10 @@ enum
 #define TEXU_TCT_ENDMOVING              0x00000007
 #define TEXU_TCT_ENDEDITING             0x00000008
 
+/*REBAR STYLES*/
+#define TEXU_RBS_NOCAPTION              0x00010000
 
+/*EDIT PRICE SPREAD CTROL*/
+#define TEXU_EPSS_SHOWCHANGE            0x00010000
 
 #endif /*_TEXUCONST_H_*/

@@ -302,6 +302,16 @@ struct texu_ip_addr
 };
 typedef struct texu_ip_addr texu_ip_addr;
 
+/*PRICE SPREAD*/
+struct texu_pricespread
+{
+    texu_i32    min;        /*e.g. 0.01 =  1/100*/
+    texu_i32    max;        /*e.g. 0.99 = 99/100*/
+    texu_i32    spread;     /*e.g. 0.01 =  1/100*/
+    texu_i32    multiplier; /*e.g. 100*/
+};
+typedef struct texu_pricespread texu_pricespread;
+
 #ifdef __cplusplus
 }
 #endif
