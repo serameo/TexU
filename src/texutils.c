@@ -68,6 +68,119 @@ texu_strchr(const texu_char *str, texu_char ch)
 #endif
 }
 
+/*float string to long string*/
+texu_i32 texu_fs2ls(const texu_char *_sPriceStr, texu_i32 _lSize, texu_i32 _lDec, texu_char *sLongStr_)
+{
+    texu_i32    lLen = 0;           /*get the real length*/
+    texu_char*   psz = (texu_char*)_sPriceStr;  /*pointing to the input */
+    texu_i32    fNeg = 0;       /*negative flag*/
+    texu_i32    fDot = 0;       /*decimal flag*/
+    texu_char    szLongStr[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT(""); /*conversion from price string to long string*/
+    texu_char    szPriceStrNoComma[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT(""); /*price string without ','*/
+    texu_i32    lNewLen = 0;        /*length of szPriceStrNoComma*/
+    texu_char*   pszLongStr = szLongStr;
+
+    memset(szPriceStrNoComma, 0, sizeof(szPriceStrNoComma));
+    /*remove ','*/
+    while (lLen < _lSize   &&
+           *psz)
+    {
+        if (TEXUTEXT(',') != *psz)
+        {
+            szPriceStrNoComma[lLen] = *psz;
+            ++lLen;
+        }
+        ++psz;
+    }
+    /*remove leading unexpected characters until found the first price string*/
+    psz = szPriceStrNoComma;        /*re-point to the new price string*/
+    while (*psz        &&          /*string is still valid*/
+           *psz != TEXUTEXT('-') &&          /*is it a negative?*/
+           *psz != TEXUTEXT('.') &&          /*is it a decimal?*/
+           (*psz < TEXUTEXT('0') || *psz > TEXUTEXT('9'))  /*is it a number?*/
+           )
+    {
+        ++psz;
+    }
+    /*limit decimal point*/
+    if (_lDec < 0)
+    {
+        _lDec = 0;
+    }
+    else if (_lDec > 6)
+    {
+        _lDec = 6;
+    }
+    /*check if the character is not null and space*/
+    /*also the length counting is not greater than the input length*/
+    memset(szLongStr, 0, sizeof(szLongStr));
+    while (*psz && TEXUTEXT(' ') != *psz)
+    {
+        /*is it a negative value?*/
+        if (TEXUTEXT('-') == *psz)
+        {
+            if (0 == fNeg)
+            {
+                /*it is a negative value*/
+                fNeg = 1;
+                *pszLongStr = *psz;
+                ++pszLongStr;
+            }
+            else
+            {
+                /*found another '-'*/
+                break;
+            }
+        }
+        /*is it a decimal value*/
+        else if (TEXUTEXT('.') == *psz)
+        {
+            if (0 == fDot)
+            {
+                /*it is a decimal value*/
+                fDot = 1;
+            }
+            else
+            {
+                /*found another '.'*/
+                break;
+            }
+        }
+        else if (*psz >= TEXUTEXT('0') && *psz <= TEXUTEXT('9'))
+        {
+            if (fDot)
+            {
+                if (_lDec <= 0)
+                {
+                    /*no more parsing the decimal*/
+                    break;
+                }
+                --_lDec;
+            }
+            *pszLongStr = *psz; /*copy the digit character*/
+            ++pszLongStr;
+        }
+        else
+        {
+            /*found others*/
+            break;
+        }
+        ++psz;
+    }
+    /*ETSSUPX-486*/
+    /*fill zero to all decimals requested*/
+    /*e.g. _sPriceStr = '1.11' and _lDec = 4 */
+    /*the output would be sLongStr_ = '11100'*/
+    while (_lDec > 0)
+    {
+        texu_strcat(szLongStr, TEXUTEXT("0"));
+        --_lDec;
+    }
+    /*copy to the output*/
+    texu_strcpy(sLongStr_, szLongStr);
+    return texu_strlen(sLongStr_);
+}
+
 texu_f64
 texu_atof(const texu_char *buf)
 {

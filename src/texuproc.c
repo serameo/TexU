@@ -2063,6 +2063,52 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_cio_gotoyx(cio, y, x + len);
 }
 
+texu_status _TexuEditProc_OnGetInt(texu_wnd *wnd, texu_i32 *out);
+texu_status _TexuEditProc_OnGetFloat(texu_wnd *wnd, texu_f64 *out);
+
+
+texu_status _TexuEditProc_OnGetInt(texu_wnd *wnd, texu_i32 *out)
+{
+    texu_status rc = TEXU_OK;
+    texu_editwnd *edit = 0;
+    texu_i32 value = 0;
+    texu_char text[TEXU_MAX_WNDTEXT + 1];
+
+    if (!(texu_wnd_is_enable(wnd)) || !out)
+    {
+        return TEXU_ERROR;
+    }
+
+    edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
+    texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
+
+    value = texu_atol(text);
+    *out = value;
+
+    return rc;
+}
+
+texu_status _TexuEditProc_OnGetFloat(texu_wnd *wnd, texu_f64 *out)
+{
+    texu_status rc = TEXU_OK;
+    texu_editwnd *edit = 0;
+    texu_f64 value = 0;
+    texu_char text[TEXU_MAX_WNDTEXT + 1];
+
+    if (!(texu_wnd_is_enable(wnd)) || !out)
+    {
+        return TEXU_ERROR;
+    }
+
+    edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
+    texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
+
+    value = texu_atof(text);
+    *out = value;
+
+    return rc;
+}
+
 
 texu_i64
 _TexuEditProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
@@ -2139,13 +2185,16 @@ _TexuEditProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         case TEXU_WM_SETTEXT:
             _TexuEditProc_OnSetText(wnd, (const texu_char *)param1);
             return 0;
-    /*
-        case TEXU_WM_GETTEXT:
-            return _TexuEditProc_OnGetText(wnd, (texu_char *)param1, param2);
-            */
+
         case TEXU_EM_INVALIDATE:
             _TexuEditProc_OnInvalidate(wnd);
             return 0;
+
+        case TEXU_EM_GETINT:
+            return _TexuEditProc_OnGetInt(wnd, (texu_i32*)param1);
+
+        case TEXU_EM_GETFLOAT:
+            return _TexuEditProc_OnGetFloat(wnd, (texu_f64*)param1);
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
@@ -2841,7 +2890,7 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
                 texu_printf_alignment2(text, buf, width - 1, style, TEXU_TRUE);
                 texu_strcat(text, TEXUTEXT(" "));
 
-                if (i == lb->cursel)/* && item->enable)*/
+                if (enable && i == lb->cursel)/* && item->enable)*/
                 {
                     color = lb->selcolor;
 #if (defined WIN32 && defined _WINDOWS)
@@ -2888,15 +2937,15 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
 #ifdef TEXU_CIO_COLOR_MONO
                     color = normcolor;
 #else
-                    color = (item->enable ? normcolor : discolor);
+                    color = (enable && item->enable ? normcolor : discolor);
 #if (defined WIN32 && defined _WINDOWS)
                     bgcolor = (item->enable ? item->normbg : item->disbg);
 #endif
                     if (style & TEXU_LBS_OWNERCOLOR)
                     {
-                        color = (item->enable ? item->normcolor : item->discolor);
+                        color = (enable && item->enable ? item->normcolor : item->discolor);
 #if (defined WIN32 && defined _WINDOWS)
-                        bgcolor = (item->enable ? item->normbg : item->disbg);
+                        bgcolor = (enable && item->enable ? item->normbg : item->disbg);
 #endif
                     }
 #endif /* TEXU_CIO_COLOR_MONO*/

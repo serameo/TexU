@@ -57,9 +57,9 @@ struct texu_list
     texu_ui64 nitems;
     texu_list_item *first;
     texu_list_item *last;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_t mutex;
-    #endif
+#endif
 };
 
 texu_list *
@@ -71,9 +71,9 @@ texu_list_new()
         return 0;
     }
     memset(list, 0, sizeof(texu_list));
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_init(&list->mutex, NULL);
-    #endif
+#endif
     return list;
 }
 
@@ -105,9 +105,9 @@ texu_list_cb_free(
 {
     texu_list_item *delitem = 0;
     texu_list_item *item = 0;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
-    #endif
+#endif
     item = list->first;
 
     while (item)
@@ -124,9 +124,9 @@ texu_list_cb_free(
     /* reset all pointers */
     list->first = list->last = 0;
     list->nitems = 0;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
-    #endif
+#endif
 }
 
 texu_status
@@ -137,9 +137,9 @@ texu_list_insert_first(texu_list *list, texu_i64 data)
     {
         return TEXU_NOMEM;
     }
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
-    #endif
+#endif
     if (list->first)
     {
         newitem->next = list->first->next;
@@ -152,9 +152,9 @@ texu_list_insert_first(texu_list *list, texu_i64 data)
     }
 
     ++list->nitems;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
-    #endif
+#endif
     return TEXU_OK;
 }
 
@@ -199,9 +199,9 @@ texu_list_insert(
         after->prev = newitem;
     }
     ++list->nitems;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
-    #endif
+#endif
     return TEXU_OK;
 }
 
@@ -213,9 +213,9 @@ texu_list_add(texu_list *list, texu_i64 data)
     {
         return TEXU_NOMEM;
     }
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
-    #endif
+#endif
     if (list->first)
     {
         newitem->prev = list->last;
@@ -228,9 +228,9 @@ texu_list_add(texu_list *list, texu_i64 data)
     }
 
     ++list->nitems;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
-    #endif
+#endif
     return TEXU_OK;
 }
 
@@ -255,9 +255,9 @@ texu_list_cb_remove(
         return TEXU_OK;
     }
     /* make a new link */
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
-    #endif
+#endif
    if (item == list->first)
     {
         list->first = list->first->next;
@@ -295,9 +295,9 @@ texu_list_cb_remove(
     }
     _texu_list_item_del(item);
     --list->nitems;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
-    #endif
+#endif
     return TEXU_OK;
 }
 
@@ -305,13 +305,13 @@ texu_list_item *
 texu_list_first(texu_list *list)
 {
     texu_list_item *item = 0;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
-    #endif
+#endif
     item = list->first;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
-    #endif
+#endif
     return item;
 }
 
@@ -319,13 +319,13 @@ texu_list_item *
 texu_list_last(texu_list *list)
 {
     texu_list_item *item = 0;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
-    #endif
+#endif
     item = list->last;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
-    #endif
+#endif
     return item;
 }
 
@@ -333,13 +333,13 @@ texu_ui64
 texu_list_count(texu_list *list)
 {
     texu_ui64 nitems = 0;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
-    #endif
+#endif
     nitems = list->nitems;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
-    #endif
+#endif
     return nitems;
 }
 
@@ -1006,9 +1006,9 @@ texu_tree_new()
             free(tree);
             return 0;
         }
-        #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
         pthread_mutex_init(&tree->mutex, NULL);
-        #endif
+#endif
     }
     return tree;
 }
@@ -1019,9 +1019,9 @@ texu_tree_del(texu_tree *tree)
     if (tree)
     {
         texu_tree_remove_item(tree, tree->root);
-        #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
         pthread_mutex_destroy(&tree->mutex);
-        #endif
+#endif
         free(tree);
         tree = 0;
     }
@@ -1041,9 +1041,9 @@ texu_tree_add_item(texu_tree *tree, texu_tree_item *parent, texu_i64 data)
     }
 
     newitem->parent = parent;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&tree->mutex);
-    #endif
+#endif
     if (!parent->firstchild)
     {
         parent->firstchild = newitem;
@@ -1061,9 +1061,9 @@ texu_tree_add_item(texu_tree *tree, texu_tree_item *parent, texu_i64 data)
 
     /* items counted */
     ++tree->nitems;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&tree->mutex);
-    #endif
+#endif
     return newitem;
 }
 
@@ -1087,9 +1087,9 @@ texu_tree_cb_remove_item(
     {
         return TEXU_OK;
     }
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&tree->mutex);
-    #endif
+#endif
     /* save infos */
     parent = delitem->parent;
     next = delitem->next;
@@ -1133,9 +1133,9 @@ texu_tree_cb_remove_item(
         --parent->nchildren;
     }
     --tree->nitems;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&tree->mutex);
-    #endif
+#endif
 
     return TEXU_OK;
 }
@@ -1247,14 +1247,6 @@ texu_tree_count(texu_tree *tree)
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
 
-struct texu_map_keyval
-{
-    texu_i64 key;
-    texu_i64 value;
-    texu_bool used;
-};
-typedef struct texu_map_keyval texu_map_keyval;
-
 struct texu_map
 {
     texu_map_keyval *keyvals;
@@ -1262,9 +1254,9 @@ struct texu_map
     texu_i64 nkeys;
     texu_i64 ndels;
     texu_bool sorted;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_t mutex;
-    #endif
+#endif
 };
 #define TEXU_MAP_INCREMENTAL_ITEMS 256
 
@@ -1325,9 +1317,9 @@ texu_map_new()
         map->nitems = TEXU_MAP_INCREMENTAL_ITEMS;
         map->nkeys = 0;
         map->sorted = TEXU_TRUE;
-        #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
         pthread_mutex_init(&map->mutex, NULL);
-        #endif
+#endif
     }
     return map;
 }
@@ -1339,9 +1331,9 @@ texu_map_del(texu_map *map)
     {
         texu_map_free(map);
         free(map->keyvals);
-        #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
         pthread_mutex_destroy(&map->mutex);
-        #endif
+#endif
         free(map);
         map = 0;
     }
@@ -1371,17 +1363,17 @@ texu_map_cb_free(
             }
         }
     }
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&map->mutex);
-    #endif
+#endif
     size = sizeof(texu_map_keyval) * map->nitems;
     memset(map->keyvals, 0, size);
     map->nkeys = 0;
     map->ndels = 0;
     map->sorted = TEXU_TRUE;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&map->mutex);
-    #endif
+#endif
 }
 
 texu_i32
@@ -1395,6 +1387,19 @@ texu_map_strcmp(const void *v1, const void *v2)
     }
     return TEXU_CMP_GT;
 }
+
+texu_i32
+texu_map_wstrcmp(const void *v1, const void *v2)
+{
+    texu_map_keyval *kv1 = (texu_map_keyval *)v1;
+    texu_map_keyval *kv2 = (texu_map_keyval *)v2;
+    if (kv1->used && kv2->used)
+    {
+        return wcscmp((wchar_t *)kv1->key, (wchar_t *)kv2->key);
+    }
+    return TEXU_CMP_GT;
+}
+
 
 texu_i32
 _texu_map_cmp(const void *v1, const void *v2)
@@ -1461,9 +1466,9 @@ texu_map_cmp_insert(
         /* there is existing one */
         return TEXU_ERROR;
     }
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&map->mutex);
-    #endif
+#endif
 
     if (map->nkeys >= map->nitems)
     {
@@ -1479,9 +1484,9 @@ texu_map_cmp_insert(
     map->keyvals[map->nkeys].used = TEXU_TRUE;
     ++map->nkeys;
     map->sorted = TEXU_FALSE;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&map->mutex);
-    #endif
+#endif
 
     return rc;
 }
@@ -1524,16 +1529,16 @@ texu_map_cb_remove(
     {
         cb(kv->key, kv->value, user);
     }
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&map->mutex);
-    #endif
+#endif
 
     memset(kv, 0, sizeof(texu_map_keyval));
     ++map->ndels;
     map->sorted = TEXU_FALSE;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&map->mutex);
-    #endif
+#endif
 
     if (map->ndels == map->nkeys)
     {
@@ -1578,6 +1583,39 @@ texu_map_cmp_find(
     if (kv->used)
     {
         *value = kv->value;
+    }
+    return rc;
+}
+
+texu_status texu_map_foreach(
+    texu_map *map,
+    texu_i32(*cb)(texu_i64, texu_i64, void *),
+    texu_i32(*cmp)(const void *, const void *),
+    void *user)
+{
+    texu_status rc = TEXU_OK;
+    texu_map_keyval *kv = 0;
+    texu_i64 i = 0;
+
+    if (!map->sorted)
+    {
+        _texu_map_sort(map, cmp);
+    }
+
+    if (cb)
+    {
+        for (i = 0; i < map->nkeys; ++i)
+        {
+            kv = &map->keyvals[i];
+            if (kv->used)
+            {
+                rc = cb(kv->key, kv->value, user);
+                if (rc != TEXU_OK)
+                {
+                    break;
+                }
+            }
+        }
     }
     return rc;
 }

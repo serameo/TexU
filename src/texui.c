@@ -213,6 +213,7 @@ texu_i64 _TexuReBarProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
 /* see texuctrlx.c */
 texu_i64 _TexuIPAdressProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
 texu_i64 _TexuEditMaskProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
+texu_i64 _TexuEditPriceSpreadProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
 
 
 /* menu texumenu.c */
@@ -806,6 +807,13 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_EDITMASKCTRL_DISABLED]    = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_EDITMASKCTRL_SELECTED]    = TEXU_CIO_COLOR_BLACK_CYAN;
     env->syscolors[TEXU_COLOR_EDITMASKCTRL_FOCUSED]     = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->syscolors[TEXU_COLOR_EDITPRICESPREADCTRL]          = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->syscolors[TEXU_COLOR_EDITPRICESPREADCTRL_DISABLED] = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->syscolors[TEXU_COLOR_EDITPRICESPREADCTRL_SELECTED] = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->syscolors[TEXU_COLOR_EDITPRICESPREADCTRL_FOCUSED]  = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->syscolors[TEXU_COLOR_EDITPRICESPREADCTRL_LOWER]    = TEXU_CIO_COLOR_RED_BLACK;
+    env->syscolors[TEXU_COLOR_EDITPRICESPREADCTRL_EQUAL]    = TEXU_CIO_COLOR_YELLOW_BLACK;
+    env->syscolors[TEXU_COLOR_EDITPRICESPREADCTRL_GREATER]  = TEXU_CIO_COLOR_GREEN_BLACK;
     /*default*/
     env->syscolors[TEXU_COLOR_DEFAULT]                  = TEXU_CIO_COLOR_WHITE_BLACK;
 }
@@ -892,6 +900,13 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_DISABLED]      = TEXU_CIO_COLOR_BLACK_WHITE;
     env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_SELECTED]      = TEXU_CIO_COLOR_CYAN_BLACK;
     env->sysbgcolors[TEXU_COLOR_EDITMASKCTRL_FOCUSED]       = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDITPRICESPREADCTRL]            = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDITPRICESPREADCTRL_DISABLED]   = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->sysbgcolors[TEXU_COLOR_EDITPRICESPREADCTRL_SELECTED]   = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDITPRICESPREADCTRL_FOCUSED]    = TEXU_CIO_COLOR_CYAN_BLACK;
+    env->sysbgcolors[TEXU_COLOR_EDITPRICESPREADCTRL_LOWER]      = TEXU_CIO_COLOR_BLACK_RED;
+    env->sysbgcolors[TEXU_COLOR_EDITPRICESPREADCTRL_EQUAL]      = TEXU_CIO_COLOR_BLACK_YELLOW;
+    env->sysbgcolors[TEXU_COLOR_EDITPRICESPREADCTRL_GREATER]    = TEXU_CIO_COLOR_BLACK_GREEN;
     /*default*/
     env->sysbgcolors[TEXU_COLOR_DEFAULT] = TEXU_CIO_COLOR_BLACK_WHITE;
 }
@@ -915,9 +930,9 @@ _texu_env_init_cls(texu_env *env)
     texu_env_register_cls(env, TEXU_STATUSBAR_CLASS,    _TexuStatusBarProc);    /*texuctrl.c*/
     texu_env_register_cls(env, TEXU_PAGECTRL_CLASS,     _TexuPageCtrlProc);     /*texuctrl.c*/
     texu_env_register_cls(env, TEXU_REBAR_CLASS,        _TexuReBarProc);        /*texuctrl.c*/
-    texu_env_register_cls(env, TEXU_IPADDRESSCTRL_CLASS,    _TexuIPAdressProc);     /*texuctrlx.c*/
-    texu_env_register_cls(env, TEXU_EDITMASKCTRL_CLASS,     _TexuEditMaskProc);     /*texuctrlx.c*/
-
+    texu_env_register_cls(env, TEXU_IPADDRESSCTRL_CLASS,        _TexuIPAdressProc);         /*texuctrlx.c*/
+    texu_env_register_cls(env, TEXU_EDITMASKCTRL_CLASS,         _TexuEditMaskProc);         /*texuctrlx.c*/
+    texu_env_register_cls(env, TEXU_EDITPRICESPREADCTRL_CLASS,  _TexuEditPriceSpreadProc);  /*texuctrlx.c*/
     /*menu*/
     texu_env_register_cls(env, TEXU_MENU_CLASS,     _TexuMenuProc);
     texu_env_register_cls(env, TEXU_MENUWND_CLASS,  _TexuMenuWndProc);

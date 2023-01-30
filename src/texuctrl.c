@@ -4879,9 +4879,9 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
 
     memset(&attrs2, 0, sizeof(attrs2));
     attrs2.y = attrs->y;
-    attrs2.x = attrs->x;
+    attrs2.x = attrs->x+1;
     attrs2.height   = attrs->height;
-    attrs2.width    = attrs->width - 1;
+    attrs2.width    = attrs->width - 2;
     attrs2.enable   = TEXU_TRUE;
     attrs2.visible  = TEXU_TRUE;
     attrs2.text     = TEXT("0");
@@ -5014,30 +5014,32 @@ _TexuUpDownCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
     switch (ch)
     {
-    case TEXU_KEY_UP:
-    {
-        added += udctl->step;
-        updown = TEXU_TRUE;
-        break;
-    }
-    case TEXU_KEY_DOWN:
-    {
-        added -= udctl->step;
-        updown = TEXU_TRUE;
-        break;
-    }
-    case TEXU_KEY_NPAGE:
-    {
-        added -= udctl->page;
-        updown = TEXU_TRUE;
-        break;
-    }
-    case TEXU_KEY_PPAGE:
-    {
-        added += udctl->page;
-        updown = TEXU_TRUE;
-        break;
-    }
+        case TEXU_KEY_RIGHT:
+        case TEXU_KEY_UP:
+        {
+            added += udctl->step;
+            updown = TEXU_TRUE;
+            break;
+        }
+        case TEXU_KEY_LEFT:
+        case TEXU_KEY_DOWN:
+        {
+            added -= udctl->step;
+            updown = TEXU_TRUE;
+            break;
+        }
+        case TEXU_KEY_NPAGE:
+        {
+            added -= udctl->page;
+            updown = TEXU_TRUE;
+            break;
+        }
+        case TEXU_KEY_PPAGE:
+        {
+            added += udctl->page;
+            updown = TEXU_TRUE;
+            break;
+        }
     }
 
     if (updown)
@@ -5109,13 +5111,18 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         return;
     }
 #ifdef TEXU_CIO_COLOR_MONO
-    texu_cio_putch_attr(dc, y, x + width - 1, '+',
+    texu_cio_putch_attr(dc, y, x, TEXU_ACS_MINUS,
+                        texu_cio_get_color(dc, color));
+    texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLUS,
                         texu_cio_get_color(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_char(env, y, x + width - 1, TEXU_ACS_PLMINUS, color, bgcolor);
+    texu_env_draw_char(env, y, x, TEXU_ACS_MINUS, color, bgcolor);
+    texu_env_draw_char(env, y, x + width - 1, TEXU_ACS_PLUS, color, bgcolor);
 #else
-    texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLMINUS,
+    texu_cio_putch_attr(dc, y, x, TEXU_ACS_MINUS,
+                        texu_cio_get_color(dc, color));
+    texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLUS,
                         texu_cio_get_color(dc, color));
 #endif
 #endif
@@ -5418,7 +5425,7 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_strcat(text, TEXUTEXT("%"));
     /*get drawable width*/
     pgwidth = (0 == pgb->max ? 0 : ((texu_i32)pct >= 100 ? width : (pgb->pos * width / pgb->max)));
-    if (pgwidth < texu_strlen(text))
+    if ((texu_ui32)pgwidth < texu_strlen(text))
     {
         pgwidth = texu_strlen(text);
     }
@@ -5773,10 +5780,12 @@ _TexuPageCtrl_CreatePage(
     attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
     attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+    attrs.selectedcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
 #if (defined WIN32 && defined _WINDOWS)
     attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
     attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
     attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+    attrs.selectedbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
 #endif
     attrs.id = id;
     attrs.clsname = clsname;
@@ -5860,6 +5869,15 @@ _TexuPageCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_set_color(wnd,
                        texu_env_get_syscolor(env, TEXU_COLOR_WINDOW),
                        texu_env_get_syscolor(env, TEXU_COLOR_WINDOW));
+    texu_wnd_set_focused_color(wnd,
+                               texu_env_get_syscolor(env, TEXU_COLOR_WINDOW));
+#if (defined WIN32 && defined _WINDOWS)
+    texu_wnd_set_bgcolor(wnd,
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW),
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW));
+    texu_wnd_set_bgfocused_color(wnd,
+                               texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW));
+#endif
     texu_wnd_set_userdata(wnd, pgctl);
 
     return TEXU_OK;
@@ -6088,9 +6106,10 @@ _TexuPageCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
 
+#if 0 /* OBSOLETED*/
 /*
 #-------------------------------------------------------------------------------
-# TexU page ctrl
+# TexU text ctrl
 #
      1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
@@ -6691,6 +6710,8 @@ _TexuTextCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
 
+#endif /* OBSOLETED*/
+
 /*
 #-------------------------------------------------------------------------------
 # TexU ReBar
@@ -6698,22 +6719,6 @@ _TexuTextCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-#if 0
-struct texu_rbwnd_band
-{
-    texu_char   caption[TEXU_MAX_WNDTEXT + 1];
-    texu_i32    align;
-    texu_i32    normcolor;  /* text attributes          */
-    texu_i32    discolor;   /* text attributes          */
-    texu_i32    selcolor;   /* text attributes          */
-    texu_wnd*   childwnd;   /* child window for each cell*/
-                            /* it could be editbox/listbox/combobox etc*/
-    texu_i32    width;
-    texu_i32    height;
-};
-typedef struct texu_rbwnd_band texu_rbwnd_band;
-#endif
-
 struct texu_rbwnd
 {
     texu_list           *bands;
@@ -7129,6 +7134,8 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_i32 w = 0;
     texu_i32 hchilds = 0;
     texu_bool skip = TEXU_TRUE;
+    texu_ui32 style = texu_wnd_get_style(wnd);
+    texu_i32 capwidth = rbwnd->capwidth;
 #if (defined WIN32 && defined _WINDOWS)
     texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_REBAR);
 #endif
@@ -7138,11 +7145,17 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     }
     while (item)
     {
+        capwidth = rbwnd->capwidth;
         band = (texu_rbwnd_band*)item->data;
         if (skip && band != rbwnd->firstvisibleband)
         {
             /*hide child wnd if not found the first visible band*/
             texu_wnd_move(band->childwnd, 0, 0, 0, 0, TEXU_TRUE);
+            item = item->next;
+            continue;
+        }
+        else if (TEXU_FALSE == texu_wnd_is_visible(band->childwnd))
+        {
             item = item->next;
             continue;
         }
@@ -7176,7 +7189,14 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             else
             {
                 /*draw caption*/
-                texu_printf_alignment2(
+                if (TEXU_RBS_NOCAPTION & style)
+                {
+                    /*nothing*/
+                    capwidth = 0;
+                }
+                else
+                {
+                    texu_printf_alignment2(
                         caption,
                         band->caption,
                         rbwnd->capwidth,
@@ -7184,51 +7204,60 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                         TEXU_TRUE);
 
 #ifdef TEXU_CIO_COLOR_MONO
-                texu_cio_putstr_attr(dc, y, x, caption,
-                                    texu_cio_get_color(dc, color));
+                    texu_cio_putstr_attr(dc, y, x, caption,
+                                         texu_cio_get_color(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-                texu_env_draw_text(env, y, x, caption, color, bgcolor);
+                    texu_env_draw_text(env, y, x, caption, color, bgcolor);
 #else
-                texu_cio_putstr_attr(dc, y, x, caption,
-                                    texu_cio_get_color(dc, color));
+                    texu_cio_putstr_attr(dc, y, x, caption,
+                                         texu_cio_get_color(dc, color));
 #endif
 #endif
+                }
                 /*clip window*/
-                if (width < x+rbwnd->capwidth+1+w)
+                if (width < x+/*rbwnd->*/capwidth+1+w)
                 {
-                    w = width - (x+rbwnd->capwidth+1);
+                    w = width - (x+/*rbwnd->*/capwidth+1);
                     if (w < 0)
                     {
                         w = 0;
                     }
                 }
-                texu_wnd_move(band->childwnd, y, x+rbwnd->capwidth+1, h, w, TEXU_TRUE);
+                texu_wnd_move(band->childwnd, y, x+/*rbwnd->*/capwidth+1, h, w, TEXU_TRUE);
             }
             item = item->next;
             continue; /*no more draw*/
         }
         /*draw caption*/
-        texu_printf_alignment2(
+        if (TEXU_RBS_NOCAPTION & style)
+        {
+            /*nothing*/
+            capwidth = 0;
+        }
+        else
+        {
+            texu_printf_alignment2(
                 caption,
                 band->caption,
                 rbwnd->capwidth,
                 band->align, TEXU_TRUE);
 
 #ifdef TEXU_CIO_COLOR_MONO
-        texu_cio_putstr_attr(dc, y, x, caption,
-                            texu_cio_get_color(dc, color));
+            texu_cio_putstr_attr(dc, y, x, caption,
+                                 texu_cio_get_color(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-        texu_env_draw_text(env, y, x, caption, color, bgcolor);
+            texu_env_draw_text(env, y, x, caption, color, bgcolor);
 #else
-        texu_cio_putstr_attr(dc, y, x, caption,
-                             texu_cio_get_color(dc, color));
+            texu_cio_putstr_attr(dc, y, x, caption,
+                                 texu_cio_get_color(dc, color));
 #endif
 #endif
+        }
         
         /*draw window*/
-        texu_wnd_move(band->childwnd, y, x+rbwnd->capwidth+1, h, w, TEXU_TRUE);
+        texu_wnd_move(band->childwnd, y, x+/*rbwnd->*/capwidth+1, h, w, TEXU_TRUE);
 
         /*save the last visible band*/
         rbwnd->lastvisibleband = band;
