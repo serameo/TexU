@@ -20,6 +20,7 @@ These files are included many text objects by the following:
 - ReBar control (TEXU_REBAR_CLASS) -- This class is a simple container to add a common control to be scrollable controls in its bound.
 - IP Address control (TEXU_IPADDRESSCTRL_CLASS)
 - Edit Mask control (TEXU_EDITMASKCTRL_CLASS) -- Using regular expression to validate text (See also https://github.com/kokke/tiny-regex-c)
+- Edit Price Spread control (TEXU_EDITPRICESPREADCTRL_CLASS) -- This class an enhanced Edit control to automatically highlight color when the base price is available
 - Simple console I/O (e.g. writing/reading a character, drawing a line, drawing a rectangle etc.)
 
 All text objects are implemented by using a simple library (TexU_List, TexU_Stack, TexU_Queue, TexU_Tree, etc.) See also include/texulib.h. Also, some utilities such as texu_dblog object is using sqlite library to handle a database log file.
