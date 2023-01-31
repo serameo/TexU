@@ -215,6 +215,27 @@ texu_strcpy(texu_char* dest, const texu_char *str)
 #endif
 }
 
+texu_char*
+texu_strrcpy(texu_char* dest, const texu_char *str)
+{
+    texu_char out[TEXU_MAX_WNDTEXT+1];
+    texu_i32 i = 0;
+    texu_i32 j = 0;
+#if (defined WIN32 && defined UNICODE)
+    wcscpy_s(out, TEXU_MAX_WNDTEXT, str);
+#else
+    strcpy(out, str);
+#endif
+    i = texu_strlen(out);
+    for (; i > 0; --i, ++j)
+    {
+        dest[j] = out[i-1];
+    }
+    dest[j] = 0;
+
+    return dest;
+}
+
 /*
 int MultiByteToWideChar(
     [in]            UINT                              CodePage,
@@ -350,64 +371,35 @@ texu_printf_alignment2(
         lastlen = limit - (len + firstlen);
         if (firstlen > 0 && lastlen > 0)
         {
-#if (defined WIN32 && defined UNICODE)
-            swprintf(text, sizeof(text), L"%*s%s%*s",
-                firstlen, L" ",
-                in,
-                lastlen, L" ");
-#else
-            sprintf(text, "%*s%s%*s",
-                    firstlen, " ",
-                    in,
-                    lastlen, " ");
-#endif
+            texu_sprintf(text, sizeof(text), TEXUTEXT("%*s%s%*s"),
+                         firstlen, TEXUTEXT(" "),
+                         in,
+                         lastlen, TEXUTEXT(" "));
         }
         else if (lastlen > 0)
         {
-#if (defined WIN32 && defined UNICODE)
-            swprintf(text, sizeof(text), L"%s%*s",
-                in,
-                lastlen, L" ");
-#else
-            sprintf(text, "%s%*s",
-                    in,
-                    lastlen, " ");
-#endif
+            texu_sprintf(text, sizeof(text), TEXUTEXT("%s%*s"),
+                     in,
+                     lastlen, TEXUTEXT(" "));
         }
         else
         {
-#if (defined WIN32 && defined UNICODE)
-            swprintf(text, sizeof(text), L"%s", in);
-#else
-            sprintf(text, "%s", in);
-#endif
+            texu_sprintf(text, sizeof(text), TEXUTEXT("%s"), in);
         }
         texu_strcpy(out, text);
     }
     else if ((TEXU_ALIGN_RIGHT == align) || (TEXU_WS_RIGHT & align))
     {
-#if (defined WIN32 && defined UNICODE)
-        swprintf(text, sizeof(text), L"%*s",
-            (texu_i32)(limit),
-            in);
-#else
-        sprintf(text, "%*s",
-                (texu_i32)(limit),
-                in);
-#endif
-        texu_strcpy(out, text);
+        texu_sprintf(text, sizeof(text), TEXUTEXT("%*s"),
+                 (texu_i32)(limit),
+                 in);
+        texu_strnrcpy(out, text, limit);
     }
     else
     {
-#if (defined WIN32 && defined UNICODE)
-        swprintf(text, sizeof(text), L"%-*s",
-                (texu_i32)(limit),
-                in);
-#else
-        sprintf(text, "%-*s",
-            (texu_i32)(limit),
-            in);
-#endif
+        texu_sprintf(text, sizeof(text), TEXUTEXT("%-*s"),
+                 (texu_i32)(limit),
+                 in);
         texu_strncpy(out, text, limit);
     }
     /*final trim string*/
@@ -418,15 +410,18 @@ texu_printf_alignment2(
 
         if (outlen > 3 && ((len > outlen) || (outlen > limit)))
         {
-#if (defined WIN32 && defined UNICODE)
-            out[outlen - 1] = L'.';
-            out[outlen - 2] = L'.';
-            out[outlen - 3] = L'.';
-#else
-            out[outlen - 1] = '.';
-            out[outlen - 2] = '.';
-            out[outlen - 3] = '.';
-#endif
+            if ((TEXU_ALIGN_RIGHT == align) || (TEXU_WS_RIGHT & align))
+            {
+                out[0] = TEXUTEXT('.');
+                out[1] = TEXUTEXT('.');
+                out[2] = TEXUTEXT('.');
+            }
+            else/*if ((TEXU_ALIGN_LEFT == align) || (TEXU_WS_LEFT & align))*/
+            {
+                out[outlen - 1] = TEXUTEXT('.');
+                out[outlen - 2] = TEXUTEXT('.');
+                out[outlen - 3] = TEXUTEXT('.');
+            }
         }
     }
 
@@ -434,6 +429,21 @@ texu_printf_alignment2(
     return texu_strlen(out);
 }
 
+texu_i32
+texu_sprintf(texu_char *buf, texu_i32 buflen, const texu_char* format, ...)
+{
+    texu_i32 rc = 0;
+    va_list args;
+    va_start(args, format);
+#if (defined WIN32 && defined _UNICODE)
+    vswprintf(buf, buflen, format, args);
+#else
+    vsnprintf(buf, buflen, format, args);
+#endif
+    va_end(args);
+
+    return rc;
+}
 /*
 # TexU xcnf
 #
@@ -533,6 +543,21 @@ texu_char *texu_strncpy(texu_char *dest, const texu_char *src, size_t size)
 #else
     return strncpy(dest, src, size);
 #endif
+}
+
+texu_char *texu_strnrcpy(texu_char *dest, const texu_char *src, size_t size)
+{
+    texu_char out[TEXU_MAX_WNDTEXT + 1];
+    texu_char in[TEXU_MAX_WNDTEXT + 1];
+
+    texu_strrcpy(in, src);
+#if (defined WIN32 && defined UNICODE)
+    wcsncpy_s(out, sizeof(texu_char)*(texu_strlen(in) + 1), in, size);
+#else
+    strncpy(out, in, size);
+#endif
+    texu_strrcpy(dest, out);
+    return dest;
 }
 
 texu_char *

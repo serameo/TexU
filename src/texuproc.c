@@ -217,11 +217,11 @@ _TexuMsgBoxProc_CreateButtons(
     childattrs.normalcolor = color;
     childattrs.disabledcolor = color;
     childattrs.focusedcolor = color;
-#if (defined WIN32 && defined _WINDOWS)
+
     childattrs.normalbg = bgcolor;
     childattrs.disabledbg = bgcolor;
     childattrs.focusedbg = bgcolor;
-#endif
+
     childattrs.id = id;
     childattrs.clsname = TEXU_LABEL_CLASS;
     childattrs.userdata = 0;
@@ -252,10 +252,11 @@ enum
 };
 #if (defined WIN32 && defined UNICODE)
 static texu_char *buttons[] = { TEXUTEXT("   OK   "), TEXUTEXT("   Yes  "), TEXUTEXT("   No   "), TEXUTEXT(" Cancel ") };
-#else
-static texu_char *buttons[] = { " F1 - OK ", " F2 - Yes  ", "  F3 - No  ", " F4 - Cancel " };
-#endif
 static texu_i32 btnwidths[] = {8, 8, 8, 8};
+#else
+static texu_char *buttons[] = { TEXUTEXT(" F1 - OK "), TEXUTEXT(" F2 - Yes "), TEXUTEXT(" F3 - No "), TEXUTEXT(" F4 - Cancel ") };
+static texu_i32 btnwidths[] = { 9, 10, 9, 13 };
+#endif
 
 texu_status
 _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 lines)
@@ -311,11 +312,11 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         childattrs.normalcolor = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
         childattrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
         childattrs.focusedcolor = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
-#if (defined WIN32 && defined _WINDOWS)
+
         childattrs.normalbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
         childattrs.disabledbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
         childattrs.focusedbg  = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
-#endif
+
         childattrs.id = id;
         childattrs.clsname = TEXU_LABEL_CLASS;
         childattrs.userdata = 0;
@@ -709,11 +710,11 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_LABEL_DISABLED);
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_ui32 color = normcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL_DISABLED);
     texu_ui32 colorbg = normbg;
-#endif
+
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -729,9 +730,9 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     {
         color = discolor;
     }
-#if (defined WIN32 && defined _WINDOWS)
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
     colorbg = normbg;
+#if (defined WIN32 && defined _WINDOWS)
     if (!(texu_wnd_is_enable(wnd)))
     {
         colorbg = disbg;
@@ -816,11 +817,11 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i32    color = TEXU_CIO_COLOR_CYAN_BLACK;
     size_t      len = 0;
     texu_btnwnd *btnwnd = (texu_btnwnd*)texu_wnd_get_userdata(wnd);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32    normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON);
     texu_i32    disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_DISABLED);
     texu_i32    bgcolor = TEXU_CIO_COLOR_CYAN_BLACK;
-#endif
+
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -841,13 +842,13 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
         len = texu_strlen(buf);
         if (len > 1)
         {
-            buf[0] = '[';
-            buf[len-1] = ']';
+            buf[0] = TEXUTEXT('[');
+            buf[len - 1] = TEXUTEXT(']');
         }
     }
-#if (defined WIN32 && defined _WINDOWS)
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
     bgcolor = normbg;
+#if (defined WIN32 && defined _WINDOWS)
     if (!(texu_wnd_is_enable(wnd)))
     {
         bgcolor = disbg;
@@ -1193,11 +1194,8 @@ void _TexuEditProc_OnSetValidMinMax(texu_wnd *wnd, texu_i32 on, texu_editminmax 
         texu_strcpy(buf, edit->editbuf);
         val = texu_atol(buf);
         val = _TexuEditProc_SelMinMax(vmm->min, vmm->max, val);
-#if (defined WIN32 && defined UNICODE)
-        swprintf(buf, sizeof(buf), TEXUTEXT("%d"), val);
-#else
-        sprintf(buf, "%d", val);
-#endif
+
+        texu_sprintf(buf, sizeof(buf), TEXUTEXT("%d"), val);
         texu_wnd_set_text(wnd, buf);
     }
 }
@@ -1307,11 +1305,8 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
     if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
     {
         decimal = texu_atof(edit->editbuf);
-#if (defined WIN32 && defined UNICODE)
-        swprintf((texu_char *)buf, sizeof(buf), TEXUTEXT("%.*f"), (texu_i32)edit->decwidth, decimal);
-#else
-        sprintf((texu_char *)buf, "%.*f", (texu_i32)edit->decwidth, decimal);
-#endif
+
+        texu_sprintf(buf, sizeof(buf), TEXUTEXT("%.*f"), (texu_i32)edit->decwidth, decimal);
         texu_strcpy(edit->editbuf, buf);
         if (TEXU_TRUE == edit->onminmax)
         {
@@ -1441,35 +1436,21 @@ texu_status _TexuEditProc_ValidateNumberStyle(texu_wnd *wnd, texu_editwnd *edit,
 texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit, texu_i32 ch)
 {
     texu_status rc = TEXU_OK;
-#if (defined WIN32 && defined UNICODE)
-    texu_char *decimal = wcschr(edit->editbuf, TEXUTEXT('.'));
-#else
-    texu_char *decimal = strchr(edit->editbuf, '.');
-#endif
+    texu_char *decimal = texu_strchr(edit->editbuf, TEXUTEXT('.'));
     texu_i64 len = texu_strlen(edit->editbuf);
+    texu_i32 pos = -1;
+    texu_i32 declen = 0;
 
     /* not allowed '-' in the string */
-#if (defined WIN32 && defined _WINDOWS)
     if ((len > 0 && (edit->firstvisit == 0)) && ch == TEXUTEXT('-'))
-#else
-    if ((len > 0 && (edit->firstvisit == 0)) && ch == TEXUTEXT('-'))
-#endif
     {
         rc = TEXU_ERROR;
     }
-#if 0 /*(defined WIN32 && defined _WINDOWS)*/
-    if ((rc == TEXU_OK) && (len == 0 || (edit->firstvisit == 1)) && ch == VK_OEM_MINUS)
-#else
     if ((rc == TEXU_OK) && (len == 0 || (edit->firstvisit == 1)) && ch == TEXUTEXT('-'))
-#endif
     {
         /* ok */
     }
-#if 0/*(defined WIN32 && defined _WINDOWS)*/
-    else if (ch == VK_OEM_PERIOD)
-#else
     else if (ch == TEXUTEXT('.'))
-#endif
     {
         if (decimal)
         {
@@ -1480,6 +1461,19 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit
     else if (ch < TEXUTEXT('0') || ch > TEXUTEXT('9'))
     {
         rc = TEXU_ERROR;
+    }
+    if (decimal)
+    {
+        pos = (texu_i32)(decimal - edit->editbuf);
+        declen = len - pos - 1;
+        if (declen >= edit->decwidth && (edit->firstvisit == 0))
+        {
+            rc = TEXU_ERROR;
+        }
+        else if (declen <= edit->decwidth && (edit->selected == 1))
+        {
+            rc = TEXU_OK;
+        }
     }
     return rc;
 }
@@ -1503,12 +1497,12 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_i32 width = texu_wnd_get_width(wnd);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
     texu_i32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
     texu_i32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
     static texu_char printable_chars[] = TEXUTEXT(" ~!@#$%^&*_-+=,?/|.\\\'\"()[]{}<>abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-#endif
+
 
     if (!(texu_wnd_is_enable(wnd)))
     {
@@ -1518,9 +1512,9 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
     texu_wnd_get_color(wnd, &normcolor, &discolor);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
-#endif
+
 
     /*select all*/
     if ((alt & TEXU_KEYPRESSED_CTRL) && ((TEXUTEXT('a') == ch) || (TEXUTEXT('A') == ch)))
@@ -1556,10 +1550,11 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
 #if (defined WIN32 && defined _WINDOWS)
     if (texu_strchr(printable_chars, ch))
+    {
 #else
     if (ch >= 0x20 && ch < 0x7f)
-#endif
     {
+#endif
         /* add char */
         len = texu_strlen(edit->editbuf);
         /*test block with its styles*/
@@ -1624,7 +1619,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         {
             return;
         }
-#if 1
+
         /* is the first typing? */
         if (edit->firstvisit == 1)
         {
@@ -1660,62 +1655,9 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 }
             }
         }
-#endif
+
         if (len + 1 <= edit->limitchars)
         {
-#if 0 /*validation are above*/
-            if (TEXU_ES_NUMBER & style)
-            {
-                /* require only number input */
-                ret = _TexuEditProc_ValidateNumberStyle(wnd, edit, ch);
-                if (ret != TEXU_OK)
-                {
-                    return;
-                }
-            }
-            else if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
-            {
-                /* require only decimal input */
-                ret = _TexuEditProc_ValidateDecimalStyle(wnd, edit, ch);
-                if (ret != TEXU_OK)
-                {
-                    return;
-                }
-            }
-            else if (TEXU_ES_UPPERCASE & style)
-            {
-                /* require changing from small to CAPITAL */
-                if (ch >= TEXUTEXT('a') && ch <= TEXUTEXT('z'))
-                {
-                    ch = ch - TEXUTEXT('a') + TEXUTEXT('A');
-                }
-            }
-            else if (TEXU_ES_LOWERCASE & style)
-            {
-                if (ch >= TEXUTEXT('A') && ch <= TEXUTEXT('Z'))
-                {
-                    ch = ch - TEXUTEXT('A') + TEXUTEXT('a');
-                }
-            }
-            if (TEXU_ES_A2Z & style)
-            {
-                /* require only A-Z input */
-                ret = _TexuEditProc_ValidateA2ZStyle(wnd, edit, ch);
-                if (ret != TEXU_OK)
-                {
-                    return;
-                }
-            }
-            /* valid char if it is in valid string */
-            if (edit->validstr[0] != 0)
-            {
-                psz = texu_strchr(edit->validstr, ch);
-                if (!psz)
-                {
-                    return;
-                }
-            }
-#endif
             /* append a new char */
             len = texu_strlen(edit->editbuf);
             if (len < edit->limitchars)
@@ -1760,11 +1702,8 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     if (_TexuEditProc_ValidateMinMax(edit, val) != TEXU_OK)
                     {
                         val = _TexuEditProc_SelMinMax(edit->min, edit->max, val);
-#if (defined WIN32 && defined UNICODE)
-                        swprintf(buf, sizeof(buf), TEXUTEXT("%d"), val);
-#else
-                        sprintf(buf, "%d", val);
-#endif
+
+                        texu_sprintf(buf, sizeof(buf), TEXUTEXT("%d"), val);
                         texu_strcpy(edit->editbuf, buf);
                         len = texu_strlen(edit->editbuf);
                     }
@@ -1970,13 +1909,13 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_ui32 color = normcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
     texu_ui32 invbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_INVALID);
     texu_ui32 bgcolor = normbg;
-#endif
+
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -2007,7 +1946,6 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
         }
         buf[len] = 0;
         texu_printf_alignment(text, buf, width, style);
-#if (defined WIN32 && defined _WINDOWS)
         texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
         bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
         if (edit->selected)
@@ -2015,6 +1953,7 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
             color = selcolor;
             bgcolor = selbg;
         }
+#if (defined WIN32 && defined _WINDOWS)
         texu_env_draw_text(env, y, x, text, color, bgcolor);
 #else
         texu_cio_putstr_attr(cio, y, x, text, texu_cio_get_color(cio, color));
@@ -2217,11 +2156,11 @@ struct texu_lbwnd_item
     texu_ui32 normcolor;
     texu_ui32 discolor;
     texu_ui32 selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 normbg;
     texu_ui32 disbg;
     texu_ui32 selbg;
-#endif
+
     void *userdata;
     struct texu_lbwnd_item *prev;
     struct texu_lbwnd_item *next;
@@ -2817,13 +2756,13 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i32  movex = x;
     texu_wnd *parent = texu_wnd_get_parent(wnd);
     texu_bool fFocused = lb->focused;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_DISABLED);
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_SELECTED);
     texu_ui32 focusbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_FOCUSED);
     texu_ui32 bgcolor = normbg;
-#endif
+
     if (!(texu_wnd_is_visible(wnd)))
     {
         return;
@@ -2831,11 +2770,11 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_wnd_get_color(wnd, &normcolor, &discolor);
     focuscolor = texu_wnd_get_focused_color(wnd);
     color = (enable ? normcolor : discolor);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
     focusbg = texu_wnd_get_bgfocused_color(wnd);
     bgcolor = (enable ? normbg : disbg);
-#endif
+
     /* draw */
     if (lb->nitems > 0)
     {
@@ -2938,15 +2877,11 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
                     color = normcolor;
 #else
                     color = (enable && item->enable ? normcolor : discolor);
-#if (defined WIN32 && defined _WINDOWS)
                     bgcolor = (item->enable ? item->normbg : item->disbg);
-#endif
                     if (style & TEXU_LBS_OWNERCOLOR)
                     {
                         color = (enable && item->enable ? item->normcolor : item->discolor);
-#if (defined WIN32 && defined _WINDOWS)
                         bgcolor = (enable && item->enable ? item->normbg : item->disbg);
-#endif
                     }
 #endif /* TEXU_CIO_COLOR_MONO*/
 #if (defined WIN32 && defined _WINDOWS)
@@ -3036,11 +2971,11 @@ texu_i32 _TexuListBoxProc_OnAddItem(texu_wnd *wnd, const texu_char *text)
         item->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX);
         item->discolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_DISABLED);
         item->selcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_SELECTED);
-#if (defined WIN32 && defined _WINDOWS)
+
         item->normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX);
         item->disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_DISABLED);
         item->selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_SELECTED);
-#endif
+
         len = texu_strlen(text);
         if (len > TEXU_MAX_WNDTEXT)
         {
@@ -3585,11 +3520,11 @@ _TexuComboBoxProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX);
     attrs2.disabledcolor    = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX_DISABLED);
     attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX_SELECTED);
-#if (defined WIN32 && (defined UNICODE || defined _UNICODE))
+
     attrs2.normalbg         = texu_env_get_sysbgcolor(env, TEXU_COLOR_COMBOBOX);
     attrs2.disabledbg       = texu_env_get_sysbgcolor(env, TEXU_COLOR_COMBOBOX_DISABLED);
     attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_COMBOBOX_SELECTED);
-#endif
+
     attrs2.id = 1;
     attrs2.clsname = TEXU_LISTBOX_CLASS;
     attrs2.userdata = 0;

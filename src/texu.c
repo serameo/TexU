@@ -190,11 +190,11 @@ TexuMessageBox(
     attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
     attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
-#if (defined WIN32 && defined _WINDOWS)
+
     attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
     attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
     attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
-#endif
+
     attrs.id = id;
     attrs.clsname       = TEXU_MSGBOX_CLASS;
     attrs.userdata      = userdata;
@@ -437,11 +437,11 @@ TexuCreateWindow2(
     attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
     attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
-#if (defined WIN32 && defined _WINDOWS)
+
     attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
     attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
     attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
-#endif
+
     attrs.id = id;
     attrs.clsname       = clsname;
     attrs.userdata      = userdata;

@@ -995,11 +995,11 @@ _texu_env_create_desktop(texu_env *env)
     attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_DESKTOP);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_DESKTOP);
     attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_DESKTOP);
-#if (defined WIN32 && defined _WINDOWS)
+
     attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_DESKTOP);
     attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_DESKTOP);
     attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_DESKTOP);
-#endif
+
     attrs.id = 1;
     attrs.clsname = TEXU_DESKTOP_CLASS;
     attrs.userdata = 0;
@@ -1111,6 +1111,7 @@ LRESULT CALLBACK _texu_ChildEnvWndProc(HWND hWnd, UINT message, WPARAM wParam, L
         {
             texu_char ch = (texu_char)wParam;
             if (0 == texu_strchr(digits, ch) &&
+                /*0 == texu_strchr(punctuations, ch) &&*/
                 (ch < VK_NUMPAD0 || ch > VK_DIVIDE)
                 )
             {
@@ -1118,7 +1119,7 @@ LRESULT CALLBACK _texu_ChildEnvWndProc(HWND hWnd, UINT message, WPARAM wParam, L
             }
             break;
         }
-#if 0
+#if 0 /*it is not working*/
         case WM_LBUTTONDOWN:
         {
             /*find windows at mouse down*/
@@ -2105,6 +2106,7 @@ texu_env_run(texu_env *env, UINT message, WPARAM wParam, LPARAM lParam)
     texu_i32        altpressed = 0;
     texu_i32        ctlpressed = 0;
     texu_i32        shtpressed = 0;
+    texu_ui32       msg = TEXU_WM_CHAR;
 
     _texu_env_exec_postmsg(env);
     switch (message)
@@ -2115,6 +2117,7 @@ texu_env_run(texu_env *env, UINT message, WPARAM wParam, LPARAM lParam)
             altpressed = (GetAsyncKeyState(VK_MENU)     ? TEXU_KEYPRESSED_ALT   : 0);
             ctlpressed = (GetAsyncKeyState(VK_CONTROL)  ? TEXU_KEYPRESSED_CTRL  : 0);
             shtpressed = (GetAsyncKeyState(VK_SHIFT)    ? TEXU_KEYPRESSED_SHIFT : 0);
+            msg = TEXU_WM_KEYDOWN;
             break;
         }
         case WM_TIMER:
@@ -2134,7 +2137,7 @@ texu_env_run(texu_env *env, UINT message, WPARAM wParam, LPARAM lParam)
             /*no more windows active*/
             return 0;
         }
-        texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch,
+        texu_wnd_send_msg(activewnd, msg, (texu_i64)ch,
                           (texu_i64)(altpressed | ctlpressed | shtpressed));
     }
 
@@ -2399,11 +2402,11 @@ struct texu_wnd
     texu_i32 normalcolor;
     texu_i32 disabledcolor;
     texu_i32 focusedcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32 normalbg;
     texu_i32 disabledbg;
     texu_i32 focusedbg;
-#endif
+
     texu_ui32 id;
     const texu_char *clsname;
     void *userdata;
@@ -2418,6 +2421,7 @@ struct texu_wnd
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
+texu_i32    _TexuDefWndProc_OnKeyDown(texu_wnd *, texu_i32 ch, texu_i32 alt);
 texu_i32    _TexuDefWndProc_OnChar(texu_wnd *, texu_i32 ch, texu_i32 alt);
 texu_i32    _TexuDefWndProc_OnKillFocus(texu_wnd *, texu_wnd *nextwnd);
 void        _TexuDefWndProc_OnSetFocus(texu_wnd *, texu_wnd *prevwnd);
@@ -2491,14 +2495,12 @@ _TexuDefWndProc_OpenMenuWnd(
     attrs.normalcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU_DISABLED);
     attrs.focusedcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
-#if (defined WIN32 && (defined UNICODE || defined _UNICODE))
+
     attrs.normalbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU);
     attrs.disabledbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU_DISABLED);
     attrs.focusedbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU);
     attrs.text = TEXUTEXT("");
-#else
-    attrs.text = "";
-#endif
+
     attrs.id = -1;
     attrs.clsname = TEXU_MENUWND_CLASS;
     attrs.userdata = menu;
@@ -2877,6 +2879,104 @@ _TexuDefWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     return 0;
 }
 
+texu_i32
+_TexuDefWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+{
+    texu_i64 rc = 0;
+    texu_wnd *activewnd = texu_wnd_get_activechild(wnd);
+    texu_wnd *nextwnd = 0;
+    texu_wnd *parent = texu_wnd_get_parent(wnd);
+    texu_wnd *desktop = (wnd ? texu_env_get_desktop(wnd->env) : 0);
+    texu_wnd_keycmd *keycmd = 0;
+    texu_menu *menu = 0;
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 chNextKey = texu_env_get_movenext(env);
+    texu_i32 chPrevKey = texu_env_get_moveprev(env);
+
+    if (!texu_wnd_is_enable(wnd))
+    {
+        return 0;
+    }
+    keycmd = texu_wnd_find_keycmd(wnd, ch, alt);
+    if (keycmd && parent == desktop)
+    {
+        /* if there are any hotkey registered */
+        return texu_wnd_send_msg(wnd, TEXU_WM_COMMAND, (texu_i64)keycmd->cmd, alt);
+    }
+    if (parent == desktop)
+    {
+        if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
+        {
+            menu = wnd->menu;
+            if (menu)
+            {
+                rc = texu_wnd_send_msg(wnd, TEXU_WM_ENTERMENU, ch, alt);
+                return 0;
+            }
+        }
+        if (activewnd && activewnd != wnd)
+        {
+            if (ch == chNextKey)
+            {
+                nextwnd = texu_wnd_get_next_activechild(wnd, activewnd);
+            }
+            else if (ch == chPrevKey || ((alt & TEXU_KEYPRESSED_SHIFT) && (ch == TEXU_KEY_TAB)))
+            {
+                nextwnd = texu_wnd_get_prev_activechild(wnd, activewnd);
+            }
+
+            /* kill and set the new active window */
+            if (nextwnd)
+            {
+                /*active child may need to be done its action*/
+                texu_wnd *activechild = texu_wnd_get_activechild(activewnd);
+                if (activechild)
+                {
+                    rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_i64)activewnd, 0);
+                    if (rc != TEXU_OK)
+                    {
+                        texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, (texu_i64)activechild, 0);
+                        return -1;
+                    }
+                }
+                /*active window need to be done something by itself*/
+                rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                if (rc != TEXU_OK)
+                {
+                    texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
+                    return -1;
+                }
+                rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
+
+                /* the new active window */
+                wnd->activechild = nextwnd;
+                return 1;
+            }
+            else
+            {
+                return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+            }
+        } /* child window is active */
+        else
+        {
+            /* the current frame window is active */
+            if (activewnd)
+            {
+                activewnd = texu_wnd_get_activechild(activewnd);
+                return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+            }
+        }
+    }
+    else
+    {
+        if (activewnd)
+        {
+            return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+        }
+    }
+    return 0;
+}
+
 texu_i64
 _TexuDefWndProc_OnClose(texu_wnd *wnd)
 {
@@ -2935,8 +3035,11 @@ TexuDefWndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         case TEXU_WM_ENABLE:
             return _TexuDefWndProc_OnEnable(wnd, (texu_bool)param1);
 
-        case TEXU_WM_CHAR:
+        case TEXU_WM_CHAR:/*printable characters*/
             return _TexuDefWndProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+
+        case TEXU_WM_KEYDOWN:/*virtual key*/
+            return _TexuDefWndProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
 
         case TEXU_WM_QUERYNEXTWND:
             return (texu_i64)_TexuDefWndProc_OnQueryNextWnd(wnd);
@@ -3099,11 +3202,11 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
     wnd->normalcolor    = attrs->normalcolor;
     wnd->disabledcolor  = attrs->disabledcolor;
     wnd->focusedcolor   = attrs->focusedcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     wnd->normalbg       = attrs->normalbg;
     wnd->disabledbg     = attrs->disabledbg;
     wnd->focusedbg      = attrs->focusedbg;
-#endif
+
     wnd->id             = attrs->id;
     wnd->clsname        = attrs->clsname;
     wnd->userdata       = attrs->userdata;
@@ -3687,7 +3790,7 @@ texu_wnd_get_text(texu_wnd *wnd, texu_char *text, texu_i32 len)
     return (texu_i32)texu_wnd_send_msg(wnd, TEXU_WM_GETTEXT, (texu_i64)text, len);
 }
 
-#if (defined WIN32 && defined _WINDOWS)
+
 void
 texu_wnd_set_bgcolor(texu_wnd *wnd, texu_ui32 normalbg, texu_ui32 disabledbg)
 {
@@ -3724,7 +3827,7 @@ texu_wnd_get_bgfocused_color(texu_wnd *wnd)
     return (wnd ? wnd->focusedbg : 0);
 }
 
-#endif
+
 
 void
 texu_wnd_set_color(texu_wnd *wnd, texu_ui32 normalcolor, texu_ui32 disabledcolor)

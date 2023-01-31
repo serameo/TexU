@@ -42,11 +42,11 @@ struct texu_menu
     texu_i32 normcolor;
     texu_i32 discolor;
     texu_i32 selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32 normbg;
     texu_i32 disbg;
     texu_i32 selbg;
-#endif
+
 };
 
 texu_menu_item *_texu_menu_item_new(texu_env *env, const texu_char *text, texu_ui32 id, texu_bool enable, const texu_char *info);
@@ -112,11 +112,11 @@ _texu_menu_item_new(
         item->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM);
         item->discolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_DISABLED);
         item->selcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_SELECTED);
-#if (defined WIN32 && defined _WINDOWS)
+
         item->normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM);
         item->disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM_DISABLED);
         item->selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM_SELECTED);
-#endif
+
         texu_strcpy(item->info, (info ? info : TEXUTEXT("")));
     }
     return item;
@@ -190,11 +190,11 @@ _texu_menu_create_wndbar(texu_menu *menu, texu_wnd *owner, texu_ui32 id)
     attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU_DISABLED);
     attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_MENU_SELECTED);
-#if (defined WIN32 && (defined UNICODE || defined _UNICODE))
+
     attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU);
     attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU_DISABLED);
     attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU_SELECTED);
-#endif
+
     attrs.id = id;
     attrs.clsname = TEXU_MENU_CLASS;
     attrs.userdata = menu;
@@ -241,11 +241,11 @@ texu_menu_new(texu_wnd *owner, texu_ui32 id)
         menu->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM);
         menu->discolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_DISABLED);
         menu->selcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_SELECTED);
-#if (defined WIN32 && (defined UNICODE || defined _UNICODE))
+
         menu->normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM);
         menu->disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM_DISABLED);
         menu->selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM_SELECTED);
-#endif
+
     }
     return menu;
 }
@@ -397,12 +397,12 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_ui32 normcolor = menu->normcolor;
     texu_ui32 discolor = menu->discolor;
     texu_ui32 selcolor = menu->selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU);
     texu_ui32 normbg = menu->normbg;
     texu_ui32 disbg = menu->disbg;
     texu_ui32 selbg = menu->selbg;
-#endif
+
     /*draw menu bar*/
     if (!(texu_wnd_is_visible(wnd)))
     {
@@ -438,15 +438,15 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         if (menuitem->enable)
         {
             color = normcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
             bgcolor = normbg;
-#endif
+
             /*color = (treeitem == menu->curbaritem ? selcolor : color);*/
             if (treeitem == menu->curbaritem)
             {
                 color = selcolor;
-#if (defined WIN32 && defined _WINDOWS)
                 bgcolor = selbg;
+#if (defined WIN32 && defined _WINDOWS)
                 texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
                 texu_cio_putstr_attr(dc, y, x, buf,
@@ -796,8 +796,8 @@ _TexuMenuWndProc_DrawPopupMenu(
         if (item == menu->curitem)
         {
             color = menuitem->selcolor;
-#if (defined WIN32 && defined _WINDOWS)
             bgcolor = menuitem->selbg;
+#if (defined WIN32 && defined _WINDOWS)
             texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
             texu_cio_putstr_attr(dc, y, x, buf,
@@ -806,12 +806,12 @@ _TexuMenuWndProc_DrawPopupMenu(
         }
         else
         {
+            bgcolor = menuitem->normbg;
 #ifdef TEXU_CIO_COLOR_MONO
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-            bgcolor = menuitem->normbg;
             texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
             texu_cio_putstr_attr(dc, y, x, buf,
@@ -856,12 +856,12 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_ui32 normcolor = menu->normcolor;
     texu_ui32 discolor = menu->discolor;
     texu_ui32 selcolor = menu->selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 normbg = menu->normbg;
     texu_ui32 disbg = menu->disbg;
     texu_ui32 selbg = menu->selbg;
     texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM);
-#endif
+
     /*draw menu bar*/
     if (!(texu_wnd_is_visible(wnd)))
     {
@@ -899,12 +899,12 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         if (baritem->enable)
         {
             color = normcolor;
+            bgcolor = normbg;
 #ifdef TEXU_CIO_COLOR_MONO
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-            bgcolor = normbg;
             texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
             texu_cio_putstr_attr(dc, y, x, buf,
