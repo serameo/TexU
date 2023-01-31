@@ -51,7 +51,9 @@ How to implement a simple TexU application:
 <p align="center">
   <img src="https://github.com/serameo/TexU/blob/master/samples/TexU_sample07.png" width="640" title="Sample2">
 </p>
-
+<p align="center">
+<img src="https://github.com/serameo/TexU/blob/master/samples/win32/gdip_01/wnd_sample01.png" width="640" title="Win32_Sample1">
+</p>
 Credits:
 --------
 0. cJSON: https://github.com/DaveGamble/cJSON
