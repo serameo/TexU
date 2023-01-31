@@ -32,7 +32,9 @@ texu_char*          texu_copy_string(texu_char*, const texu_char*);
 texu_char*          texu_concat_string(const texu_char*, const texu_char*);
 size_t              texu_strlen(const texu_char *str);
 texu_char          *texu_strcpy(texu_char* dest, const texu_char *str);
+texu_char          *texu_strrcpy(texu_char* dest, const texu_char *str); /*reverse copy*/
 texu_char          *texu_strncpy(texu_char *dest, const texu_char *src, size_t size);
+texu_char          *texu_strnrcpy(texu_char *dest, const texu_char *src, size_t size); /*reverse copy*/
 texu_i32            texu_strcmp(const texu_char *s1, const texu_char *s2);
 texu_i32            texu_strncmp(const texu_char *s1, const texu_char *s2, texu_i32 len);
 texu_char          *texu_strcat(texu_char* dest, const texu_char* src);
@@ -40,10 +42,14 @@ texu_char          *texu_strchr(const texu_char *str, texu_char ch);
 texu_char *         texu_memset(texu_char *dest, texu_char ch, size_t len);
 texu_char *         texu_memcpy(texu_char *dest, const texu_char *src, size_t len);
 texu_i32            texu_memcmp(const texu_char *dest, const texu_char *src, size_t len);
+/*texu_fs2ls to convert floating-point string to long string*/
 texu_i32            texu_fs2ls(const texu_char *_sPriceStr, texu_i32 _lSize, texu_i32 _lDec, texu_char *sLongStr_);
+texu_i32            texu_sprintf(texu_char *buf, texu_i32 buflen, const texu_char* format, ...);
 
 #if (defined WIN32)
+/*texu_a2w to convert multi-byte string (ascii string) to wide string*/
 texu_i32            texu_a2w(wchar_t *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen);
+/*texu_w2a to convert wide string to multi-byte string (ascii string)*/
 texu_i32            texu_w2a(char *out, texu_i32 outlen, const wchar_t *wide, texu_i32 widelen);
 #endif
 

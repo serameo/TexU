@@ -42,12 +42,10 @@ struct texu_wnd_attrs
     texu_ui32 disabledcolor;
     texu_ui32 selectedcolor;
     texu_ui32 focusedcolor;
-#if (defined WIN32 && defined _WINDOWS)
     texu_ui32 normalbg;
     texu_ui32 disabledbg;
     texu_ui32 selectedbg;
     texu_ui32 focusedbg;
-#endif
     texu_ui32 id;
     const texu_char *clsname;
     void *userdata;
@@ -118,11 +116,9 @@ struct texu_wnd_subitem
     texu_ui32 normcolor; /* text attributes          */
     texu_ui32 discolor;  /* text attributes          */
     texu_ui32 selcolor;  /* text attributes          */
-#if (defined WIN32 && defined _WINDOWS)
     texu_ui32 normbg; /* text attributes          */
     texu_ui32 disbg;  /* text attributes          */
     texu_ui32 selbg;  /* text attributes          */
-#endif
     void *data;         /* user data                */
 };
 typedef struct texu_wnd_subitem texu_wnd_subitem;
@@ -143,11 +139,9 @@ struct texu_wnd_header
     texu_ui32 normcolor;  /* text attributes          */
     texu_ui32 discolor;   /* text attributes          */
     texu_ui32 selcolor;   /* text attributes          */
-#if (defined WIN32 && defined _WINDOWS)
     texu_ui32 normbg;  /* text attributes          */
     texu_ui32 disbg;   /* text attributes          */
     texu_ui32 selbg;   /* text attributes          */
-#endif
     texu_ui32 editstyle; /* edit style, see TES_XXX  */
     texu_i32 decwidth;   /* TES_DECIMAL or TES_AUTODECIMALCOMMA, default 6 */
 };
@@ -174,11 +168,9 @@ struct texu_treewnd_item
     texu_ui32 normcolor;
     texu_ui32 discolor;
     texu_ui32 selcolor;
-#if (defined WIN32 && defined _WINDOWS)
     texu_ui32 normbg;
     texu_ui32 disbg;
     texu_ui32 selbg;
-#endif
 };
 typedef struct texu_treewnd_item texu_treewnd_item;
 
@@ -206,11 +198,9 @@ struct texu_menu_item
     texu_ui32 normcolor;
     texu_ui32 discolor;
     texu_ui32 selcolor;
-#if (defined WIN32 && defined _WINDOWS)
     texu_ui32 normbg;
     texu_ui32 disbg;
     texu_ui32 selbg;
-#endif
     texu_ui32 style; /*TEXU_MS_TEXT, TEXU_MS_BREAK*/
     texu_char info[TEXU_MAX_WNDTEXT + 1];
     void *userdata;
@@ -303,6 +293,8 @@ struct texu_ip_addr
 typedef struct texu_ip_addr texu_ip_addr;
 
 /*PRICE SPREAD*/
+/*When sending message TEXU_EPSM_SETBASESPREAD or TEXU_EPSM_GETBASESPREAD */
+/*texu_pricespread.spread = the current base price not the actual price spread*/
 struct texu_pricespread
 {
     texu_i32    min;        /*e.g. 0.01 =  1/100*/

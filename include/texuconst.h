@@ -274,6 +274,7 @@ enum
 #define TEXU_WM_QUERYPREVWND            (TEXU_WM_FIRST + 21)
 #define TEXU_WM_CLOSE                   (TEXU_WM_FIRST + 22)
 #define TEXU_WM_QUERYCLOSE              (TEXU_WM_FIRST + 23)
+#define TEXU_WM_KEYDOWN                 (TEXU_WM_FIRST + 24)
 
 /* notify */
 #define TEXU_WN_FIRST                   0
@@ -806,5 +807,8 @@ enum
 
 /*EDIT PRICE SPREAD CTROL*/
 #define TEXU_EPSS_SHOWCHANGE            0x00010000
+
+/*UP-DOWN CTRL*/
+#define TEXU_UDS_SHOWPLUSMINUS          0x00010000
 
 #endif /*_TEXUCONST_H_*/

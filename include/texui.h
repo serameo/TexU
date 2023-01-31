@@ -298,12 +298,11 @@ const texu_char*    texu_wnd_get_clsname(texu_wnd*);
 void                texu_wnd_set_focused_color(texu_wnd*, texu_ui32);
 texu_ui32            texu_wnd_get_focused_color(texu_wnd*);
 texu_bool           texu_wnd_is_executable(texu_wnd *wnd, texu_ui32 id);
-#if (defined WIN32 && defined _WINDOWS)
+
 void                texu_wnd_set_bgcolor(texu_wnd*, texu_ui32, texu_ui32);
 texu_status         texu_wnd_get_bgcolor(texu_wnd*, texu_ui32*, texu_ui32*);
 void                texu_wnd_set_bgfocused_color(texu_wnd*, texu_ui32);
 texu_ui32           texu_wnd_get_bgfocused_color(texu_wnd*);
-#endif
 
 
 texu_i32            texu_wnd_get_y(texu_wnd*);
