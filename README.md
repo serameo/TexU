@@ -51,3 +51,9 @@ How to implement a simple TexU application:
 <p align="center">
   <img src="https://github.com/serameo/TexU/blob/master/samples/TexU_sample07.png" width="640" title="Sample2">
 </p>
+
+Credits:
+--------
+0. cJSON: https://github.com/DaveGamble/cJSON
+1. RE: https://github.com/kokke/tiny-regex-c
+2. SLRE: https://github.com/cesanta/slre
