@@ -37,14 +37,14 @@ struct texu_msgbox
     texu_ui32 cancelcolor;
     texu_ui32 yescolor;
     texu_ui32 nocolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 titlebg;
     texu_ui32 labelbg;
     texu_ui32 okbg;
     texu_ui32 cancelbg;
     texu_ui32 yesbg;
     texu_ui32 nobg;
-#endif
+
     void *userdata;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_char caption[TEXU_MAX_WNDTEXT + 1];
@@ -404,9 +404,9 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         if (!(idok))
         {
             msgbox->yescolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_OK);
-#if (defined WIN32 && defined _WINDOWS)
+
             msgbox->yesbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_OK);
-#endif
+
         }
         rc = _TexuMsgBoxProc_CreateButtons(
             wnd,
@@ -732,11 +732,11 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     }
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
     colorbg = normbg;
-#if (defined WIN32 && defined _WINDOWS)
     if (!(texu_wnd_is_enable(wnd)))
     {
         colorbg = disbg;
     }
+#if (defined WIN32 && defined _WINDOWS)
     texu_env_draw_text(env, y, x, text, color, colorbg);
 #else
     texu_cio_putstr_attr(cio, y, x, buf,
@@ -752,11 +752,11 @@ _TexuLabelProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_set_color(wnd,
                        texu_env_get_syscolor(env, TEXU_COLOR_LABEL),
                        texu_env_get_syscolor(env, TEXU_COLOR_LABEL_DISABLED));
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL_DISABLED));
-#endif
+
     return TEXU_OK;
 }
 void
@@ -848,11 +848,11 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     }
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
     bgcolor = normbg;
-#if (defined WIN32 && defined _WINDOWS)
     if (!(texu_wnd_is_enable(wnd)))
     {
         bgcolor = disbg;
     }
+#if (defined WIN32 && defined _WINDOWS)
     texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
     texu_cio_putstr_attr(cio, y, x, buf,
@@ -874,11 +874,11 @@ _TexuButtonProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_set_color(wnd,
                        texu_env_get_syscolor(env, TEXU_COLOR_BUTTON),
                        texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_DISABLED));
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_DISABLED));
-#endif
+
     return TEXU_OK;
 }
 
@@ -1211,14 +1211,14 @@ texu_i32 _TexuEditProc_AddDecimalFormat(texu_editwnd *edit)
     memset(buf, 0, sizeof(buf));
     pbuf = buf;
 
-    while (*psz != 0 && *psz != '.')
+    while (*psz != 0 && *psz != TEXUTEXT('.'))
     {
         *pbuf = *psz;
         ++pbuf;
         --psz;
         --len;
     }
-    if ('.' == *psz)
+    if (TEXUTEXT('.') == *psz)
     {
         *pbuf = *psz;
         ++pbuf;
@@ -1228,9 +1228,9 @@ texu_i32 _TexuEditProc_AddDecimalFormat(texu_editwnd *edit)
 
     while (len >= 0)
     {
-        if (cnt % 4 == 0 && *psz != '-')
+        if (cnt % 4 == 0 && *psz != TEXUTEXT('-'))
         {
-            *pbuf = ',';
+            *pbuf = TEXUTEXT(',');
             ++pbuf;
             ++cnt;
         }
@@ -1262,16 +1262,12 @@ texu_i32 _TexuEditProc_RemoveDecimalFormat(texu_editwnd *edit)
     texu_char *psz = edit->editbuf;
     texu_char *pbuf = buf;
 
-#if (defined WIN32 && defined UNICODE)
-    if (wcschr(edit->editbuf, TEXUTEXT(',')))
-#else
-    if (strchr(edit->editbuf, ','))
-#endif
+    if (texu_strchr(edit->editbuf, TEXUTEXT(',')))
     {
         memset(buf, 0, sizeof(buf));
-        while (*psz != 0 && *psz != '.')
+        while (*psz != 0 && *psz != TEXUTEXT('.'))
         {
-            if (*psz != ',')
+            if (*psz != TEXUTEXT(','))
             {
                 *pbuf = *psz;
                 ++pbuf;
@@ -1880,12 +1876,12 @@ _TexuEditProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
                        texu_env_get_syscolor(env, TEXU_COLOR_EDIT),
                        texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED));
     texu_wnd_set_focused_color(wnd, texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED));
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED));
     texu_wnd_set_bgfocused_color(wnd, texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED));
-#endif
+
     texu_wnd_set_userdata(wnd, edit);
 
     edit->on_validate = attrs->on_validate;
@@ -2185,9 +2181,9 @@ struct texu_lbwnd
     void *exparam;
 
     texu_ui32 selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 selbg;
-#endif
+
     texu_bool       focused;
 };
 typedef struct texu_lbwnd texu_lbwnd;
@@ -2832,7 +2828,7 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
                 if (enable && i == lb->cursel)/* && item->enable)*/
                 {
                     color = lb->selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
                     color = lb->selbg;
                     bgcolor = lb->selcolor;
 
@@ -2841,21 +2837,21 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
                         color = focuscolor;
                         bgcolor = focusbg;
                     }
-#endif
+
                     if (style & TEXU_LBS_OWNERCOLOR)
                     {
                         color = item->selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
                         bgcolor = lb->selbg;
-#endif
+
                     }
                     if (!item->enable)
                     {
                         color = item->discolor;
-#if (defined WIN32 && defined _WINDOWS)
+
                         bgcolor = item->discolor;
                         color = item->disbg;
-#endif
+
                     }
 #ifdef TEXU_CIO_COLOR_MONO
                 texu_cio_putstr_attr(cio, y + (i - lb->firstvisible), x, text,
@@ -2928,14 +2924,14 @@ _TexuListBoxProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
                        texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_DISABLED));
     texu_wnd_set_focused_color(wnd,
                                texu_env_get_syscolor(env, TEXU_COLOR_LISTBOX_FOCUSED));
-#if (defined WIN32 && defined _WINDOWS)
+
     lb->selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_SELECTED);
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_DISABLED));
     texu_wnd_set_bgfocused_color(wnd,
                                texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_FOCUSED));
-#endif
+
 
     texu_wnd_set_userdata(wnd, lb);
 
@@ -3464,10 +3460,10 @@ _TexuComboBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_wnd *parent = texu_wnd_get_parent(wnd);
     texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX);
     texu_ui32 sel = texu_env_get_syscolor(env, TEXU_COLOR_COMBOBOX_SELECTED);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_COMBOBOX);
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_COMBOBOX_SELECTED);
-#endif
+
 
     if (!(texu_wnd_is_visible(wnd)))
     {
@@ -3475,12 +3471,12 @@ _TexuComboBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     }
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
     texu_printf_alignment2(buf, text, width, TEXU_ALIGN_LEFT, TEXU_TRUE);
-#if (defined WIN32 && defined _WINDOWS)
     if (texu_wnd_get_activechild(parent) == wnd)
     {
         color = sel;
         bgcolor = selbg;
     }
+#if (defined WIN32 && defined _WINDOWS)
     texu_env_draw_text(env, y, x, buf, color, bgcolor);
     /*draw selected*/
     texu_env_draw_char(env, y, x + width - 1, TEXUTEXT('>'), color, bgcolor);
@@ -3680,9 +3676,9 @@ struct texu_sbwnd_part
     texu_i32 id;
     texu_i32 width;
     texu_ui32 color;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 bgcolor;
-#endif
+
     texu_i32 align;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     void *userdata;
@@ -3756,9 +3752,9 @@ _texu_sbwnd_part_new(const texu_char *text, texu_i32 width, texu_ui32 color, tex
         }
         part->width = width;
         part->color = color;
-#if (defined WIN32 && defined _WINDOWS)
+
         part->bgcolor = bgcolor;
-#endif
+
         part->align = align;
     }
     return part;
@@ -3857,9 +3853,9 @@ _TexuStatusBarProc_OnSetBgColor(texu_wnd *wnd, texu_i32 id, texu_ui32 color)
     texu_sbwnd_part *part = _texu_sbwnd_part_find(sb->parts, id);
     if (part && color >= 0)
     {
-#if (defined WIN32 && defined _WINDOWS)
+
         part->bgcolor = color;
-#endif
+
         texu_wnd_invalidate(wnd);
     }
 }
@@ -3871,9 +3867,9 @@ _TexuStatusBarProc_OnGetBgColor(texu_wnd *wnd, texu_i32 id)
     texu_sbwnd_part *part = _texu_sbwnd_part_find(sb->parts, id);
     if (part)
     {
-#if (defined WIN32 && defined _WINDOWS)
+
         return part->bgcolor;
-#endif
+
     }
     return 0;
 }

@@ -224,10 +224,9 @@ void _texu_env_init_cls(texu_env *);
 texu_wndproc _texu_env_find_wndproc(texu_env *, const texu_char *);
 FILE *_texu_env_init_screen(texu_env *env);
 void _texu_env_init_syscolors(texu_env *env);
-#if (defined WIN32 && defined _WINDOWS)
+
 void        _texu_env_init_sysbgcolors(texu_env *env);
 
-#endif
 
 #if USE_TCL_AUTOMATION
 void        _texu_env_init_tcl_automation(texu_env *env, const char* pathname);
@@ -708,7 +707,7 @@ void texu_env_set_syscolors(texu_env *env, texu_i32 (*setcolor)(texu_i32))
         env->syscolors[i] = color;
     }
 }
-#if (defined WIN32 && defined _WINDOWS)
+
 void texu_env_set_sysbgcolors(texu_env *env, texu_i32(*setcolor)(texu_i32))
 {
     texu_i32 i = 0;
@@ -724,7 +723,7 @@ void texu_env_set_sysbgcolors(texu_env *env, texu_i32(*setcolor)(texu_i32))
         env->syscolors[i] = color;
     }
 }
-#endif
+
 void
 _texu_env_init_syscolors(texu_env *env)
 {
@@ -818,7 +817,7 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_DEFAULT]                  = TEXU_CIO_COLOR_WHITE_BLACK;
 }
 
-#if (defined WIN32 && defined _WINDOWS)
+
 void _texu_env_init_sysbgcolors(texu_env *env)
 {
     texu_i32 i = 0;
@@ -910,7 +909,7 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     /*default*/
     env->sysbgcolors[TEXU_COLOR_DEFAULT] = TEXU_CIO_COLOR_BLACK_WHITE;
 }
-#endif
+
 
 void
 _texu_env_init_cls(texu_env *env)
@@ -1050,7 +1049,7 @@ texu_env_get_syscolor(texu_env *env, texu_i32 syscolor)
     return env->syscolors[syscolor];
 }
 
-#if (defined WIN32 && defined _WINDOWS)
+
 texu_ui32
 texu_env_get_sysbgcolor(texu_env *env, texu_i32 syscolor)
 {
@@ -1060,7 +1059,7 @@ texu_env_get_sysbgcolor(texu_env *env, texu_i32 syscolor)
     }
     return env->sysbgcolors[syscolor];
 }
-#endif
+
 
 #if (defined WIN32 && defined _WINDOWS)
 #define TEXU_MAINENVWNDCLS          TEXUTEXT("TEXU_MAINENVWNDCLS")

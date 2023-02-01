@@ -444,6 +444,102 @@ texu_sprintf(texu_char *buf, texu_i32 buflen, const texu_char* format, ...)
 
     return rc;
 }
+
+
+
+texu_i32 texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *nocommas)
+{
+    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_i32 cnt = 1;
+    texu_char *pbuf;
+    texu_i32 len = texu_strlen(nocommas) - 1;
+    texu_char *psz = (texu_char*)&nocommas[len];
+
+    memset(buf, 0, sizeof(buf));
+    pbuf = buf;
+
+    while (*psz != 0 && *psz != TEXUTEXT('.'))
+    {
+        *pbuf = *psz;
+        ++pbuf;
+        --psz;
+        --len;
+    }
+    if (TEXUTEXT('.') == *psz)
+    {
+        *pbuf = *psz;
+        ++pbuf;
+        --psz;
+        --len;
+    }
+
+    while (len >= 0)
+    {
+        if (cnt % 4 == 0 && *psz != TEXUTEXT('-'))
+        {
+            *pbuf = TEXUTEXT(',');
+            ++pbuf;
+            ++cnt;
+        }
+        *pbuf = *psz;
+        ++pbuf;
+        --psz;
+        --len;
+        ++cnt;
+    }
+    /* save */
+    if (commas)
+    {
+        memset(commas, 0, outlen);
+        /* reverse copy */
+        len = texu_strlen(buf) - 1;
+        pbuf = &buf[len];
+        psz = commas;
+        while (len >= 0)
+        {
+            *psz = *pbuf;
+            ++psz;
+            --pbuf;
+            --len;
+        }
+    }
+    return TEXU_OK;
+}
+
+texu_i32 texu_remove_commas(texu_char *nocommas, texu_i32 len, const texu_char *commas)
+{
+    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_char *psz = (texu_char*)commas;
+    texu_char *pbuf = buf;
+
+
+    if (texu_strchr(psz, TEXUTEXT(',')))
+    {
+        memset(buf, 0, sizeof(buf));
+        while (*psz != 0 && *psz != TEXUTEXT('.'))
+        {
+            if (*psz != TEXUTEXT(','))
+            {
+                *pbuf = *psz;
+                ++pbuf;
+            }
+            ++psz;
+        }
+        while (*psz != 0)
+        {
+            *pbuf = *psz;
+            ++pbuf;
+            ++psz;
+        }
+    }
+    /* save back to output*/
+    if (nocommas)
+    {
+        texu_strncpy(nocommas, buf, len);
+    }
+    return TEXU_OK;
+}
+
 /*
 # TexU xcnf
 #

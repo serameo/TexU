@@ -472,12 +472,12 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         else
         {
             color = discolor;
+            bgcolor = disbg;
 #ifdef TEXU_CIO_COLOR_MONO
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-            bgcolor = disbg;
             texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
             texu_cio_putstr_attr(dc, y, x, buf,
@@ -781,9 +781,9 @@ _TexuMenuWndProc_DrawPopupMenu(
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_i32 color = 0;
     texu_i32 maxlen = _TexuMenuProc_GetMaxLength(baritem);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32 bgcolor = 0;
-#endif
+
     texu_env *env = texu_wnd_get_env(wnd);
 
     while (item)
@@ -827,8 +827,8 @@ _TexuMenuWndProc_DrawPopupMenu(
                                  texu_cio_get_reverse(dc, color));
 #else
             color = menuitem->discolor;
-#if (defined WIN32 && defined _WINDOWS)
             bgcolor = menuitem->disbg;
+#if (defined WIN32 && defined _WINDOWS)
             texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
             texu_cio_putstr_attr(dc, y, x, buf,
@@ -915,15 +915,14 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             if (treeitem == menu->curbaritem)
             {
                 color = selcolor;
-#if (defined WIN32 && defined _WINDOWS)
                 bgcolor = selbg;
+#if (defined WIN32 && defined _WINDOWS)
                 texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
                 texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_color(dc, color));
 #endif
 #if (defined WIN32 && defined _WINDOWS)
-                bgcolor = selbg;
                 _TexuMenuWndProc_DrawPopupMenu(
                     wnd,
                     dc,
@@ -959,8 +958,8 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                                  texu_cio_get_reverse(dc, color));
 #else
             color = discolor;
-#if (defined WIN32 && defined _WINDOWS)
             bgcolor = disbg;
+#if (defined WIN32 && defined _WINDOWS)
             texu_env_draw_text(env, y, x, buf, color, bgcolor);
 #else
             texu_cio_putstr_attr(dc, y, x, buf,
@@ -985,21 +984,22 @@ _TexuMenuWndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
     switch (msg)
     {
-    case TEXU_WM_CHAR:
-        _TexuMenuWndProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+        case TEXU_WM_KEYDOWN:
+        case TEXU_WM_CHAR:
+            _TexuMenuWndProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
         return 0;
 
-    case TEXU_WM_PAINT:
-        _TexuMenuWndProc_OnPaint(wnd, (texu_cio *)param1);
-        return 0;
+        case TEXU_WM_PAINT:
+            _TexuMenuWndProc_OnPaint(wnd, (texu_cio *)param1);
+            return 0;
 
-    case TEXU_WM_CREATE:
-        _TexuMenuWndProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
-        return 0;
+        case TEXU_WM_CREATE:
+            _TexuMenuWndProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+            return 0;
 
-    case TEXU_WM_DESTROY:
-        _TexuMenuWndProc_OnDestroy(wnd);
-        return 0;
+        case TEXU_WM_DESTROY:
+            _TexuMenuWndProc_OnDestroy(wnd);
+            return 0;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }

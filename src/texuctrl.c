@@ -406,13 +406,13 @@ _TexuListCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
                        texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_DISABLED));
     texu_wnd_set_focused_color(wnd,
                                texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_FOCUSED));
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_set_bgcolor(wnd,
                          texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL),
                          texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_DISABLED));
     texu_wnd_set_bgfocused_color(wnd,
                                  texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_FOCUSED));
-#endif
+
     texu_wnd_set_userdata(wnd, lctl);
     return TEXU_OK;
 }
@@ -2658,9 +2658,9 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
     texu_i32 color = 0;
     texu_cio *dc = texu_wnd_get_cio(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32 bgcolor = 0;
-#endif
+
 
     lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
     cell = _TexuListCtrlProc_FindCellByIndex(lctl, col, row);
@@ -2678,15 +2678,15 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
                 _TexuListCtrlProc_GetCellRect(cell, &rccell);
 
                 color = cell->normcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
                 bgcolor = cell->normbg;
-#endif
+
                 if (row == lctl->curselrow)
                 {
                     color = cell->selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+
                     bgcolor = cell->selbg;
-#endif
+
                     /* draw th item that it can be seen */
 #if (defined WIN32 && defined _WINDOWS)
                     _TexuListCtrlProc_DrawItem2(wnd, dc, &rccell,
@@ -4301,13 +4301,13 @@ texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
                        texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_DISABLED));
     texu_wnd_set_focused_color(wnd,
                                texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_FOCUSED));
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_TREECTRL),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_TREECTRL_DISABLED));
     texu_wnd_set_bgfocused_color(wnd,
                                texu_env_get_sysbgcolor(env, TEXU_COLOR_TREECTRL_FOCUSED));
-#endif
+
     return TEXU_OK;
 }
 
@@ -4927,13 +4927,13 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
                        texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED));
     texu_wnd_set_focused_color(wnd,
                                texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED));
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED));
     texu_wnd_set_bgfocused_color(wnd,
                                texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED));
-#endif
+
     return TEXU_OK;
 }
 
@@ -5106,9 +5106,9 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
-#endif
+
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
@@ -5396,9 +5396,9 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_PROGRESSBAR);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_PROGRESSBAR);
-#endif
+
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_f32 pct = 0.0;
@@ -5870,13 +5870,13 @@ _TexuPageCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
                        texu_env_get_syscolor(env, TEXU_COLOR_WINDOW));
     texu_wnd_set_focused_color(wnd,
                                texu_env_get_syscolor(env, TEXU_COLOR_WINDOW));
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_wnd_set_bgcolor(wnd,
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW),
                        texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW));
     texu_wnd_set_bgfocused_color(wnd,
                                texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW));
-#endif
+
     texu_wnd_set_userdata(wnd, pgctl);
 
     return TEXU_OK;
@@ -7135,9 +7135,9 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_bool skip = TEXU_TRUE;
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_i32 capwidth = rbwnd->capwidth;
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_REBAR);
-#endif
+
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
