@@ -45,6 +45,8 @@ texu_i32            texu_memcmp(const texu_char *dest, const texu_char *src, siz
 /*texu_fs2ls to convert floating-point string to long string*/
 texu_i32            texu_fs2ls(const texu_char *_sPriceStr, texu_i32 _lSize, texu_i32 _lDec, texu_char *sLongStr_);
 texu_i32            texu_sprintf(texu_char *buf, texu_i32 buflen, const texu_char* format, ...);
+texu_i32            texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *nocommas);
+texu_i32            texu_remove_commas(texu_char *nocommas, texu_i32 len, const texu_char *commas);
 
 #if (defined WIN32)
 /*texu_a2w to convert multi-byte string (ascii string) to wide string*/

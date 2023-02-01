@@ -297,12 +297,22 @@ typedef struct texu_ip_addr texu_ip_addr;
 /*texu_pricespread.spread = the current base price not the actual price spread*/
 struct texu_pricespread
 {
-    texu_i32    min;        /*e.g. 0.01 =  1/100*/
-    texu_i32    max;        /*e.g. 0.99 = 99/100*/
-    texu_i32    spread;     /*e.g. 0.01 =  1/100*/
-    texu_i32    multiplier; /*e.g. 100*/
+    texu_i32    min;        /*e.g.  1*/
+    texu_i32    max;        /*e.g. 99*/
+    texu_i32    spread;     /*e.g.  1*/
+    texu_i32    multiplier; /*e.g. 100*//*multiplier is 10's power*//*min=1,max=1000000*/
 };
 typedef struct texu_pricespread texu_pricespread;
+
+struct texu_baseprice
+{
+    texu_i32    floor;      /*e.g. 2450*/
+    texu_i32    ceiling;    /*e.g. 4550*/
+    texu_i32    price;      /*e.g. 3500*/
+    texu_i32    multiplier; /*e.g. 100*//*multiplier is 10's power*//*min=1,max=1000000*/
+};
+typedef struct texu_baseprice texu_baseprice;
+
 
 #ifdef __cplusplus
 }
