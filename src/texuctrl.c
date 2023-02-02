@@ -848,7 +848,9 @@ _TexuListCtrlProc_FillCell(texu_wnd *wnd, texu_lcwnd *lctl,
         texu_cio_get_reverse(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text(env, rccell.y, rccell.x, buf, color, bgcolor);
+    texu_env_draw_text_ex(env, rccell.y, rccell.x, buf, color, bgcolor,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 #else
     texu_cio_putstr_attr(
         dc,
@@ -893,7 +895,9 @@ _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lctl,
         texu_cio_get_reverse(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text(env, rccell.y, rccell.x, buf, color, bgcolor);
+    texu_env_draw_text_ex(env, rccell.y, rccell.x, buf, color, bgcolor,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 #else
     texu_cio_putstr_attr(
         dc,
@@ -995,7 +999,9 @@ _TexuListCtrlProc_DrawItem2(
             texu_cio_get_reverse(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-        texu_env_draw_text(env, y, x, buf, color, bgcolor);
+        texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
 #else
         texu_cio_putstr_attr(
             dc,
@@ -1009,7 +1015,9 @@ _TexuListCtrlProc_DrawItem2(
     else
     {
 #if (defined WIN32 && defined _WINDOWS)
-        texu_env_draw_text(env, y, x, buf, color, bgcolor);
+        texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
 #else
         texu_cio_putstr_attr(
             dc,
@@ -1263,7 +1271,10 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         if (!(style & TEXU_LCS_NOHEADER))
         {
 #if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_char(env, rcwnd.y, rcwnd.x + 1, TEXUTEXT('<'), normcolor, normbg);
+            texu_env_draw_char_ex(env, rcwnd.y, rcwnd.x + 1, TEXUTEXT('<'), normcolor, normbg,
+                                  texu_wnd_get_clsname(wnd),
+                                  texu_wnd_get_id(wnd));
+
 #else
             texu_cio_putch_attr(dc, rcwnd.y, rcwnd.x + 1, '<', normcolor);
 #endif
@@ -1290,7 +1301,10 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                 x = rcwnd.cols - 1;
             }
 #if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_char(env, y, x, TEXUTEXT('>'), normcolor, normbg);
+            texu_env_draw_char_ex(env, y, x, TEXUTEXT('>'), normcolor, normbg,
+                                  texu_wnd_get_clsname(wnd),
+                                  texu_wnd_get_id(wnd));
+
 #else
             texu_cio_putch_attr(dc, y, x, '>', normcolor);
 #endif
@@ -1307,7 +1321,10 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             {
                 x = rcwnd.cols - 1;
 #if (defined WIN32 && defined _WINDOWS)
-                texu_env_draw_char(env, y, x, TEXUTEXT('>'), normcolor, normbg);
+                texu_env_draw_char_ex(env, y, x, TEXUTEXT('>'), normcolor, normbg,
+                                      texu_wnd_get_clsname(wnd),
+                                      texu_wnd_get_id(wnd));
+
 #else
                 texu_cio_putch_attr(dc, y, x, '>', normcolor);
 #endif
@@ -4513,7 +4530,9 @@ void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                 if (fullrow)
                 {
 #if (defined WIN32 && defined _WINDOWS)
-                    texu_env_draw_text(env, y, rc.x, buf, selcolor, selbg);
+                    texu_env_draw_text_ex(env, y, rc.x, buf, selcolor, selbg,
+                                          texu_wnd_get_clsname(wnd),
+                                          texu_wnd_get_id(wnd));
 #else
                     texu_cio_putstr_attr(dc, y, rc.x, buf, selcolor);
 #endif
@@ -4522,7 +4541,9 @@ void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                 {
                     buf[endx] = 0;
 #if (defined WIN32 && defined _WINDOWS)
-                    texu_env_draw_text(env, y, rc.x + startx, &buf[startx], selcolor, selbg);
+                    texu_env_draw_text_ex(env, y, rc.x + startx, &buf[startx], selcolor, selbg,
+                                          texu_wnd_get_clsname(wnd),
+                                          texu_wnd_get_id(wnd));
 #else
                     texu_cio_putstr_attr(dc, y, rc.x + startx, &buf[startx],
                                          texu_cio_get_color(dc, selcolor));
@@ -4536,7 +4557,9 @@ void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             {
                 buf[endx] = 0;
 #if (defined WIN32 && defined _WINDOWS)
-                texu_env_draw_text(env, y, rc.x, buf, normcolor, normbg);
+                texu_env_draw_text_ex(env, y, rc.x, buf, normcolor, normbg,
+                                      texu_wnd_get_clsname(wnd),
+                                      texu_wnd_get_id(wnd));
 #else
                 texu_cio_putstr_attr(dc, y, rc.x, buf,
                                      texu_cio_get_color(dc, normcolor));
@@ -4563,7 +4586,9 @@ void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 
         /* draw the selected item */
 #if (defined WIN32 && defined _WINDOWS)
-        texu_env_draw_text(env, ysel, xsel, bufsel, selcolor, selbg);
+        texu_env_draw_text_ex(env, ysel, xsel, bufsel, selcolor, selbg,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
         texu_env_gotoyx(env, ysel, xsel);
 #else
         texu_cio_putstr_attr(dc, ysel, xsel, bufsel,
@@ -5122,8 +5147,14 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                             texu_cio_get_color(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-        texu_env_draw_char(env, y, x, TEXU_ACS_MINUS, color, bgcolor);
-        texu_env_draw_char(env, y, x + width - 1, TEXU_ACS_PLUS, color, bgcolor);
+        texu_env_draw_char_ex(env, y, x, TEXU_ACS_MINUS, color, bgcolor,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
+
+        texu_env_draw_char_ex(env, y, x + width - 1, TEXU_ACS_PLUS, color, bgcolor,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
+
 #else
         texu_cio_putch_attr(dc, y, x, TEXU_ACS_MINUS,
                             texu_cio_get_color(dc, color));
@@ -5415,7 +5446,9 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     memset(buf, 0, sizeof(buf));
     texu_memset(buf, TEXUTEXT('.'), width);
 #if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text(env, y, x, buf, color, bgcolor);
+    texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 #else
     texu_cio_putstr_attr(dc, y, x, buf,
                          texu_cio_get_color(dc, color));
@@ -5435,7 +5468,9 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_printf_alignment2(buf, text, pgwidth, TEXU_ALIGN_RIGHT, TEXU_TRUE);
 
 #if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text(env, y, x, buf, bgcolor, color);
+    texu_env_draw_text_ex(env, y, x, buf, bgcolor, color,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 #else
     texu_cio_putstr_attr(dc, y, x, buf,
                          texu_cio_get_reverse(dc, color));
@@ -7207,7 +7242,9 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                                          texu_cio_get_color(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-                    texu_env_draw_text(env, y, x, caption, color, bgcolor);
+                    texu_env_draw_text_ex(env, y, x, caption, color, bgcolor,
+                                          texu_wnd_get_clsname(wnd),
+                                          texu_wnd_get_id(wnd));
 #else
                     texu_cio_putstr_attr(dc, y, x, caption,
                                          texu_cio_get_color(dc, color));
@@ -7247,7 +7284,9 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                                  texu_cio_get_color(dc, color));
 #else
 #if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_text(env, y, x, caption, color, bgcolor);
+            texu_env_draw_text_ex(env, y, x, caption, color, bgcolor,
+                                  texu_wnd_get_clsname(wnd),
+                                  texu_wnd_get_id(wnd));
 #else
             texu_cio_putstr_attr(dc, y, x, caption,
                                  texu_cio_get_color(dc, color));

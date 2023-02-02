@@ -251,6 +251,7 @@ int MultiByteToWideChar(
 texu_i32
 texu_a2w(wchar_t *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen)
 {
+    memset(out, 0, sizeof(wchar_t)*outlen);
     return MultiByteToWideChar(CP_ACP,
                                MB_PRECOMPOSED,
                                ascii, asciilen,
@@ -271,7 +272,8 @@ int WideCharToMultiByte(
 texu_i32
 texu_w2a(char *out, texu_i32 outlen, const wchar_t *wide, texu_i32 widelen)
 {
-    return WideCharToMultiByte(CP_ACP, 
+    memset(out, 0, sizeof(char)*outlen);
+    return WideCharToMultiByte(CP_ACP,
                 WC_COMPOSITECHECK, 
                 wide,
                 widelen,

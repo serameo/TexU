@@ -66,7 +66,17 @@ struct texu_msg
     texu_i64        param1;
     texu_i64        param2;
 };
-
+#if (defined WIN32 && defined _WINDOWS)
+struct texu_fontmapping
+{
+    texu_char       clsname[TEXU_MAX_WNDTEXT + 1];
+    texu_ui32       id;
+    texu_char       fontname[TEXU_MAX_WNDTEXT + 1];
+    texu_i32        size;
+    texu_i32        dpi;
+    HFONT           hfont;
+};
+#endif
 struct texu_env
 {
     texu_stack      *frames;    /* hold window frames */
@@ -92,35 +102,47 @@ struct texu_env
     texu_wnd        *mainwnd;   /* the root of all window frames */
 #if (defined WIN32 && defined _WINDOWS)
     /* window message */
-    HINSTANCE hinst;
-    LPVOID    lpData;
-    texu_bool has_cursor;
-    texu_i32  hidden_cursor;
-    HWND hwnd;
-    HDC hdc;
-    HDC hmemdc;
-    HDC hmemdc2;
-    HBITMAP hbmp;
-    HPEN hpen;
-    TEXTMETRIC tm;
-    HFONT hfont;
-    texu_i32 cxChar;
-    texu_i32 cxCaps;
-    texu_i32 cyChar;
-    texu_i32 cyLine;
-    texu_ui32 sysbgcolors[TEXU_MAX_COLOR];
-    texu_i32 cxScreen;
-    texu_i32 cyScreen;
-    texu_i32 chNextKey;
-    texu_i32 chPrevKey;
+    HINSTANCE   hinst;
+    LPVOID      lpData;
+    texu_bool   has_cursor;
+    texu_i32    hidden_cursor;
+    HWND        hwnd;
+    HDC         hdc;
+    HDC         hmemdc;
+    HBITMAP     hbmp;
+    HPEN        hpen;
+    TEXTMETRIC  tm;
+    HFONT       hfont;
+    texu_i32    cxChar;
+    texu_i32    cxCaps;
+    texu_i32    cyChar;
+    texu_i32    cyLine;
+    texu_ui32   sysbgcolors[TEXU_MAX_COLOR];
+    texu_i32    cxScreen;
+    texu_i32    cyScreen;
+    texu_i32    chNextKey;
+    texu_i32    chPrevKey;
     texu_wnd    *focuswnd;
+    cJSON       *prop;  /*keep configuration from texuenv.json*/
+    texu_map    *fonts; /*create font from texuenv.json*/
 #endif
 };
 
 #if (defined WIN32 && defined _WINDOWS)
+cJSON*
+texu_env_get_prop(texu_env *env)
+{
+    return env->prop;
+}
+
 HDC texu_env_get_hdc(texu_env *env)
 {
     return env->hdc;
+}
+
+HFONT texu_env_get_hfont(texu_env *env)
+{
+    return env->hfont;
 }
 
 void
@@ -130,7 +152,6 @@ texu_env_set_memdc(texu_env *env, HDC hmemdc)
     {
         SelectObject(hmemdc, env->hfont);
         SelectObject(hmemdc, env->hpen);
-        env->hmemdc2 = hmemdc;
     }
 }
 
@@ -1200,6 +1221,341 @@ texu_env_get_hwnd(texu_env *env)
     return env->hwnd;
 }
 
+
+texu_i32    _texu_env_fontcmp(const void *v1, const void *v2);
+
+
+void
+_texu_env_insert_fontmapping(texu_env *env, 
+    const texu_char *clsname,
+    const texu_char *fontname,
+    texu_i32    fontsize,
+    texu_i32    fontdpi,
+    texu_ui32   id)
+{
+    struct texu_fontmapping *mapping = 0;
+    texu_i32 i = 0;
+    texu_i32 arrsize = 0;
+    cJSON *arr = 0;
+    cJSON *idobj = 0;
+    cJSON *fontobj = 0;
+    char ascii[TEXU_MAX_WNDTEXT + 1] = "";
+    wchar_t wide[TEXU_MAX_WNDTEXT + 1] = L"";
+
+    texu_char str_clsname[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
+    texu_char str_fontname[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("Consolas");
+    texu_char key[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
+    texu_i32  cHeight = 0;/* -MulDiv(18, GetDeviceCaps(env->hdc, LOGPIXELSY), 72);*/
+    texu_i32  cWidth = 0;
+    texu_i32  cEscapement = 0;
+    texu_i32  cOrientation = 0;
+    texu_i32  cWeight = 0;
+    DWORD     bItalic = 0;
+    DWORD     bUnderline = 0;
+    DWORD     bStrikeOut = 0;
+    DWORD     iCharSet = 0;
+    DWORD     iOutPrecision = 0;
+    DWORD     iClipPrecision = 0;
+    DWORD     iQuality = 0;
+    texu_char *newkey = 0;
+    texu_i32  idsize = 0;
+    texu_i64  value = 0;
+    texu_status rc = TEXU_OK;
+
+    texu_sprintf(key, TEXU_MAX_WNDTEXT, TEXUTEXT("%s_%d"), clsname, id);
+    newkey = (texu_char*)malloc(sizeof(texu_char)* (TEXU_MAX_WNDTEXT + 1));
+    texu_strcpy(newkey, key);
+    rc = texu_map_cmp_find(env->fonts, (texu_i64)newkey, (texu_i64*)&value, _texu_env_fontcmp);
+    if (rc == TEXU_OK)
+    {
+        /*already register*/
+        free(newkey);
+        return;
+    }
+
+    mapping = (struct texu_fontmapping*)malloc(sizeof(struct texu_fontmapping));
+    memset(mapping, 0, sizeof(struct texu_fontmapping));
+    mapping->id = id;
+    mapping->dpi = fontdpi;
+    mapping->size = fontsize;
+    texu_strcpy(mapping->fontname, fontname);
+    texu_strcpy(mapping->clsname, clsname);
+
+    /*create font now*/
+    cHeight = -MulDiv(mapping->size, GetDeviceCaps(env->hdc, LOGPIXELSY), mapping->dpi);
+    mapping->hfont = CreateFont(cHeight, cWidth, cEscapement, cOrientation, cWeight,
+                                bItalic, bUnderline, bStrikeOut,
+                                iCharSet, iOutPrecision, iClipPrecision, iQuality,
+                                FF_DONTCARE | FIXED_PITCH,
+                                mapping->fontname);
+    /*ready to insert into the map*/
+    texu_map_cmp_insert(env->fonts, (texu_i64)newkey, (texu_i64)mapping, _texu_env_fontcmp);
+}
+
+void
+_texu_env_load_fonts_from(texu_env *env, cJSON *obj)
+{
+    struct texu_fontmapping *mapping = 0;
+    texu_i32 i = 0;
+    texu_i32 arrsize = 0;
+    cJSON *arr = 0;
+    cJSON *clsname = 0;
+    cJSON *idsobj = 0;
+    cJSON *idobj = 0;
+    cJSON *fontobj = 0;
+    cJSON *fontsize = 0;
+    cJSON *fontname = 0;
+    cJSON *fontdpi = 0;
+    char ascii[TEXU_MAX_WNDTEXT + 1] = "";
+    wchar_t wide[TEXU_MAX_WNDTEXT + 1] = L"";
+
+    texu_char str_clsname[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
+    texu_char str_fontname[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("Consolas");
+
+    texu_i32  idsize = 0;
+    texu_i32  j = 0;
+    texu_i32  size = 0;
+    texu_i32  dpi = 0;
+    texu_ui32   id = 0;
+
+    arrsize = cJSON_GetArraySize(obj);
+
+    for (i = 0; i < arrsize; ++i)
+    {
+        arr = cJSON_GetArrayItem(obj, i);
+        idsize = 0;
+
+        idsobj = cJSON_GetObjectItem(arr, "ids");
+        if (idsobj)
+        {
+            idsize = (texu_ui32)cJSON_GetArraySize(idsobj);
+        }
+
+
+        clsname = cJSON_GetObjectItem(arr, "name");
+
+        if (clsname)/*classes*/
+        {
+#if (defined WIN32)
+            strcpy_s(ascii, TEXU_MAX_WNDTEXT, cJSON_GetStringValue(clsname));
+#else
+            strcpy(ascii, cJSON_GetStringValue(clsname));
+#endif
+            texu_a2w(wide, TEXU_MAX_WNDTEXT, ascii, strlen(ascii));
+#if (defined WIN32 && defined UNICODE)
+            texu_strcpy(str_clsname, wide);
+#else
+            texu_strcpy(str_clsname, ascii);
+#endif
+        }
+        else
+        {
+            clsname = cJSON_GetObjectItem(arr, "class");
+            if (clsname)/*instances*/
+            {
+#if (defined WIN32)
+                strcpy_s(ascii, TEXU_MAX_WNDTEXT, cJSON_GetStringValue(clsname));
+#else
+                strcpy(ascii, cJSON_GetStringValue(clsname));
+#endif
+                texu_a2w(wide, TEXU_MAX_WNDTEXT, ascii, strlen(ascii));
+#if (defined WIN32 && defined UNICODE)
+                texu_strcpy(str_clsname, wide);
+#else
+                texu_strcpy(str_clsname, ascii);
+#endif
+            }
+        }
+        fontobj = cJSON_GetObjectItem(arr, "font");
+        if (fontobj)
+        {
+            fontname = cJSON_GetObjectItem(fontobj, "name");
+            if (fontname)
+            {
+#if (defined WIN32)
+                strcpy_s(ascii, TEXU_MAX_WNDTEXT, cJSON_GetStringValue(fontname));
+#else
+                strcpy(ascii, cJSON_GetStringValue(fontname));
+#endif
+                texu_a2w(wide, TEXU_MAX_WNDTEXT, ascii, strlen(ascii));
+#if (defined WIN32 && defined UNICODE)
+                texu_strcpy(str_fontname, wide);
+#else
+                texu_strcpy(str_fontname, ascii);
+#endif
+            }
+            fontsize = cJSON_GetObjectItem(fontobj, "size");
+            if (fontsize)
+            {
+                size = (texu_i32)cJSON_GetNumberValue(fontsize);
+            }
+            fontdpi = cJSON_GetObjectItem(fontobj, "dpi");
+            if (fontdpi)
+            {
+                dpi = (texu_i32)cJSON_GetNumberValue(fontdpi);
+            }
+        }
+
+        
+        
+        if (idsize > 0)
+        {
+            /*register font instance*/
+            for (j = 0; j < idsize; ++j)
+            {
+                /*ready to insert into the map*/
+                idobj = cJSON_GetArrayItem(idsobj, j);
+                id = (texu_ui32)cJSON_GetNumberValue(idobj);
+                _texu_env_insert_fontmapping(env, str_clsname, str_fontname, size, dpi, id);
+            }
+        }
+        else
+        {
+            /*id=0 means all instances are applied*/
+            _texu_env_insert_fontmapping(env, str_clsname, str_fontname, size, dpi, 0);
+        }
+
+
+    }/*for-loop*/
+}
+
+texu_i32
+_texu_env_fontcmp(const void *v1, const void *v2)
+{
+    texu_map_keyval *kv1 = (texu_map_keyval *)v1;
+    texu_map_keyval *kv2 = (texu_map_keyval *)v2;
+    if (kv1 && kv2 && kv1->used && kv2->used)
+    {
+        /*struct texu_fontmapping* k1 = (struct texu_fontmapping*)kv1->value;
+        struct texu_fontmapping* k2 = (struct texu_fontmapping*)kv2->value;*/
+        /*if (kv1 && kv1)*/
+        {
+            return texu_strcmp((const texu_char*)kv1->key, (const texu_char*)kv2->key);/* +(k1->id - k2->id);*/
+        }
+    }
+
+    return TEXU_CMP_GT;
+}
+
+void
+_texu_env_load_fonts(texu_env *env)
+{
+    if (!env->prop)
+    {
+        return;
+    }
+    /*classes*/
+    {
+        cJSON *classes = cJSON_GetObjectItem(env->prop, "classes");
+        if (classes)
+        {
+            _texu_env_load_fonts_from(env, classes);
+        }
+    }
+    /*instances*/
+#if 0
+    {
+        cJSON *instances = cJSON_GetObjectItem(env->prop, "instances");
+        if (instances)
+        {
+            _texu_env_load_fonts_from(env, instances);
+        }
+    }
+#endif
+}
+
+texu_status
+_texu_env_get_font(texu_env *env, const texu_char *clsname, texu_ui32 id, struct texu_fontmapping *mapping)
+{
+    texu_i64 value;
+    texu_char key[TEXU_MAX_WNDTEXT + 1];
+    texu_status rc = TEXU_OK;
+    
+    texu_sprintf(key, TEXU_MAX_WNDTEXT, TEXUTEXT("%s_%d"), clsname, id);
+    rc = texu_map_cmp_find(env->fonts, (texu_i64)key, (texu_i64*)&value, _texu_env_fontcmp);
+    if (TEXU_OK == rc && mapping)
+    {
+        memcpy(mapping, (struct texu_fontmapping *)value, sizeof(struct texu_fontmapping));
+    }
+    return rc;
+}
+
+struct _texu_clsname_mapping
+{
+    texu_char   *smallcls;
+    texu_char   *capcls;
+    texu_char   *clsname;
+};
+typedef struct _texu_clsname_mapping _texu_clsname_mapping;
+_texu_clsname_mapping a_texu_clsname_mapping[] =
+{
+    { TEXUTEXT("texu_msgbox_class"),        TEXUTEXT("TEXU_MSGBOX_CLASS"),          TEXU_MSGBOX_CLASS },
+    { TEXUTEXT("texu_desktop_class"),       TEXUTEXT("TEXU_DESKTOP_CLASS"),         TEXU_DESKTOP_CLASS },
+    { TEXUTEXT("texu_label_class"),         TEXUTEXT("TEXU_LABEL_CLASS"),           TEXU_LABEL_CLASS },
+    { TEXUTEXT("texu_button_class"),        TEXUTEXT("TEXU_BUTTON_CLASS"),          TEXU_BUTTON_CLASS },
+    { TEXUTEXT("texu_statusbar_class"),     TEXUTEXT("TEXU_STATUSBAR_CLASS"),       TEXU_STATUSBAR_CLASS },
+    { TEXUTEXT("texu_edit_class"),          TEXUTEXT("TEXU_EDIT_CLASS"),            TEXU_EDIT_CLASS },
+    { TEXUTEXT("texu_listbox_class"),       TEXUTEXT("TEXU_LISTBOX_CLASS"),         TEXU_LISTBOX_CLASS },
+    { TEXUTEXT("texu_combobox_class"),      TEXUTEXT("TEXU_COMBOBOX_CLASS"),        TEXU_COMBOBOX_CLASS },
+    { TEXUTEXT("texu_listctrl_class"),      TEXUTEXT("TEXU_LISTCTRL_CLASS"),        TEXU_LISTCTRL_CLASS },
+    { TEXUTEXT("texu_treectrl_class"),      TEXUTEXT("TEXU_TREECTRL_CLASS"),        TEXU_TREECTRL_CLASS },
+    { TEXUTEXT("texu_updownctrl_class"),    TEXUTEXT("TEXU_UPDOWNCTRL_CLASS"),      TEXU_UPDOWNCTRL_CLASS },
+    { TEXUTEXT("texu_progressbar_class"),   TEXUTEXT("TEXU_PROGRESSBAR_CLASS"),     TEXU_PROGRESSBAR_CLASS },
+    { TEXUTEXT("texu_pagectrl_class"),      TEXUTEXT("TEXU_PAGECTRL_CLASS"),        TEXU_PAGECTRL_CLASS },
+    { TEXUTEXT("texu_textctrl_class"),      TEXUTEXT("TEXU_TEXTCTRL_CLASS"),        TEXU_TEXTCTRL_CLASS },
+    { TEXUTEXT("texu_rebar_class"),         TEXUTEXT("TEXU_REBAR_CLASS"),           TEXU_REBAR_CLASS },
+    { TEXUTEXT("texu_ipaddressctrl_class"), TEXUTEXT("TEXU_IPADDRESSCTRL_CLASS"),   TEXU_IPADDRESSCTRL_CLASS },
+    { TEXUTEXT("texu_editmaskctrl_class"),  TEXUTEXT("TEXU_EDITMASKCTRL_CLASS"),    TEXU_EDITMASKCTRL_CLASS },
+    { TEXUTEXT("texu_editpricespreadctrl_class"), TEXUTEXT("TEXU_EDITPRICESPREADCTRL_CLASS"), TEXU_EDITPRICESPREADCTRL_CLASS },
+    { TEXUTEXT("texu_menu_class"),          TEXUTEXT("TEXU_MENU_CLASS"),            TEXU_MENU_CLASS },
+    { TEXUTEXT("texu_menuwnd_class"),       TEXUTEXT("TEXU_MENUWND_CLASS"),         TEXU_MENUWND_CLASS }
+};
+
+#define TEXU_MAX_CLSNAME_MAPPING    (sizeof(a_texu_clsname_mapping)/sizeof(a_texu_clsname_mapping[0]))
+
+const _texu_clsname_mapping *
+_texu_env_get_clsname_mapping(const texu_char *clsname)
+{
+    texu_i32 i = 0;
+    for (i = 0; i < TEXU_MAX_CLSNAME_MAPPING; ++i)
+    {
+        if (0 == texu_strcmp(clsname, a_texu_clsname_mapping[i].clsname))
+        {
+            return &a_texu_clsname_mapping[i];
+        }
+    }
+    return 0;
+}
+
+HFONT
+texu_env_get_clsfont(texu_env *env, const texu_char *clsname)
+{
+    return texu_env_get_insfont(env, clsname, 0);
+}
+
+HFONT
+texu_env_get_insfont(texu_env *env, const texu_char *clsname, texu_ui32 id)
+{
+    struct texu_fontmapping font;
+    const _texu_clsname_mapping *mapping = _texu_env_get_clsname_mapping(clsname);
+    texu_status rc = TEXU_OK;
+
+    if (!mapping)
+    {
+        return 0;
+    }
+    rc = _texu_env_get_font(env, mapping->smallcls, id, &font);
+    if (rc != TEXU_OK)
+    {
+        rc = _texu_env_get_font(env, mapping->capcls, id, &font);
+        if (rc != TEXU_OK)
+        {
+            return 0;
+        }
+    }
+    return font.hfont;
+}
+
 texu_status
 _texu_env_createwnd(texu_env *env,
     DWORD dwExStyle,
@@ -1260,6 +1616,8 @@ _texu_env_createwnd(texu_env *env,
         env->cxScreen = cxScr;
         env->cyScreen = cyScr;
 
+        env->fonts = texu_map_new();
+
         /*env->props->GetString(env->props, ENV_FONT, fontname, GF_CONSOLAS);*/
         {
             FILE *fp = NULL;
@@ -1282,6 +1640,9 @@ _texu_env_createwnd(texu_env *env,
             if (json)
             {
                 cJSON *envjson = cJSON_GetObjectItem(json, "env");
+                env->prop = envjson; /*safe property here*/
+                _texu_env_load_fonts(env);  /*load all fonts*/
+
                 if (envjson)
                 {
                     cJSON *idlejson = cJSON_GetObjectItem(envjson, "idle");
@@ -1310,7 +1671,7 @@ _texu_env_createwnd(texu_env *env,
                         if (fontprop)
                         {
                             char *name = cJSON_GetStringValue(fontprop);
-                            texu_a2w(fontname, sizeof(fontname), name, strlen(name));
+                            texu_a2w(fontname, TEXU_MAX_WNDTEXT, name, strlen(name));
                         }
                     }
                     if (idlejson)
@@ -1520,6 +1881,7 @@ texu_status texu_env_screen_to_text(texu_env *env, texu_pos* tpos, const texu_po
     tpos->y = (cyline ? spos->y / cyline : 0);
     return rc;
 }
+
 texu_status
 texu_env_draw_char(texu_env *env,
                     texu_i32 y,
@@ -1530,6 +1892,49 @@ texu_env_draw_char(texu_env *env,
 {
     texu_char text[2] = { ch, 0 };
     return texu_env_draw_text(env, y, x, text, textcolor, bgcolor);
+}
+
+texu_status
+texu_env_draw_char_ex(texu_env *env,
+    texu_i32 y,
+    texu_i32 x,
+    texu_char ch,
+    texu_ui32 textcolor,
+    texu_ui32 bgcolor,
+    const texu_char *clsname,
+    texu_ui32   id)
+{
+    texu_char text[2] = { ch, 0 };
+    return texu_env_draw_text_ex(env, y, x, text, textcolor, bgcolor, clsname, id);
+}
+
+texu_status
+texu_env_draw_text_ex(texu_env *env,
+    texu_i32 y,
+    texu_i32 x,
+    texu_string text,
+    texu_ui32 textcolor,
+    texu_ui32 bgcolor,
+    const texu_char *clsname,
+    texu_ui32       id)
+{
+    HFONT hfont = texu_env_get_insfont(env, clsname, id);
+    HFONT holdfont = 0;
+    if (!hfont)
+    {
+        hfont = texu_env_get_clsfont(env, clsname);
+    }
+    if (hfont)
+    {
+        holdfont = (HFONT)SelectObject(env->hmemdc, hfont);
+        texu_env_draw_text(env, y, x, text, textcolor, bgcolor);
+        SelectObject(env->hmemdc, holdfont);
+    }
+    else
+    {
+        texu_env_draw_text(env, y, x, text, textcolor, bgcolor);
+    }
+    return TEXU_OK;
 }
 
 texu_status 
@@ -1545,7 +1950,7 @@ texu_env_draw_text(texu_env *env,
     texu_pos spos;
     COLORREF oldtext = 0;
     COLORREF oldbg = 0;
-    HDC hdc = env->hmemdc;/* (env->hmemdc2 ? env->hmemdc2 : env->hmemdc);*/
+    HDC hdc = env->hmemdc;
 
     texu_env_text_to_screen(env, &spos, &tpos);
 
@@ -1607,7 +2012,7 @@ texu_status texu_env_draw_rect(texu_env *env, texu_rect* rect, texu_ui32 textcol
     HPEN hpen = CreatePen(PS_SOLID, 2, textcolor);
     HBRUSH hbrush = CreateSolidBrush(bgcolor);
 
-    HDC hdc = env->hmemdc;/* (env->hmemdc2 ? env->hmemdc2 : env->hmemdc);*/
+    HDC hdc = env->hmemdc;
     HPEN hOldPen = (HPEN)SelectObject(hdc, hpen);
     /* upper line */
     MoveToEx(hdc, spos.x + x, spos.y + y, NULL);
@@ -2655,12 +3060,14 @@ _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio)
 #if (defined WIN32 && defined _WINDOWS)
     for (line = 0; line < height; ++line)
     {
-        texu_env_draw_text(
+        texu_env_draw_text_ex(
             wnd->env,
             line + wnd->y, wnd->x,
             zblank,
             wnd->normalcolor,
-            wnd->normalbg);
+            wnd->normalbg,
+            texu_wnd_get_clsname(wnd),
+            texu_wnd_get_id(wnd));
     }
 #else
     for (line = 0; line < height; ++line)

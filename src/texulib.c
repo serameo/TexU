@@ -1381,9 +1381,13 @@ texu_map_strcmp(const void *v1, const void *v2)
 {
     texu_map_keyval *kv1 = (texu_map_keyval *)v1;
     texu_map_keyval *kv2 = (texu_map_keyval *)v2;
-    if (kv1->used && kv2->used)
+    
+    if (kv1 && kv2)
     {
-        return strcmp((char *)kv1->key, (char *)kv2->key);
+        if (kv1->used && kv2->used)
+        {
+            return strcmp((char *)kv1->key, (char *)kv2->key);
+        }
     }
     return TEXU_CMP_GT;
 }
@@ -1393,9 +1397,12 @@ texu_map_wstrcmp(const void *v1, const void *v2)
 {
     texu_map_keyval *kv1 = (texu_map_keyval *)v1;
     texu_map_keyval *kv2 = (texu_map_keyval *)v2;
-    if (kv1->used && kv2->used)
+    if (kv1 && kv2)
     {
-        return wcscmp((wchar_t *)kv1->key, (wchar_t *)kv2->key);
+        if (kv1->used && kv2->used)
+        {
+            return wcscmp((wchar_t *)kv1->key, (wchar_t *)kv2->key);
+        }
     }
     return TEXU_CMP_GT;
 }
@@ -1406,9 +1413,12 @@ _texu_map_cmp(const void *v1, const void *v2)
 {
     texu_map_keyval *kv1 = (texu_map_keyval *)v1;
     texu_map_keyval *kv2 = (texu_map_keyval *)v2;
-    if (kv1->used && kv2->used)
+    if (kv1 && kv2)
     {
-        return (kv1->key - kv2->key);
+        if (kv1->used && kv2->used)
+        {
+            return (kv1->key - kv2->key);
+        }
     }
     return TEXU_CMP_GT;
 }
@@ -1567,6 +1577,11 @@ texu_map_cmp_find(
 {
     texu_status rc = TEXU_OK;
     texu_map_keyval *kv = 0;
+
+    if (!map)
+    {
+        return TEXU_NOTFOUND;
+    }
 
     if (!map->sorted)
     {
