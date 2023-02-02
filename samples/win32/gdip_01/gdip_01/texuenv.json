@@ -1,16 +1,73 @@
 {
-   "env":{
-      "appname":"gdip01",
-      "window":{
-         "width":100,
-         "height":25
+  "env": {
+    "appname": "gdip01",
+    "window": {
+      "width": 100,
+      "height": 25
+    },
+    "font": {
+      "size": 18,
+      "name": "Consolas",
+      "dpi": 72
+    },
+    "idle": 500,
+    "classes": [
+      {
+        "name": "texu_editpricespreadctrl_class",
+        "font": {
+          "size": 18,
+          "name": "Consolas",
+          "dpi": 72
+        },
+        "ids": [
+          100
+        ]
       },
-      "font":{
-         "size":18,
-         "name2":"FixedSys",
-         "name":"Consolas",
-         "dpi":72
+      {
+        "name": "texu_editmaskctrl_class",
+        "font": {
+          "size": 18,
+          "name": "Consolas",
+          "dpi": 72
+        }
       },
-      "idle":500
-   }
+      {
+        "name": "texu_ipaddressctrl_class",
+        "font": {
+          "size": 18,
+          "name": "Consolas",
+          "dpi": 72
+        }
+      },
+      {
+        "name": "texu_edit_class",
+        "font": {
+          "size": 18,
+          "name": "Consolas",
+          "dpi": 72
+        },
+        "ids": [0,
+          2,
+          4
+        ]
+      },
+      {
+        "name": "texu_label_class",
+        "font": {
+          "size": 18,
+          "name": "Consolas",
+          "dpi": 72
+        }
+      },
+      {
+        "name": "texu_listbox_class",
+        "font": {
+          "size": 18,
+          "name": "Consolas",
+          "dpi": 72,
+          "ids":[0]
+        }
+      }
+    ]
+  }
 }

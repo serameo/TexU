@@ -551,12 +551,12 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
     child = TexuCreateWindow(
         TEXUTEXT("Text"),
         TEXU_UPDOWNCTRL_CLASS,
-        0,      /* style*/
+        TEXU_UDS_SHOWPLUSMINUS,      /* style*/
         0,      /* exstyle*/
         starty, /* y */
         42,     /* x */
         1,
-        10,
+        5,
         wnd,        /* parent */
         IDC_UPDOWN, /* id */
         0           /* user data */
@@ -579,7 +579,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         );
 
     child = TexuCreateWindow(
-        TEXUTEXT("abc@xyz.com"),
+        TEXUTEXT(""),
         TEXU_EDITMASKCTRL_CLASS,
         0,      /* style*/
         0,      /* exstyle*/
@@ -592,6 +592,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         0           /* user data */
         );
     texu_wnd_send_msg(child, TEXU_EMM_SETMASK, (texu_i64)TEXU_EDITMASK_EMAIL, 0);
+    texu_wnd_send_msg(child, TEXU_EMM_SETINFO, (texu_i64)TEXUTEXT("email:abc@xyz.com"), 0);
 
 
     child = TexuCreateWindow(
@@ -945,11 +946,7 @@ void _MyWndProc_OnCommand(texu_wnd *wnd, texu_i32 id)
     texu_char text[TEXU_MAX_WNDTEXT + 1];
 
     memset(text, 0, sizeof(text));
-#if (defined WIN32 && defined _WINDOWS)
-    swprintf(text, sizeof(text), TEXUTEXT("enter id: %d from menu"), id);
-#else
-    sprintf(text, "enter id: %d from menu", id);
-#endif
+    texu_sprintf(text, sizeof(text), TEXUTEXT("enter id: %d from menu"), id);
     TexuSetWindowText(status, text);
 }
 
@@ -1113,6 +1110,31 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
                 0    /* user data */
                 );
             /*TexuEnableWindow(child, TEXU_FALSE);*/
+            child = TexuCreateWindow(
+                TEXUTEXT("50.0"),
+                TEXU_EDITPRICESPREADCTRL_CLASS,
+                TEXU_WS_RIGHT | TEXU_EPSS_SHOWCHANGE |TEXU_EPSS_AUTOCOMMAS, /* style*/
+                0,             /* exstyle*/
+                0,             /* y */
+                32,             /* x */
+                1,
+                20,
+                wnd, /* parent */
+                100,   /* id */
+                0    /* user data */
+                );
+            texu_wnd_send_msg(child, TEXU_EPSM_LOADDEFAULTSPREADS, 0, 0);
+            /*texu_baseprice ps = { 3500, 6500, 5000, 100 };*//*texu_wnd_set_text(child, TEXUTEXT("51.00"));*/
+            texu_baseprice ps = { 2083, 3868, 2976, 100 };/*texu_wnd_set_text(child, TEXUTEXT("36.00"));*/
+            /*texu_baseprice ps = { 208300, 386800, 297600, 10000 };*//*texu_wnd_set_text(child, TEXUTEXT("36.00"));*/
+            /*texu_baseprice ps = { 2, 4, 3, 100 };*//*texu_wnd_set_text(child, TEXUTEXT("0.03"));*/
+            /*texu_baseprice ps = { 141600, 263200, 202400, 100 };*//*texu_wnd_set_text(child, TEXUTEXT("2100.00"));*/
+            /*texu_wnd_send_msg(child, TEXU_EPSM_ALLOWOVERCEILINGFLOOR, TEXU_TRUE, 0);*/
+            texu_wnd_send_msg(child, TEXU_EPSM_CORRECTCEILINGFLOOR, TEXU_TRUE, 0);
+            texu_wnd_send_msg(child, TEXU_EPSM_SETPRICEDECIMAL, 2, 0);
+            texu_wnd_send_msg(child, TEXU_EPSM_SETBASESPREAD, (texu_i64)&ps, 0);
+            texu_wnd_set_text(child, TEXUTEXT("36"));
+            
 
             child = TexuCreateWindow(
                 TEXUTEXT("Number:"),
@@ -1130,7 +1152,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             child = TexuCreateWindow(
                 TEXUTEXT("123412341234234"),
                 TEXU_EDIT_CLASS,
-                TEXU_ES_AUTOHSCROLL | TEXU_ES_NUMBER, /* style*/
+                TEXU_ES_AUTOHSCROLL | TEXU_ES_NUMBER | TEXU_ES_AUTODECIMALCOMMA, /* style*/
                 0,                                    /* exstyle*/
                 1,                                    /* y */
                 21,                                   /* x */
@@ -1156,7 +1178,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             child = TexuCreateWindow(
                 TEXUTEXT("1.234"),
                 TEXU_EDIT_CLASS,
-                TEXU_ES_AUTOHSCROLL | TEXU_ES_DECIMAL, /* style*/
+                TEXU_ES_AUTOHSCROLL | TEXU_ES_DECIMAL | TEXU_ES_AUTODECIMALCOMMA, /* style*/
                 0,                                     /* exstyle*/
                 2,                                     /* y */
                 21,                                    /* x */
@@ -1354,6 +1376,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)TEXUTEXT("Hello Ruby"), 0);
             TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)TEXUTEXT("Hello PL/SQL"), 0);
             TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)TEXUTEXT("Hello C#"), 0);
+            TexuEnableWindow(child2, TEXU_FALSE);
 
 
             memset(&band, 0, sizeof(band));
@@ -1439,7 +1462,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             child = TexuCreateWindow(
                 TEXUTEXT("This is the sixth window"),
                 TEXU_REBAR_CLASS,
-                0,             /* style*/
+                TEXU_RBS_NOCAPTION,             /* style*/
                 0,             /* exstyle*/
                 10,            /* y */
                 50,             /* x */
@@ -1498,6 +1521,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)TEXUTEXT("Hello Ruby"), 0);
             TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)TEXUTEXT("Hello PL/SQL"), 0);
             TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)TEXUTEXT("Hello C#"), 0);
+            TexuShowWindow(child2, TEXU_SW_HIDE);
 
 
             memset(&band, 0, sizeof(band));
@@ -1674,11 +1698,10 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
                 header.normcolor = TEXU_CIO_COLOR_BLUE_YELLOW;
                 header.discolor = TEXU_CIO_COLOR_BLUE_YELLOW;
                 header.selcolor = TEXU_CIO_COLOR_YELLOW_BLUE;
-#if (defined WIN32 && defined _WINDOWS)
                 header.normbg = TEXU_CIO_COLOR_YELLOW_BLUE;
                 header.disbg = TEXU_CIO_COLOR_YELLOW_BLUE;
                 header.selbg = TEXU_CIO_COLOR_BLUE_YELLOW;
-#endif
+
                 header.editstyle = TEXU_ES_AUTOHSCROLL;
                 header.decwidth = 2;
                 TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
@@ -1713,13 +1736,13 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
                 subitem.idx = 0;
                 subitem.col = 0;
-                subitem.normcolor = TEXU_CIO_COLOR_GREEN_WHITE;
-                subitem.discolor = TEXU_CIO_COLOR_GREEN_WHITE;
-                subitem.selcolor = TEXU_CIO_COLOR_WHITE_GREEN;
+                subitem.normcolor = TEXU_CIO_COLOR_GREEN_BLUE;
+                subitem.discolor = TEXU_CIO_COLOR_GREEN_BLUE;
+                subitem.selcolor = TEXU_CIO_COLOR_BLUE_GREEN;
 #if (defined WIN32 && defined _WINDOWS)
-                subitem.normbg = TEXU_CIO_COLOR_WHITE_GREEN;
-                subitem.disbg = TEXU_CIO_COLOR_WHITE_GREEN;
-                subitem.selbg = TEXU_CIO_COLOR_GREEN_WHITE;
+                subitem.normbg = TEXU_CIO_COLOR_BLUE_GREEN;
+                subitem.disbg = TEXU_CIO_COLOR_BLUE_GREEN;
+                subitem.selbg = TEXU_CIO_COLOR_GREEN_BLUE;
 #endif
                 TexuSendMessage(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
 
@@ -1919,11 +1942,10 @@ MyWndProc4(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             data.normcolor = texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_ITEM);
             data.discolor = texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_ITEM_DISABLED);
             data.selcolor = texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_ITEM_SELECTED);
-#if (defined WIN32 && defined _WINDOWS)
             data.normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_TREECTRL_ITEM);
             data.disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_TREECTRL_ITEM_DISABLED);
             data.selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_TREECTRL_ITEM_SELECTED);
-#endif
+
             texu_strcpy(data.itemtext, TEXUTEXT("Item 1"));
             item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, 0, (texu_i64)&data);
 
