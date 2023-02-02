@@ -128,6 +128,10 @@ texu_env*       texu_env_new(texu_i32 lines, texu_i32 cols, const char* pathname
 FILE*           texu_env_get_stdout(texu_env *env);
 #else
 #if (defined WIN32 && defined _WINDOWS)
+#include "cJSON.h"
+HFONT           texu_env_get_clsfont(texu_env *env, const texu_char *clsname);
+HFONT           texu_env_get_insfont(texu_env *env, const texu_char *clsname, texu_ui32 id);
+cJSON*          texu_env_get_prop(texu_env *env);
 texu_wnd*       texu_env_get_focus(texu_env *env);
 void            texu_env_set_focus(texu_env *env, texu_wnd *wnd);
 void            texu_env_set_movenext(texu_env *env, texu_i32 nextkey);
@@ -136,6 +140,7 @@ void            texu_env_set_moveprev(texu_env *env, texu_i32 prevkey);
 texu_i32        texu_env_get_moveprev(texu_env *env);
 texu_i64        texu_env_invalidate(texu_env *env);
 HDC             texu_env_get_hdc(texu_env *env);
+HFONT           texu_env_get_hfont(texu_env *env);
 void            texu_env_set_memdc(texu_env *env, HDC hmemdc);
 HDC             texu_env_get_memdc(texu_env *env);
 texu_env*       texu_env_new(HINSTANCE hinst, texu_i32 lines, texu_i32 cols);
@@ -177,6 +182,24 @@ texu_status     texu_env_draw_char(texu_env *env,
                                    texu_char ch,
                                    texu_ui32 textcolor,
                                    texu_ui32 bgcolor); 
+texu_status     texu_env_draw_text_ex(texu_env *env,
+                                   texu_i32 y,
+                                   texu_i32 x,
+                                   texu_string text,
+                                   texu_ui32 textcolor,
+                                   texu_ui32 bgcolor,
+                                   const texu_char *clsname,
+                                   texu_ui32    id);
+texu_status     texu_env_draw_char_ex(texu_env *env,
+                                   texu_i32 y,
+                                   texu_i32 x,
+                                   texu_char ch,
+                                   texu_ui32 textcolor,
+                                   texu_ui32 bgcolor,
+                                   const texu_char *clsname,
+                                   texu_ui32    id);
+
+
 void            texu_env_set_sysbgcolors(texu_env* env, texu_i32(*setcolor)(texu_i32));
 texu_ui32       texu_env_get_sysbgcolor(texu_env*, texu_i32);
 texu_status     texu_env_update_screen(texu_env *env);

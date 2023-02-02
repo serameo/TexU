@@ -300,7 +300,6 @@ struct texu_pricespread
     texu_i32    min;        /*e.g.  1*/
     texu_i32    max;        /*e.g. 99*/
     texu_i32    spread;     /*e.g.  1*/
-    texu_i32    multiplier; /*e.g. 100*//*multiplier is 10's power*//*min=1,max=1000000*/
 };
 typedef struct texu_pricespread texu_pricespread;
 
