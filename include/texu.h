@@ -207,6 +207,12 @@ texu_ui32      color,
 texu_ui32      discolor
 );
 
+texu_ui32
+TexuGetSysColor(texu_i32 color);
+
+texu_ui32
+TexuGetSysBgColor(texu_i32 color);
+
 void
 TexuAddHotKey(
     texu_wnd*   wnd,

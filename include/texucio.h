@@ -134,25 +134,7 @@ enum
 
 #endif
 
-#if (defined WIN32 && defined _WINDOWS)
-texu_env       *texu_cio_get_env(texu_cio* cio);
-texu_status     texu_env_gotoyx(texu_env *env, texu_i32 y, texu_i32 x);
-texu_status     texu_env_text_to_screen(texu_env *env, texu_pos* spos, const texu_pos* tpos);
-texu_status     texu_env_screen_to_text(texu_env *env, texu_pos* tpos, const texu_pos* spos);
-texu_status     texu_env_draw_text(texu_env *env,
-                                   texu_i32 y,
-                                   texu_i32 x,
-                                   texu_string text,
-                                   texu_ui32 textcolor,
-                                   texu_ui32 bgcolor);
-texu_status     texu_env_draw_char(texu_env *env,
-                                   texu_i32 y,
-                                   texu_i32 x,
-                                   texu_char ch,
-                                   texu_ui32 textcolor,
-                                   texu_ui32 bgcolor);
-#endif
-
+texu_env            *texu_cio_get_env(texu_cio* cio);
 
 texu_cio*           texu_cio_new();
 void                texu_cio_del(texu_cio*);
@@ -181,6 +163,20 @@ texu_i32            texu_cio_putch_attr2(texu_cio*, texu_i32, texu_i32, texu_i32
 texu_i32            texu_cio_putstr(texu_cio*, texu_i32, texu_i32, const texu_char*);
 texu_i32            texu_cio_putstr_attr(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32);
 texu_i32            texu_cio_putstr_attr2(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32, texu_i32);
+/*
+texu_env_draw_text_ex(env, y, x, caption, color, bgcolor,
+texu_wnd_get_clsname(wnd),
+texu_wnd_get_id(wnd));
+
+*/
+texu_i32            texu_cio_draw_text(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
+                                       texu_ui32 color, texu_ui32 bgcolor,
+                                       const texu_char *clsname,
+                                       texu_ui32 id);
+texu_i32            texu_cio_draw_char(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
+                                        texu_ui32 color, texu_ui32 bgcolor,
+                                        const texu_char *clsname,
+                                        texu_ui32 id);
 
 texu_i32            texu_cio_refresh(texu_cio*);
 /* text attributes */

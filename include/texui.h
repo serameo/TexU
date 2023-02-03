@@ -173,7 +173,7 @@ texu_bool       texu_pos_in_rect(const texu_rect* rect, const texu_pos *pos);
 texu_status     texu_env_draw_text(texu_env *env,
                                    texu_i32 y,
                                    texu_i32 x,
-                                   texu_string text,
+                                   const texu_char * text,
                                    texu_ui32 textcolor,
                                    texu_ui32 bgcolor);
 texu_status     texu_env_draw_char(texu_env *env,
@@ -185,7 +185,7 @@ texu_status     texu_env_draw_char(texu_env *env,
 texu_status     texu_env_draw_text_ex(texu_env *env,
                                    texu_i32 y,
                                    texu_i32 x,
-                                   texu_string text,
+                                   const texu_char * text,
                                    texu_ui32 textcolor,
                                    texu_ui32 bgcolor,
                                    const texu_char *clsname,
@@ -318,14 +318,18 @@ texu_i32            texu_wnd_get_text(texu_wnd*, texu_char*, texu_i32);
 void                texu_wnd_set_color(texu_wnd*, texu_ui32, texu_ui32);
 texu_status         texu_wnd_get_color(texu_wnd*, texu_ui32*, texu_ui32*);
 const texu_char*    texu_wnd_get_clsname(texu_wnd*);
-void                texu_wnd_set_focused_color(texu_wnd*, texu_ui32);
-texu_ui32            texu_wnd_get_focused_color(texu_wnd*);
 texu_bool           texu_wnd_is_executable(texu_wnd *wnd, texu_ui32 id);
+void                texu_wnd_set_focused_color(texu_wnd*, texu_ui32);
+texu_ui32           texu_wnd_get_focused_color(texu_wnd*);
+void                texu_wnd_set_selected_color(texu_wnd*, texu_ui32);
+texu_ui32           texu_wnd_get_selected_color(texu_wnd*);
 
 void                texu_wnd_set_bgcolor(texu_wnd*, texu_ui32, texu_ui32);
 texu_status         texu_wnd_get_bgcolor(texu_wnd*, texu_ui32*, texu_ui32*);
 void                texu_wnd_set_bgfocused_color(texu_wnd*, texu_ui32);
 texu_ui32           texu_wnd_get_bgfocused_color(texu_wnd*);
+void                texu_wnd_set_bgselected_color(texu_wnd*, texu_ui32);
+texu_ui32           texu_wnd_get_bgselected_color(texu_wnd*);
 
 
 texu_i32            texu_wnd_get_y(texu_wnd*);
