@@ -682,18 +682,18 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
     TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("combo2"), 0);
     TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("combo3"), 0);
     TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("combo4"), 0);
+
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("combo5"), 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("combo6"), 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("combo7"), 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("combo8"), 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("combo9"), 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)TEXUTEXT("comboA"), 0);
     /*
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo5", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo6", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo7", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo8", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo9", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"comboA", 0);
-    */
     child = (texu_wnd *)TexuSendMessage(child, TEXU_CBM_GETLISTBOX, 0, 0);
     TexuSetColor(child, TEXU_CIO_COLOR_BLUE_WHITE, TEXU_CIO_COLOR_BLUE_WHITE);
     TexuSetBgColor(child, TEXU_CIO_COLOR_BLUE_WHITE, TEXU_CIO_COLOR_BLUE_WHITE);
-    TexuSendMessage(child, TEXU_LBM_SETSELCOLOR, TEXU_CIO_COLOR_BLUE_CYAN, 0);
+    TexuSendMessage(child, TEXU_LBM_SETSELCOLOR, TEXU_CIO_COLOR_BLUE_CYAN, 0);*/
 
     child = TexuCreateWindow(
         TEXUTEXT(""),
@@ -1055,6 +1055,7 @@ void _MyWndProc2_OnPaint(texu_wnd *wnd, texu_cio *dc)
 texu_i64
 MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
+    texu_env *env = TexuGetEnv();
     switch (msg)
     {
         case TEXU_WM_PAINT:
@@ -1346,9 +1347,14 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             memset(&band, 0, sizeof(band));
             texu_strcpy(band.caption, TEXUTEXT("Band1:"));
             band.align = TEXU_ALIGN_RIGHT;
-            band.normcolor = TEXU_CIO_COLOR_BLACK_CYAN;
-            band.discolor = TEXU_CIO_COLOR_BLACK_CYAN;
-            band.selcolor = TEXU_CIO_COLOR_BLACK_CYAN;
+            band.normcolor = TexuGetSysColor(TEXU_COLOR_REBAR);/* TEXU_CIO_COLOR_BLACK_CYAN;*/
+            band.discolor  = TexuGetSysColor(TEXU_COLOR_REBAR_DISABLED);/* TEXU_CIO_COLOR_BLACK_CYAN;*/
+            band.selcolor = TexuGetSysColor(TEXU_COLOR_REBAR_SELECTED);/* TEXU_CIO_COLOR_BLACK_CYAN;*/
+            band.focuscolor = TexuGetSysColor(TEXU_COLOR_REBAR_FOCUSED);/* TEXU_CIO_COLOR_BLACK_CYAN;*/
+            band.normbg = TexuGetSysBgColor(TEXU_COLOR_REBAR);/* TEXU_CIO_COLOR_BLACK_CYAN;*/
+            band.disbg  = TexuGetSysBgColor(TEXU_COLOR_REBAR_DISABLED);/* TEXU_CIO_COLOR_BLACK_CYAN;*/
+            band.selbg  = TexuGetSysBgColor(TEXU_COLOR_REBAR_SELECTED);/* TEXU_CIO_COLOR_BLACK_CYAN;*/
+            band.focusbg = TexuGetSysBgColor(TEXU_COLOR_REBAR_FOCUSED);/* TEXU_CIO_COLOR_BLACK_CYAN;*/
             band.childwnd = child2;
             band.width = 15;
             band.height = 1;
@@ -1462,7 +1468,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             child = TexuCreateWindow(
                 TEXUTEXT("This is the sixth window"),
                 TEXU_REBAR_CLASS,
-                TEXU_RBS_NOCAPTION,             /* style*/
+                0 & TEXU_RBS_NOCAPTION,             /* style*/
                 0,             /* exstyle*/
                 10,            /* y */
                 50,             /* x */
@@ -1491,9 +1497,6 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             memset(&band, 0, sizeof(band));
             texu_strcpy(band.caption, TEXUTEXT("Band1:"));
             band.align = TEXU_ALIGN_LEFT;
-            band.normcolor = TEXU_CIO_COLOR_BLACK_CYAN;
-            band.discolor = TEXU_CIO_COLOR_BLACK_CYAN;
-            band.selcolor = TEXU_CIO_COLOR_BLACK_CYAN;
             band.childwnd = child2;
             band.width = 15;
             band.height = 1;
