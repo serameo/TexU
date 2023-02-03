@@ -12,6 +12,7 @@
 #include "texulib.h"
 #include "texutils.h"
 #include "texucio.h"
+#include "texui.h"
 
 #ifdef __USE_TTY__
 #include "texutty.h"
@@ -638,6 +639,33 @@ texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str
 }
 #endif
 
+texu_i32
+texu_cio_draw_text(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
+    texu_ui32 color, texu_ui32 bgcolor,
+    const texu_char *clsname,
+    texu_ui32 id)
+{
+#if (defined WIN32 && defined _WINDOWS)
+    return texu_env_draw_text_ex(cio->env, y, x, text, color, bgcolor,
+                                    clsname, id);
+#else
+    return texu_cio_putstr_attr(cio, y, x, text, color);
+#endif
+}
+
+texu_i32
+texu_cio_draw_char(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
+    texu_ui32 color, texu_ui32 bgcolor,
+    const texu_char *clsname,
+    texu_ui32 id)
+{
+#if (defined WIN32 && defined _WINDOWS)
+    return texu_env_draw_char_ex(cio->env, y, x, ch, color, bgcolor,
+                                 clsname, id);
+#else
+    return texu_cio_putch_attr(cio, y, x, ch, color);
+#endif
+}
 
 #ifdef __USE_TTY__
 texu_i32

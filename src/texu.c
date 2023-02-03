@@ -626,6 +626,7 @@ TexuGetWindowText(
     TexuSendMessage(wnd, TEXU_WM_GETTEXT, (texu_i64)text, len);
     return texu_strlen(text);
 }
+
 void
 TexuSetColor(
     texu_wnd *wnd,
@@ -634,16 +635,28 @@ TexuSetColor(
 {
     texu_wnd_set_color(wnd, color, discolor);
 }
+
 void
 TexuSetBgColor(
 texu_wnd *wnd,
 texu_ui32 color,
 texu_ui32 discolor)
 {
-#if (defined WIN32 && defined _WINDOWS)
     texu_wnd_set_bgcolor(wnd, color, discolor);
-#endif
 }
+
+texu_ui32
+TexuGetSysColor(texu_i32 color)
+{
+    return texu_env_get_syscolor(genv, color);
+}
+
+texu_ui32
+TexuGetSysBgColor(texu_i32 color)
+{
+    return texu_env_get_sysbgcolor(genv, color);
+}
+
 
 
 texu_i64

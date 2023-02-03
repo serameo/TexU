@@ -421,15 +421,10 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_cio_putstr_attr(dc, y, x, buf,
                          texu_cio_get_reverse(dc, normcolor));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text_ex(env, y, x, buf, normcolor, normbg,
+    texu_cio_draw_text(dc, y, x, buf, normcolor, normbg,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
 
-#else
-    texu_cio_putstr_attr(dc, y, x, buf,
-                         texu_cio_get_color(dc, normcolor));
-#endif
 #endif
 
     while (treeitem)
@@ -449,15 +444,11 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             {
                 color = selcolor;
                 bgcolor = selbg;
-#if (defined WIN32 && defined _WINDOWS)
-                texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+
+                texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                       texu_wnd_get_clsname(wnd),
                                       texu_wnd_get_id(wnd));
 
-#else
-                texu_cio_putstr_attr(dc, y, x, buf,
-                                     texu_cio_get_color(dc, color));
-#endif
             }
             else
             {
@@ -465,16 +456,11 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                 texu_cio_putstr_attr(dc, y, x, buf,
                                      texu_cio_get_reverse(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-                /*bgcolor = selbg;*/
-                texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+
+                texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                       texu_wnd_get_clsname(wnd),
                                       texu_wnd_get_id(wnd));
 
-#else
-                texu_cio_putstr_attr(dc, y, x, buf,
-                                     texu_cio_get_color(dc, color));
-#endif
 #endif
             }
         }
@@ -486,15 +472,11 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+
+            texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
 
-#else
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-#endif
 #endif
         }
         treeitem = treeitem->next;
@@ -809,15 +791,11 @@ _TexuMenuWndProc_DrawPopupMenu(
         {
             color = menuitem->selcolor;
             bgcolor = menuitem->selbg;
-#if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+
+            texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
 
-#else
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-#endif
         }
         else
         {
@@ -826,15 +804,9 @@ _TexuMenuWndProc_DrawPopupMenu(
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+            texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
-
-#else
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-#endif
 #endif
         }
         if (!(menuitem->enable))
@@ -846,15 +818,10 @@ _TexuMenuWndProc_DrawPopupMenu(
 #else
             color = menuitem->discolor;
             bgcolor = menuitem->disbg;
-#if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+            texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
 
-#else
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-#endif
 #endif
         }
         item = item->next;
@@ -903,15 +870,10 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_cio_putstr_attr(dc, y, x, buf,
                          texu_cio_get_reverse(dc, normcolor));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text_ex(env, y, x, buf, normcolor, normbg,
+    texu_cio_draw_text(dc, y, x, buf, normcolor, normbg,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
 
-#else
-    texu_cio_putstr_attr(dc, y, x, buf,
-                         texu_cio_get_color(dc, normcolor));
-#endif
 #endif
 
     while (treeitem)
@@ -928,30 +890,21 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+
+            texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
 
-#else
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-#endif
 #endif
             /* draw popup menu */
             if (treeitem == menu->curbaritem)
             {
                 color = selcolor;
                 bgcolor = selbg;
-#if (defined WIN32 && defined _WINDOWS)
-                texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+                texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                       texu_wnd_get_clsname(wnd),
                                       texu_wnd_get_id(wnd));
 
-#else
-                texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-#endif
 #if (defined WIN32 && defined _WINDOWS)
                 _TexuMenuWndProc_DrawPopupMenu(
                     wnd,
@@ -989,15 +942,11 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 #else
             color = discolor;
             bgcolor = disbg;
-#if (defined WIN32 && defined _WINDOWS)
-            texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+
+            texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
 
-#else
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-#endif
 #endif
         }
         treeitem = treeitem->next;

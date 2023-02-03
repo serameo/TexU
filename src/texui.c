@@ -785,8 +785,8 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_LISTBOX_FOCUSED]          = TEXU_CIO_COLOR_BLACK_BLUE;
     env->syscolors[TEXU_COLOR_COMBOBOX]                 = TEXU_CIO_COLOR_BLUE_WHITE;
     env->syscolors[TEXU_COLOR_COMBOBOX_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
-    env->syscolors[TEXU_COLOR_COMBOBOX_SELECTED]        = TEXU_CIO_COLOR_WHITE_BLUE;
-    env->syscolors[TEXU_COLOR_COMBOBOX_FOCUSED]         = TEXU_CIO_COLOR_WHITE_BLUE;
+    env->syscolors[TEXU_COLOR_COMBOBOX_SELECTED]        = TEXU_CIO_COLOR_BLUE_CYAN;
+    env->syscolors[TEXU_COLOR_COMBOBOX_FOCUSED]         = TEXU_CIO_COLOR_BLACK_BLUE;
     env->syscolors[TEXU_COLOR_LISTCTRL]                 = TEXU_CIO_COLOR_BLUE_WHITE;
     env->syscolors[TEXU_COLOR_LISTCTRL_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED]        = TEXU_CIO_COLOR_WHITE_BLACK;
@@ -813,7 +813,7 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_PROGRESSBAR_FOCUSED]      = TEXU_CIO_COLOR_BLUE_CYAN;
     env->syscolors[TEXU_COLOR_REBAR]                    = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_REBAR_DISABLED]           = TEXU_CIO_COLOR_WHITE_BLACK;
-    env->syscolors[TEXU_COLOR_REBAR_SELECTED]           = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->syscolors[TEXU_COLOR_REBAR_SELECTED]           = TEXU_CIO_COLOR_BLACK_CYAN;
     env->syscolors[TEXU_COLOR_REBAR_FOCUSED]            = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_BUTTON]                   = TEXU_CIO_COLOR_BLACK_CYAN;
     env->syscolors[TEXU_COLOR_BUTTON_DISABLED]          = TEXU_CIO_COLOR_BLACK_WHITE;
@@ -878,8 +878,8 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_LISTBOX_FOCUSED]            = TEXU_CIO_COLOR_BLUE_BLACK;
     env->sysbgcolors[TEXU_COLOR_COMBOBOX]                   = TEXU_CIO_COLOR_WHITE_BLUE;
     env->sysbgcolors[TEXU_COLOR_COMBOBOX_DISABLED]          = TEXU_CIO_COLOR_BLACK_WHITE;
-    env->sysbgcolors[TEXU_COLOR_COMBOBOX_SELECTED]          = TEXU_CIO_COLOR_BLUE_WHITE;
-    env->sysbgcolors[TEXU_COLOR_COMBOBOX_FOCUSED]           = TEXU_CIO_COLOR_WHITE_BLUE;
+    env->sysbgcolors[TEXU_COLOR_COMBOBOX_SELECTED]          = TEXU_CIO_COLOR_CYAN_BLUE;
+    env->sysbgcolors[TEXU_COLOR_COMBOBOX_FOCUSED]           = TEXU_CIO_COLOR_BLUE_BLACK;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL]                   = TEXU_CIO_COLOR_BLACK_WHITE;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL_DISABLED]          = TEXU_CIO_COLOR_BLACK_WHITE;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL_SELECTED]          = TEXU_CIO_COLOR_BLACK_WHITE;
@@ -906,7 +906,7 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_PROGRESSBAR_FOCUSED]        = TEXU_CIO_COLOR_BLACK_CYAN;
     env->sysbgcolors[TEXU_COLOR_REBAR]                      = TEXU_CIO_COLOR_BLACK_WHITE;
     env->sysbgcolors[TEXU_COLOR_REBAR_DISABLED]             = TEXU_CIO_COLOR_BLACK_WHITE;
-    env->sysbgcolors[TEXU_COLOR_REBAR_SELECTED]             = TEXU_CIO_COLOR_BLACK_WHITE;
+    env->sysbgcolors[TEXU_COLOR_REBAR_SELECTED]             = TEXU_CIO_COLOR_CYAN_BLACK;
     env->sysbgcolors[TEXU_COLOR_REBAR_FOCUSED]              = TEXU_CIO_COLOR_BLACK_WHITE;
     env->sysbgcolors[TEXU_COLOR_BUTTON]                     = TEXU_CIO_COLOR_CYAN_BLACK;
     env->sysbgcolors[TEXU_COLOR_BUTTON_DISABLED]            = TEXU_CIO_COLOR_WHITE_BLACK;
@@ -1912,7 +1912,7 @@ texu_status
 texu_env_draw_text_ex(texu_env *env,
     texu_i32 y,
     texu_i32 x,
-    texu_string text,
+    const texu_char * text,
     texu_ui32 textcolor,
     texu_ui32 bgcolor,
     const texu_char *clsname,
@@ -1941,7 +1941,7 @@ texu_status
 texu_env_draw_text(texu_env *env,
                     texu_i32 y, 
                     texu_i32 x, 
-                    texu_string text, 
+                    const texu_char * text,
                     texu_ui32 textcolor, 
                     texu_ui32 bgcolor)
 {
@@ -1956,7 +1956,7 @@ texu_env_draw_text(texu_env *env,
 
     oldtext = SetTextColor(hdc, textcolor);
     oldbg = SetBkColor(hdc, bgcolor);
-    SetTextAlign(hdc, TA_LEFT | TA_TOP);
+    SetTextAlign(hdc, TA_LEFT | VTA_TOP);
 
     TextOut(hdc, spos.x, spos.y, text, texu_strlen(text));
 
@@ -2805,10 +2805,12 @@ struct texu_wnd
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_i32 normalcolor;
     texu_i32 disabledcolor;
+    texu_i32 selectedcolor;
     texu_i32 focusedcolor;
 
     texu_i32 normalbg;
     texu_i32 disabledbg;
+    texu_i32 selectedbg;
     texu_i32 focusedbg;
 
     texu_ui32 id;
@@ -3057,11 +3059,11 @@ _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio)
 
     memset(zblank, 0, sizeof(zblank));
     texu_memset(zblank, TEXUTEXT(' '), width);
-#if (defined WIN32 && defined _WINDOWS)
+
     for (line = 0; line < height; ++line)
     {
-        texu_env_draw_text_ex(
-            wnd->env,
+        texu_cio_draw_text(
+            cio,
             line + wnd->y, wnd->x,
             zblank,
             wnd->normalcolor,
@@ -3069,16 +3071,7 @@ _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio)
             texu_wnd_get_clsname(wnd),
             texu_wnd_get_id(wnd));
     }
-#else
-    for (line = 0; line < height; ++line)
-    {
-        texu_cio_putstr_attr(
-            cio,
-            line + wnd->y, wnd->x,
-            zblank,
-            texu_cio_get_color(cio, wnd->normalcolor));
-    }
-#endif
+
 }
 
 
@@ -3608,10 +3601,12 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
     wnd->normalcolor    = attrs->normalcolor;
     wnd->disabledcolor  = attrs->disabledcolor;
     wnd->focusedcolor   = attrs->focusedcolor;
+    wnd->selectedcolor  = attrs->selectedcolor;
 
     wnd->normalbg       = attrs->normalbg;
     wnd->disabledbg     = attrs->disabledbg;
     wnd->focusedbg      = attrs->focusedbg;
+    wnd->selectedbg     = attrs->selectedbg;
 
     wnd->id             = attrs->id;
     wnd->clsname        = attrs->clsname;
@@ -4233,6 +4228,20 @@ texu_wnd_get_bgfocused_color(texu_wnd *wnd)
     return (wnd ? wnd->focusedbg : 0);
 }
 
+void
+texu_wnd_set_bgselected_color(texu_wnd *wnd, texu_ui32 color)
+{
+    if (wnd)
+    {
+        wnd->selectedbg = color;
+    }
+}
+
+texu_ui32
+texu_wnd_get_bgselected_color(texu_wnd *wnd)
+{
+    return (wnd ? wnd->selectedbg : 0);
+}
 
 
 void
@@ -4269,6 +4278,22 @@ texu_ui32
 texu_wnd_get_focused_color(texu_wnd *wnd)
 {
     return (wnd ? wnd->focusedcolor : 0);
+}
+
+void
+texu_wnd_set_selected_color(texu_wnd *wnd, texu_ui32 color)
+{
+    if (wnd)
+    {
+        wnd->selectedcolor = color;
+    }
+}
+
+
+texu_ui32
+texu_wnd_get_selected_color(texu_wnd *wnd)
+{
+    return (wnd ? wnd->selectedcolor : 0);
 }
 
 const texu_char *

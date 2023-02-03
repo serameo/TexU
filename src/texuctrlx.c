@@ -590,14 +590,11 @@ _TexuIPAdressProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_cio_putstr_attr(dc, y, x, ipdots,
                         texu_cio_get_color(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text_ex(env, y, x, ipdots, color, bgcolor,
+
+    texu_cio_draw_text(dc, y, x, ipdots, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
-#else
-    texu_cio_putstr_attr(dc, y, x, ipdots,
-                        texu_cio_get_color(dc, color));
-#endif
+
 #endif
 }
 
@@ -890,14 +887,11 @@ void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_cio_putstr_attr(cio, y, x, text,
                          texu_cio_get_reverse(cio, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text_ex(env, y, x, text, color, bgcolor,
+
+    texu_cio_draw_text(cio, y, x, text, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
-#else
-    texu_cio_putstr_attr(cio, y, x, text,
-                         texu_cio_get_color(cio, color));
-#endif
+
 #endif /* TEXU_CIO_COLOR_MONO*/
 }
 
@@ -1494,17 +1488,13 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     }
     texu_printf_alignment2(buf, textcommas, width, style, TEXU_TRUE);
 #ifdef TEXU_CIO_COLOR_MONO
-    texu_cio_putstr_attr(dc, y, x, buf,
+    texu_cio_putstr_attr(cio, y, x, buf,
                          texu_cio_get_color(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
-    texu_env_draw_text_ex(env, y, x, buf, color, bgcolor,
+    texu_cio_draw_text(cio, y, x, buf, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
-#else
-    texu_cio_putstr_attr(dc, y, x, buf,
-                         texu_cio_get_color(dc, color));
-#endif
+
 #endif
 }
 
