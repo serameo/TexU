@@ -3375,7 +3375,11 @@ texu_i32 _TexuTreeCtrlProc_OnExportToFile(texu_wnd *wnd, FILE *fp, texu_tree_exp
         }
         else
         {
-            fprintf(fp, "%s\n", buf);
+#if (defined WIN32 && defined _WINDOWS)
+            fwprintf(fp, TEXUTEXT("%s\n"), buf);
+#else
+            fprintf(fp, TEXUTEXT("%s\n"), buf);
+#endif
         }
         free(view);
     }
@@ -5520,6 +5524,7 @@ _TexuProgressBarProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 par
 struct texu_pagewnd_page
 {
     texu_wnd *page;
+    texu_i32  idx;
     texu_wnd *firstchild;
     texu_wnd *lastchild;
     texu_wnd *activechild;
@@ -5534,6 +5539,7 @@ struct texu_pagewnd
     texu_wnd *lastactive;
     texu_wnd *activewnd;
     texu_array *pages;
+    texu_i32 npages;
     texu_i32 curidx;
     void *exparam;
     texu_bool ctl_k_pressed;
@@ -5546,10 +5552,12 @@ void _TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
 void _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 
 texu_status _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_char *clsname, texu_ui32 id);
-texu_wnd *_TexuPageCtrlProc_OnSetCurPage(texu_wnd *wnd, texu_i32 idx);
-texu_wnd *_TexuPageCtrlProc_OnGetCurPage(texu_wnd *wnd);
-texu_i32 _TexuPageCtrlProc_OnGetPageIndex(texu_wnd *wnd, texu_wnd *page);
-texu_i32 _TexuPageCtrlProc_OnGetCountPage(texu_wnd *wnd);
+texu_wnd    *_TexuPageCtrlProc_OnSetCurPage(texu_wnd *wnd, texu_i32 idx);
+texu_wnd    *_TexuPageCtrlProc_OnGetCurPage(texu_wnd *wnd);
+texu_i32    _TexuPageCtrlProc_OnGetPageIndex(texu_wnd *wnd, texu_wnd *page);
+texu_i32    _TexuPageCtrlProc_OnGetCountPage(texu_wnd *wnd);
+void        _TexuPageCtrlProc_OnRemovePage(texu_wnd *wnd, texu_i32 idx);
+void        _TexuPageCtrlProc_OnRemoveAllPages(texu_wnd *wnd);
 
 texu_wnd *_TexuPageCtrl_CreatePage(
     texu_wnd *wnd,
@@ -5563,8 +5571,9 @@ texu_wnd *_TexuPageCtrlProc_GetPrevPageEnabled(texu_wnd *wnd, texu_wnd *page);
 texu_wnd *_TexuPageCtrlProc_SetCurPage(texu_wnd *wnd, texu_wnd *newpage);
 texu_i32 _TexuPageCtrlProc_GetPageIndex(texu_wnd *wnd, texu_wnd *whatpage);
 
-void _texu_pagewnd_page_del(texu_i64 pg, void *userdata);
-texu_pagewnd_page *_texu_pagewnd_page_new(texu_wnd *);
+void                _texu_pagewnd_page_del(texu_i64 pg, void *userdata);
+texu_pagewnd_page  *_texu_pagewnd_page_new(texu_wnd *, texu_i32 idx, void *userdata);
+texu_pagewnd_page  *_texu_pagewnd_page_get(texu_wnd *wnd, texu_i32 idx);
 
 texu_i32
 _TexuPageCtrlProc_OnGetPageIndex(texu_wnd *wnd, texu_wnd *page)
@@ -5601,7 +5610,7 @@ _TexuPageCtrlProc_GetPage(texu_wnd *wnd, texu_i32 idx)
 {
     texu_wnd *page = texu_wnd_firstchild(wnd);
     texu_i32 i = 0;
-    for (i = 0; i <= idx; ++i)
+    for (i = 1; i < idx; ++i)
     {
         page = texu_wnd_nextwnd(page);
     }
@@ -5675,6 +5684,7 @@ _TexuPageCtrlProc_OnSetCurPage(texu_wnd *wnd, texu_i32 idx)
     texu_wnd *curpage = pgctl->curpage;
     texu_wnd *newpage = 0;
     texu_i32 children = texu_wnd_children(wnd);
+    texu_pagewnd_page *pgitem = 0;
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -5684,8 +5694,14 @@ _TexuPageCtrlProc_OnSetCurPage(texu_wnd *wnd, texu_i32 idx)
     {
         return curpage;
     }
-    newpage = _TexuPageCtrlProc_GetPage(wnd, idx);
-    return _TexuPageCtrlProc_SetCurPage(wnd, newpage);
+    pgitem = (texu_pagewnd_page *)texu_array_get(pgctl->pages, idx);
+    if (pgitem)
+    {
+        pgctl->curidx = idx;
+        newpage = pgitem->page;
+        return _TexuPageCtrlProc_SetCurPage(wnd, newpage);
+    }
+    return curpage;/* _TexuPageCtrlProc_SetCurPage(wnd, newpage);*/
 }
 
 texu_wnd *
@@ -5694,7 +5710,7 @@ _TexuPageCtrlProc_SetCurPage(texu_wnd *wnd, texu_wnd *newpage)
     texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
     texu_wnd *curpage = pgctl->curpage;
 
-    if (newpage)
+    if (newpage && newpage != curpage)
     {
         if (!(texu_wnd_is_enable(newpage)))
         {
@@ -5743,6 +5759,7 @@ _TexuPageCtrl_CreatePage(
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_i32 h = texu_wnd_get_height(wnd);
     texu_i32 w = texu_wnd_get_width(wnd);
+    texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
 
     childwnd = texu_wnd_new(env);
     if (!childwnd)
@@ -5770,7 +5787,7 @@ _TexuPageCtrl_CreatePage(
     attrs.id = id;
     attrs.clsname = clsname;
     attrs.userdata = 0;
-    attrs.style = 0;
+    attrs.style = TEXU_WS_HIDE;
     attrs.exstyle = 0;
 
     rc = texu_wnd_create(childwnd, wnd, &attrs);
@@ -5791,18 +5808,89 @@ _texu_pagewnd_page_del(texu_i64 pg, void *userdata)
 }
 
 texu_pagewnd_page *
-_texu_pagewnd_page_new(texu_wnd *page)
+_texu_pagewnd_page_new(texu_wnd *page, texu_i32 idx, void *userdata)
 {
-    texu_pagewnd_page *pgitem = 0;
-    pgitem = (texu_pagewnd_page *)malloc(sizeof(texu_pagewnd_page));
+    texu_pagewnd_page *pgitem = (texu_pagewnd_page *)malloc(sizeof(texu_pagewnd_page));
     if (pgitem)
     {
         pgitem->page = page;
+        pgitem->idx = idx;
         pgitem->firstchild = texu_wnd_get_first_activechild(page);
         pgitem->lastchild = texu_wnd_get_last_activechild(page);
         pgitem->activechild = pgitem->firstchild;
+        pgitem->userdata = userdata;
     }
     return pgitem;
+}
+
+texu_pagewnd_page  *_texu_pagewnd_page_get(texu_wnd *wnd, texu_i32 idx)
+{
+    texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
+    texu_pagewnd_page *pgitem = (texu_pagewnd_page *)texu_array_get(pgctl->pages, idx);
+    return pgitem;
+}
+
+void
+_TexuPageCtrlProc_OnRemoveAllPages(texu_wnd *wnd)
+{
+    texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
+    texu_i32 npages = pgctl->npages;
+    texu_i32 i = 0;
+    for (i = npages - 1; i >= 0; --i)
+    {
+        _TexuPageCtrlProc_OnRemovePage(wnd, i);
+    }
+}
+
+void
+_TexuPageCtrlProc_OnRemovePage(texu_wnd *wnd, texu_i32 idx)
+{
+    texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
+    texu_wnd *curpage = pgctl->curpage;
+    texu_pagewnd_page *pgitem = (texu_pagewnd_page *)texu_array_get(pgctl->pages, idx);
+    texu_i32 nitems = texu_array_count(pgctl->pages);
+    texu_i32 npages = pgctl->npages;
+    texu_wnd *nextpage = texu_wnd_nextwnd(curpage);
+    texu_wnd *prevpage = texu_wnd_prevwnd(curpage);
+    texu_pagewnd_page *nextpgitem = 0;/* (texu_pagewnd_page *)texu_array_get(pgctl->pages, idx + 1);*/
+    texu_i32 i = idx + 1;
+
+    if (!pgitem)
+    {
+        return;
+    }
+    /*is there only 1 page*/
+    if (curpage == pgitem->page)
+    {
+        /*remove current page*/
+        if (1 == npages)
+        {
+            texu_wnd_destroy(pgitem->page);
+            texu_wnd_del(pgitem->page);
+            _texu_pagewnd_page_del((texu_i64)pgitem, 0);
+            pgctl->curpage = 0;
+            --pgctl->npages;
+            return;
+        }
+        else
+        {
+            curpage = (nextpage ? nextpage : (prevpage ? prevpage : 0));
+        }
+    }
+    /*move the back pages left to top+1*/
+    for (i = idx + 1; i < npages; ++i)
+    {
+        nextpgitem = (texu_pagewnd_page *)texu_array_get(pgctl->pages, i);
+        nextpgitem->idx = i - 1;
+    }
+    texu_array_set(pgctl->pages, i, 0);
+
+    --pgctl->npages;
+    _TexuPageCtrlProc_SetCurPage(wnd, curpage);
+
+    texu_wnd_destroy(pgitem->page);
+    texu_wnd_del(pgitem->page);
+    _texu_pagewnd_page_del((texu_i64)pgitem, 0);
 }
 
 texu_status
@@ -5812,6 +5900,7 @@ _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_char *clsname, texu_ui32 i
     texu_wnd *page = 0;
     texu_pagewnd_page *pgitem = 0;
     texu_i32 nitems = texu_array_count(pgctl->pages);
+    texu_i32 npages = pgctl->npages;
 
     page = _TexuPageCtrl_CreatePage(wnd, clsname, id);
     if (!(page))
@@ -5826,8 +5915,10 @@ _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_char *clsname, texu_ui32 i
     {
         texu_wnd_visible(page, TEXU_FALSE);
     }
-    pgitem = _texu_pagewnd_page_new(page);
-    texu_array_set(pgctl->pages, (texu_i64)pgitem, nitems);
+    pgitem = _texu_pagewnd_page_new(page, npages, 0);
+    texu_array_set(pgctl->pages, npages, (texu_i64)pgitem);
+    /*increment number of pages*/
+    ++pgctl->npages;
 
     return TEXU_OK;
 }
@@ -5845,6 +5936,7 @@ _TexuPageCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
 
     memset(pgctl, 0, sizeof(texu_pagewnd));
     pgctl->pages = texu_array_new(TEXU_MAX_PAGE);
+    pgctl->npages = 0;
 
     texu_wnd_set_color(wnd,
                        texu_env_get_syscolor(env, TEXU_COLOR_WINDOW),
@@ -5878,10 +5970,12 @@ _TexuPageCtrlProc_OnDestroy(texu_wnd *wnd)
 void
 _TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 {
+    /*
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
     }
+    */
 }
 
 void
@@ -5901,10 +5995,22 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 chNextKey = texu_env_get_movenext(env);
     texu_i32 chPrevKey = texu_env_get_moveprev(env);
+    texu_pagewnd_page *pgitem = 0;
 
     if (!texu_wnd_is_enable(wnd))
     {
         return;
+    }
+    /*switch page by index*/
+    if ((TEXU_KEYPRESSED_CTRL & alt) && (ch >= TEXUTEXT('0') && ch <= TEXUTEXT('9')))
+    {
+        /**/
+        pgitem = _texu_pagewnd_page_get(wnd, (ch - TEXUTEXT('0')));
+        if (pgitem)
+        {
+            pgctl->ctl_k_pressed = TEXU_FALSE;
+            newpage = pgitem->page;
+        }
     }
     if ((TEXU_KEYPRESSED_CTRL & alt) && ((TEXUTEXT('k') == ch) || (TEXUTEXT('K') == ch)))
     {
@@ -5913,6 +6019,36 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     switch (ch)
     {
+        case TEXUTEXT('f'):
+        case TEXUTEXT('F'):
+        {
+            if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+            {
+                /* continue as KEY_PPAGE doing */
+                pgitem = _texu_pagewnd_page_get(wnd, 0);
+                if (pgitem)
+                {
+                    pgctl->ctl_k_pressed = TEXU_FALSE;
+                    newpage = pgitem->page;
+                }
+            }
+            break;
+        }
+        case TEXUTEXT('l'):
+        case TEXUTEXT('L'):
+        {
+            if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+            {
+                /* continue as KEY_PPAGE doing */
+                pgitem = _texu_pagewnd_page_get(wnd, pgctl->npages-1);
+                if (pgitem)
+                {
+                    pgctl->ctl_k_pressed = TEXU_FALSE;
+                    newpage = pgitem->page;
+                }
+            }
+            break;
+        }
         case TEXUTEXT('p'):
         case TEXUTEXT('P'):
         {
@@ -5954,6 +6090,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             break;
         }
     }
+
     if (newpage)
     {
         _TexuPageCtrlProc_SetCurPage(wnd, newpage);
@@ -6056,9 +6193,9 @@ _TexuPageCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
     case TEXU_WM_CREATE:
         return _TexuPageCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
-    case TEXU_WM_PAINT:
+    /*case TEXU_WM_PAINT:
         _TexuPageCtrlProc_OnPaint(wnd, (texu_cio *)param1);
-        return 0;
+        return 0;*/
 
     case TEXU_WM_DESTROY:
         _TexuPageCtrlProc_OnDestroy(wnd);
@@ -6082,615 +6219,17 @@ _TexuPageCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
 
     case TEXU_PGM_COUNTPAGE:
         return _TexuPageCtrlProc_OnGetCountPage(wnd);
-    }
-    return TexuDefWndProc(wnd, msg, param1, param2);
-}
 
-#if 0 /* OBSOLETED*/
-/*
-#-------------------------------------------------------------------------------
-# TexU text ctrl
-#
-     1         2         3         4         5         6         7         8
-12345678901234567890123456789012345678901234567890123456789012345678901234567890
-*/
-#define TEXU_MAX_CHARPERLINE (COLS)
-
-struct texu_textwnd_sentence
-{
-    texu_char text[TEXU_MAX_WNDTEXT + 1];
-    texu_i32 color;
-    void *userdata;
-};
-typedef struct texu_textwnd_sentence texu_textwnd_sentence;
-
-struct texu_textwnd_paragraph
-{
-    texu_list *sentences;
-    void *userdata;
-};
-typedef struct texu_textwnd_paragraph texu_textwnd_paragraph;
-
-struct texu_textwnd
-{
-    texu_list *paragraphs;
-    texu_textwnd_paragraph *curpara;
-    void *exparam;
-};
-typedef struct texu_textwnd texu_textwnd;
-
-texu_textwnd_sentence *_texu_textwnd_sentence_new(const texu_char *, texu_i32, void *);
-void _texu_textwnd_sentence_del(texu_textwnd_sentence *);
-void _texu_textwnd_sentence_set_text(texu_textwnd_sentence *, const texu_char *);
-texu_i32 _texu_textwnd_sentence_get_text(texu_textwnd_sentence *, texu_char *, texu_i32);
-
-texu_textwnd_paragraph *_texu_textwnd_paragraph_new(void *);
-void _texu_textwnd_paragraph_del(texu_textwnd_paragraph *);
-void _texu_textwnd_paragraph_add(texu_textwnd_paragraph *, texu_textwnd_sentence *);
-void _texu_textwnd_paragraph_remove(texu_textwnd_paragraph *, texu_textwnd_sentence *);
-texu_textwnd_sentence *_texu_textwnd_paragraph_get(texu_textwnd_paragraph *, texu_i32);
-texu_list_item *_texu_textwnd_paragraph_get_item(texu_textwnd_paragraph *, texu_i32);
-void _texu_textwnd_paragraph_set(texu_textwnd_paragraph *, texu_i32, texu_textwnd_sentence *);
-void _texu_textwnd_paragraph_insert(texu_textwnd_paragraph *, texu_i32, texu_textwnd_sentence *);
-
-void _texu_textwnd_add(texu_textwnd *, texu_textwnd_paragraph *);
-void _texu_textwnd_remove(texu_textwnd *, texu_textwnd_paragraph *);
-texu_textwnd_paragraph *_texu_textwnd_get(texu_textwnd *, texu_i32);
-texu_list_item *_texu_textwnd_get_item(texu_textwnd *, texu_i32);
-void _texu_textwnd_set(texu_textwnd *, texu_i32, texu_textwnd_paragraph *);
-void _texu_textwnd_insert(texu_textwnd *, texu_i32, texu_textwnd_paragraph *);
-
-texu_status _TexuTextCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
-void _TexuTextCtrlProc_OnDestroy(texu_wnd *wnd);
-void _TexuTextCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
-void _TexuTextCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
-
-texu_textwnd_sentence *
-_texu_textwnd_sentence_new(const texu_char *text, texu_i32 color, void *userdata)
-{
-    texu_textwnd_sentence *snt = (texu_textwnd_sentence *)malloc(sizeof(texu_textwnd_sentence));
-    if (snt)
-    {
-        memset(snt, 0, sizeof(texu_textwnd_sentence));
-        texu_strcpy(snt->text, (text ? text : TEXT("")));
-        snt->color = color;
-        snt->userdata = userdata;
-    }
-    return snt;
-}
-
-void
-_texu_textwnd_sentence_del(texu_textwnd_sentence *snt)
-{
-    if (snt)
-    {
-        free(snt);
-    }
-}
-
-void
-_texu_textwnd_sentence_set_text(texu_textwnd_sentence *snt, const texu_char *text)
-{
-    texu_i32 len = (text ? texu_strlen(text) : 0);
-    if (len >= TEXU_MAX_WNDTEXT)
-    {
-        texu_memset(snt->text, 0, sizeof(snt->text));
-        memcpy(snt->text, text, TEXU_MAX_WNDTEXT);
-    }
-    else
-    {
-        texu_strcpy(snt->text, (text ? text : TEXT("")));
-    }
-}
-
-texu_i32
-_texu_textwnd_sentence_get_text(texu_textwnd_sentence *snt, texu_char *buf, texu_i32 buflen)
-{
-    texu_i32 len = texu_strlen(snt->text);
-    if (!(buf) || buflen < 0)
-    {
-        return len;
-    }
-    memset(buf, 0, buflen);
-    if (buflen > len)
-    {
-        buflen = len;
-    }
-    texu_strcpy(buf, snt->text);
-    return buflen;
-}
-
-texu_textwnd_paragraph *
-_texu_textwnd_paragraph_new(void *userdata)
-{
-    texu_textwnd_paragraph *para = (texu_textwnd_paragraph *)malloc(sizeof(texu_textwnd_paragraph));
-    if (para)
-    {
-        memset(para, 0, sizeof(texu_textwnd_paragraph));
-        para->sentences = texu_list_new();
-        para->userdata = userdata;
-    }
-    return para;
-}
-
-void
-_texu_textwnd_paragraph_del(texu_textwnd_paragraph *para)
-{
-    texu_textwnd_sentence *snt = 0;
-    texu_list_item *item = texu_list_first(para->sentences);
-    while (item)
-    {
-        snt = (texu_textwnd_sentence *)item->data;
-        _texu_textwnd_sentence_del(snt);
-        item = item->next;
-    }
-    texu_list_del(para->sentences);
-    free(para);
-}
-
-void
-_texu_textwnd_paragraph_add(texu_textwnd_paragraph *para, texu_textwnd_sentence *snt)
-{
-    texu_list_add(para->sentences, (texu_i64)snt);
-}
-
-void
-_texu_textwnd_paragraph_remove(texu_textwnd_paragraph *para, texu_textwnd_sentence *snt)
-{
-    texu_list_item *item = texu_list_find_first(para->sentences, (texu_i64)snt);
-    if (item)
-    {
-        texu_list_remove(para->sentences, item);
-    }
-}
-
-texu_list_item *
-_texu_textwnd_paragraph_get_item(texu_textwnd_paragraph *para, texu_i32 idx)
-{
-    texu_i32 i = 0;
-    texu_list_item *item = texu_list_first(para->sentences);
-    if (idx < 0)
-    {
-        return 0;
-    }
-    while ((i < idx) && item)
-    {
-        item = item->next;
-    }
-    return item;
-}
-
-texu_textwnd_sentence *
-_texu_textwnd_paragraph_get(texu_textwnd_paragraph *para, texu_i32 idx)
-{
-    texu_list_item *item = _texu_textwnd_paragraph_get_item(para, idx);
-    if (item)
-    {
-        return (texu_textwnd_sentence *)item->data;
-    }
-    return 0;
-}
-
-void
-_texu_textwnd_paragraph_set(texu_textwnd_paragraph *para, texu_i32 idx, texu_textwnd_sentence *newsnt)
-{
-    texu_list_item *item = _texu_textwnd_paragraph_get_item(para, idx);
-    texu_textwnd_sentence *oldsnt = 0;
-
-    if (item)
-    {
-        oldsnt = (texu_textwnd_sentence *)item->data;
-        /* replace the new sentence if it is possible */
-        if (newsnt)
-        {
-            if (newsnt != oldsnt)
-            {
-                item->data = (texu_i64)newsnt;
-            }
-        }
-        else
-        {
-            /* if the new sentence is null, remove the old from the paragraph */
-            texu_list_remove(para->sentences, item);
-        }
-        /* delete the old sentence */
-        _texu_textwnd_sentence_del(oldsnt);
-    }
-    else if (newsnt)
-    {
-        /*add the new paragraph*/
-        _texu_textwnd_paragraph_add(para, newsnt);
-    }
-}
-
-void
-_texu_textwnd_paragraph_insert(texu_textwnd_paragraph *para, texu_i32 idx, texu_textwnd_sentence *newsnt)
-{
-    texu_list_item *item = _texu_textwnd_paragraph_get_item(para, idx);
-
-    if (item && newsnt)
-    {
-        /*insert after*/
-        texu_list_insert(para->sentences, item, (texu_i64)newsnt);
-    }
-    else if (newsnt)
-    {
-        /*add the new sentence*/
-        _texu_textwnd_paragraph_add(para, newsnt);
-    }
-}
-
-void
-_texu_textwnd_add(texu_textwnd *txt, texu_textwnd_paragraph *para)
-{
-    texu_list_add(txt->paragraphs, (texu_i64)para);
-}
-
-void
-_texu_textwnd_remove(texu_textwnd *txt, texu_textwnd_paragraph *para)
-{
-    texu_list_item *item = texu_list_find_first(txt->paragraphs, (texu_i64)para);
-    if (item)
-    {
-        texu_list_remove(txt->paragraphs, item);
-    }
-}
-
-texu_textwnd_paragraph *
-_texu_textwnd_get(texu_textwnd *txt, texu_i32 idx)
-{
-    texu_list_item *item = _texu_textwnd_get_item(txt, idx);
-    if (item)
-    {
-        return (texu_textwnd_paragraph *)item->data;
-    }
-    return 0;
-}
-
-texu_list_item *
-_texu_textwnd_get_item(texu_textwnd *txt, texu_i32 idx)
-{
-    texu_i32 i = 0;
-    texu_list_item *item = texu_list_first(txt->paragraphs);
-    if (idx < 0)
-    {
-        return 0;
-    }
-    while ((i < idx) && item)
-    {
-        item = item->next;
-    }
-    return item;
-}
-
-void
-_texu_textwnd_set(texu_textwnd *txt, texu_i32 idx, texu_textwnd_paragraph *newpara)
-{
-    texu_list_item *item = _texu_textwnd_get_item(txt, idx);
-    texu_textwnd_paragraph *oldpara = 0;
-
-    if (item)
-    {
-        oldpara = (texu_textwnd_paragraph *)item->data;
-        /* replace the new sentence if it is possible */
-        if (newpara)
-        {
-            if (newpara != oldpara)
-            {
-                item->data = (texu_i64)newpara;
-            }
-        }
-        else
-        {
-            /* if the new sentence is null, remove the old from the paragraph */
-            texu_list_remove(txt->paragraphs, item);
-        }
-        /* delete the old sentence */
-        _texu_textwnd_paragraph_del(oldpara);
-    }
-    else if (newpara)
-    {
-        /*add the new paragraph*/
-        _texu_textwnd_add(txt, newpara);
-    }
-}
-
-void
-_texu_textwnd_insert(texu_textwnd *txt, texu_i32 idx, texu_textwnd_paragraph *newpara)
-{
-    texu_list_item *item = _texu_textwnd_get_item(txt, idx);
-
-    if (item && newpara)
-    {
-        /*insert after*/
-        texu_list_insert(txt->paragraphs, item, (texu_i64)newpara);
-    }
-    else if (newpara)
-    {
-        /*add the new paragraph*/
-        _texu_textwnd_add(txt, newpara);
-    }
-}
-
-texu_status
-_TexuTextCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
-{
-    texu_textwnd *txt = (texu_textwnd *)malloc(sizeof(texu_textwnd));
-    if (!txt)
-    {
-        return TEXU_NOMEM;
-    }
-    memset(txt, 0, sizeof(texu_textwnd));
-    txt->paragraphs = texu_list_new();
-
-    texu_wnd_set_userdata(wnd, txt);
-    return TEXU_OK;
-}
-
-void
-_TexuTextCtrlProc_OnDestroy(texu_wnd *wnd)
-{
-    texu_textwnd *txt = (texu_textwnd *)texu_wnd_get_userdata(wnd);
-    texu_textwnd_paragraph *para = 0;
-    texu_list_item *item = texu_list_first(txt->paragraphs);
-    while (item)
-    {
-        para = (texu_textwnd_paragraph *)item->data;
-        _texu_textwnd_paragraph_del(para);
-        item = item->next;
-    }
-    texu_list_del(txt->paragraphs);
-    free(txt);
-}
-
-void
-_TexuTextCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
-{
-    /*
-    texu_textwnd* txt = (texu_textwnd*)texu_wnd_get_userdata(wnd);
-    if (!(texu_wnd_is_visible(wnd)))
-    {
-      return;
-    }
-    */
-}
-
-void
-_TexuTextCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
-{
-    /*
-    texu_textwnd* txt = (texu_textwnd*)texu_wnd_get_userdata(wnd);
-    */
-}
-
-texu_status _TexuTextCtrlProc_OnInsertSentence(texu_wnd *wnd, texu_i32 sntidx, const texu_char *text);
-texu_status _TexuTextCtrlProc_OnAddSentence(texu_wnd *wnd, const texu_char *text);
-void _TexuTextCtrlProc_OnRemoveSentence(texu_wnd *wnd, texu_i32 sntidx);
-texu_status _TexuTextCtrlProc_OnAddParagraph(texu_wnd *wnd);
-void _TexuTextCtrlProc_OnRemoveParagraph(texu_wnd *wnd, texu_i32 paraidx);
-void _TexuTextCtrlProc_OnSetCurParagraph(texu_wnd *wnd, texu_i32 paraidx);
-
-texu_status
-_TexuTextCtrlProc_OnInsertParagraph(texu_wnd *wnd, texu_i32 paraidx)
-{
-    texu_textwnd *txt = (texu_textwnd *)texu_wnd_get_userdata(wnd);
-    texu_textwnd_paragraph *para = 0;
-    texu_i32 count = 0;
-    para = _texu_textwnd_paragraph_new(0);
-    if (!(para))
-    {
-        return TEXU_NOMEM;
-    }
-    count = texu_list_count(txt->paragraphs);
-    _texu_textwnd_insert(txt, paraidx, para);
-    /* set current paragraph */
-    if (0 == count)
-    {
-        txt->curpara = para;
-    }
-    return TEXU_OK;
-}
-
-void
-_TexuTextCtrlProc_OnSetCurParagraph(texu_wnd *wnd, texu_i32 paraidx)
-{
-    texu_textwnd *txt = (texu_textwnd *)texu_wnd_get_userdata(wnd);
-    texu_textwnd_paragraph *para = _texu_textwnd_get(txt, paraidx);
-    if (para)
-    {
-        txt->curpara = para;
-    }
-}
-
-void
-_TexuTextCtrlProc_OnRemoveParagraph(texu_wnd *wnd, texu_i32 paraidx)
-{
-    texu_textwnd *txt = (texu_textwnd *)texu_wnd_get_userdata(wnd);
-    texu_list_item *paraitem = _texu_textwnd_get_item(txt, paraidx);
-    texu_textwnd_paragraph *para = 0;
-    if (paraitem)
-    {
-        para = (texu_textwnd_paragraph *)paraitem->data;
-        /* move the current paragraph if it is being deleted */
-        if (txt->curpara == para)
-        {
-            if (paraitem != texu_list_first(txt->paragraphs))
-            {
-                paraitem = paraitem->prev;
-            }
-            else
-            {
-                paraitem = paraitem->next;
-            }
-            txt->curpara = (paraitem ? (texu_textwnd_paragraph *)paraitem->data : 0);
-        }
-        _texu_textwnd_remove(txt, para);
-    }
-}
-
-texu_status
-_TexuTextCtrlProc_OnAddParagraph(texu_wnd *wnd)
-{
-    texu_textwnd *txt = (texu_textwnd *)texu_wnd_get_userdata(wnd);
-    texu_textwnd_paragraph *para = 0;
-    texu_i32 count = 0;
-    para = _texu_textwnd_paragraph_new(0);
-    if (!(para))
-    {
-        return TEXU_NOMEM;
-    }
-    count = texu_list_count(txt->paragraphs);
-    _texu_textwnd_add(txt, para);
-    /* set current paragraph */
-    if (0 == count)
-    {
-        txt->curpara = para;
-    }
-    return TEXU_OK;
-}
-
-void
-_TexuTextCtrlProc_OnRemoveSentence(texu_wnd *wnd, texu_i32 sntidx)
-{
-    texu_textwnd *txt = (texu_textwnd *)texu_wnd_get_userdata(wnd);
-    texu_textwnd_paragraph *para = txt->curpara;
-    texu_textwnd_sentence *snt = 0;
-
-    if (!(para))
-    {
-        return;
-    }
-    snt = _texu_textwnd_paragraph_get(para, sntidx);
-    if (!(snt))
-    {
-        return;
-    }
-    _texu_textwnd_paragraph_remove(para, snt);
-}
-
-texu_status
-_TexuTextCtrlProc_OnInsertSentence(texu_wnd *wnd, texu_i32 sntidx, const texu_char *text)
-{
-    /* this fuction to insert a new sentence in the current paragraph only */
-    texu_textwnd *txt = (texu_textwnd *)texu_wnd_get_userdata(wnd);
-    texu_textwnd_paragraph *para = txt->curpara;
-    texu_textwnd_sentence *snt = 0;
-    texu_list_item *paraitem = 0;
-    if (!(para))
-    {
-        paraitem = texu_list_last(txt->paragraphs);
-        if (!(paraitem)) /* there is no one paragraph at the moment*/
-        {
-            /* new paragraph */
-            if (TEXU_OK != _TexuTextCtrlProc_OnAddParagraph(wnd))
-            {
-                return TEXU_NOMEM;
-            }
-        }
-        para = txt->curpara;
-    }
-    /* new a sentence */
-    snt = _texu_textwnd_sentence_new(text, TEXU_CIO_COLOR_WHITE_BLACK, 0);
-    if (!snt)
-    {
-        return TEXU_NOMEM;
-    }
-    /* add the new sentence the current paragraph */
-    _texu_textwnd_paragraph_insert(para, sntidx, snt);
-    return TEXU_OK;
-}
-
-texu_status
-_TexuTextCtrlProc_OnAddSentence(texu_wnd *wnd, const texu_char *text)
-{
-    texu_textwnd *txt = (texu_textwnd *)texu_wnd_get_userdata(wnd);
-    texu_textwnd_paragraph *para = txt->curpara;
-    texu_textwnd_sentence *snt = 0;
-    texu_list_item *paraitem = 0;
-    if (!(para))
-    {
-        paraitem = texu_list_last(txt->paragraphs);
-        if (!(paraitem)) /* there is no one paragraph at the moment*/
-        {
-            /* new paragraph */
-            if (TEXU_OK != _TexuTextCtrlProc_OnAddParagraph(wnd))
-            {
-                return TEXU_NOMEM;
-            }
-        }
-        para = txt->curpara;
-    }
-    /* new a sentence */
-    snt = _texu_textwnd_sentence_new(text, TEXU_CIO_COLOR_WHITE_BLACK, 0);
-    if (!snt)
-    {
-        return TEXU_NOMEM;
-    }
-    /* add the new sentence the current paragraph */
-    _texu_textwnd_paragraph_add(para, snt);
-
-    return TEXU_OK;
-}
-
-texu_i64
-_TexuTextCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
-{
-    return 0; /*not implement this class*/
-    switch (msg)
-    {
-    case TEXU_WM_CREATE:
-        return _TexuTextCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
-
-    case TEXU_WM_PAINT:
-        _TexuTextCtrlProc_OnPaint(wnd, (texu_cio *)param1);
+    case TEXU_PGM_REMOVEPAGE:
+        _TexuPageCtrlProc_OnRemovePage(wnd, (texu_i32)param1);
         return 0;
 
-    case TEXU_WM_DESTROY:
-        _TexuTextCtrlProc_OnDestroy(wnd);
-        break;
-
-    case TEXU_WM_CHAR:
-        _TexuTextCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
-        return 0;
-
-    case TEXU_TXCM_ADDSENTENCE:
-        return _TexuTextCtrlProc_OnAddSentence(wnd, (const texu_char *)param1);
-
-    case TEXU_TXCM_REMOVESENTENCE:
-        _TexuTextCtrlProc_OnRemoveSentence(wnd, (texu_i32)param1);
-        return 0;
-
-    case TEXU_TXCM_INSERTSENTENCE:
-        return _TexuTextCtrlProc_OnInsertSentence(wnd, (texu_i32)param1, (const texu_char *)param2);
-
-    case TEXU_TXCM_SETSENTENCE:
-        return 0;
-    case TEXU_TXCM_GETSENTENCE:
-        return 0;
-    case TEXU_TXCM_ADDPARAGRAPH:
-        return _TexuTextCtrlProc_OnAddParagraph(wnd);
-
-    case TEXU_TXCM_REMOVEPARAGRAPH:
-        _TexuTextCtrlProc_OnRemoveParagraph(wnd, (texu_i32)param1);
-        return 0;
-
-    case TEXU_TXCM_INSERTPARAGRAPH:
-        return _TexuTextCtrlProc_OnInsertParagraph(wnd, (texu_i32)param1);
-
-    case TEXU_TXCM_SETPARAGRAPH:
-        return 0;
-    case TEXU_TXCM_GETPARAGRAPH:
-        return 0;
-    case TEXU_TXCM_SETCURPARAGRAPH:
-        _TexuTextCtrlProc_OnSetCurParagraph(wnd, (texu_i32)param1);
-        return 0;
-    case TEXU_TXCM_GETCURPARAGRAPH:
+    case TEXU_PGM_REMOVEALLPAGES:
+        _TexuPageCtrlProc_OnRemoveAllPages(wnd);
         return 0;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
-
-#endif /* OBSOLETED*/
 
 /*
 #-------------------------------------------------------------------------------
@@ -7131,10 +6670,10 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_wnd *parent = texu_wnd_get_parent(wnd);
     texu_wnd *activewnd = texu_wnd_get_activechild(parent);
 
-    if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+    /*if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
-    }
+    }*/
     while (item)
     {
         capwidth = rbwnd->capwidth;
@@ -7217,15 +6756,15 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 #endif
                 }
                 /*clip window*/
-                if (width < x+/*rbwnd->*/capwidth+1+w)
+                if (width < x+capwidth+1+w)
                 {
-                    w = width - (x+/*rbwnd->*/capwidth+1);
+                    w = width - (x+capwidth+1);
                     if (w < 0)
                     {
                         w = 0;
                     }
                 }
-                texu_wnd_move(band->childwnd, y, x+/*rbwnd->*/capwidth+1, h, w, TEXU_TRUE);
+                texu_wnd_move(band->childwnd, y, x+capwidth+1, h, w, TEXU_TRUE);
             }
             item = item->next;
             continue; /*no more draw*/
@@ -7257,7 +6796,7 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         }
         
         /*draw window*/
-        texu_wnd_move(band->childwnd, y, x+/*rbwnd->*/capwidth+1, h, w, TEXU_TRUE);
+        texu_wnd_move(band->childwnd, y, x+capwidth+1, h, w, TEXU_TRUE);
 
         /*save the last visible band*/
         rbwnd->lastvisibleband = band;

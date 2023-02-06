@@ -793,11 +793,18 @@ void
 _TexuEditMaskProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_editmask *emctl = (texu_editmask *)texu_wnd_get_userdata(wnd);
+    texu_char text[TEXU_MAX_WNDTEXT + 1];
     if (!texu_wnd_is_enable(wnd))
     {
         return;
     }
     /*set focust to the first edit window*/
+    texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
+    if (texu_strlen(text) == 0)
+    {
+        texu_strcpy(text, emctl->infobuf);
+    }
+    texu_wnd_set_text(emctl->editwnd, text);
     texu_wnd_visible(emctl->editwnd, TEXU_TRUE);
     texu_wnd_send_msg(emctl->editwnd, TEXU_WM_SETFOCUS, 0, 0);
     _TexuWndProc_Notify(wnd, TEXU_EMN_SETFOCUS);
@@ -1444,7 +1451,45 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     {
         texu_strcpy(textcommas, text);
     }
-    if (TEXU_EPSS_SHOWCHANGE & style)
+    /*show change price overrides show change percent if it is available*/
+    if (TEXU_EPSS_SHOWCHANGEPRICE & style)
+    {
+        texu_i32  val = 0;
+        texu_char longval[TEXU_MAX_WNDTEXT + 1];
+        texu_i32  change = 0;
+        texu_char pct[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
+        texu_f64  pctchange = 0.0;
+        texu_i32  decwidth = eps->decwidth;
+        texu_char format[TEXU_MAX_WNDTEXT + 1];
+        texu_char pctcommas[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
+
+        texu_fs2ls(text, texu_strlen(text), decwidth, longval);
+        val = texu_atol(longval); /*current price*/
+        change = (val - eps->baseprice.price);
+        if (change > 0)
+        {
+            texu_sprintf(format, TEXU_MAX_WNDTEXT, TEXUTEXT("+%%.0%df"), decwidth);
+        }
+        else
+        {
+            texu_sprintf(format, TEXU_MAX_WNDTEXT, TEXUTEXT("%%.0%df"), decwidth);
+        }
+        texu_sprintf(pct, TEXU_MAX_WNDTEXT,
+                     format,
+                     ((texu_f64)change / eps->baseprice.multiplier));
+
+        if (TEXU_EPSS_AUTOCOMMAS & style)
+        {
+            texu_add_commas(pctcommas, TEXU_MAX_WNDTEXT, pct);
+        }
+        else
+        {
+            texu_strcpy(pctcommas, pct);
+        }
+        /*add percent*/
+        texu_sprintf(textcommas, TEXU_MAX_WNDTEXT, TEXUTEXT("%s(%s)"), textcommas, pctcommas);
+    }
+    else if (TEXU_EPSS_SHOWCHANGE & style)
     {
         texu_i32  val = 0;
         texu_char longval[TEXU_MAX_WNDTEXT + 1];
@@ -1486,6 +1531,7 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
 
         }
     }
+
     texu_printf_alignment2(buf, textcommas, width, style, TEXU_TRUE);
 #ifdef TEXU_CIO_COLOR_MONO
     texu_cio_putstr_attr(cio, y, x, buf,

@@ -505,11 +505,11 @@ texu_queue_empty(texu_queue *queue)
 */
 struct texu_array
 {
-    texu_ui64 nitems;
+    texu_i64 nitems;
     texu_i64 *items;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_t mutex;
-    #endif
+#endif
 };
 
 texu_array *
@@ -536,9 +536,9 @@ texu_array_new(texu_ui64 nitems)
         }
         memset(items, 0, size);
         array->items = items;
-        #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
         pthread_mutex_init(&array->mutex, NULL);
-        #endif
+#endif
     }
     return array;
 }
@@ -549,9 +549,9 @@ texu_array_del(texu_array *array)
     if (array)
     {
         texu_array_free(array);
-        #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
         pthread_mutex_destroy(&array->mutex);
-        #endif
+#endif
         free(array);
         array = 0;
     }
@@ -578,39 +578,39 @@ texu_array_cb_free(
         }
     }
     /* reset all items */
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&array->mutex);
-    #endif
-    memset(array->items, 0, sizeof(texu_i64) * array->nitems);
-    #ifdef TEXU_THREAD_SAFE
+#endif
+    memset(array->items, 0, sizeof(texu_i64)* array->nitems);
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&array->mutex);
-    #endif
+#endif
 }
 
 texu_i64
-texu_array_get(texu_array *array, texu_ui64 idx)
+texu_array_get(texu_array *array, texu_i64 idx)
 {
     if (idx < 0 || idx >= array->nitems)
     {
-        return -1;
+        return 0;
     }
     return array->items[idx];
 }
 
 void
-texu_array_set(texu_array *array, texu_ui64 idx, texu_i64 data)
+texu_array_set(texu_array *array, texu_i64 idx, texu_i64 data)
 {
     if (idx < 0 || idx >= array->nitems)
     {
         return;
     }
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&array->mutex);
-    #endif
+#endif
     array->items[idx] = data;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&array->mutex);
-    #endif
+#endif
 }
 
 texu_status
@@ -637,15 +637,15 @@ texu_array_realloc(texu_array *array, texu_ui64 nitems)
     memcpy(items, array->items, size);
 
     /* delete the old memory */
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&array->mutex);
-    #endif
+#endif
     free(array->items);
     array->items = items;
     array->nitems = nitems;
-    #ifdef TEXU_THREAD_SAFE
+#ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&array->mutex);
-    #endif
+#endif
 
     return TEXU_OK;
 }

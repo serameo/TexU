@@ -1453,7 +1453,7 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit
     {
         rc = TEXU_ERROR;
     }
-    if (decimal)
+    if (TEXU_OK == rc && decimal)
     {
         pos = (texu_i32)(decimal - edit->editbuf);
         declen = len - pos - 1;

@@ -3013,8 +3013,11 @@ _TexuDefWndProc_OnShow(texu_wnd *wnd, texu_bool visible)
 {
     texu_bool oldvisible = wnd->visible;
     wnd->visible = visible;
-
-    texu_wnd_send_msg(wnd, TEXU_WM_PAINT, (texu_i64)wnd->env->cio, 0);
+    if (visible != oldvisible)
+    {
+        /*texu_wnd_send_msg(wnd, TEXU_WM_PAINT, (texu_i64)wnd->env->cio, 0);*/
+        texu_wnd_invalidate(wnd);
+    }
     return oldvisible;
 }
 
@@ -3032,6 +3035,11 @@ void
 _TexuDefWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 {
     texu_ui32 style = texu_wnd_get_style(wnd);
+    if (!texu_wnd_is_visible(wnd))
+    {
+        return;
+    }
+    /*
     if (TEXU_WS_BORDER & style)
     {
         texu_rect rc;
@@ -3041,6 +3049,7 @@ _TexuDefWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         --rc.cols;
         texu_cio_draw_rect(dc, &rc, texu_cio_get_color(dc, color));
     }
+    */
 }
 
 void
@@ -3714,7 +3723,7 @@ texu_wnd_close(texu_wnd *wnd)
     return texu_wnd_send_msg(wnd, TEXU_WM_CLOSE, 0, 0);
 }
 
-#if (defined WIN32 && defined _WINDOWS)
+
 texu_i64
 _texu_wnd_invalidate(texu_wnd *wnd)
 {
@@ -3730,20 +3739,18 @@ _texu_wnd_invalidate(texu_wnd *wnd)
     texu_wnd_send_msg(wnd, TEXU_WM_PAINT, (texu_i64)(env->cio), 0);
 
     childwnd = texu_wnd_firstchild(wnd);
-    if (childwnd)
+    while (childwnd)
     {
-        _texu_wnd_invalidate(childwnd);
-        childwnd = texu_wnd_nextwnd(childwnd);
-        while (childwnd)
+        if (texu_wnd_is_visible(childwnd))
         {
             _texu_wnd_invalidate(childwnd);
-            childwnd = texu_wnd_nextwnd(childwnd);
         }
+        childwnd = texu_wnd_nextwnd(childwnd);
     }
 
     return 0;
 }
-#endif
+
 
 texu_i64
 texu_wnd_invalidate(texu_wnd *wnd)
