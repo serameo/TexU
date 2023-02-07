@@ -937,15 +937,17 @@ _TexuListCtrlProc_DrawItem2(
     texu_i32 y = rccell->y;
     texu_char cap2[TEXU_MAX_WNDTEXT + 1];
     texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 cx = texu_env_screen_width(env);
 
     memset(buf, 0, sizeof(buf));
     cols = (isheader ? cols : cols - 0);
-    len = texu_printf_alignment2(
+    len = texu_printf_alignment3(
             buf,
             caption,
             cols,
             align,
-            TEXU_TRUE);
+            TEXU_TRUE,
+            x, cx);
 
     /* is is a header */
     if (1 == isheader)
@@ -960,12 +962,13 @@ _TexuListCtrlProc_DrawItem2(
     {
         texu_strcpy(cap2, TEXT(" "));
         texu_strcat(cap2, caption);
-        len = texu_printf_alignment2(
+        len = texu_printf_alignment3(
                 buf,
                 cap2,
                 cols,
                 align,
-                TEXU_TRUE);
+                TEXU_TRUE,
+                x, cx);
         buf[0] = '[';
         if (len > 0)
         {
@@ -5393,6 +5396,7 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_f32 pct = 0.0;
     texu_pgbwnd *pgb = 0;
     texu_i32 pgwidth = 0;
+    texu_i32 cx = texu_env_screen_width(env);
 
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
@@ -5419,7 +5423,7 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     {
         pgwidth = texu_strlen(text);
     }
-    texu_printf_alignment2(buf, text, pgwidth, TEXU_ALIGN_RIGHT, TEXU_TRUE);
+    texu_printf_alignment3(buf, text, pgwidth, TEXU_ALIGN_RIGHT, TEXU_TRUE, x, cx);
 
     texu_cio_draw_text(dc, y, x, buf, bgcolor, color,
                           texu_wnd_get_clsname(wnd),
@@ -6669,6 +6673,7 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_ui32 bgcolor = normbg;
     texu_wnd *parent = texu_wnd_get_parent(wnd);
     texu_wnd *activewnd = texu_wnd_get_activechild(parent);
+    texu_i32 cx = texu_env_screen_width(env);
 
     /*if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
@@ -6738,12 +6743,14 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                 }
                 else
                 {
-                    texu_printf_alignment2(
+                    texu_printf_alignment3(
                         caption,
                         band->caption,
                         rbwnd->capwidth,
                         band->align,
-                        TEXU_TRUE);
+                        TEXU_TRUE,
+                        x,
+                        cx);
 
 #ifdef TEXU_CIO_COLOR_MONO
                     texu_cio_putstr_attr(dc, y, x, caption,
@@ -6777,11 +6784,12 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         }
         else
         {
-            texu_printf_alignment2(
+            texu_printf_alignment3(
                 caption,
                 band->caption,
                 rbwnd->capwidth,
-                band->align, TEXU_TRUE);
+                band->align, TEXU_TRUE,
+                x, cx);
 
 #ifdef TEXU_CIO_COLOR_MONO
             texu_cio_putstr_attr(dc, y, x, caption,

@@ -341,11 +341,25 @@ texu_printf_alignment(
 
 texu_status
 texu_printf_alignment2(
+texu_char   *out,
+const texu_char *in,
+texu_i32    limit,
+texu_ui32   align,
+texu_bool   more
+)
+{
+    return texu_printf_alignment3(out, in, limit, align, more, -1, -1);
+}
+
+texu_status
+texu_printf_alignment3(
     texu_char   *out,
     const texu_char *in,
     texu_i32    limit,
     texu_ui32   align,
-    texu_bool   more
+    texu_bool   more,
+    texu_i32    x,
+    texu_i32    cx
     )
 {
     texu_i32    len     = 0;
@@ -358,6 +372,13 @@ texu_printf_alignment2(
     {
         texu_strcpy(out, in);
         return TEXU_OK;
+    }
+    if (x >= 0 && cx > 0)
+    {
+        if (x + limit > cx)
+        {
+            limit = cx - x;
+        }
     }
     memset(text, 0, sizeof(texu_char)*(limit + 1));
     memset(out, 0, sizeof(texu_char)*(limit + 1));

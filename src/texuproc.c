@@ -132,9 +132,10 @@ _TexuMsgBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_msgbox *msgbox = (texu_msgbox *)texu_wnd_get_userdata(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 cx = texu_env_screen_width(env);
 
     /*draw caption*/
-    texu_printf_alignment2(buf, msgbox->caption, width, TEXU_ALIGN_CENTER, TEXU_TRUE);
+    texu_printf_alignment3(buf, msgbox->caption, width, TEXU_ALIGN_CENTER, TEXU_TRUE, x, cx);
     texu_cio_draw_text(dc, y, x, buf, msgbox->titlecolor, msgbox->titlebg,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
@@ -712,7 +713,7 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL_DISABLED);
     texu_ui32 colorbg = normbg;
-
+    texu_i32 cx = texu_env_screen_width(env);
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -720,7 +721,7 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     }
 
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
-    texu_printf_alignment2(buf, text, width, style, TEXU_TRUE);
+    texu_printf_alignment3(buf, text, width, style, TEXU_TRUE, x, cx);
 
     texu_wnd_get_color(wnd, &normcolor, &discolor);
     color = normcolor;
@@ -817,7 +818,7 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i32    normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON);
     texu_i32    disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_DISABLED);
     texu_i32    bgcolor = TEXU_CIO_COLOR_CYAN_BLACK;
-
+    texu_i32    cx = texu_env_screen_width(env);
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -825,7 +826,7 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     }
 
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
-    texu_printf_alignment2(buf, text, width, TEXU_ALIGN_CENTER, TEXU_TRUE);
+    texu_printf_alignment3(buf, text, width, TEXU_ALIGN_CENTER, TEXU_TRUE, x, cx);
 
     texu_wnd_get_color(wnd, &normcolor, &discolor);
     color = normcolor;
@@ -1493,7 +1494,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_i32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
     texu_i32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
     static texu_char printable_chars[] = TEXUTEXT(" ~!@#$%^&*_-+=,?/|.\\\'\"()[]{}<>abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-
+    texu_i32 cx = texu_env_screen_width(env);
 
     if (!(texu_wnd_is_enable(wnd)))
     {
@@ -1782,7 +1783,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 texu_env_show_cursor(env, TEXU_FALSE);
                 edit->editbuf[0] = 0;
                 texu_strcpy(buf, TEXUTEXT(" "));
-                texu_printf_alignment(text, buf, width, style);
+                texu_printf_alignment3(text, buf, width, style, TEXU_FALSE, x, cx);
 
                 texu_cio_draw_text(dc, y, x, text, selcolor, selbg,
                                       texu_wnd_get_clsname(wnd),
@@ -1912,6 +1913,9 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 invbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_INVALID);
     texu_ui32 bgcolor = normbg;
 
+    texu_i32 cx = texu_env_screen_width(env);
+    texu_i32 cy = texu_env_screen_height(env);
+
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -1941,7 +1945,8 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
             texu_memset(buf, TEXUTEXT(' '), len);
         }
         buf[len] = 0;
-        texu_printf_alignment(text, buf, width, style);
+
+        texu_printf_alignment3(text, buf, width, style, TEXU_FALSE, x, cx);
         texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
         bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
         if (edit->selected)
@@ -1970,7 +1975,7 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     {
         style = TEXU_ALIGN_LEFT;
     }
-    texu_printf_alignment(text, buf, width, style);
+    texu_printf_alignment3(text, buf, width, style, TEXU_FALSE, x, cx);
     if (edit->selected)
     {
         color = selcolor;
@@ -2757,6 +2762,7 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 focusbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_FOCUSED);
     texu_ui32 bgcolor = normbg;
 
+    texu_i32 cx = texu_env_screen_width(env);
 
     if (!(texu_wnd_is_visible(wnd)))
     {
@@ -2824,7 +2830,7 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
                 texu_strcat(buf, item->itemtext);
 
                 memset(text, 0, sizeof(text));
-                texu_printf_alignment2(text, buf, width - 1, style, TEXU_TRUE);
+                texu_printf_alignment3(text, buf, width - 1, style, TEXU_TRUE, x, cx);
                 texu_strcat(text, TEXUTEXT(" "));
 
                 if (enable && i == lb->cursel)/* && item->enable)*/
@@ -3461,12 +3467,14 @@ _TexuComboBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 
     texu_char expanding = (cb->focused ? TEXUTEXT('-') : TEXUTEXT('+'));
 
+    texu_i32 cx = texu_env_screen_width(env);
+
     if (!(texu_wnd_is_visible(wnd)))
     {
         return;
     }
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
-    texu_printf_alignment2(buf, text, width, TEXU_ALIGN_LEFT, TEXU_TRUE);
+    texu_printf_alignment3(buf, text, width, TEXU_ALIGN_LEFT, TEXU_TRUE, x, cx);
     if (texu_wnd_get_activechild(parent) == wnd)
     {
         color = sel;
@@ -3945,6 +3953,7 @@ _TexuStatusBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_sbwnd_part *part = 0;
     texu_char filler[TEXU_MAX_WNDTEXT + 1];
     texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 cx = texu_env_screen_width(env);
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -3960,7 +3969,7 @@ _TexuStatusBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         memset(filler, 0, sizeof(filler));
         texu_memset(filler, TEXUTEXT(' '), part->width);
         memset(buf, 0, sizeof(buf));
-        texu_printf_alignment2(buf, part->text, part->width, part->align, TEXU_TRUE);
+        texu_printf_alignment3(buf, part->text, part->width, part->align, TEXU_TRUE, x, cx);
 #ifdef TEXU_CIO_COLOR_MONO
         texu_cio_putstr_attr(dc, y, x, filler, texu_cio_get_reverse(dc, part->color));
         texu_cio_putstr_attr(dc, y, x, buf,

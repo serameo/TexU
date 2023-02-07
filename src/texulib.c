@@ -569,7 +569,7 @@ texu_array_cb_free(
     void (*cb)(texu_i64, void *),
     void *user)
 {
-    texu_ui64 i = 0;
+    texu_i64 i = 0;
     if (cb)
     {
         for (; i < array->nitems; ++i)
@@ -614,11 +614,11 @@ texu_array_set(texu_array *array, texu_i64 idx, texu_i64 data)
 }
 
 texu_status
-texu_array_realloc(texu_array *array, texu_ui64 nitems)
+texu_array_realloc(texu_array *array, texu_i64 nitems)
 {
     texu_i64 *items = 0;
     size_t size = 0;
-    if (0 == nitems)
+    if (0 >= nitems)
     {
         return TEXU_OK;
     }

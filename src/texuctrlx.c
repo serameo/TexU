@@ -827,12 +827,17 @@ _TexuEditMaskProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     valid = _TexuEditMaskProc_IsValidString(wnd, buf);
     if (TEXU_FALSE == valid)
     {
-        _TexuWndProc_Notify(wnd, TEXU_EMN_INVALIDEXPR);
+        if (0 != texu_strcmp(buf, emctl->infobuf))
+        {
+            _TexuWndProc_Notify(wnd, TEXU_EMN_INVALIDEXPR);
 
-        /*change edit color*/
-        texu_wnd_send_msg(emctl->editwnd, TEXU_EM_INVALIDATE, 0, 0);
-        texu_wnd_invalidate(emctl->editwnd);
-        return TEXU_ERROR;
+            /*change edit color*/
+            texu_wnd_send_msg(emctl->editwnd, TEXU_EM_INVALIDATE, 0, 0);
+            texu_wnd_invalidate(emctl->editwnd);
+            return TEXU_ERROR;
+        }
+        /**/
+        texu_wnd_set_text(editwnd, TEXUTEXT(""));
     }
 
     texu_wnd_set_text(wnd, buf);
@@ -873,6 +878,7 @@ void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL_DISABLED);
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL_SELECTED);
     texu_ui32 bgcolor = normbg;
+    texu_i32 cx = texu_env_screen_width(env);
 
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
     bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
@@ -888,7 +894,7 @@ void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     {
         texu_strcpy(buf, emctl->infobuf);
     }
-    texu_printf_alignment(text, buf, width, style);
+    texu_printf_alignment3(text, buf, width, style, TEXU_FALSE, x, cx);
 
 #ifdef TEXU_CIO_COLOR_MONO
     texu_cio_putstr_attr(cio, y, x, text,
@@ -1431,6 +1437,7 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 ltbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_LOWER);
     texu_ui32 gtbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_GREATER);
     texu_ui32 bgcolor = normbg;
+    texu_i32 cx = texu_env_screen_width(env);
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -1532,7 +1539,7 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
         }
     }
 
-    texu_printf_alignment2(buf, textcommas, width, style, TEXU_TRUE);
+    texu_printf_alignment3(buf, textcommas, width, style, TEXU_TRUE, x, cx);
 #ifdef TEXU_CIO_COLOR_MONO
     texu_cio_putstr_attr(cio, y, x, buf,
                          texu_cio_get_color(dc, color));

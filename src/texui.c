@@ -3588,6 +3588,15 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
 {
     texu_status rc = TEXU_OK;
     texu_wndproc wndproc = 0;
+    texu_i32 xparent = (parent ? texu_wnd_get_x(parent) : 0);
+    texu_i32 yparent = (parent ? texu_wnd_get_y(parent) : 0);
+    texu_env *env = wnd->env;
+    texu_i32 cx = texu_env_screen_width(env);
+    texu_i32 cy = texu_env_screen_height(env);
+    texu_i32 width = 0;
+    texu_i32 height = 0;
+    texu_i32 ypos = 0;
+    texu_i32 xpos = 0;
 
     /* find the window procedure */
     wndproc = _texu_env_find_wndproc(wnd->env, attrs->clsname);
@@ -3596,9 +3605,45 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
         return TEXU_NOTREGISTERED_CLASS;
     }
     wnd->y          = attrs->y;
-    wnd->x          = attrs->x;
-    wnd->height     = attrs->height;
-    wnd->width      = attrs->width;
+    if (attrs->y >= cy)
+    {
+        wnd->y = cy - 1;
+        wnd->height = 0;
+    }
+    else
+    {
+        wnd->y = attrs->y;
+        ypos = attrs->y + attrs->height;
+        if (ypos >= cy)
+        {
+            height = TEXU_MAX(0, cy - attrs->y);
+        }
+        else
+        {
+            height = attrs->height;
+        }
+        wnd->height = height;
+    }
+    if (attrs->x >= cx)
+    {
+        wnd->x = cx - 1;
+        wnd->width = 0;
+    }
+    else
+    {
+        wnd->x = attrs->x;
+        xpos = attrs->x + attrs->width;
+        if (xpos >= cx)
+        {
+            width = TEXU_MAX(0, cx - attrs->x);
+        }
+        else
+        {
+            width = attrs->width;
+        }
+        wnd->width = width;
+    }
+    
     wnd->style      = attrs->style;
     wnd->exstyle    = attrs->exstyle;
     wnd->enable     = attrs->enable;
