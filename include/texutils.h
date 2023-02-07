@@ -60,6 +60,7 @@ texu_f64            texu_atof(const texu_char *buf);
 
 texu_status         texu_printf_alignment(texu_char*, const texu_char*, texu_i32, texu_ui32);
 texu_status         texu_printf_alignment2(texu_char*, const texu_char*, texu_i32, texu_ui32, texu_bool);
+texu_status         texu_printf_alignment3(texu_char*, const texu_char*, texu_i32, texu_ui32, texu_bool, texu_i32 x, texu_i32 cx);
 /*
 # TexU xcnf
 #

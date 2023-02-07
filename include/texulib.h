@@ -128,7 +128,7 @@ texu_i64 texu_array_get(texu_array *, texu_i64);
 /* set a data */
 void texu_array_set(texu_array *, texu_i64, texu_i64);
 /* re-allocate memory and copy the old data to the new */
-texu_status texu_array_realloc(texu_array *, texu_ui64);
+texu_status texu_array_realloc(texu_array *, texu_i64);
 
 /* properties */
 texu_ui64 texu_array_count(texu_array *);
