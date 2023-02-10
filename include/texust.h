@@ -317,6 +317,13 @@ struct texu_baseprice
 };
 typedef struct texu_baseprice texu_baseprice;
 
+struct texu_page
+{
+    texu_char   *clsname;
+    texu_ui32   id;
+    texu_char   *caption;
+};
+typedef struct texu_page texu_page;
 
 #ifdef __cplusplus
 }

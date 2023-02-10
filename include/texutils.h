@@ -39,6 +39,8 @@ texu_i32            texu_strcmp(const texu_char *s1, const texu_char *s2);
 texu_i32            texu_strncmp(const texu_char *s1, const texu_char *s2, texu_i32 len);
 texu_char          *texu_strcat(texu_char* dest, const texu_char* src);
 texu_char          *texu_strchr(const texu_char *str, texu_char ch);
+texu_char          *texu_strrchr(const texu_char *str, texu_char ch);
+texu_char*          texu_strtok(texu_char *str, const texu_char *delim);
 texu_char *         texu_memset(texu_char *dest, texu_char ch, size_t len);
 texu_char *         texu_memcpy(texu_char *dest, const texu_char *src, size_t len);
 texu_i32            texu_memcmp(const texu_char *dest, const texu_char *src, size_t len);
