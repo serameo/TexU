@@ -836,11 +836,19 @@ TexuDrawVRects(texu_cio* cio, texu_rect* rect, texu_i32* widths, texu_i32 nwidth
 texu_i32
 TexuDrawFrame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_ui32 color, texu_ui32 bgcolor)
 {
-    return texu_env_draw_rect(
-                texu_cio_get_env(cio),
+    texu_env *env = texu_cio_get_env(cio);
+    texu_i32 rc = texu_env_draw_rect(
+                env,
                 rect,
                 color,
                 bgcolor);
+    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_i32 width = rect->cols;
+    texu_i32 cx = texu_env_screen_width(env);
+
+    texu_printf_alignment3(buf, text, width-1, TEXU_ALIGN_CENTER, TEXU_TRUE, rect->x, cx);
+    texu_env_draw_text(env, rect->y, rect->x+1, buf, color, bgcolor);
+    return rc;
 }
 
 texu_i32

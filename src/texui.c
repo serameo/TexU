@@ -1104,6 +1104,30 @@ LRESULT CALLBACK _texu_ChildEnvWndProc(HWND hWnd, UINT message, WPARAM wParam, L
             SetWindowLong(hWnd, GWL_USERDATA, (LONG)env);
             break;
         }
+        case WM_GETMINMAXINFO:
+        {
+            LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
+            texu_i32 cx = 0;
+            texu_i32 cy = 0;
+            texu_pos pos = { cy, cx };
+            texu_pos spos = { 0, 0 };
+
+            if (!env)
+            {
+                break;
+            }
+            cx = texu_env_screen_width(env);
+            cy = texu_env_screen_height(env);
+            pos.y = cy + 2; /*extra 2 chars*/
+            pos.x = cx + 2; /*extra 1 char*/
+
+            texu_env_text_to_screen(env, &spos, &pos);
+            lpmmi->ptMinTrackSize.x = spos.x;
+            lpmmi->ptMinTrackSize.y = spos.y;
+            lpmmi->ptMaxTrackSize.x = spos.x;
+            lpmmi->ptMaxTrackSize.y = spos.y;
+            break;
+        }
         case WM_PAINT:
         {
             HDC hdc;
@@ -1120,8 +1144,8 @@ LRESULT CALLBACK _texu_ChildEnvWndProc(HWND hWnd, UINT message, WPARAM wParam, L
         case WM_CHAR:/*printable character*/
         {
             texu_char ch = (texu_char)wParam;
-            if (texu_strchr(punctuations, ch) ||
-                texu_strchr(digits, ch))
+            if (texu_strchr(punctuations, ch) &&
+                texu_strchr(digits, ch) == 0)
             {
                 texu_env_run(env, message, wParam, lParam);
             }
@@ -1130,7 +1154,7 @@ LRESULT CALLBACK _texu_ChildEnvWndProc(HWND hWnd, UINT message, WPARAM wParam, L
         case WM_KEYDOWN:/*alphablet and special key e.g. VK_F1, VK_RETURN but exclude numpad key*/
         {
             texu_char ch = (texu_char)wParam;
-            if (0 == texu_strchr(digits, ch) &&
+            if (/*0 == texu_strchr(digits, ch) &&*/
                 /*0 == texu_strchr(punctuations, ch) &&*/
                 (ch < VK_NUMPAD0 || ch > VK_DIVIDE)
                 )
@@ -1867,8 +1891,8 @@ texu_env_set_focus_from_pos(texu_env *env, const texu_pos *pos)
 texu_status texu_env_text_to_screen(texu_env *env, texu_pos* spos, const texu_pos* tpos)
 {
     texu_status rc = TEXU_OK;
-    spos->x = tpos->x * texu_env_get_cxcaps(env);
-    spos->y = tpos->y * texu_env_get_cyline(env);
+    spos->x = (tpos->x + 0.5) * texu_env_get_cxcaps(env);
+    spos->y = (tpos->y + 0.5) * texu_env_get_cyline(env);
     return rc;
 }
 
@@ -1998,13 +2022,15 @@ texu_status texu_env_draw_rect(texu_env *env, texu_rect* rect, texu_ui32 textcol
     texu_pos spos2;
     texu_i32 x = rect->x;
     texu_i32 y = rect->y;
+    texu_i32 cx = texu_env_screen_width(env);
+    texu_i32 cy = texu_env_screen_height(env);
     /*upper left*/
-    tpos.x = rect->x;
-    tpos.y = rect->y;
+    tpos.x = TEXU_MIN(rect->x, cx);
+    tpos.y = TEXU_MIN(rect->y, cy);
     texu_env_text_to_screen(env, &spos, &tpos);
     /*lower right*/
-    tpos.x = rect->x + rect->cols;
-    tpos.y = rect->y + rect->lines;
+    tpos.x = TEXU_MIN(rect->x + rect->cols, cx);
+    tpos.y = TEXU_MIN(rect->y + rect->lines, cy);
     texu_env_text_to_screen(env, &spos2, &tpos);
 
     x = env->cxCaps / 2;
@@ -2023,23 +2049,7 @@ texu_status texu_env_draw_rect(texu_env *env, texu_rect* rect, texu_ui32 textcol
     LineTo(hdc, spos.x + x, spos2.y + y);
     /* left line */
     LineTo(hdc, spos.x + x, spos.y + y);
-    /*texu_env_draw_hline(env, rect->y, rect->x, rect->cols, textcolor, bgcolor);*/
-    /* lower line */
-    /*texu_env_draw_hline(env, rect->y + rect->lines, rect->x, rect->cols, textcolor, bgcolor);*/
-    /* left line */
-    /*texu_env_draw_vline(env, rect->y, rect->x, rect->lines, textcolor, bgcolor);*/
-    /* right line */
-    /*texu_env_draw_vline(env, rect->y, rect->x + rect->cols, rect->lines, textcolor, bgcolor);*/
-    /* upper left*/
-    /*texu_env_draw_frame_char(env, rect->y, rect->x, TEXU_UPPER_LEFT, textcolor, bgcolor);*/
-    /* lower left*/
-    /*texu_env_draw_frame_char(env, rect->y + rect->lines, rect->x, TEXU_LOWER_LEFT, textcolor, bgcolor);*/
-    /* upper right*/
-    /*texu_env_draw_frame_char(env, rect->y, rect->x + rect->cols, TEXU_UPPER_RIGHT, textcolor, bgcolor);*/
-    /* lower right*/
-    /*texu_env_draw_frame_char(env, rect->y + rect->lines, rect->x + rect->cols, TEXU_LOWER_RIGHT, textcolor, bgcolor);*/
 
-    /*SelectObject(hdc, hOldBrush);*/
     SelectObject(hdc, hOldPen);
 
     DeleteObject(hpen);

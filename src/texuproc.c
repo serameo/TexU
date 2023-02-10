@@ -1470,6 +1470,8 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit
     return rc;
 }
 
+/* Select all       : CTRL + A*/
+/* Cancel editting  : ESCAPE*/
 void
 _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {

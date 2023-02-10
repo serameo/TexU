@@ -68,6 +68,17 @@ texu_strchr(const texu_char *str, texu_char ch)
 #endif
 }
 
+
+texu_char*
+texu_strrchr(const texu_char *str, texu_char ch)
+{
+#if (defined WIN32 && defined UNICODE)
+    return wcsrchr(str, ch);
+#else
+    return strrchr(str, ch);
+#endif
+}
+
 /*float string to long string*/
 texu_i32 texu_fs2ls(const texu_char *_sPriceStr, texu_i32 _lSize, texu_i32 _lDec, texu_char *sLongStr_)
 {
@@ -212,6 +223,17 @@ texu_strcpy(texu_char* dest, const texu_char *str)
     return dest;
 #else
     return strcpy(dest, str);
+#endif
+}
+
+texu_char*
+texu_strtok(texu_char *str, const texu_char *delim)
+{
+    texu_char *brkb;
+#if (defined WIN32 && defined UNICODE)
+    return wcstok_s(str, delim, (texu_char**)&brkb);
+#else
+    return strtok_r(str, delim, (char**)&brkb);
 #endif
 }
 
@@ -581,7 +603,7 @@ struct texu_xcnf
 };
 
 texu_status _texu_xcnf_parse(texu_xcnf *, texu_char *, texu_char *, texu_char *);
-void _texu_xcn_free_map(texu_i64, texu_i64, void *);
+void _texu_xcnf_free_map(texu_i64, texu_i64, void *);
 
 texu_status
 _texu_xcnf_parse(texu_xcnf *xcnf, texu_char *line, texu_char *key, texu_char *val)
@@ -591,47 +613,36 @@ _texu_xcnf_parse(texu_xcnf *xcnf, texu_char *line, texu_char *key, texu_char *va
     texu_char *q1 = 0;
     texu_char *q2 = 0;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
-    texu_char *brkb, *brkl;
+
     texu_char* psz = (texu_char*)buf;
 
     /* empty string or a comment line, then ignore it */
-#if (defined WIN32 && defined UNICODE)
-    if (0 == texu_strlen(line) || L';' == line[0] || L'#' == line[0] || L'!' == line[0])
-#else
-    if (0 == texu_strlen(line) || ';' == line[0] || '#' == line[0] || '!' == line[0])
-#endif
+    if (0 == texu_strlen(line) || 
+        TEXUTEXT(';') == line[0] || 
+        TEXUTEXT('#') == line[0] || 
+        TEXUTEXT('!') == line[0])
     {
         return TEXU_XCNF_SKIP;
     }
     /* white spaces line */
     texu_strcpy(buf, line);
-#if (defined WIN32 && defined UNICODE)
-    tok = wcstok_s(buf, L" \t\r\n", (texu_char**)&brkb);
-#else
-    tok = strtok_r(buf, " \t\r\n", (char**)&brkb);
-#endif
+    tok = texu_strtok(buf, TEXUTEXT(" \t\r\n"));
+
     if (!tok)
     {
         return TEXU_XCNF_SKIP;
     }
 
     /* check a simple statement: key = "value" */
-#if (defined WIN32 && defined UNICODE)
-    tok = wcschr(line, L'=');
-#else
-    tok = strchr(line, '=');
-#endif
+    tok = texu_strchr(line, TEXUTEXT('='));
     if (!tok)
     {
         return TEXU_XCNF_NOTFOUND_EQUAL_SIGN;
     }
-#if (defined WIN32 && defined UNICODE)
-    q1 = wcschr(line, L'"');
-    q2 = wcsrchr(line, L'"');
-#else
-    q1 = strchr(line, '"');
-    q2 = strrchr(line, '"');
-#endif
+    /*2 double-quotes are required*/
+    q1 = texu_strchr(line, TEXUTEXT('"'));
+    q2 = texu_strrchr(line, L'"');
+
     if (!q1 || !q2 || q1 == q2)
     {
         return TEXU_XCNF_NOTFOUND_VALUE;
@@ -639,11 +650,8 @@ _texu_xcnf_parse(texu_xcnf *xcnf, texu_char *line, texu_char *key, texu_char *va
 
     /* read a key */
     psz = (texu_char*)line;
-#if (defined WIN32 && defined UNICODE)
-    tok = wcstok_s(psz, L" \t=\r\n", (texu_char**)&brkl);
-#else
-    tok = strtok_r(psz, " \t=\r\n", (texu_char**)&brkl);
-#endif
+    texu_strtok(psz, TEXUTEXT(" =\t\r\n"));
+
     if (tok)
     {
         texu_strcpy(key, tok);
@@ -657,7 +665,7 @@ _texu_xcnf_parse(texu_xcnf *xcnf, texu_char *line, texu_char *key, texu_char *va
 texu_char *texu_strncpy(texu_char *dest, const texu_char *src, size_t size)
 {
 #if (defined WIN32 && defined UNICODE)
-    wcsncpy_s(dest, sizeof(texu_char)*(texu_strlen(src) + 1), src, size);
+    wcsncpy_s(dest, sizeof(texu_char)*(texu_strlen(src)+1), src, size);
     return dest;
 #else
     return strncpy(dest, src, size);
@@ -671,7 +679,7 @@ texu_char *texu_strnrcpy(texu_char *dest, const texu_char *src, size_t size)
 
     texu_strrcpy(in, src);
 #if (defined WIN32 && defined UNICODE)
-    wcsncpy_s(out, sizeof(texu_char)*(texu_strlen(in) + 1), in, size);
+    wcsncpy_s(out, sizeof(texu_char)*(texu_strlen(in)+1), in, size);
 #else
     strncpy(out, in, size);
 #endif
@@ -710,8 +718,33 @@ texu_memcmp(const texu_char *dest, const texu_char *src, size_t len)
 #endif
 }
 
+
+texu_i32
+texu_strcmp(const texu_char *s1, const texu_char *s2)
+{
+#if (defined WIN32 && defined UNICODE)
+    return wcscmp(s1, s2);
+#else
+    return strcmp(s1, s2);
+#endif
+}
+
+texu_i32
+texu_strncmp(const texu_char *s1, const texu_char *s2, texu_i32 len)
+{
+#if (defined WIN32 && defined UNICODE)
+    return wcsncmp(s1, s2, len);
+#else
+    return strncmp(s1, s2, len);
+#endif
+}
+
+/*
+texu_xcnf
+*/
+
 void
-_texu_xcn_free_map(texu_i64 key, texu_i64 val, void *user)
+_texu_xcnf_free_map(texu_i64 key, texu_i64 val, void *user)
 {
     if (key)
     {
@@ -742,7 +775,7 @@ texu_xcnf_del(texu_xcnf *xcnf)
     {
         texu_map_cb_free(
             xcnf->map,
-            _texu_xcn_free_map,
+            _texu_xcnf_free_map,
             0);
         texu_map_del(xcnf->map);
         free(xcnf);
@@ -812,26 +845,6 @@ texu_xcnf_get_string(texu_xcnf *xcnf, texu_char *key, texu_char *def)
         return val;
     }
     return def;
-}
-
-texu_i32
-texu_strcmp(const texu_char *s1, const texu_char *s2)
-{
-#if (defined WIN32 && defined UNICODE)
-    return wcscmp(s1, s2);
-#else
-    return strcmp(s1, s2);
-#endif
-}
-
-texu_i32
-texu_strncmp(const texu_char *s1, const texu_char *s2, texu_i32 len)
-{
-#if (defined WIN32 && defined UNICODE)
-    return wcsncmp(s1, s2, len);
-#else
-    return strncmp(s1, s2, len);
-#endif
 }
 
 
@@ -1346,7 +1359,7 @@ texu_safedb_aggregate(
 }
 
 
-static int _db_HasTable_callback(void* args, int argc, char** argv, char** colname) /*ETSDEV-794*/
+static int _texu_safedb_has_table(void* args, int argc, char** argv, char** colname)
 {
     int* row = (int*)args;
     *row = atoi(argv[0]);
@@ -1366,7 +1379,7 @@ texu_safedb_is_existing(texu_safedb_ptr _db, texu_safedb_cstr _tabname)
     texu_safedb_bool fExisting = TEXU_SAFEDB_FALSE;
 
     sqlite3_snprintf(BUFSIZ, zSql, sql, _tabname);
-    rc = sqlite3_exec(_db->db, zSql, _db_HasTable_callback, &row, &zErrMsg);
+    rc = sqlite3_exec(_db->db, zSql, _texu_safedb_has_table, &row, &zErrMsg);
     if (rc != SQLITE_OK)
     {
         sqlite3_free(zErrMsg);

@@ -1821,6 +1821,15 @@ void _TexuListCtrlProc_OnEndEdit(texu_wnd *wnd, texu_i32 ok)
     texu_wnd_invalidate(wnd);
 }
 
+/*Control mode*/
+/*Arrow keys are moving the cursor*/
+/*INSERT to insert the new row at the last row*/
+/*DELETE to delete the current row*/
+
+/*Edit mode - pressed ENTER to edit mode and the pressed ENTER again will go to control mode*/
+/*Arrow LEFT/RIGHT keys are moving the cursor*/
+/*Arrow UP/DOWN keys to cancel the edit mode WITHOUT saving*/
+/*ENTER to quit the edit mode WITH saving*/
 void _TexuListCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_lcwnd *lctl = 0;
@@ -5527,12 +5536,13 @@ _TexuProgressBarProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 par
 
 struct texu_pagewnd_page
 {
-    texu_wnd *page;
-    texu_i32  idx;
-    texu_wnd *firstchild;
-    texu_wnd *lastchild;
-    texu_wnd *activechild;
-    void *userdata;
+    texu_wnd    *page;
+    texu_i32     idx;
+    texu_wnd    *firstchild;
+    texu_wnd    *lastchild;
+    texu_wnd    *activechild;
+    void        *userdata;
+    texu_char   caption[TEXU_MAX_WNDTEXT + 1];
 };
 typedef struct texu_pagewnd_page texu_pagewnd_page;
 
@@ -5555,7 +5565,7 @@ void _TexuPageCtrlProc_OnDestroy(texu_wnd *wnd);
 void _TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
 void _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 
-texu_status _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_char *clsname, texu_ui32 id);
+texu_status _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_page* pg);
 texu_wnd    *_TexuPageCtrlProc_OnSetCurPage(texu_wnd *wnd, texu_i32 idx);
 texu_wnd    *_TexuPageCtrlProc_OnGetCurPage(texu_wnd *wnd);
 texu_i32    _TexuPageCtrlProc_OnGetPageIndex(texu_wnd *wnd, texu_wnd *page);
@@ -5563,10 +5573,7 @@ texu_i32    _TexuPageCtrlProc_OnGetCountPage(texu_wnd *wnd);
 void        _TexuPageCtrlProc_OnRemovePage(texu_wnd *wnd, texu_i32 idx);
 void        _TexuPageCtrlProc_OnRemoveAllPages(texu_wnd *wnd);
 
-texu_wnd *_TexuPageCtrl_CreatePage(
-    texu_wnd *wnd,
-    const texu_char *clsname,
-    texu_ui32 id);
+texu_wnd *_TexuPageCtrl_CreatePage(texu_wnd *wnd, const texu_page *pg);
 texu_wnd *_TexuPageCtrlProc_GetFirstPageEnabled(texu_wnd *);
 texu_wnd *_TexuPageCtrlProc_GetLastPageEnabled(texu_wnd *);
 texu_wnd *_TexuPageCtrlProc_GetPage(texu_wnd *wnd, texu_i32 idx);
@@ -5576,7 +5583,7 @@ texu_wnd *_TexuPageCtrlProc_SetCurPage(texu_wnd *wnd, texu_wnd *newpage);
 texu_i32 _TexuPageCtrlProc_GetPageIndex(texu_wnd *wnd, texu_wnd *whatpage);
 
 void                _texu_pagewnd_page_del(texu_i64 pg, void *userdata);
-texu_pagewnd_page  *_texu_pagewnd_page_new(texu_wnd *, texu_i32 idx, void *userdata);
+texu_pagewnd_page  *_texu_pagewnd_page_new(texu_wnd *, texu_i32 idx, void *userdata, const texu_page *pg);
 texu_pagewnd_page  *_texu_pagewnd_page_get(texu_wnd *wnd, texu_i32 idx);
 
 texu_i32
@@ -5752,8 +5759,7 @@ _TexuPageCtrlProc_OnGetCurPage(texu_wnd *wnd)
 texu_wnd *
 _TexuPageCtrl_CreatePage(
     texu_wnd *wnd,
-    const texu_char *clsname,
-    texu_ui32 id)
+    const texu_page *pg)
 {
     texu_wnd_attrs attrs;
     texu_status rc = TEXU_OK;
@@ -5777,7 +5783,7 @@ _TexuPageCtrl_CreatePage(
     attrs.width     = w;
     attrs.enable    = TEXU_TRUE;
     attrs.visible   = TEXU_TRUE;
-    attrs.text      = TEXT("");
+    attrs.text      = pg->caption;
     attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
     attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
     attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
@@ -5788,8 +5794,8 @@ _TexuPageCtrl_CreatePage(
     attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
     attrs.selectedbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
 
-    attrs.id = id;
-    attrs.clsname = clsname;
+    attrs.id = pg->id;
+    attrs.clsname = pg->clsname;
     attrs.userdata = 0;
     attrs.style = TEXU_WS_HIDE;
     attrs.exstyle = 0;
@@ -5812,7 +5818,7 @@ _texu_pagewnd_page_del(texu_i64 pg, void *userdata)
 }
 
 texu_pagewnd_page *
-_texu_pagewnd_page_new(texu_wnd *page, texu_i32 idx, void *userdata)
+_texu_pagewnd_page_new(texu_wnd *page, texu_i32 idx, void *userdata, const texu_page *pg)
 {
     texu_pagewnd_page *pgitem = (texu_pagewnd_page *)malloc(sizeof(texu_pagewnd_page));
     if (pgitem)
@@ -5823,6 +5829,10 @@ _texu_pagewnd_page_new(texu_wnd *page, texu_i32 idx, void *userdata)
         pgitem->lastchild = texu_wnd_get_last_activechild(page);
         pgitem->activechild = pgitem->firstchild;
         pgitem->userdata = userdata;
+        if (pg->caption)
+        {
+            texu_strcpy(pgitem->caption, pg->caption);
+        }
     }
     return pgitem;
 }
@@ -5856,7 +5866,7 @@ _TexuPageCtrlProc_OnRemovePage(texu_wnd *wnd, texu_i32 idx)
     texu_i32 npages = pgctl->npages;
     texu_wnd *nextpage = texu_wnd_nextwnd(curpage);
     texu_wnd *prevpage = texu_wnd_prevwnd(curpage);
-    texu_pagewnd_page *nextpgitem = 0;/* (texu_pagewnd_page *)texu_array_get(pgctl->pages, idx + 1);*/
+    texu_pagewnd_page *nextpgitem = 0;
     texu_i32 i = idx + 1;
 
     if (!pgitem)
@@ -5898,7 +5908,7 @@ _TexuPageCtrlProc_OnRemovePage(texu_wnd *wnd, texu_i32 idx)
 }
 
 texu_status
-_TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_char *clsname, texu_ui32 id)
+_TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_page *pg)
 {
     texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
     texu_wnd *page = 0;
@@ -5906,7 +5916,7 @@ _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_char *clsname, texu_ui32 i
     texu_i32 nitems = texu_array_count(pgctl->pages);
     texu_i32 npages = pgctl->npages;
 
-    page = _TexuPageCtrl_CreatePage(wnd, clsname, id);
+    page = _TexuPageCtrl_CreatePage(wnd, pg);
     if (!(page))
     {
         return TEXU_NOMEM;
@@ -5919,7 +5929,7 @@ _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_char *clsname, texu_ui32 i
     {
         texu_wnd_visible(page, TEXU_FALSE);
     }
-    pgitem = _texu_pagewnd_page_new(page, npages, 0);
+    pgitem = _texu_pagewnd_page_new(page, npages, 0, pg);
     texu_array_set(pgctl->pages, npages, (texu_i64)pgitem);
     /*increment number of pages*/
     ++pgctl->npages;
@@ -5982,6 +5992,15 @@ _TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     */
 }
 
+/* Go to the first page     : CTRL + K, CTRL + F*/
+/* Go to the last page      : CTRL + K, CTRL + L*/
+/* Go to the 1st page       : CTRL + K, CTRL + 0*/
+/* Go to the 2nd page       : CTRL + K, CTRL + 1*/
+/* Go to the 3rd page       : CTRL + K, CTRL + 2*/
+/* Go to the nth page       : CTRL + K, CTRL + (n-1); n=1,2,3,...,10*/
+/* Go to the 10th page      : CTRL + K, CTRL + 9*/
+/* Go to the next page      : CTRL + K, CTRL + N / PAGEDOWN*/
+/* Go to the previous page  : CTRL + K, CTRL + P / PAGEUP*/
 void
 _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
@@ -6005,17 +6024,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
         return;
     }
-    /*switch page by index*/
-    if ((TEXU_KEYPRESSED_CTRL & alt) && (ch >= TEXUTEXT('0') && ch <= TEXUTEXT('9')))
-    {
-        /**/
-        pgitem = _texu_pagewnd_page_get(wnd, (ch - TEXUTEXT('0')));
-        if (pgitem)
-        {
-            pgctl->ctl_k_pressed = TEXU_FALSE;
-            newpage = pgitem->page;
-        }
-    }
+
     if ((TEXU_KEYPRESSED_CTRL & alt) && ((TEXUTEXT('k') == ch) || (TEXUTEXT('K') == ch)))
     {
         pgctl->ctl_k_pressed = !pgctl->ctl_k_pressed;
@@ -6066,7 +6075,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         }
         case TEXU_KEY_PPAGE:
         {
-            if (alt & TEXU_KEYPRESSED_ALT)
+            /*if (alt & TEXU_KEYPRESSED_ALT)*/
             {
                 newpage = _TexuPageCtrlProc_GetPrevPageEnabled(wnd, curpage);
                 pgctl->ctl_k_pressed = TEXU_FALSE;
@@ -6086,7 +6095,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         }
         case TEXU_KEY_NPAGE:
         {
-            if (alt & TEXU_KEYPRESSED_ALT)
+            /*if (alt & TEXU_KEYPRESSED_ALT)*/
             {
                 newpage = _TexuPageCtrlProc_GetNextPageEnabled(wnd, curpage);
                 pgctl->ctl_k_pressed = TEXU_FALSE;
@@ -6094,8 +6103,24 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             break;
         }
     }
-
-    if (newpage)
+    /*switch page by index*/
+    if (!newpage)
+    {
+        if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
+        {
+            if (ch >= TEXUTEXT('0') && ch <= TEXUTEXT('9'))
+            {
+                /* continue as KEY_PPAGE doing */
+                pgitem = _texu_pagewnd_page_get(wnd, (ch - TEXUTEXT('0')));
+                if (pgitem)
+                {
+                    pgctl->ctl_k_pressed = TEXU_FALSE;
+                    newpage = pgitem->page;
+                }
+            }
+        }
+    }
+    if (newpage && newpage != curpage)
     {
         _TexuPageCtrlProc_SetCurPage(wnd, newpage);
     }
@@ -6210,7 +6235,7 @@ _TexuPageCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
         return 0;
 
     case TEXU_PGM_ADDPAGE:
-        return _TexuPageCtrlProc_OnAddPage(wnd, (const texu_char *)param1, (texu_ui32)param2);
+        return _TexuPageCtrlProc_OnAddPage(wnd, (const texu_page *)param1);
 
     case TEXU_PGM_SETCURPAGE:
         return (texu_i64)_TexuPageCtrlProc_OnSetCurPage(wnd, (texu_i32)param1);
