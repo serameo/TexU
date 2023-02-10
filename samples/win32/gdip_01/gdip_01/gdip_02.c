@@ -402,18 +402,24 @@ void _MyWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_rect rect = { 9, 0, 4, 99 };
     texu_i32 widths[4] = { 10, 20, 30, 39 };
 
-    texu_rect rect2 = { 14, 0, 10, 99 };
+    texu_rect rect2 = { 16, 3, 5, 90 };
     texu_i32 heights[2] = { 4, 4 };
+
+    texu_rect rect3 = { 14, 0, 10, 99 };
 #if (defined WIN32 && defined _WINDOWS)
 /*    TexuDrawRect(dc, &rect, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);
     TexuDrawFrame(dc, TEXUTEXT("hello world"), &rect, TEXU_CIO_COLOR_WHITE_BLUE, TEXU_CIO_COLOR_WHITE_BLUE);*/
     TexuDrawHRects(dc, &rect2, heights, 2,
-                   TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE),
-                   TexuGetColor(dc, TEXU_CIO_COLOR_BLUE_WHITE));
+                   TEXU_CIO_COLOR_RED_WHITE,
+                   TEXU_CIO_COLOR_WHITE_BLUE);
 
     TexuDrawVRects(dc, &rect, widths, 4,
-                   TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_YELLOW),
-                   TexuGetColor(dc, TEXU_CIO_COLOR_BLUE_WHITE));
+                   TEXU_CIO_COLOR_GREEN_WHITE,
+                   TEXU_CIO_COLOR_WHITE_BLUE);
+
+    TexuDrawFrame(dc, TEXUTEXT("hello world"), &rect3, 
+                  TEXU_CIO_COLOR_BLUE_WHITE, 
+                  TEXU_CIO_COLOR_WHITE_BLUE);
 #else
     TexuDrawHRects(dc, &rect, widths, 4,
                    TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE));
@@ -586,7 +592,7 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         starty, /* y */
         70,     /* x */
         1,
-        16,
+        50,
         wnd,        /* parent */
         IDC_EDITMASK1, /* id */
         0           /* user data */
@@ -1114,7 +1120,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             child = TexuCreateWindow(
                 TEXUTEXT("50.0"),
                 TEXU_EDITPRICESPREADCTRL_CLASS,
-                TEXU_WS_RIGHT | TEXU_EPSS_SHOWCHANGE |TEXU_EPSS_AUTOCOMMAS, /* style*/
+                TEXU_WS_RIGHT | TEXU_EPSS_SHOWCHANGEPRICE |TEXU_EPSS_AUTOCOMMAS, /* style*/
                 0,             /* exstyle*/
                 0,             /* y */
                 32,             /* x */
@@ -1895,12 +1901,11 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
-    /*return TexuFrameWndProc(wnd, msg, param1, param2);*/
 }
 
 void _MyWndProc4_OnExit(texu_wnd *wnd)
 {
-    /*  TexuDestroyWindow(wnd);*/
+
 }
 
 texu_i64
@@ -2021,7 +2026,7 @@ MyWndProc4(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
-    /*return TexuFrameWndProc(wnd, msg, param1, param2);*/
+
 }
 
 void _MyWndProc5_OnHelp(texu_wnd *wnd)
@@ -2070,10 +2075,33 @@ MyWndProc5(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass5_Page1, IDC_PAGE1);
             TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass5_Page2, IDC_PAGE2);
             */
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass,  IDC_PAGE1);
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass2, IDC_PAGE2);
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass3, IDC_PAGE3);
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass4, IDC_PAGE4);
+            texu_page pg;
+            pg.clsname = MyWndClass;
+            pg.id = IDC_PAGE1;
+            pg.caption = TEXUTEXT("Main menu");
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)&pg, 0);
+
+            pg.clsname = MyWndClass2;
+            pg.id = IDC_PAGE2;
+            pg.caption = TEXUTEXT("2nd Page");
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)&pg, 0);
+
+            pg.clsname = MyWndClass3;
+            pg.id = IDC_PAGE3;
+            pg.caption = TEXUTEXT("3rd Page");
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)&pg, 0);
+
+            pg.clsname = MyWndClass4;
+            pg.id = IDC_PAGE4;
+            pg.caption = TEXUTEXT("4th Page");
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)&pg, 0);
+
+            TexuSendMessage(child, TEXU_PGM_SETCURPAGE, 1, 0);
+
+            /*TexuSendMessage(child, TEXU_PGM_REMOVEALLPAGES, 0, 0);*/
+            /*
+            TexuSendMessage(child, TEXU_PGM_REMOVEPAGE, 1, 0);
+            TexuSendMessage(child, TEXU_PGM_REMOVEPAGE, 2, 0);*/
 #if (defined WIN32 && defined _WINDOWS)
             TexuAddHotKey(wnd, VK_F1, ID_HELP, 0);
             TexuAddHotKey(wnd, VK_F3, ID_DELETE, 0);
@@ -2082,12 +2110,10 @@ MyWndProc5(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             TexuAddHotKey(wnd, KEY_F(3), ID_DELETE, 0);
 #endif
             TexuAddHotKey(wnd, 'x', ID_DELETE, 1);
-            /*TexuAddHotKey(wnd, 'X', ID_DELETE, 1);*/
             return TEXU_OK;
         }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
-    /*return TexuFrameWndProc(wnd, msg, param1, param2);*/
 }
 
 texu_i64
@@ -2102,7 +2128,6 @@ MyWndProc5_Page1(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
-    /*return TexuFrameWndProc(wnd, msg, param1, param2);*/
 }
 
 texu_i64
@@ -2117,5 +2142,4 @@ MyWndProc5_Page2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
-    /*return TexuFrameWndProc(wnd, msg, param1, param2);*/
 }
