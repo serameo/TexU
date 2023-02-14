@@ -88,7 +88,6 @@ texu_i32 texu_fs2ls(const texu_char *_sPriceStr, texu_i32 _lSize, texu_i32 _lDec
     texu_i32    fDot = 0;       /*decimal flag*/
     texu_char    szLongStr[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT(""); /*conversion from price string to long string*/
     texu_char    szPriceStrNoComma[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT(""); /*price string without ','*/
-    texu_i32    lNewLen = 0;        /*length of szPriceStrNoComma*/
     texu_char*   pszLongStr = szLongStr;
 
     memset(szPriceStrNoComma, 0, sizeof(szPriceStrNoComma));

@@ -149,8 +149,9 @@ _TexuDefWndProc_CountLines(const texu_char *text, texu_i32 *maxlen)
     texu_char *tok;
     texu_i32 len = 0;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
+#if (defined WIN32 && defined UNICODE)
     texu_char *pszContext;
-
+#endif
     *maxlen = 0;
     if (text && texu_strlen(text) > 0)
     {
@@ -276,8 +277,9 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
     texu_i32 width = 0;
     texu_i32 wndwidth = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
+#if (defined WIN32 && defined UNICODE)
     texu_char *pszContext;
-
+#endif
     texu_msgbox *msgbox = (texu_msgbox *)texu_wnd_get_userdata(wnd);
 
     if (lines < 1)
@@ -809,15 +811,15 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i32    x = texu_wnd_get_x(wnd);
     texu_i32    width = texu_wnd_get_width(wnd);
     texu_env    *env = texu_wnd_get_env(wnd);
-    texu_i32    normcolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON);
-    texu_i32    discolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_DISABLED);
-    texu_i32    color = TEXU_CIO_COLOR_CYAN_BLACK;
+    texu_ui32    normcolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON);
+    texu_ui32    discolor = texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_DISABLED);
+    texu_ui32    color = TEXU_CIO_COLOR_CYAN_BLACK;
     size_t      len = 0;
     texu_btnwnd *btnwnd = (texu_btnwnd*)texu_wnd_get_userdata(wnd);
 
-    texu_i32    normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON);
-    texu_i32    disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_DISABLED);
-    texu_i32    bgcolor = TEXU_CIO_COLOR_CYAN_BLACK;
+    texu_ui32    normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON);
+    texu_ui32    disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_DISABLED);
+    texu_ui32    bgcolor = TEXU_CIO_COLOR_CYAN_BLACK;
     texu_i32    cx = texu_env_screen_width(env);
 
     if (!texu_wnd_is_visible(wnd))
@@ -1367,7 +1369,7 @@ _TexuEditProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_editwnd *edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
     texu_ui32 style = texu_wnd_get_style(wnd);
-    texu_env *env = texu_wnd_get_env(wnd);
+    /*texu_env *env = texu_wnd_get_env(wnd);*/
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -1483,21 +1485,22 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
-    texu_i32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
-    texu_i32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
-    texu_i32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
+    texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+    texu_ui32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
     texu_i64 ret = TEXU_OK;
     texu_char *psz = 0;
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_i32 width = texu_wnd_get_width(wnd);
 
-    texu_i32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
-    texu_i32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
-    texu_i32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
-    static texu_char printable_chars[] = TEXUTEXT(" ~!@#$%^&*_-+=,?/|.\\\'\"()[]{}<>abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
     texu_i32 cx = texu_env_screen_width(env);
-
+#if (defined WIN32 && defined _WINDOWS)
+    static texu_char printable_chars[] = TEXUTEXT(" ~!@#$%^&*_-+=,?/|.\\\'\"()[]{}<>abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+#endif
     if (!(texu_wnd_is_enable(wnd)))
     {
         return;
@@ -1773,7 +1776,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             edit->editing = 1;
         } /*TEXU_MAX_WNDTEXT*/
     }
-    else if (0x7f == ch || VK_DELETE == ch || TEXU_KEY_BACKSPACE == ch) /* delete char */
+    else if (0x7f == ch || TEXU_KEY_DC == ch || TEXU_KEY_BACKSPACE == ch) /* delete char */
     {
         edit->selected = 0;
         len = texu_strlen(edit->editbuf);
@@ -1916,7 +1919,7 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 bgcolor = normbg;
 
     texu_i32 cx = texu_env_screen_width(env);
-    texu_i32 cy = texu_env_screen_height(env);
+    /*texu_i32 cy = texu_env_screen_height(env);*/
 
 
     if (!texu_wnd_is_visible(wnd))
@@ -2009,7 +2012,7 @@ texu_status _TexuEditProc_OnGetFloat(texu_wnd *wnd, texu_f64 *out);
 texu_status _TexuEditProc_OnGetInt(texu_wnd *wnd, texu_i32 *out)
 {
     texu_status rc = TEXU_OK;
-    texu_editwnd *edit = 0;
+    /*texu_editwnd *edit = 0;*/
     texu_i32 value = 0;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
 
@@ -2018,7 +2021,7 @@ texu_status _TexuEditProc_OnGetInt(texu_wnd *wnd, texu_i32 *out)
         return TEXU_ERROR;
     }
 
-    edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
+    /*edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);*/
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
 
     value = texu_atol(text);
@@ -2030,7 +2033,7 @@ texu_status _TexuEditProc_OnGetInt(texu_wnd *wnd, texu_i32 *out)
 texu_status _TexuEditProc_OnGetFloat(texu_wnd *wnd, texu_f64 *out)
 {
     texu_status rc = TEXU_OK;
-    texu_editwnd *edit = 0;
+    /*texu_editwnd *edit = 0;*/
     texu_f64 value = 0;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
 
@@ -2039,7 +2042,7 @@ texu_status _TexuEditProc_OnGetFloat(texu_wnd *wnd, texu_f64 *out)
         return TEXU_ERROR;
     }
 
-    edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
+    /*edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);*/
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
 
     value = texu_atof(text);
@@ -2247,7 +2250,7 @@ _TexuListBoxProc_FindIndexByItem(texu_lbwnd *lb, texu_lbwnd_item *item)
 #if (defined WIN32 && defined _WINDOWS)
 texu_i32 _TexuListBoxProc_OnSetSelColor(texu_wnd *wnd, texu_ui32 color, texu_ui32 bgcolor)
 {
-    texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
+    /*texu_lbwnd *lb = texu_wnd_get_userdata(wnd);*/
     texu_ui32 oldcolor = texu_wnd_get_selected_color(wnd);/*lb->selcolor;*/
     /*lb->selcolor = color;
     lb->selbg = bgcolor;*/
@@ -2258,9 +2261,9 @@ texu_i32 _TexuListBoxProc_OnSetSelColor(texu_wnd *wnd, texu_ui32 color, texu_ui3
 #else
 texu_i32 _TexuListBoxProc_OnSetSelColor(texu_wnd *wnd, texu_ui32 color)
 {
-    texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
-    texu_i32 oldcolor = texu_wnd_get_selected_color(wnd);/*lb->selcolor;*/
-    lb->selcolor = color;
+    /*texu_lbwnd *lb = texu_wnd_get_userdata(wnd);*/
+    texu_ui32 oldcolor = texu_wnd_get_selected_color(wnd);/*lb->selcolor;*/
+    /*lb->selcolor = color;*/
     return oldcolor;
 }
 #endif
@@ -2678,8 +2681,8 @@ void
 _TexuListBoxProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
-    texu_lbwnd_item *item = 0;
-    texu_env *env = texu_wnd_get_env(wnd);
+    /*texu_lbwnd_item *item = 0;*/
+    /*texu_env *env = texu_wnd_get_env(wnd);*/
     if (!texu_wnd_is_enable(wnd))
     {
         return;
@@ -2714,7 +2717,7 @@ _TexuListBoxProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
 {
     texu_i32 rc = TEXU_OK;
     texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
-    texu_env *env = texu_wnd_get_env(wnd);
+    /*texu_env *env = texu_wnd_get_env(wnd);*/
 
     /* send notification */
     _TexuListBoxProc_Notify(wnd, TEXU_LBN_KILLFOCUS, lb->cursel);
@@ -2755,8 +2758,8 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_lbwnd_item *item = 0;
     texu_i32  movey = y;
     texu_i32  movex = x;
-    texu_wnd *parent = texu_wnd_get_parent(wnd);
-    texu_bool fFocused = lb->focused;
+    /*texu_wnd *parent = texu_wnd_get_parent(wnd);*/
+    /*texu_bool fFocused = lb->focused;*/
 
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTBOX_DISABLED);
@@ -3196,7 +3199,11 @@ _TexuListBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         }
         case TEXU_LBM_SETSELCOLOR:
         {
+#if (defined WIN32 && defined _WINDOWS)
             return _TexuListBoxProc_OnSetSelColor(wnd, (texu_ui32)param1, (texu_ui32)param2);
+#else
+            return _TexuListBoxProc_OnSetSelColor(wnd, (texu_ui32)param1);
+#endif
         }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);

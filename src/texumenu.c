@@ -778,7 +778,7 @@ _TexuMenuWndProc_DrawPopupMenu(
 
     texu_i32 bgcolor = 0;
 
-    texu_env *env = texu_wnd_get_env(wnd);
+    /*texu_env *env = texu_wnd_get_env(wnd);*/
 
     while (item)
     {

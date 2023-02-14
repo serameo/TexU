@@ -91,6 +91,7 @@ struct texu_env
 #endif
     /* system color */
     texu_ui32       syscolors[TEXU_MAX_COLOR];
+    texu_ui32       sysbgcolors[TEXU_MAX_COLOR];
     texu_i32        cols;       /* width*/
     texu_i32        lines;      /* height*/
 #ifdef USE_TCL_AUTOMATION
@@ -117,15 +118,14 @@ struct texu_env
     texu_i32    cxCaps;
     texu_i32    cyChar;
     texu_i32    cyLine;
-    texu_ui32   sysbgcolors[TEXU_MAX_COLOR];
     texu_i32    cxScreen;
     texu_i32    cyScreen;
-    texu_i32    chNextKey;
-    texu_i32    chPrevKey;
-    texu_wnd    *focuswnd;
     cJSON       *prop;  /*keep configuration from texuenv.json*/
     texu_map    *fonts; /*create font from texuenv.json*/
 #endif
+    texu_i32    chNextKey;
+    texu_i32    chPrevKey;
+    texu_wnd    *focuswnd;
 };
 
 #if (defined WIN32 && defined _WINDOWS)
@@ -166,6 +166,8 @@ texu_env_invalidate(texu_env *env)
     return InvalidateRect(env->hwnd, NULL, TRUE);
 }
 
+#endif
+
 void
 texu_env_set_movenext(texu_env *env, texu_i32 nextkey)
 {
@@ -201,8 +203,6 @@ texu_env_set_focus(texu_env *env, texu_wnd *wnd)
 {
     env->focuswnd = wnd;
 }
-
-#endif
 
 struct texu_env_wndcls
 {
@@ -1891,8 +1891,8 @@ texu_env_set_focus_from_pos(texu_env *env, const texu_pos *pos)
 texu_status texu_env_text_to_screen(texu_env *env, texu_pos* spos, const texu_pos* tpos)
 {
     texu_status rc = TEXU_OK;
-    spos->x = (tpos->x + 0.5) * texu_env_get_cxcaps(env);
-    spos->y = (tpos->y + 0.5) * texu_env_get_cyline(env);
+    spos->x = (texu_i32)(tpos->x + 0.5) * texu_env_get_cxcaps(env);
+    spos->y = (texu_i32)(tpos->y + 0.5) * texu_env_get_cyline(env);
     return rc;
 }
 
@@ -3044,7 +3044,6 @@ _TexuDefWndProc_OnEnable(texu_wnd *wnd, texu_bool enable)
 void
 _TexuDefWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 {
-    texu_ui32 style = texu_wnd_get_style(wnd);
     if (!texu_wnd_is_visible(wnd))
     {
         return;
@@ -3176,15 +3175,10 @@ _TexuDefWndProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_wnd *parent = texu_wnd_get_parent(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
-    texu_i32 y = texu_wnd_get_y(wnd);
-    texu_i32 x = texu_wnd_get_x(wnd);
 
     if (parent && texu_wnd_is_active(wnd))
     {
         parent->activechild = wnd;
-        /*
-        texu_env_set_cursor(env, y, x);
-        texu_env_show_cursor(env, TEXU_TRUE);*/
     }
     texu_env_set_focus(env, wnd);
 }
@@ -3598,8 +3592,8 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
 {
     texu_status rc = TEXU_OK;
     texu_wndproc wndproc = 0;
-    texu_i32 xparent = (parent ? texu_wnd_get_x(parent) : 0);
-    texu_i32 yparent = (parent ? texu_wnd_get_y(parent) : 0);
+/*    texu_i32 xparent = (parent ? texu_wnd_get_x(parent) : 0);
+    texu_i32 yparent = (parent ? texu_wnd_get_y(parent) : 0);*/
     texu_env *env = wnd->env;
     texu_i32 cx = texu_env_screen_width(env);
     texu_i32 cy = texu_env_screen_height(env);
