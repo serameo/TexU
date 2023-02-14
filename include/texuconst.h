@@ -600,9 +600,11 @@ enum
 
 
 
-#ifdef _USE_CURSES_
+#ifdef __USE_CURSES__
 #define TEXU_KEY_SELMENU                10
 #define TEXU_KEY_NEXTWND                10
+#define TEXU_KEY_ENTER                  10
+#define TEXU_KEY_TAB                    9
 #define TEXU_KEY_PREVWND                KEY_BTAB
 #define TEXU_KEY_BACKSPACE              KEY_BACKSPACE
 #define TEXU_KEY_IC                     KEY_IC

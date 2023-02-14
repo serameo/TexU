@@ -11,7 +11,9 @@
 #define _TEXUIO_H_
 
 #include <stdio.h>
-/*#include <ncurses.h>*/
+#ifdef __USE_CURSES__
+#include <curses.h>
+#endif
 
 #include "texumacros.h"
 #include "texutypes.h"

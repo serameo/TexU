@@ -132,12 +132,6 @@ FILE*           texu_env_get_stdout(texu_env *env);
 HFONT           texu_env_get_clsfont(texu_env *env, const texu_char *clsname);
 HFONT           texu_env_get_insfont(texu_env *env, const texu_char *clsname, texu_ui32 id);
 cJSON*          texu_env_get_prop(texu_env *env);
-texu_wnd*       texu_env_get_focus(texu_env *env);
-void            texu_env_set_focus(texu_env *env, texu_wnd *wnd);
-void            texu_env_set_movenext(texu_env *env, texu_i32 nextkey);
-texu_i32        texu_env_get_movenext(texu_env *env);
-void            texu_env_set_moveprev(texu_env *env, texu_i32 prevkey);
-texu_i32        texu_env_get_moveprev(texu_env *env);
 texu_i64        texu_env_invalidate(texu_env *env);
 HDC             texu_env_get_hdc(texu_env *env);
 HFONT           texu_env_get_hfont(texu_env *env);
@@ -200,8 +194,6 @@ texu_status     texu_env_draw_char_ex(texu_env *env,
                                    texu_ui32    id);
 
 
-void            texu_env_set_sysbgcolors(texu_env* env, texu_i32(*setcolor)(texu_i32));
-texu_ui32       texu_env_get_sysbgcolor(texu_env*, texu_i32);
 texu_status     texu_env_update_screen(texu_env *env);
 texu_status     texu_env_draw_vframes(texu_env *env, texu_rect* rect, texu_i32* widths, texu_i32 frames, texu_ui32 textcolor, texu_ui32 bgcolor);
 texu_status     texu_env_draw_hframes(texu_env *env, texu_rect* rect, texu_i32* heights, texu_i32 frames, texu_ui32 textcolor, texu_ui32 bgcolor);
@@ -258,6 +250,14 @@ void            texu_env_restore_screen(texu_env* env);
 
 void            texu_env_set_syscolors(texu_env* env, texu_i32 (*setcolor)(texu_i32));
 texu_ui32        texu_env_get_syscolor(texu_env*, texu_i32);
+void            texu_env_set_sysbgcolors(texu_env* env, texu_i32(*setcolor)(texu_i32));
+texu_ui32       texu_env_get_sysbgcolor(texu_env*, texu_i32);
+texu_wnd*       texu_env_get_focus(texu_env *env);
+void            texu_env_set_focus(texu_env *env, texu_wnd *wnd);
+void            texu_env_set_movenext(texu_env *env, texu_i32 nextkey);
+texu_i32        texu_env_get_movenext(texu_env *env);
+void            texu_env_set_moveprev(texu_env *env, texu_i32 prevkey);
+texu_i32        texu_env_get_moveprev(texu_env *env);
 
 #if 0
 texu_i32        texu_env_set_timer(texu_env*, texu_i32, texu_i32, texu_i32);
