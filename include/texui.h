@@ -212,6 +212,8 @@ texu_bool       texu_env_del_cursor(texu_env *env);
 texu_env*       texu_env_new(texu_i32, texu_i32);
 #endif
 
+void            texu_env_lock_update(texu_env *env, texu_bool locked);
+texu_bool       texu_env_is_update_locked(texu_env *env);
 
 /*cursor*/
 texu_bool       texu_env_new_cursor(texu_env *env);

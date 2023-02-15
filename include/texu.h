@@ -135,6 +135,8 @@ texu_i64            TexuCloseWindow(texu_wnd *wnd);
 
 #define TEXU_SW_HIDE            0
 #define TEXU_SW_SHOW            1
+void                TexuUnlockUpdate();
+void                TexuLockUpdate();
 void                TexuShowWindow(
                         texu_wnd*  wnd,
                         texu_i32   show
