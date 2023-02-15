@@ -126,7 +126,20 @@ struct texu_env
     texu_i32    chNextKey;
     texu_i32    chPrevKey;
     texu_wnd    *focuswnd;
+    texu_bool   locked_update;
 };
+
+void
+texu_env_lock_update(texu_env *env, texu_bool locked)
+{
+    env->locked_update = locked;
+}
+
+texu_bool
+texu_env_is_update_locked(texu_env *env)
+{
+    return env->locked_update;
+}
 
 #if (defined WIN32 && defined _WINDOWS)
 cJSON*
@@ -2415,6 +2428,9 @@ texu_env_new(texu_i32 lines, texu_i32 cols)
         /* register internal classes */
         _texu_env_init_cls(env);
 
+        /*update screen*/
+        env->locked_update = TEXU_TRUE;
+
         /* desktop */
         rc = _texu_env_create_desktop(env);
         if (rc != TEXU_OK)
@@ -3703,9 +3719,9 @@ _texu_wnd_invalidate(texu_wnd *wnd)
     texu_wnd *childwnd = 0;
     texu_env *env = texu_wnd_get_env(wnd);
 
-    if (!wnd || !texu_wnd_is_visible(wnd))
+    if (!wnd || !texu_wnd_is_visible(wnd) || texu_env_is_update_locked(env))
     {
-        return 0;
+        return -1;
     }
     /* firstly, paint itself */
     texu_wnd_send_msg(wnd, TEXU_WM_ERASEBG, (texu_i64)(env->cio), 0);
@@ -3732,14 +3748,16 @@ texu_wnd_invalidate(texu_wnd *wnd)
     {
         return -1;
     }
-    _texu_wnd_invalidate(wnd);
+    if (0 == _texu_wnd_invalidate(wnd))
+    {
 #if (defined WIN32 && defined _WINDOWS)
-    /*Double buffering technique to prevent freaking screen*/
-    texu_env *env = texu_wnd_get_env(wnd);
-    texu_i32 cx = env->cxScreen;
-    texu_i32 cy = env->cyScreen;
-    BitBlt(env->hdc, 0, 0, cx, cy, env->hmemdc, 0, 0, SRCCOPY);
+        /*Double buffering technique to prevent the freaking screen*/
+        texu_env *env = texu_wnd_get_env(wnd);
+        texu_i32 cx = env->cxScreen;
+        texu_i32 cy = env->cyScreen;
+        BitBlt(env->hdc, 0, 0, cx, cy, env->hmemdc, 0, 0, SRCCOPY);
 #endif
+    }
     return 0;
 }
 

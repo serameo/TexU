@@ -568,6 +568,19 @@ TexuShowWindow(
 }
 
 void
+TexuUnlockUpdate()
+{
+    texu_env_lock_update(genv, TEXU_FALSE);
+}
+
+void
+TexuLockUpdate()
+{
+    texu_env_lock_update(genv, TEXU_TRUE);
+}
+
+
+void
 TexuInvalidateWindow(
     texu_wnd *wnd)
 {

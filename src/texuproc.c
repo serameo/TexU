@@ -1215,11 +1215,12 @@ texu_i32 _TexuEditProc_AddDecimalFormat(texu_editwnd *edit)
     texu_char *pbuf;
     texu_i32 len = texu_strlen(edit->editbuf) - 1;
     texu_char *psz = &edit->editbuf[len];
+    texu_char *pos = texu_strchr(edit->editbuf, TEXUTEXT('.'));
 
     memset(buf, 0, sizeof(buf));
     pbuf = buf;
 
-    while (*psz != 0 && *psz != TEXUTEXT('.'))
+    while (pos && *psz != 0 && *psz != TEXUTEXT('.'))
     {
         *pbuf = *psz;
         ++pbuf;
@@ -1306,7 +1307,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
     texu_i32 rc = TEXU_OK;
 
     /* check if style is TEXU_ES_DECIMAL */
-    if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
+    if (TEXU_ES_DECIMAL & style)/* && TEXU_ES_AUTODECIMALCOMMA & style)*/
     {
         decimal = texu_atof(edit->editbuf);
 
