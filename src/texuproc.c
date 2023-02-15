@@ -798,9 +798,10 @@ struct texu_btnwnd
 };
 typedef struct texu_btnwnd texu_btnwnd;
 
-void _TexuButtonProc_OnPaint(texu_wnd *, texu_cio *);
-texu_status _TexuButtonProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
-void _TexuButtonProc_OnPush(texu_wnd *wnd);
+void            _TexuButtonProc_OnPaint(texu_wnd *, texu_cio *);
+texu_status     _TexuButtonProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
+void            _TexuButtonProc_OnPush(texu_wnd *wnd);
+void            _TexuButtonProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 
 void
 _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
@@ -897,8 +898,9 @@ void _TexuButtonProc_OnPush(texu_wnd *wnd)
     }
     texu_wnd_send_msg(parent, TEXU_WM_COMMAND, texu_wnd_get_id(wnd), 0);
 }
+
 void
-_TexuButtonProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+_TexuButtonProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     if (!texu_wnd_is_enable(wnd))
     {
@@ -960,9 +962,9 @@ _TexuButtonProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             _TexuButtonProc_OnKillFocus(wnd, (texu_wnd *)param1);
             break;
          
-        case TEXU_WM_CHAR:
+        case TEXU_WM_KEYDOWN:
         {
-            _TexuButtonProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+            _TexuButtonProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
             break;
         }
         
@@ -1079,6 +1081,14 @@ void _TexuEditProc_OnShowPasswdChar(texu_wnd *wnd, texu_i32 show)
 void _TexuEditProc_OnSetDecWidth(texu_wnd *wnd, texu_i32 width)
 {
     texu_editwnd *edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
+    if (width < 0)
+    {
+        width = 0;
+    }
+    else if (width > 6)
+    {
+        width = 6;
+    }
     edit->decwidth = width;
 }
 /*
@@ -1422,7 +1432,26 @@ texu_status _TexuEditProc_ValidateNumberStyle(texu_wnd *wnd, texu_editwnd *edit,
     texu_status rc = TEXU_OK;
     if (ch < TEXUTEXT('0') || ch > TEXUTEXT('9'))
     {
-        rc = TEXU_ERROR;
+        return TEXU_ERROR;
+    }
+    if (edit->onminmax)
+    {
+        texu_i32 len = texu_strlen(edit->editbuf);
+        texu_i32 val = 0;
+        texu_char newbuf[TEXU_MAX_WNDTEXT + 1];
+        memset(newbuf, 0, sizeof(newbuf));
+
+        if (edit->firstvisit)
+        {
+            newbuf[0] = ch;
+        }
+        else
+        {
+            texu_strcpy(newbuf, edit->editbuf);
+            newbuf[len] = ch;
+        }
+        val = texu_atol(newbuf);
+        rc = _TexuEditProc_ValidateMinMax(edit, val);
     }
     return rc;
 }
@@ -1468,6 +1497,25 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit
         {
             rc = TEXU_OK;
         }
+    }
+    if (TEXU_OK == rc && edit->onminmax)
+    {
+        texu_i32 len = texu_strlen(edit->editbuf);
+        texu_f64 val = 0;
+        texu_char newbuf[TEXU_MAX_WNDTEXT + 1];
+        memset(newbuf, 0, sizeof(newbuf));
+
+        if (edit->firstvisit)
+        {
+            newbuf[0] = ch;
+        }
+        else
+        {
+            texu_strcpy(newbuf, edit->editbuf);
+            newbuf[len] = ch;
+        }
+        val = texu_atof(newbuf);
+        rc = (val >= (texu_f64)edit->min && val <= (texu_f64)edit->max) ? TEXU_OK : TEXU_ERROR;
     }
     return rc;
 }
@@ -2214,6 +2262,7 @@ texu_i32 _TexuListBoxProc_OnGetItemText(texu_wnd *wnd, texu_i32 idx, texu_char *
 texu_i32 _TexuListBoxProc_OnGetCurSel(texu_wnd *wnd);
 void _TexuListBoxProc_OnDeleteAllItems(texu_wnd *wnd);
 void _TexuListBoxProc_OnChar(texu_wnd *, texu_i32 ch, texu_i32 alt);
+void _TexuListBoxProc_OnKeyDown(texu_wnd *, texu_i32 ch, texu_i32 alt);
 void _TexuListBoxProc_OnEnableItem(texu_wnd *wnd, texu_i32 idx, texu_i32 enable);
 #if (defined WIN32 && defined _WINDOWS)
 texu_i32 _TexuListBoxProc_OnSetSelColor(texu_wnd *wnd, texu_ui32 color, texu_ui32 bgcolor);
@@ -2328,7 +2377,7 @@ _TexuListBoxProc_GetPrevItemEnabled(texu_lbwnd *lb, texu_lbwnd_item *item)
 }
 
 void
-_TexuListBoxProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+_TexuListBoxProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
     texu_i32 repaint = 0;
@@ -3106,8 +3155,8 @@ _TexuListBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
     switch (msg)
     {
-        case TEXU_WM_CHAR:
-            _TexuListBoxProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+        case TEXU_WM_KEYDOWN:
+            _TexuListBoxProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
             return 0;
 
         case TEXU_WM_CREATE:

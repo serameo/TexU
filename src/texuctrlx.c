@@ -46,25 +46,25 @@ struct texu_ipaddr
 };
 typedef struct texu_ipaddr texu_ipaddr;
 
-void _TexuIPAdressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
-texu_status _TexuIPAdressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
-void _TexuIPAdressProc_OnDestroy(texu_wnd *wnd);
-void _TexuIPAdressProc_OnSetFocus(texu_wnd *, texu_wnd *);
-texu_i32 _TexuIPAdressProc_OnKillFocus(texu_wnd *, texu_wnd *);
-texu_i32 _TexuIPAdressProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
-void _TexuIPAdressProc_OnSetText(texu_wnd *wnd, const texu_char *text);
-void _TexuIPAdressProc_OnSetMinMax(texu_wnd *wnd, texu_i32, texu_i32);
-texu_status _TexuIPAdressProc_OnGetMinMax(texu_wnd *wnd, texu_i32 *, texu_i32 *);
-void _TexuIPAdressProc_OnSetStep(texu_wnd *wnd, texu_i32);
-texu_i32 _TexuIPAdressProc_OnGetStep(texu_wnd *wnd);
-void _TexuIPAdressProc_OnStep(texu_wnd *wnd, texu_i32);
-void _TexuIPAdressProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
-void _TexuIPAdressProc_OnSetPage(texu_wnd *wnd, texu_i32);
-texu_i32 _TexuIPAdressProc_OnGetPage(texu_wnd *wnd);
-void _TexuIPAdressProc_OnPage(texu_wnd *wnd, texu_i32);
+void _TexuIPAddressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+texu_status _TexuIPAddressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
+void _TexuIPAddressProc_OnDestroy(texu_wnd *wnd);
+void _TexuIPAddressProc_OnSetFocus(texu_wnd *, texu_wnd *);
+texu_i32 _TexuIPAddressProc_OnKillFocus(texu_wnd *, texu_wnd *);
+texu_i32 _TexuIPAddressProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
+void _TexuIPAddressProc_OnSetText(texu_wnd *wnd, const texu_char *text);
+void _TexuIPAddressProc_OnSetMinMax(texu_wnd *wnd, texu_i32, texu_i32);
+texu_status _TexuIPAddressProc_OnGetMinMax(texu_wnd *wnd, texu_i32 *, texu_i32 *);
+void _TexuIPAddressProc_OnSetStep(texu_wnd *wnd, texu_i32);
+texu_i32 _TexuIPAddressProc_OnGetStep(texu_wnd *wnd);
+void _TexuIPAddressProc_OnStep(texu_wnd *wnd, texu_i32);
+void _TexuIPAddressProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+void _TexuIPAddressProc_OnSetPage(texu_wnd *wnd, texu_i32);
+texu_i32 _TexuIPAddressProc_OnGetPage(texu_wnd *wnd);
+void _TexuIPAddressProc_OnPage(texu_wnd *wnd, texu_i32);
 
 void
-_TexuIPAdressProc_OnSetMinMax(texu_wnd *wnd, texu_i32 min, texu_i32 max)
+_TexuIPAddressProc_OnSetMinMax(texu_wnd *wnd, texu_i32 min, texu_i32 max)
 {
     texu_ipaddr *ipctl = 0;
     texu_editminmax minmax;
@@ -85,7 +85,7 @@ _TexuIPAdressProc_OnSetMinMax(texu_wnd *wnd, texu_i32 min, texu_i32 max)
 }
 
 texu_status
-_TexuIPAdressProc_OnGetMinMax(texu_wnd *wnd, texu_i32 *min, texu_i32 *max)
+_TexuIPAddressProc_OnGetMinMax(texu_wnd *wnd, texu_i32 *min, texu_i32 *max)
 {
     texu_ipaddr *ipctl = 0;
     ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
@@ -95,7 +95,7 @@ _TexuIPAdressProc_OnGetMinMax(texu_wnd *wnd, texu_i32 *min, texu_i32 *max)
 }
 
 void
-_TexuIPAdressProc_OnSetStep(texu_wnd *wnd, texu_i32 step)
+_TexuIPAddressProc_OnSetStep(texu_wnd *wnd, texu_i32 step)
 {
     texu_ipaddr *ipctl = 0;
     ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
@@ -105,7 +105,7 @@ _TexuIPAdressProc_OnSetStep(texu_wnd *wnd, texu_i32 step)
 }
 
 texu_i32
-_TexuIPAdressProc_OnGetStep(texu_wnd *wnd)
+_TexuIPAddressProc_OnGetStep(texu_wnd *wnd)
 {
     texu_ipaddr *ipctl = 0;
     ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
@@ -113,20 +113,20 @@ _TexuIPAdressProc_OnGetStep(texu_wnd *wnd)
 }
 
 void
-_TexuIPAdressProc_OnStep(texu_wnd *wnd, texu_i32 updown)
+_TexuIPAddressProc_OnStep(texu_wnd *wnd, texu_i32 updown)
 {
     if (updown > 0)
     {
-        _TexuIPAdressProc_OnChar(wnd, TEXU_KEY_UP, 0);
+        _TexuIPAddressProc_OnChar(wnd, TEXU_KEY_UP, 0);
     }
     else
     {
-        _TexuIPAdressProc_OnChar(wnd, TEXU_KEY_DOWN, 0);
+        _TexuIPAddressProc_OnChar(wnd, TEXU_KEY_DOWN, 0);
     }
 }
 
 void
-_TexuIPAdressProc_OnSetPage(texu_wnd *wnd, texu_i32 page)
+_TexuIPAddressProc_OnSetPage(texu_wnd *wnd, texu_i32 page)
 {
     texu_ipaddr *ipctl = 0;
     ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
@@ -136,7 +136,7 @@ _TexuIPAdressProc_OnSetPage(texu_wnd *wnd, texu_i32 page)
 }
 
 texu_i32
-_TexuIPAdressProc_OnGetPage(texu_wnd *wnd)
+_TexuIPAddressProc_OnGetPage(texu_wnd *wnd)
 {
     texu_ipaddr *ipctl = 0;
     ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
@@ -144,20 +144,20 @@ _TexuIPAdressProc_OnGetPage(texu_wnd *wnd)
 }
 
 void
-_TexuIPAdressProc_OnPage(texu_wnd *wnd, texu_i32 updown)
+_TexuIPAddressProc_OnPage(texu_wnd *wnd, texu_i32 updown)
 {
     if (updown > 0)
     {
-        _TexuIPAdressProc_OnChar(wnd, TEXU_KEY_NPAGE, 0);
+        _TexuIPAddressProc_OnChar(wnd, TEXU_KEY_NPAGE, 0);
     }
     else
     {
-        _TexuIPAdressProc_OnChar(wnd, TEXU_KEY_PPAGE, 0);
+        _TexuIPAddressProc_OnChar(wnd, TEXU_KEY_PPAGE, 0);
     }
 }
 
 texu_status
-_TexuIPAdressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
+_TexuIPAddressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
 {
     texu_ipaddr *ipctl = 0;
     texu_wnd_attrs attrs2;
@@ -168,6 +168,7 @@ _TexuIPAdressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_status rc = TEXU_OK;
     texu_editminmax minmax;
     texu_env *env = texu_wnd_get_env(wnd);
+    texu_editminmax vmm = { 0, 255 };
 
     editwnd = texu_wnd_new(texu_wnd_get_env(wnd));
     if (!editwnd)
@@ -205,6 +206,7 @@ _TexuIPAdressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd);
         return TEXU_ERROR;
     }
+    texu_wnd_send_msg(editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&vmm);
     /*second*/
     editwnd2 = texu_wnd_new(texu_wnd_get_env(wnd));
     if (!editwnd2)
@@ -222,6 +224,7 @@ _TexuIPAdressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd2);
         return TEXU_ERROR;
     }
+    texu_wnd_send_msg(editwnd2, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&vmm);
     /*third*/
     editwnd3 = texu_wnd_new(texu_wnd_get_env(wnd));
     if (!editwnd3)
@@ -241,6 +244,7 @@ _TexuIPAdressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd3);
         return TEXU_ERROR;
     }
+    texu_wnd_send_msg(editwnd3, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&vmm);
     /*third*/
     editwnd4 = texu_wnd_new(texu_wnd_get_env(wnd));
     if (!editwnd4)
@@ -262,6 +266,7 @@ _TexuIPAdressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd4);
         return TEXU_ERROR;
     }
+    texu_wnd_send_msg(editwnd4, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&vmm);
 
     ipctl = (texu_ipaddr *)malloc(sizeof(texu_ipaddr));
     if (!ipctl)
@@ -309,7 +314,7 @@ _TexuIPAdressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
 }
 
 void
-_TexuIPAdressProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
+_TexuIPAddressProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_ipaddr *ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
     if (!texu_wnd_is_enable(wnd))
@@ -322,7 +327,7 @@ _TexuIPAdressProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 }
 
 texu_i32
-_TexuIPAdressProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
+_TexuIPAddressProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     /*update value to window text */
     texu_ipaddr *ipctl = 0;
@@ -346,7 +351,7 @@ _TexuIPAdressProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 }
 
 void
-_TexuIPAdressProc_OnDestroy(texu_wnd *wnd)
+_TexuIPAddressProc_OnDestroy(texu_wnd *wnd)
 {
     texu_ipaddr *ipctl = 0;
     ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
@@ -354,7 +359,7 @@ _TexuIPAdressProc_OnDestroy(texu_wnd *wnd)
 }
 
 texu_i64
-_TexuIPAdressProc_OnGetIPAddress(texu_wnd *wnd, texu_ip_addr* ip)
+_TexuIPAddressProc_OnGetIPAddress(texu_wnd *wnd, texu_ip_addr* ip)
 {
     texu_ipaddr *ipctl = 0;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
@@ -379,7 +384,7 @@ _TexuIPAdressProc_OnGetIPAddress(texu_wnd *wnd, texu_ip_addr* ip)
 }
 
 void
-_TexuIPAdressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+_TexuIPAddressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_ipaddr *ipctl = 0;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
@@ -502,7 +507,7 @@ _TexuIPAdressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 }
 
 texu_bool
-_TexuIPAdressProc_IsValidIP(texu_wnd *wnd, const texu_char *text, texu_ip_addr *ip)
+_TexuIPAddressProc_IsValidIP(texu_wnd *wnd, const texu_char *text, texu_ip_addr *ip)
 {
     texu_bool rc = TEXU_TRUE;
     texu_i32 _1st = 0;
@@ -535,7 +540,7 @@ _TexuIPAdressProc_IsValidIP(texu_wnd *wnd, const texu_char *text, texu_ip_addr *
 }
 
 void
-_TexuIPAdressProc_OnSetText(texu_wnd *wnd, const texu_char *text)
+_TexuIPAddressProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 {
     texu_ipaddr *ipctl = 0;
     texu_char buf[8];
@@ -551,7 +556,7 @@ _TexuIPAdressProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
 
     /*validate all parts*/
-    if (TEXU_FALSE == _TexuIPAdressProc_IsValidIP(wnd, text, &ip))
+    if (TEXU_FALSE == _TexuIPAddressProc_IsValidIP(wnd, text, &ip))
     {
         return;
     }
@@ -571,7 +576,7 @@ _TexuIPAdressProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 }
 
 void
-_TexuIPAdressProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+_TexuIPAddressProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 {
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
@@ -599,71 +604,71 @@ _TexuIPAdressProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 }
 
 texu_i64
-_TexuIPAdressProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+_TexuIPAddressProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 {
     switch (msg)
     {
         case TEXU_WM_CHAR:
-            _TexuIPAdressProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+            _TexuIPAddressProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
             return 0;
 
         case TEXU_WM_CREATE:
-            return _TexuIPAdressProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+            return _TexuIPAddressProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
         case TEXU_WM_PAINT:
-            _TexuIPAdressProc_OnPaint(wnd, (texu_cio *)param1);
+            _TexuIPAddressProc_OnPaint(wnd, (texu_cio *)param1);
             return 0;
 
         case TEXU_WM_DESTROY:
-            _TexuIPAdressProc_OnDestroy(wnd);
+            _TexuIPAddressProc_OnDestroy(wnd);
             break;
 
         case TEXU_WM_SETFOCUS:
-            _TexuIPAdressProc_OnSetFocus(wnd, (texu_wnd *)param1);
+            _TexuIPAddressProc_OnSetFocus(wnd, (texu_wnd *)param1);
             break;
 
         case TEXU_WM_KILLFOCUS:
-            return _TexuIPAdressProc_OnKillFocus(wnd, (texu_wnd *)param1);
+            return _TexuIPAddressProc_OnKillFocus(wnd, (texu_wnd *)param1);
 
         case TEXU_WM_SETTEXT:
-            _TexuIPAdressProc_OnSetText(wnd, (const texu_char *)param1);
+            _TexuIPAddressProc_OnSetText(wnd, (const texu_char *)param1);
             return 0;
 
         case TEXU_IPM_SETMINMAX:
         {
-            _TexuIPAdressProc_OnSetMinMax(wnd, (texu_i32)param1, (texu_i32)param2);
+            _TexuIPAddressProc_OnSetMinMax(wnd, (texu_i32)param1, (texu_i32)param2);
             return 0;
         }
         case TEXU_IPM_GETMINMAX:
         {
-            return _TexuIPAdressProc_OnGetMinMax(wnd, (texu_i32 *)param1, (texu_i32 *)param2);
+            return _TexuIPAddressProc_OnGetMinMax(wnd, (texu_i32 *)param1, (texu_i32 *)param2);
         }
         case TEXU_IPM_SETSTEP:
         {
-            _TexuIPAdressProc_OnSetStep(wnd, (texu_i32)param1);
+            _TexuIPAddressProc_OnSetStep(wnd, (texu_i32)param1);
             return 0;
         }
         case TEXU_IPM_GETSTEP:
         {
-            return _TexuIPAdressProc_OnGetStep(wnd);
+            return _TexuIPAddressProc_OnGetStep(wnd);
         }
         case TEXU_IPM_STEP:
         {
-            _TexuIPAdressProc_OnStep(wnd, (texu_i32)param1);
+            _TexuIPAddressProc_OnStep(wnd, (texu_i32)param1);
             return 0;
         }
         case TEXU_IPM_SETPAGE:
         {
-            _TexuIPAdressProc_OnSetPage(wnd, (texu_i32)param1);
+            _TexuIPAddressProc_OnSetPage(wnd, (texu_i32)param1);
             return 0;
         }
         case TEXU_IPM_GETPAGE:
         {
-            return _TexuIPAdressProc_OnGetPage(wnd);
+            return _TexuIPAddressProc_OnGetPage(wnd);
         }
         case TEXU_IPM_PAGE:
         {
-            _TexuIPAdressProc_OnPage(wnd, (texu_i32)param1);
+            _TexuIPAddressProc_OnPage(wnd, (texu_i32)param1);
             return 0;
         }
         case TEXU_IPM_GETIPADDRESS:
@@ -672,7 +677,7 @@ _TexuIPAdressProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
             {
                 return 0;
             }
-            return _TexuIPAdressProc_OnGetIPAddress(wnd, (texu_ip_addr*)param1);
+            return _TexuIPAddressProc_OnGetIPAddress(wnd, (texu_ip_addr*)param1);
         }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
@@ -1132,6 +1137,7 @@ struct texu_edit_pricespread
 };
 typedef struct texu_edit_pricespread texu_edit_pricespread;
 
+void        _TexuEditPriceSpreadProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void        _TexuEditPriceSpreadProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 texu_status _TexuEditPriceSpreadProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
 void        _TexuEditPriceSpreadProc_OnDestroy(texu_wnd *wnd);
@@ -1759,7 +1765,7 @@ _TexuEditPriceSpreadProc_IsValidSpread(texu_wnd *wnd, const texu_char *str)
 }
 
 void
-_TexuEditPriceSpreadProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+_TexuEditPriceSpreadProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
     texu_wnd *editwnd = editwnd = texu_wnd_get_activechild(wnd);
@@ -1777,7 +1783,7 @@ _TexuEditPriceSpreadProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         texu_wnd_get_text(wnd, eps->editbuf, TEXU_MAX_WNDTEXT);
         texu_wnd_set_text(editwnd, eps->editbuf);
         /*simulate CTRL+A (select all)*/
-        texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_i64)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
+        texu_wnd_send_msg(editwnd, TEXU_WM_KEYDOWN, (texu_i64)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
     }
     switch (ch)
     {
@@ -1794,11 +1800,7 @@ _TexuEditPriceSpreadProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         case TEXUTEXT('-'):/*not accept value less than zero*/
             return;
     }
-    if (0 == updown)
-    {
-        texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
-    }
-    else
+    if (updown)
     {
         /*get the current spread*/
         texu_char buf[TEXU_MAX_WNDTEXT + 1];
@@ -1859,9 +1861,27 @@ _TexuEditPriceSpreadProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             }
             texu_wnd_set_text(wnd, buf);
             /*simulate CTRL+A (select all)*/
-            texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_i64)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
+            texu_wnd_send_msg(editwnd, TEXU_WM_KEYDOWN, (texu_i64)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
         }
     }
+}
+
+void
+_TexuEditPriceSpreadProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+{
+    texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
+    texu_wnd *editwnd = editwnd = texu_wnd_get_activechild(wnd);
+    texu_i32 updown = 0;
+    texu_ui32 style = texu_wnd_get_style(wnd);
+
+    if (!texu_wnd_is_enable(wnd))
+    {
+        return;
+    }
+
+
+    texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+    
 }
 
 void
@@ -2083,8 +2103,8 @@ _TexuEditPriceSpreadProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64
 {
     switch (msg)
     {
-        case TEXU_WM_CHAR:
-            _TexuEditPriceSpreadProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+        case TEXU_WM_KEYDOWN:
+            _TexuEditPriceSpreadProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
             return 0;
 
         case TEXU_WM_CREATE:

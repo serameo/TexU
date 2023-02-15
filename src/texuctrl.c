@@ -159,6 +159,7 @@ void _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     texu_ui32 color, texu_i32 align, texu_i32 isheader, texu_i32 issel);
 #endif
 void _TexuListCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
 texu_i32 _TexuListCtrlProc_OnAddItems(texu_wnd *wnd, texu_char *text, texu_i32 nitems);
 texu_i32 _TexuListCtrlProc_OnAddItem(texu_wnd *wnd, const texu_char *);
@@ -1871,7 +1872,7 @@ void _TexuListCtrlProc_OnEndEdit(texu_wnd *wnd, texu_i32 ok)
 /*Arrow LEFT/RIGHT keys are moving the cursor*/
 /*Arrow UP/DOWN keys to cancel the edit mode WITHOUT saving*/
 /*ENTER to quit the edit mode WITH saving*/
-void _TexuListCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_lcwnd *lctl = 0;
     texu_i32 repaint = 0;
@@ -2176,7 +2177,7 @@ void _TexuListCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             /*put any char to editbox if it is available*/
             if (TEXU_LCT_EDITING == lctl->editingstate)
             {
-                texu_wnd_send_msg(lctl->editbox, TEXU_WM_CHAR, ch, alt);
+                texu_wnd_send_msg(lctl->editbox, TEXU_WM_KEYDOWN, ch, alt);
             }
             break;
         }
@@ -2213,6 +2214,22 @@ void _TexuListCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         _TexuListCtrlProc_OnSelChanged(wnd);
 
         texu_wnd_invalidate(wnd);
+    }
+}
+
+void _TexuListCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+{
+    texu_lcwnd *lctl = 0;
+
+    if (!texu_wnd_is_enable(wnd))
+    {
+        return;
+    }
+    lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
+    /*put any char to editbox if it is available*/
+    if (TEXU_LCT_EDITING == lctl->editingstate)
+    {
+        texu_wnd_send_msg(lctl->editbox, TEXU_WM_CHAR, ch, alt);
     }
 }
 
@@ -2287,7 +2304,7 @@ texu_i32 _TexuListCtrlProc_GetPrevEditableCol(texu_lcwnd *lctl, texu_i32 prevcol
     }
     return col;
 }
-
+#if 0
 void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch)
 {
     texu_lcwnd *lctl = 0;
@@ -2610,7 +2627,7 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch)
         texu_wnd_invalidate(wnd);
     }
 }
-
+#endif
 texu_i32 _TexuListCtrlProc_OnGetItemCount(texu_wnd *wnd)
 {
     texu_lcwnd *lctl = 0;
@@ -2960,6 +2977,10 @@ _TexuListCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
 {
     switch (msg)
     {
+        case TEXU_WM_KEYDOWN:
+            _TexuListCtrlProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
+
         case TEXU_WM_CHAR:
             _TexuListCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
             return 0;
@@ -3130,6 +3151,7 @@ texu_tree_item *_TexuTreeCtrlProc_OnFindNextItem(texu_wnd *wnd, texu_tree_item *
 texu_i32 _TexuTreeCtrlProc_OnExpandItem(texu_wnd *wnd, texu_tree_item *item);
 texu_i32 _TexuTreeCtrlProc_OnCollapseItem(texu_wnd *wnd, texu_tree_item *item);
 void _TexuTreeCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+void _TexuTreeCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void _TexuTreeCtrlProc_OnDestroy(texu_wnd *wnd);
 void _TexuTreeCtrlProc_OnSetFocus(texu_wnd *wnd, texu_wnd *);
 texu_i32 _TexuTreeCtrlProc_OnKillFocus(texu_wnd *wnd, texu_wnd *);
@@ -3747,7 +3769,7 @@ texu_tree_item *_TexuTreeCtrlProc_MovePrev(texu_wnd *wnd, texu_i32 move_times)
     return tc->curselitem;
 }
 
-void _TexuTreeCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+void _TexuTreeCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_treewnd *tc = 0;
     texu_rect rc;
@@ -4680,9 +4702,9 @@ _TexuTreeCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
         {
             return _TexuTreeCtrlProc_OnKillFocus(wnd, (texu_wnd *)param1);
         }
-        case TEXU_WM_CHAR:
+        case TEXU_WM_KEYDOWN:
         {
-            _TexuTreeCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+            _TexuTreeCtrlProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
             break;
         }
         case TEXU_WM_GETTEXT:
@@ -5606,6 +5628,7 @@ texu_status _TexuPageCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
 void _TexuPageCtrlProc_OnDestroy(texu_wnd *wnd);
 void _TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
 void _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+void _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 
 texu_status _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_page* pg);
 texu_wnd    *_TexuPageCtrlProc_OnSetCurPage(texu_wnd *wnd, texu_i32 idx);
@@ -6066,6 +6089,45 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
         return;
     }
+    /* the current frame window is active */
+    if (activewnd && activewnd != wnd)
+    {
+        texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+    }
+    else if (activewnd && activewnd == wnd)
+    {
+        activewnd = texu_wnd_get_activechild(activewnd);
+        if (activewnd)
+        {
+            texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+        }
+    }
+    return;
+}
+
+void
+_TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+{
+    texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
+    texu_wnd *curpage = pgctl->curpage;
+    texu_wnd *newpage = 0;
+    texu_wnd *activewnd = pgctl->activewnd;
+    texu_wnd *nextwnd = 0;
+    texu_i32 y = 0;
+    texu_i32 x = 0;
+    texu_i32 width = 0;
+    texu_cio *cio = 0;
+    texu_status rc = TEXU_OK;
+    texu_wnd* qnextwnd = 0;
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 chNextKey = texu_env_get_movenext(env);
+    texu_i32 chPrevKey = texu_env_get_moveprev(env);
+    texu_pagewnd_page *pgitem = 0;
+
+    if (!texu_wnd_is_enable(wnd))
+    {
+        return;
+    }
 
     if ((TEXU_KEYPRESSED_CTRL & alt) && ((TEXUTEXT('k') == ch) || (TEXUTEXT('K') == ch)))
     {
@@ -6095,7 +6157,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             if ((TEXU_KEYPRESSED_CTRL & alt) && (pgctl->ctl_k_pressed))
             {
                 /* continue as KEY_PPAGE doing */
-                pgitem = _texu_pagewnd_page_get(wnd, pgctl->npages-1);
+                pgitem = _texu_pagewnd_page_get(wnd, pgctl->npages - 1);
                 if (pgitem)
                 {
                     pgctl->ctl_k_pressed = TEXU_FALSE;
@@ -6158,6 +6220,16 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 {
                     pgctl->ctl_k_pressed = TEXU_FALSE;
                     newpage = pgitem->page;
+                }
+                else if (pgctl->npages > 0)
+                {
+                    texu_i32 lastidx = pgctl->npages - 1;
+                    pgitem = _texu_pagewnd_page_get(wnd, lastidx);
+                    if (pgitem)
+                    {
+                        pgctl->ctl_k_pressed = TEXU_FALSE;
+                        newpage = pgitem->page;
+                    }
                 }
             }
         }
@@ -6233,13 +6305,13 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 }
                 else
                 {
-                    texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                    texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_i64)ch, alt);
                     return;
                 }
             }
             else
             {
-                texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_i64)ch, alt);
                 return;
             }
         } /* child window is active */
@@ -6274,6 +6346,10 @@ _TexuPageCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
 
     case TEXU_WM_CHAR:
         _TexuPageCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+        return 0;
+
+    case TEXU_WM_KEYDOWN:
+        _TexuPageCtrlProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
         return 0;
 
     case TEXU_PGM_ADDPAGE:
@@ -6323,6 +6399,7 @@ struct texu_rbwnd
 };
 typedef struct texu_rbwnd texu_rbwnd;
 
+void _TexuReBarProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
 texu_i32 _TexuReBarProc_OnAddBand(texu_wnd *wnd, const texu_rbwnd_band* band);
@@ -6610,6 +6687,41 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     if (activewnd && activewnd != wnd)
     {
+        texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+    }
+    else if (activewnd && activewnd == wnd)
+    {
+        activewnd = texu_wnd_get_activechild(activewnd);
+        if (activewnd)
+        {
+            texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+        }
+    }
+}
+
+void _TexuReBarProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+{
+    texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
+    texu_i32 y = 0;
+    texu_i32 x = 0;
+    texu_i32 width = 0;
+    texu_cio *cio = 0;
+    texu_status rc = TEXU_OK;
+    texu_wnd *activewnd = rbwnd->curband->childwnd;
+    texu_wnd *nextwnd = 0;
+    texu_rbwnd_band* nextband = 0;
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 chNextKey = texu_env_get_movenext(env);
+    texu_i32 chPrevKey = texu_env_get_moveprev(env);
+    /*texu_bool fInvalidate = TEXU_FALSE;*/
+    texu_bool fPrevMove = TEXU_FALSE;
+
+    if (!texu_wnd_is_enable(wnd))
+    {
+        return;
+    }
+    if (activewnd && activewnd != wnd)
+    {
         if (ch == chNextKey)
         {
             nextband = _TexuReBarProc_GetNextActiveBand(rbwnd, rbwnd->curband);
@@ -6689,13 +6801,13 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             }
             else
             {
-                texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_i64)ch, alt);
                 return;
             }
         }
         else
         {
-            texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+            texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_i64)ch, alt);
             return;
         }
     } /* child window is active */
@@ -6705,7 +6817,7 @@ void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         if (activewnd)
         {
             activewnd = texu_wnd_get_activechild(activewnd);
-            texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+            texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_i64)ch, alt);
             return;
         }
     }
@@ -6960,8 +7072,8 @@ _TexuReBarProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             _TexuReBarProc_OnDestroy(wnd);
             break;
 
-        case TEXU_WM_CHAR:
-            _TexuReBarProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+        case TEXU_WM_KEYDOWN:
+            _TexuReBarProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
             return 0;
 
         case TEXU_WM_QUERYNEXTWND:

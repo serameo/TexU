@@ -58,6 +58,7 @@ void _TexuMenuProc_OnPaint(texu_wnd *, texu_cio *);
 void _TexuMenuWndroc_NotifyItem(texu_wnd *wnd, texu_ui32 code, texu_ui32 id, const texu_char *info);
 void _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
 void _TexuMenuWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+void _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 texu_status _TexuMenuWndProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
 void _TexuMenuWndProc_OnDestroy(texu_wnd *);
 #if (defined WIN32 && defined _WINDOWS)
@@ -655,7 +656,7 @@ _TexuMenuWndProc_GetNextMenuItemEnabled(texu_tree_item *parentitem, texu_tree_it
 }
 
 void
-_TexuMenuWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+_TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_menu *menu = (texu_menu *)texu_wnd_get_userdata(wnd);
     texu_tree_item *baritem = menu->curbaritem;
@@ -967,8 +968,8 @@ _TexuMenuWndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
     switch (msg)
     {
         case TEXU_WM_KEYDOWN:
-        case TEXU_WM_CHAR:
-            _TexuMenuWndProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+        /*case TEXU_WM_CHAR:*/
+            _TexuMenuWndProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
         return 0;
 
         case TEXU_WM_PAINT:
