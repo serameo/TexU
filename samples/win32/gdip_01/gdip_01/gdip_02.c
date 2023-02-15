@@ -260,6 +260,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, PSTR pszCmdLine, IN
         0  /* user data */
         );
 
+    TexuUnlockUpdate();
     TexuShowWindow(wnd, TEXU_SW_SHOW);
     TexuInvalidateWindow(wnd);
 
@@ -499,31 +500,31 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
     texu_menu *menu = 0;
     /*texu_popup_menu *item = 0;*/
 
-    menu = TexuCreateMenus(wnd, ID_MAINMENU, mainmenu1, 4);
-#if 0
+/*    menu = TexuCreateMenus(wnd, ID_MAINMENU, mainmenu1, 4);*/
+#if 1
     menu = TexuCreateMenu(wnd, ID_MAINMENU);
-    item = TexuAddPopupMenu(menu, " File ", TEXU_TRUE, "File");
-    TexuAddPopupMenuItem(menu, item, " New          ", ID_ADD, TEXU_TRUE, "New window");
-    TexuAddPopupMenuItem(menu, item, " Open         ", 2, TEXU_TRUE, "Open window");
-    TexuAddPopupMenuItem(menu, item, "--------------", -1, TEXU_FALSE, "");
-    TexuAddPopupMenuItem(menu, item, " Exit   Alt+X ", ID_DELETE, TEXU_TRUE, "Exit a program");
+    texu_popup_menu *item = TexuAddPopupMenu(menu, TEXUTEXT(" File "), TEXU_TRUE, TEXUTEXT("File"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" New          "), ID_ADD, TEXU_TRUE, TEXUTEXT("New window"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" Open         "), 2, TEXU_TRUE, TEXUTEXT("Open window"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT("--------------"), -1, TEXU_FALSE, TEXUTEXT(""));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" Exit   Alt+X "), ID_DELETE, TEXU_TRUE, TEXUTEXT("Exit a program"));
 
-    item = TexuAddPopupMenu(menu, " Edit ", TEXU_TRUE, "Edit");
-    TexuAddPopupMenuItem(menu, item, " Cut          ", 11, TEXU_TRUE, "Cut selection");
-    TexuAddPopupMenuItem(menu, item, " Copy         ", 12, TEXU_TRUE, "Copy selection");
-    TexuAddPopupMenuItem(menu, item, " Paste        ", 13, TEXU_TRUE, "Paste selection copied");
+    item = TexuAddPopupMenu(menu, TEXUTEXT(" Edit "), TEXU_TRUE, TEXUTEXT("Edit"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" Cut          "), 11, TEXU_TRUE, TEXUTEXT("Cut selection"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" Copy         "), 12, TEXU_TRUE, TEXUTEXT("Copy selection"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" Paste        "), 13, TEXU_TRUE, TEXUTEXT("Paste selection copied"));
 
-    item = TexuAddPopupMenu(menu, " Search ", TEXU_TRUE, "Search");
-    TexuAddPopupMenuItem(menu, item, " Find         ", 21, TEXU_TRUE, "Find text");
-    TexuAddPopupMenuItem(menu, item, " Find Next    ", 22, TEXU_TRUE, "Find next text");
+    item = TexuAddPopupMenu(menu, TEXUTEXT(" Search "), TEXU_TRUE, TEXUTEXT("Search"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" Find         "), 21, TEXU_TRUE, TEXUTEXT("Find text"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" Find Next    "), 22, TEXU_TRUE, TEXUTEXT("Find next text"));
     TexuEnablePopupMenu(menu, 2, TEXU_FALSE);
 
-    item = TexuAddPopupMenu(menu, " View ", TEXU_TRUE, "View");
-    TexuAddPopupMenuItem(menu, item, " Help      F1 ", ID_HELP, TEXU_TRUE, "");
-    TexuAddPopupMenuItem(menu, item, "--------------", -1, TEXU_FALSE, "");
-    TexuAddPopupMenuItem(menu, item, " About        ", ID_MSGBOX, TEXU_TRUE, "About test_texu demo");
+    item = TexuAddPopupMenu(menu, TEXUTEXT(" View "), TEXU_TRUE, TEXUTEXT("View"));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" Help      F1 "), ID_HELP, TEXU_TRUE, TEXUTEXT(""));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT("--------------"), -1, TEXU_FALSE, TEXUTEXT(""));
+    TexuAddPopupMenuItem(menu, item, TEXUTEXT(" About        "), ID_MSGBOX, TEXU_TRUE, TEXUTEXT("About test_texu demo"));
 #endif
-    TexuEnablePopupMenu(menu, 2, TEXU_FALSE);
+    /*TexuEnablePopupMenu(menu, 2, TEXU_FALSE);*/
 
     child = TexuCreateWindow(
         TEXUTEXT("Text:"),
@@ -670,6 +671,8 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         6,                                     /* id */
         0                                      /* user data */
         );
+    texu_editminmax mm = { -1, 2 };
+    TexuSendMessage(child, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&mm);
 
     child = TexuCreateWindow(
         TEXUTEXT("combo1"),
@@ -2096,7 +2099,7 @@ MyWndProc5(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             pg.caption = TEXUTEXT("4th Page");
             TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)&pg, 0);
 
-            TexuSendMessage(child, TEXU_PGM_SETCURPAGE, 1, 0);
+            /*TexuSendMessage(child, TEXU_PGM_SETCURPAGE, 1, 0);*/
 
             /*TexuSendMessage(child, TEXU_PGM_REMOVEALLPAGES, 0, 0);*/
             /*
