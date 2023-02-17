@@ -210,17 +210,17 @@ enum
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-#define TEXU_UPPER_LEFT      (1)
-#define TEXU_UPPER_RIGHT     (2)
-#define TEXU_LOWER_LEFT      (3)
-#define TEXU_LOWER_RIGHT     (4)
-#define TEXU_VERTICAL        (5)
-#define TEXU_HORIZONTAL      (6)
-#define TEXU_VERT_LEFT       (7)
-#define TEXU_VERT_RIGHT      (8)
-#define TEXU_HORZ_DOWN       (9)
-#define TEXU_HORZ_UP         (10)
-#define TEXU_VERT_HORZ       (11)
+#define TEXU_UPPER_LEFT         (1)
+#define TEXU_UPPER_RIGHT        (2)
+#define TEXU_LOWER_LEFT         (3)
+#define TEXU_LOWER_RIGHT        (4)
+#define TEXU_VERTICAL           (5)
+#define TEXU_HORIZONTAL         (6)
+#define TEXU_VERT_LEFT          (7)
+#define TEXU_VERT_RIGHT         (8)
+#define TEXU_HORZ_DOWN          (9)
+#define TEXU_HORZ_UP            (10)
+#define TEXU_VERT_HORZ          (11)
 
 /* status */
 #define TEXU_EVALID                     (texu_i32)(-3)
@@ -275,11 +275,14 @@ enum
 #define TEXU_WM_CLOSE                   (TEXU_WM_FIRST + 22)
 #define TEXU_WM_QUERYCLOSE              (TEXU_WM_FIRST + 23)
 #define TEXU_WM_KEYDOWN                 (TEXU_WM_FIRST + 24)
+#define TEXU_WM_SETINFO                 (TEXU_WM_FIRST + 25)
+#define TEXU_WM_GETINFO                 (TEXU_WM_FIRST + 26)
 
 /* notify */
 #define TEXU_WN_FIRST                   0
 #define TEXU_WN_GOFIRSTCHILD            (TEXU_WN_FIRST +  1)
 #define TEXU_WN_GOLASTCHILD             (TEXU_WN_FIRST +  2)
+#define TEXU_WN_DISPINFO                (TEXU_WN_FIRST +  3)
 
 /* EDIT */
 #define TEXU_EM_FIRST                   200
@@ -638,9 +641,7 @@ enum
 #define TEXU_KEYPRESSED_CTRL            2
 #define TEXU_KEYPRESSED_SHIFT           4
 
-#ifdef _USE_CURSES_
-#define TEXU_ACS_PLMINUS                ACS_PLMINUS
-#else
+
 #if (defined WIN32 && defined UNICODE)
 #define TEXU_ACS_PLUS                   L'+'
 #define TEXU_ACS_MINUS                  L'-'
@@ -650,7 +651,7 @@ enum
 #define TEXU_ACS_MINUS                  '-'
 #define TEXU_EMPTY_STR                  ""
 #endif
-#endif
+
 
 #define TEXU_ENV_MAX_FRAMES            256
 
@@ -746,6 +747,7 @@ enum
 #define TEXU_ES_UPPERCASE               0x00400000
 #define TEXU_ES_LOWERCASE               0x00800000
 #define TEXU_ES_A2Z                     0x01000000
+#define TEXU_ES_SUFFIX                  0x02000000
 
 
 /* LISTBOX */
