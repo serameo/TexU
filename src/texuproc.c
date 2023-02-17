@@ -987,22 +987,23 @@ _TexuButtonProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
 struct texu_editwnd
 {
-    texu_i32 firstvisit;
-    texu_i32 selected;
-    texu_char passchar;
-    texu_bool showpass;
-    texu_i32 firstchar;
-    texu_i32 limitchars;
-    texu_i32 editing;
-    texu_i32 decwidth;
-    texu_i32 min;
-    texu_i32 max;
-    texu_i32 onminmax;
-    texu_bool invalid;
-    void *exparam;
-    texu_char validstr[TEXU_MAX_WNDTEXT + 1];
-    texu_char editbuf[TEXU_MAX_WNDTEXT + 1];
-    texu_i32  (*on_validate)(texu_wnd*, texu_char*);
+    texu_i32    firstvisit;
+    texu_i32    selected;
+    texu_char   passchar;
+    texu_bool   showpass;
+    texu_i32    firstchar;
+    texu_i32    limitchars;
+    texu_i32    editing;
+    texu_i32    decwidth;
+    texu_i32    min;
+    texu_i32    max;
+    texu_i32    onminmax;
+    texu_bool   invalid;
+    void        *exparam;
+    texu_char   validstr[TEXU_MAX_WNDTEXT + 1];
+    texu_char   editbuf[TEXU_MAX_WNDTEXT + 1];
+    texu_char   editsuffix[TEXU_MAX_WNDTEXT + 1];
+    texu_i32    (*on_validate)(texu_wnd*, texu_char*);
 };
 typedef struct texu_editwnd texu_editwnd;
 
@@ -1010,9 +1011,10 @@ typedef struct texu_editwnd texu_editwnd;
 #define TEXU_EDITWND_MEGA   (1000000)
 #define TEXU_EDITWND_GIGA   (1000000000)
 #define TEXU_EDITWND_TERA   (1000000000000)
+/*
 #define TEXU_EDITWND_PETA   (1000000000000000)
 #define TEXU_EDITWND_EXA    (1000000000000000000)
-
+*/
 texu_status _TexuEditProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
 void _TexuEditProc_OnChar(texu_wnd *, texu_i32 ch, texu_i32 alt);
 void _TexuEditProc_OnDestroy(texu_wnd *);
@@ -1144,6 +1146,17 @@ void _TexuEditProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
     texu_strcpy(edit->editbuf, buf);
     edit->firstvisit = 1;
+
+    texu_strcpy(edit->editsuffix, buf);
+    if ((TEXU_ES_SUFFIX & style) &&
+        ((TEXU_ES_NUMBER | TEXU_ES_DECIMAL) & style))
+    {
+        if (TEXU_ES_AUTODECIMALCOMMA & style)
+        {
+            _TexuEditProc_RemoveDecimalFormat(edit);
+            texu_strcpy(edit->editsuffix, edit->editbuf);
+        }
+    }
 
     if (TEXU_ES_AUTODECIMALCOMMA & style)
     {
@@ -2045,9 +2058,11 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_cio_putstr_attr(cio, y, x, text,
                             texu_cio_get_reverse(cio, color));
 #else
+
     texu_cio_draw_text(cio, y, x, text, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
+
 
 #endif /* TEXU_CIO_COLOR_MONO*/
     len = (texu_i32)TEXU_MIN(texu_strlen(buf), (texu_ui32)width);

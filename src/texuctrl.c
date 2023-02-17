@@ -5164,9 +5164,9 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
-#if (defined WIN32 && defined _WINDOWS)
+
     texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
-#endif
+
 
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
@@ -5180,7 +5180,7 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLUS,
                             texu_cio_get_color(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
+
         texu_env_draw_char_ex(env, y, x, TEXU_ACS_MINUS, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
@@ -5189,12 +5189,7 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
 
-#else
-        texu_cio_putch_attr(dc, y, x, TEXU_ACS_MINUS,
-                            texu_cio_get_color(dc, color));
-        texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLUS,
-                            texu_cio_get_color(dc, color));
-#endif
+
 #endif
     }
 }
@@ -5488,8 +5483,12 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     pct = (0 == pgb->max ? 0.0f : (texu_f32)(pgb->pos * 100.0f / pgb->max));
     pct = (pct > 100.0f ? 100.0f : pct);
 
-    texu_sprintf(text, sizeof(text), TEXUTEXT("%.02f%%"), pct);
-    /*texu_strcat(text, TEXUTEXT("%"));*/
+    texu_sprintf(text, sizeof(text), TEXUTEXT("%.02f"), pct);
+#if (defined WIN32)
+    texu_strcat(text, TEXUTEXT("%"));
+#else
+    texu_strcat(text, TEXUTEXT("%%"));
+#endif
     /*get drawable width*/
     pgwidth = (0 == pgb->max ? 0 : ((texu_i32)pct >= 100 ? width : (pgb->pos * width / pgb->max)));
     if ((texu_ui32)pgwidth < texu_strlen(text))
@@ -6070,20 +6069,7 @@ void
 _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
-    texu_wnd *curpage = pgctl->curpage;
-    texu_wnd *newpage = 0;
     texu_wnd *activewnd = pgctl->activewnd;
-    texu_wnd *nextwnd = 0;
-    texu_i32 y = 0;
-    texu_i32 x = 0;
-    texu_i32 width = 0;
-    texu_cio *cio = 0;
-    texu_status rc = TEXU_OK;
-    texu_wnd* qnextwnd = 0;
-    texu_env *env = texu_wnd_get_env(wnd);
-    texu_i32 chNextKey = texu_env_get_movenext(env);
-    texu_i32 chPrevKey = texu_env_get_moveprev(env);
-    texu_pagewnd_page *pgitem = 0;
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -6667,19 +6653,7 @@ texu_i32 _TexuReBarProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
 void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
-    texu_i32 y = 0;
-    texu_i32 x = 0;
-    texu_i32 width = 0;
-    texu_cio *cio = 0;
-    texu_status rc = TEXU_OK;
     texu_wnd *activewnd = rbwnd->curband->childwnd;
-    texu_wnd *nextwnd = 0;
-    texu_rbwnd_band* nextband = 0;
-    texu_env *env = texu_wnd_get_env(wnd);
-    texu_i32 chNextKey = texu_env_get_movenext(env);
-    texu_i32 chPrevKey = texu_env_get_moveprev(env);
-    /*texu_bool fInvalidate = TEXU_FALSE;*/
-    texu_bool fPrevMove = TEXU_FALSE;
 
     if (!texu_wnd_is_enable(wnd))
     {
