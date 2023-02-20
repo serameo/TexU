@@ -35,6 +35,16 @@
 #define TexuEdit_SetValidMinMax(wnd, valid) \
     texu_wnd_send_msg(wnd, TEXU_EM_SETVALIDMINMAX, (texu_i64)(texu_editminmax *)valid, 0)
 
+#define TexuEdit_GetInt(wnd, val) \
+    texu_wnd_send_msg(wnd, TEXU_EM_GETINT, (texu_i64)(texu_i32*)val, 0)
+
+#define TexuEdit_GetInt(wnd, val) \
+    texu_wnd_send_msg(wnd, TEXU_EM_GETINT, (texu_i64)(texu_i32*)val, 0)
+
+#define TexuEdit_GetFloat(wnd, val) \
+    texu_wnd_send_msg(wnd, TEXU_EM_GETINT, (texu_i64)(texu_f64*)val, 0)
+
+
 /*LISTBOX MACROS*/
 #define TexuListBox_AddItem(wnd, text) \
     (texu_i32) texu_wnd_send_msg(wnd, TEXU_LBM_ADDITEM, (texu_i64)(const texu_char *)text, 0)
@@ -335,6 +345,95 @@
     (texu_i32) texu_wnd_send_msg(wnd, TEXU_PGM_COUNTPAGE, 0, 0)
 
 #define TexuPageCtrl_GetPageIndex(wnd, page) \
-    (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGM_GETPAGEINDEX, (texu_i32)page), 0)
+    (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGM_GETPAGEINDEX, (texu_i32)page, 0)
+
+#define TexuPageCtrl_GetCountPage(wnd) \
+    (texu_i32)texu_wnd_send_msg(wnd, TEXU_PGM_COUNTPAGE, 0, 0)
+
+#define TexuPageCtrl_RemovePage(wnd, page) \
+    texu_wnd_send_msg(wnd, TEXU_PGM_REMOVEPAGE, (texu_i32)page, 0)
+
+#define TexuPageCtrl_RemoveAllPages(wnd) \
+    texu_wnd_send_msg(wnd, TEXU_PGM_REMOVEALLPAGES, 0, 0)
+
+/*REBAR*/
+#define TexuReBar_AddBand(wnd, band) \
+    texu_wnd_send_msg(wnd, TEXU_RBM_ADDBAND, (texu_i64)(const texu_rbwnd_band*)(band), 0)
+
+#define TexuReBar_SetInfoWidth(wnd, width) \
+    texu_wnd_send_msg(wnd, TEXU_RBM_SETINFOWIDTH, width, 0)
+
+/*EDIT MASK*/
+#define TexuEditMask_SetMask(wnd, mask) \
+    texu_wnd_send_msg(wnd, TEXU_EMM_SETMASK, (texu_i64)(const texu_char*)(mask), 0)
+
+#define TexuEditMask_GetMask(wnd, mask, len) \
+    texu_wnd_send_msg(wnd, TEXU_EMM_GETMASK, (texu_i64)(texu_char*)(mask), len)
+
+#define TexuEditMask_SetInfo(wnd, info) \
+    texu_wnd_send_msg(wnd, TEXU_EMM_SETINFO, (texu_i64)(const texu_char*)(info), 0)
+
+/*IP ADDRESS CTRL*/
+#define TexuIPAddress_SetMinMax(wnd, min, max) \
+    texu_wnd_send_msg(wnd, TEXU_IPM_SETMINMAX, min, max)
+
+#define TexuIPAddress_GetMinMax(wnd, min, max) \
+    texu_wnd_send_msg(wnd, TEXU_IPM_GETMINMAX, (texu_i64)(texu_i32*)min, (texu_i64)(texu_i32*)max)
+
+#define TexuIPAddress_SetStep(wnd, step) \
+    texu_wnd_send_msg(wnd, TEXU_IPM_SETSTEP, step, 0)
+
+#define TexuIPAddress_GetStep(wnd) \
+    (texu_i32)texu_wnd_send_msg(wnd, TEXU_IPM_GETSTEP, 0, 0)
+
+#define TexuIPAddress_Step(wnd, updown) \
+    texu_wnd_send_msg(wnd, TEXU_IPM_STEP, updown, 0)
+
+#define TexuIPAddress_SetPage(wnd, page) \
+    texu_wnd_send_msg(wnd, TEXU_IPM_SETPAGE, page, 0)
+
+#define TexuIPAddress_GetPage(wnd) \
+    (texu_i32)texu_wnd_send_msg(wnd, TEXU_IPM_GETSTEP, 0, 0)
+
+#define TexuIPAddress_Page(wnd, updown) \
+    texu_wnd_send_msg(wnd, TEXU_IPM_PAGE, updown, 0)
+
+#define TexuIPAddress_GetIPAddress(wnd, ip) \
+    texu_wnd_send_msg(wnd, TEXU_IPM_GETIPADDRESS, (texu_i64)(texu_ip_addr*)ip, 0)
+
+/*EDIT PRICE SPREAD*/
+#define TexuEditPriceSpread_InsertSpread(wnd, spread) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_INSERTSPREAD, (texu_i64)(const texu_pricespread*)spread, 0)
+
+#define TexuEditPriceSpread_DeleteSpread(wnd, spread) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_DELETESPREAD, spread, 0)
+
+#define TexuEditPriceSpread_SetBasePrice(wnd, base) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_SETBASEPRICE, (texu_i64)(const texu_baseprice*)base, 0)
+
+#define TexuEditPriceSpread_GetBasePrice(wnd, base) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_GETBASEPRICE, (texu_i64)(texu_baseprice*)base, 0)
+
+#define TexuEditPriceSpread_SetPriceDecimal(wnd, dec) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_SETPRICEDECIMAL, dec, 0)
+
+#define TexuEditPriceSpread_LoadDefaultSpreads(wnd) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_LOADDEFAULTSPREADS, 0, 0)
+
+#define TexuEditPriceSpread_LoadSpreads(wnd, spreads, nospreads) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_LOADSPREADS, (texu_i64)(const texu_pricespread*)spreads, nospreads)
+
+#define TexuEditPriceSpread_AllowOverCeilingFloor(wnd, over) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_ALLOWOVERCEILINGFLOOR, (texu_i64)(texu_bool)over, 0)
+
+#define TexuEditPriceSpread_CorrectCeilingFloor(wnd, correct) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_CORRECTCEILINGFLOOR, (texu_i64)(texu_bool)correct, 0)
+
+#define TexuEditPriceSpread_SetHighlightTimeOuted(wnd, timeouted) \
+    texu_wnd_send_msg(wnd, TEXU_EPSM_SETHIGHLIGHTTIMEOUTED, timeouted, 0)
+
+
+
+
 
 #endif /*_TEXUIX_H_*/

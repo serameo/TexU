@@ -207,10 +207,25 @@ texu_bool       texu_env_new_cursor(texu_env *env);
 texu_bool       texu_env_set_cursor(texu_env *env, texu_i32 y, texu_i32 x);
 texu_bool       texu_env_show_cursor(texu_env *env, texu_bool show);
 texu_bool       texu_env_del_cursor(texu_env *env);
-
 #else
 texu_env*       texu_env_new(texu_i32, texu_i32);
 #endif
+
+typedef void(*texu_timerproc)(texu_wnd*, texu_i32, texu_i32, texu_i64);
+/*
+struct _texu_timer_registered
+{
+texu_wnd        *wnd;
+texu_i32        id;
+texu_i32        elapse;
+void*           userdata;
+texu_timerproc  proc;
+};
+typedef struct _texu_timer_registered texu_timer_registered;
+*/
+/*id MUST BE started at TEXU_TIMER_FIRST + id */
+texu_bool       texu_env_set_timer(texu_env *env, texu_wnd *wnd, texu_i32 id, texu_i32 elapse, texu_timerproc proc, texu_i64 userdata);
+texu_bool       texu_env_kill_timer(texu_env *env, texu_i32 id);
 
 void            texu_env_lock_update(texu_env *env, texu_bool locked);
 texu_bool       texu_env_is_update_locked(texu_env *env);
@@ -312,6 +327,7 @@ texu_i32            texu_wnd_children(texu_wnd*);
 
 texu_status         texu_wnd_visible(texu_wnd*, texu_bool);
 texu_status         texu_wnd_enable(texu_wnd*, texu_bool);
+texu_bool           texu_wnd_is_parent_visible(texu_wnd*);
 texu_bool           texu_wnd_is_visible(texu_wnd*);
 texu_bool           texu_wnd_is_enable(texu_wnd*);
 texu_bool           texu_wnd_is_active(texu_wnd *wnd);

@@ -249,6 +249,11 @@ enum
 #define TEXU_MAX_BUFFER                 (TEXU_MAX_WNDTEXT * 2)
 
 #define TEXU_WM_USER                    10000
+/*timers*/
+#define TEXU_ID_IDLETIMER               1
+#define TEXU_ID_EPSCHANGE               2
+
+#define TEXU_TIMER_FIRST                100
 
 #define TEXU_WM_FIRST                   0
 #define TEXU_WM_CHAR                    (TEXU_WM_FIRST +  1)
@@ -577,13 +582,14 @@ enum
 #define TEXU_EPSM_FIRST                 1600
 #define TEXU_EPSM_INSERTSPREAD          (TEXU_EPSM_FIRST +  1)
 #define TEXU_EPSM_DELETESPREAD          (TEXU_EPSM_FIRST +  2)
-#define TEXU_EPSM_SETBASESPREAD         (TEXU_EPSM_FIRST +  3)
-#define TEXU_EPSM_GETBASESPREAD         (TEXU_EPSM_FIRST +  4)
+#define TEXU_EPSM_SETBASEPRICE          (TEXU_EPSM_FIRST +  3)
+#define TEXU_EPSM_GETBASEPRICE          (TEXU_EPSM_FIRST +  4)
 #define TEXU_EPSM_SETPRICEDECIMAL       (TEXU_EPSM_FIRST +  5)
 #define TEXU_EPSM_LOADDEFAULTSPREADS    (TEXU_EPSM_FIRST +  6)
 #define TEXU_EPSM_LOADSPREADS           (TEXU_EPSM_FIRST +  7)
 #define TEXU_EPSM_ALLOWOVERCEILINGFLOOR (TEXU_EPSM_FIRST +  8)
 #define TEXU_EPSM_CORRECTCEILINGFLOOR   (TEXU_EPSM_FIRST +  9)
+#define TEXU_EPSM_SETHIGHLIGHTTIMEOUTED  (TEXU_EPSM_FIRST + 10)
 
 #define TEXU_EPSN_FIRST                 TEXU_EMM_FIRST
 #define TEXU_EPSN_SETFOCUS              (TEXU_EPSN_FIRST +  1)
@@ -816,6 +822,7 @@ enum
 #define TEXU_EPSS_SHOWCHANGE            0x00010000
 #define TEXU_EPSS_SHOWCHANGEPRICE       0x00020000
 #define TEXU_EPSS_AUTOCOMMAS            0x00040000
+#define TEXU_EPSS_SHOWHIGHLIGHT         0x00080000
 
 /*UP-DOWN CTRL*/
 #define TEXU_UDS_SHOWPLUSMINUS          0x00010000
