@@ -98,6 +98,10 @@ TexuRun()
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
+        if (WM_TIMER == msg.message)
+        {
+            msg.hwnd = texu_env_get_hwnd(genv);
+        }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
@@ -726,16 +730,16 @@ TexuAddPopupMenu(
     const texu_char *info)
 {
     return texu_menu_add_menu_info(
-        menu,
-        text,
-        enable,
-        info);
+                menu,
+                text,
+                enable,
+                info);
 }
 
 texu_popup_menu_item *
 TexuAddPopupMenuItem(
     texu_menu *menu,
-    texu_tree_item *popup,
+    texu_popup_menu *popup,
     const texu_char *text,
     texu_ui32 id,
     texu_bool enable,

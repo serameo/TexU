@@ -422,10 +422,14 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_cio_putstr_attr(dc, y, x, buf,
                          texu_cio_get_reverse(dc, normcolor));
 #else
+#if (defined WIN32 && defined _WINDOWS)
     texu_cio_draw_text(dc, y, x, buf, normcolor, normbg,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
-
+#else
+    texu_cio_putstr_attr(dc, y, x, buf,
+                         texu_cio_get_color(dc, normcolor));
+#endif
 #endif
 
     while (treeitem)
@@ -458,9 +462,14 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                                      texu_cio_get_reverse(dc, color));
 #else
 
+#if (defined WIN32 && defined _WINDOWS)
                 texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
-                                      texu_wnd_get_clsname(wnd),
-                                      texu_wnd_get_id(wnd));
+                                   texu_wnd_get_clsname(wnd),
+                                   texu_wnd_get_id(wnd));
+#else
+                texu_cio_putstr_attr(dc, y, x, buf,
+                                     texu_cio_get_color(dc, color));
+#endif
 
 #endif
             }
@@ -473,10 +482,14 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, color));
 #else
-
+#if (defined WIN32 && defined _WINDOWS)
             texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
-                                  texu_wnd_get_clsname(wnd),
-                                  texu_wnd_get_id(wnd));
+                               texu_wnd_get_clsname(wnd),
+                               texu_wnd_get_id(wnd));
+#else
+            texu_cio_putstr_attr(dc, y, x, buf,
+                                 texu_cio_get_color(dc, color));
+#endif
 
 #endif
         }

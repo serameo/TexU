@@ -650,7 +650,7 @@ texu_cio_draw_text(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
     return texu_env_draw_text_ex(cio->env, y, x, text, color, bgcolor,
                                     clsname, id);
 #else
-    return texu_cio_putstr_attr(cio, y, x, text, color);
+    return texu_cio_putstr_attr(cio, y, x, text, texu_cio_get_color(cio, color));
 #endif
 }
 
@@ -664,7 +664,7 @@ texu_cio_draw_char(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
     return texu_env_draw_char_ex(cio->env, y, x, ch, color, bgcolor,
                                  clsname, id);
 #else
-    return texu_cio_putch_attr(cio, y, x, ch, color);
+    return texu_cio_putch_attr(cio, y, x, ch, texu_cio_get_color(cio, color));
 #endif
 }
 

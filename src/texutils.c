@@ -676,6 +676,8 @@ texu_char *texu_strnrcpy(texu_char *dest, const texu_char *src, size_t size)
     texu_char out[TEXU_MAX_WNDTEXT + 1];
     texu_char in[TEXU_MAX_WNDTEXT + 1];
 
+    memset(in, 0, sizeof(in));
+    memset(out, 0, sizeof(out));
     texu_strrcpy(in, src);
 #if (defined WIN32 && defined UNICODE)
     wcsncpy_s(out, sizeof(texu_char)*(texu_strlen(in)+1), in, size);

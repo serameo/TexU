@@ -106,6 +106,10 @@ texu_list_cb_free(
 {
     texu_list_item *delitem = 0;
     texu_list_item *item = 0;
+    if (!list)
+    {
+        return ;
+    }
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
@@ -133,7 +137,12 @@ texu_list_cb_free(
 texu_status
 texu_list_insert_first(texu_list *list, texu_i64 data)
 {
-    texu_list_item *newitem = _texu_list_item_new(data);
+    texu_list_item *newitem = 0;
+    if (!list)
+    {
+        return 0;
+    }
+    newitem = _texu_list_item_new(data);
     if (!newitem)
     {
         return TEXU_NOMEM;
@@ -172,7 +181,12 @@ texu_list_insert(
     texu_i64 data)
 {
     texu_list_item *prev = 0;
-    texu_list_item *newitem = _texu_list_item_new(data);
+    texu_list_item *newitem = 0;
+    if (!list)
+    {
+        return 0;
+    }
+    newitem = _texu_list_item_new(data);
     if (!newitem)
     {
         return TEXU_NOMEM;
@@ -209,7 +223,12 @@ texu_list_insert(
 texu_status
 texu_list_add(texu_list *list, texu_i64 data)
 {
-    texu_list_item *newitem = _texu_list_item_new(data);
+    texu_list_item *newitem = 0;
+    if (!list)
+    {
+        return 0;
+    }
+    newitem = _texu_list_item_new(data);
     if (!newitem)
     {
         return TEXU_NOMEM;
@@ -254,6 +273,10 @@ texu_list_cb_remove(
     if (!item)
     {
         return TEXU_OK;
+    }
+    if (!list)
+    {
+        return 0;
     }
     /* make a new link */
 #ifdef TEXU_THREAD_SAFE
@@ -306,6 +329,10 @@ texu_list_item *
 texu_list_first(texu_list *list)
 {
     texu_list_item *item = 0;
+    if (!list)
+    {
+        return 0;
+    }
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
@@ -320,6 +347,10 @@ texu_list_item *
 texu_list_last(texu_list *list)
 {
     texu_list_item *item = 0;
+    if (!list)
+    {
+        return 0;
+    }
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
@@ -334,10 +365,14 @@ texu_ui64
 texu_list_count(texu_list *list)
 {
     texu_ui64 nitems = 0;
+    if (!list)
+    {
+        return 0;
+    }
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
-    nitems = list->nitems;
+    nitems = (list ? list->nitems : 0);
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
 #endif
