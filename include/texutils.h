@@ -49,7 +49,9 @@ texu_i32            texu_fs2ls(const texu_char *_sPriceStr, texu_i32 _lSize, tex
 texu_i32            texu_sprintf(texu_char *buf, texu_i32 buflen, const texu_char* format, ...);
 texu_i32            texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *nocommas);
 texu_i32            texu_remove_commas(texu_char *nocommas, texu_i32 len, const texu_char *commas);
-
+texu_char*          texu_ltrim(texu_char* in);
+texu_char*          texu_rtrim(texu_char* in);
+texu_char*          texu_trim(texu_char* in);
 #if (defined WIN32)
 /*texu_a2w to convert multi-byte string (ascii string) to wide string*/
 texu_i32            texu_a2w(wchar_t *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen);

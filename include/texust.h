@@ -122,6 +122,7 @@ struct texu_wnd_subitem
     void *data;         /* user data                */
 };
 typedef struct texu_wnd_subitem texu_wnd_subitem;
+typedef struct texu_wnd_subitem texu_lc_subitem;    /*list control subitem*/
 
 struct texu_header_notify
 {
@@ -146,6 +147,7 @@ struct texu_wnd_header
     texu_i32 decwidth;   /* TES_DECIMAL or TES_AUTODECIMALCOMMA, default 6 */
 };
 typedef struct texu_wnd_header texu_wnd_header;
+typedef struct texu_wnd_header texu_lc_header;  /*list control header item*/
 
 /* edit */
 struct texu_editminmax
@@ -160,7 +162,7 @@ typedef struct texu_editminmax texu_editminmax;
 struct texu_treewnd_item
 {
     texu_char itemtext[TEXU_MAX_WNDTEXT + 1];
-    texu_i64 lparam;
+    texu_lparam lparam;
     texu_bool expanded;
     texu_bool selected;
     texu_i32 children;

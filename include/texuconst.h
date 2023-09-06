@@ -210,17 +210,17 @@ enum
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-#define TEXU_UPPER_LEFT         (1)
-#define TEXU_UPPER_RIGHT        (2)
-#define TEXU_LOWER_LEFT         (3)
-#define TEXU_LOWER_RIGHT        (4)
-#define TEXU_VERTICAL           (5)
-#define TEXU_HORIZONTAL         (6)
-#define TEXU_VERT_LEFT          (7)
-#define TEXU_VERT_RIGHT         (8)
-#define TEXU_HORZ_DOWN          (9)
-#define TEXU_HORZ_UP            (10)
-#define TEXU_VERT_HORZ          (11)
+#define TEXU_UPPER_LEFT      (1)
+#define TEXU_UPPER_RIGHT     (2)
+#define TEXU_LOWER_LEFT      (3)
+#define TEXU_LOWER_RIGHT     (4)
+#define TEXU_VERTICAL        (5)
+#define TEXU_HORIZONTAL      (6)
+#define TEXU_VERT_LEFT       (7)
+#define TEXU_VERT_RIGHT      (8)
+#define TEXU_HORZ_DOWN       (9)
+#define TEXU_HORZ_UP         (10)
+#define TEXU_VERT_HORZ       (11)
 
 /* status */
 #define TEXU_EVALID                     (texu_i32)(-3)
@@ -249,11 +249,6 @@ enum
 #define TEXU_MAX_BUFFER                 (TEXU_MAX_WNDTEXT * 2)
 
 #define TEXU_WM_USER                    10000
-/*timers*/
-#define TEXU_ID_IDLETIMER               1
-#define TEXU_ID_EPSCHANGE               2
-
-#define TEXU_TIMER_FIRST                100
 
 #define TEXU_WM_FIRST                   0
 #define TEXU_WM_CHAR                    (TEXU_WM_FIRST +  1)
@@ -280,14 +275,11 @@ enum
 #define TEXU_WM_CLOSE                   (TEXU_WM_FIRST + 22)
 #define TEXU_WM_QUERYCLOSE              (TEXU_WM_FIRST + 23)
 #define TEXU_WM_KEYDOWN                 (TEXU_WM_FIRST + 24)
-#define TEXU_WM_SETINFO                 (TEXU_WM_FIRST + 25)
-#define TEXU_WM_GETINFO                 (TEXU_WM_FIRST + 26)
 
 /* notify */
 #define TEXU_WN_FIRST                   0
 #define TEXU_WN_GOFIRSTCHILD            (TEXU_WN_FIRST +  1)
 #define TEXU_WN_GOLASTCHILD             (TEXU_WN_FIRST +  2)
-#define TEXU_WN_DISPINFO                (TEXU_WN_FIRST +  3)
 
 /* EDIT */
 #define TEXU_EM_FIRST                   200
@@ -578,18 +570,17 @@ enum
 
 #define TEXU_EDITMASK_EMAIL             TEXUTEXT("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$")
 
-/*EDIT PRICE SPREAD CTROL*/
+/*EDIT PRICE SPREAD CTRL*/
 #define TEXU_EPSM_FIRST                 1600
 #define TEXU_EPSM_INSERTSPREAD          (TEXU_EPSM_FIRST +  1)
 #define TEXU_EPSM_DELETESPREAD          (TEXU_EPSM_FIRST +  2)
-#define TEXU_EPSM_SETBASEPRICE          (TEXU_EPSM_FIRST +  3)
-#define TEXU_EPSM_GETBASEPRICE          (TEXU_EPSM_FIRST +  4)
+#define TEXU_EPSM_SETBASESPREAD         (TEXU_EPSM_FIRST +  3)
+#define TEXU_EPSM_GETBASESPREAD         (TEXU_EPSM_FIRST +  4)
 #define TEXU_EPSM_SETPRICEDECIMAL       (TEXU_EPSM_FIRST +  5)
 #define TEXU_EPSM_LOADDEFAULTSPREADS    (TEXU_EPSM_FIRST +  6)
 #define TEXU_EPSM_LOADSPREADS           (TEXU_EPSM_FIRST +  7)
 #define TEXU_EPSM_ALLOWOVERCEILINGFLOOR (TEXU_EPSM_FIRST +  8)
 #define TEXU_EPSM_CORRECTCEILINGFLOOR   (TEXU_EPSM_FIRST +  9)
-#define TEXU_EPSM_SETHIGHLIGHTTIMEOUTED  (TEXU_EPSM_FIRST + 10)
 
 #define TEXU_EPSN_FIRST                 TEXU_EMM_FIRST
 #define TEXU_EPSN_SETFOCUS              (TEXU_EPSN_FIRST +  1)
@@ -597,6 +588,27 @@ enum
 #define TEXU_EPSN_INVALIDSPREAD         (TEXU_EPSM_FIRST +  3)
 #define TEXU_EPSN_INVALIDCEILING        (TEXU_EPSM_FIRST +  4)
 #define TEXU_EPSN_INVALIDFLOOR          (TEXU_EPSM_FIRST +  5)
+
+/*CLOCK CTRL*/
+#define TEXU_CLKM_FIRST                 1700
+#define TEXU_CLKM_UPDATE                (TEXU_CLKM_FIRST +  1)
+
+#define TEXU_CLKN_FIRST                 TEXU_CLKM_FIRST
+
+/*DATE CTRL*/
+#define TEXU_DTM_FIRST                  1800
+#define TEXU_DTM_GETDATE                (TEXU_DTM_FIRST +  1)
+#define TEXU_DTM_SETDATE                (TEXU_DTM_FIRST +  2)
+
+#define TEXU_DTN_FIRST                  TEXU_DTM_FIRST
+
+/*TIME CTRL*/
+#define TEXU_TMM_FIRST                  1900
+#define TEXU_TMM_GETTIME                (TEXU_TMM_FIRST +  1)
+#define TEXU_TMM_SETTIME                (TEXU_TMM_FIRST +  2)
+
+
+#define TEXU_TMN_FIRST                  TEXU_TMM_FIRST
 
 /*MENU */
 #define TEXU_MNM_FIRST                  10000
@@ -647,7 +659,9 @@ enum
 #define TEXU_KEYPRESSED_CTRL            2
 #define TEXU_KEYPRESSED_SHIFT           4
 
-
+#ifdef _USE_CURSES_
+#define TEXU_ACS_PLMINUS                ACS_PLMINUS
+#else
 #if (defined WIN32 && defined UNICODE)
 #define TEXU_ACS_PLUS                   L'+'
 #define TEXU_ACS_MINUS                  L'-'
@@ -657,7 +671,7 @@ enum
 #define TEXU_ACS_MINUS                  '-'
 #define TEXU_EMPTY_STR                  ""
 #endif
-
+#endif
 
 #define TEXU_ENV_MAX_FRAMES            256
 
@@ -680,6 +694,9 @@ enum
 #define TEXU_IPADDRESSCTRL_CLASS        L"TexuIPAddressCtrlClassW"
 #define TEXU_EDITMASKCTRL_CLASS         L"TexuEditMaskCtrlClassW"
 #define TEXU_EDITPRICESPREADCTRL_CLASS  L"TexuEditPriceSpreadCtrlClassW"
+#define TEXU_CLOCKCTRL_CLASS            L"TexuClockCtrlClassW"
+#define TEXU_DATECTRL_CLASS             L"TexuDateCtrlClassW"
+#define TEXU_TIMECTRL_CLASS             L"TexuTimeCtrlClassW"
 /*menu*/
 #define TEXU_MENU_CLASS                 L"TexuMenuClassW"
 #define TEXU_MENUWND_CLASS              L"TexuMenuWndClassW"
@@ -702,6 +719,9 @@ enum
 #define TEXU_IPADDRESSCTRL_CLASS        "TexuIPAddressCtrlClassA"
 #define TEXU_EDITMASKCTRL_CLASS         "TexuEditMaskCtrlClassA"
 #define TEXU_EDITPRICESPREADCTRL_CLASS  "TexuEditPriceSpreadCtrlClassA"
+#define TEXU_CLOCKCTRL_CLASS            "TexuClockCtrlClassA"
+#define TEXU_DATECTRL_CLASS             "TexuDateCtrlClassA"
+#define TEXU_TIMECTRL_CLASS             "TexuTimeCtrlClassA"
 /*menu*/
 #define TEXU_MENU_CLASS                 "TexuMenuClassA"
 #define TEXU_MENUWND_CLASS              "TexuMenuWndClassA"
@@ -753,7 +773,6 @@ enum
 #define TEXU_ES_UPPERCASE               0x00400000
 #define TEXU_ES_LOWERCASE               0x00800000
 #define TEXU_ES_A2Z                     0x01000000
-#define TEXU_ES_SUFFIX                  0x02000000
 
 
 /* LISTBOX */
@@ -822,13 +841,23 @@ enum
 #define TEXU_EPSS_SHOWCHANGE            0x00010000
 #define TEXU_EPSS_SHOWCHANGEPRICE       0x00020000
 #define TEXU_EPSS_AUTOCOMMAS            0x00040000
-#define TEXU_EPSS_SHOWHIGHLIGHT         0x00080000
 
 /*UP-DOWN CTRL*/
 #define TEXU_UDS_SHOWPLUSMINUS          0x00010000
 
 /*PAGE CTRL*/
 #define TEXU_PCS_CREATEPAGEWHENACTIVATED    0x00010000
+
+/*TIME CTRL*/
+#define TEXU_TMFMT_HHMMSS               0
+#define TEXU_TMFMT_HHMM                 1
+
+
+/*DATE CTRL*/
+#define TEXU_DTFMT_YYYYMMDD             0
+#define TEXU_DTFMT_DDMMYYYY             1
+#define TEXU_DTFMT_YYYYMONDD            2
+#define TEXU_DTFMT_DDMONYYYY            3
 
 
 #endif /*_TEXUCONST_H_*/

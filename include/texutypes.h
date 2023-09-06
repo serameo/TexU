@@ -19,15 +19,18 @@ typedef char                           texu_i8;
 typedef unsigned char                  texu_ui8;
 typedef short                          texu_i16;
 typedef unsigned short                 texu_ui16;
+#ifdef __LINUX64__
 typedef int                            texu_i32;
 typedef unsigned int                   texu_ui32;
-#if (defined _X64_ || defined WIN64)
-typedef long long                      texu_i64;
-typedef unsigned long long             texu_ui64;
-#else
 typedef long                           texu_i64;
 typedef unsigned long                  texu_ui64;
+#else
+typedef long                           texu_i32;
+typedef unsigned long                  texu_ui32;
+typedef long long                      texu_i64;
+typedef unsigned long long             texu_ui64;
 #endif
+
 typedef float                          texu_f32;
 typedef double                         texu_f64;
 
@@ -39,7 +42,7 @@ typedef long                           texu_bool;
 typedef float                          texu_float;
 typedef double                         texu_double;
 
-typedef long                           texu_status;
+typedef int                            texu_status;
 
 typedef wchar_t                        texu_wchar;
 typedef wchar_t*                       texu_wstring;
@@ -53,6 +56,13 @@ typedef texu_wstring                    texu_string;
 typedef texu_achar                      texu_char;
 typedef texu_astring                    texu_string;
 #endif
+#ifdef __LINUX64__
+typedef texu_i64                        texu_lparam;
+#else
+typedef texu_i32                        texu_lparam;
+#endif
+typedef texu_lparam                     texu_longptr;
+typedef texu_ui32                       texu_color;
 
 #endif /*_TEXUTYPES_H_*/
 

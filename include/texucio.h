@@ -165,12 +165,7 @@ texu_i32            texu_cio_putch_attr2(texu_cio*, texu_i32, texu_i32, texu_i32
 texu_i32            texu_cio_putstr(texu_cio*, texu_i32, texu_i32, const texu_char*);
 texu_i32            texu_cio_putstr_attr(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32);
 texu_i32            texu_cio_putstr_attr2(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32, texu_i32);
-/*
-texu_env_draw_text_ex(env, y, x, caption, color, bgcolor,
-texu_wnd_get_clsname(wnd),
-texu_wnd_get_id(wnd));
 
-*/
 texu_i32            texu_cio_draw_text(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
                                        texu_ui32 color, texu_ui32 bgcolor,
                                        const texu_char *clsname,

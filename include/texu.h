@@ -125,18 +125,16 @@ void                TexuDestroyWindow(
                         texu_wnd*  wnd
                     );
 #if USE_TCL_AUTOMATION
-texu_status         TexuCreateControls(texu_wnd *wnd, texu_wnd_template *templ, texu_i32 nitems, texu_char *templname);
-texu_status         TexuCreateControls2(texu_wnd *wnd, texu_wnd_template2 *templ, texu_i32 nitems, texu_char *templname);
+texu_status         TexuCreateControls(texu_wnd *wnd, const texu_wnd_template *templ, texu_i32 nitems, const texu_char *templname);
+texu_status         TexuCreateControls2(texu_wnd *wnd, const texu_wnd_template2 *templ, texu_i32 nitems, const texu_char *templname);
 #else
-texu_status         TexuCreateControls(texu_wnd* wnd, texu_wnd_template*, texu_i32);
-texu_status         TexuCreateControls2(texu_wnd* wnd, texu_wnd_template2*, texu_i32);
+texu_status         TexuCreateControls(texu_wnd* wnd, const texu_wnd_template*, texu_i32);
+texu_status         TexuCreateControls2(texu_wnd* wnd, const texu_wnd_template2*, texu_i32);
 #endif
-texu_i64            TexuCloseWindow(texu_wnd *wnd);
+texu_longptr            TexuCloseWindow(texu_wnd *wnd);
 
 #define TEXU_SW_HIDE            0
 #define TEXU_SW_SHOW            1
-void                TexuUnlockUpdate();
-void                TexuLockUpdate();
 void                TexuShowWindow(
                         texu_wnd*  wnd,
                         texu_i32   show
@@ -157,20 +155,20 @@ TexuMessageBox(
     void*      userdata
 );
 
-texu_i64
+texu_longptr
 TexuSendMessage(
     texu_wnd*     wnd,
     texu_ui32     msg,
-    texu_i64      param1,
-    texu_i64      param2
+    texu_lparam      param1,
+    texu_lparam      param2
 );
 
-texu_i64
+texu_longptr
 TexuPostMessage(
     texu_wnd*     wnd,
     texu_ui32     msg,
-    texu_i64      param1,
-    texu_i64      param2
+    texu_lparam      param1,
+    texu_lparam      param2
 );
 
 texu_wnd*
@@ -224,7 +222,7 @@ TexuAddHotKey(
 );
 
 void            TexuEnableWindow(texu_wnd* wnd, texu_bool enable);
-texu_i64        TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
+texu_longptr        TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
 
 void
 TexuSaveCursorPosition(texu_wnd* wnd);

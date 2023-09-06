@@ -117,10 +117,10 @@ enum
     TEXU_COLOR_DEFAULT
 };
 
-typedef texu_i64  (*texu_wndproc)(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuDefWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuFrameWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
-texu_i64          TexuManualFrameWndProc(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+typedef texu_longptr    (*texu_wndproc)(texu_wnd*, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr            TexuDefWndProc(texu_wnd*, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr            TexuFrameWndProc(texu_wnd*, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr            TexuManualFrameWndProc(texu_wnd*, texu_ui32, texu_lparam, texu_lparam);
 
 
 #ifdef USE_TCL_AUTOMATION
@@ -128,11 +128,11 @@ texu_env*       texu_env_new(texu_i32 lines, texu_i32 cols, const char* pathname
 FILE*           texu_env_get_stdout(texu_env *env);
 #else
 #if (defined WIN32 && defined _WINDOWS)
-#include "cJSON.h"
+#include "cjson.h"
 HFONT           texu_env_get_clsfont(texu_env *env, const texu_char *clsname);
 HFONT           texu_env_get_insfont(texu_env *env, const texu_char *clsname, texu_ui32 id);
 cJSON*          texu_env_get_prop(texu_env *env);
-texu_i64        texu_env_invalidate(texu_env *env);
+texu_i32        texu_env_invalidate(texu_env *env);
 HDC             texu_env_get_hdc(texu_env *env);
 HFONT           texu_env_get_hfont(texu_env *env);
 void            texu_env_set_memdc(texu_env *env, HDC hmemdc);
@@ -207,28 +207,11 @@ texu_bool       texu_env_new_cursor(texu_env *env);
 texu_bool       texu_env_set_cursor(texu_env *env, texu_i32 y, texu_i32 x);
 texu_bool       texu_env_show_cursor(texu_env *env, texu_bool show);
 texu_bool       texu_env_del_cursor(texu_env *env);
+
 #else
 texu_env*       texu_env_new(texu_i32, texu_i32);
 #endif
 
-typedef void(*texu_timerproc)(texu_wnd*, texu_i32, texu_i32, texu_i64);
-/*
-struct _texu_timer_registered
-{
-texu_wnd        *wnd;
-texu_i32        id;
-texu_i32        elapse;
-void*           userdata;
-texu_timerproc  proc;
-};
-typedef struct _texu_timer_registered texu_timer_registered;
-*/
-/*id MUST BE started at TEXU_TIMER_FIRST + id */
-texu_bool       texu_env_set_timer(texu_env *env, texu_wnd *wnd, texu_i32 id, texu_i32 elapse, texu_timerproc proc, texu_i64 userdata);
-texu_bool       texu_env_kill_timer(texu_env *env, texu_i32 id);
-
-void            texu_env_lock_update(texu_env *env, texu_bool locked);
-texu_bool       texu_env_is_update_locked(texu_env *env);
 
 /*cursor*/
 texu_bool       texu_env_new_cursor(texu_env *env);
@@ -266,7 +249,7 @@ void            texu_env_save_screen(texu_env* env);
 void            texu_env_restore_screen(texu_env* env);
 
 void            texu_env_set_syscolors(texu_env* env, texu_i32 (*setcolor)(texu_i32));
-texu_ui32        texu_env_get_syscolor(texu_env*, texu_i32);
+texu_ui32       texu_env_get_syscolor(texu_env*, texu_i32);
 void            texu_env_set_sysbgcolors(texu_env* env, texu_i32(*setcolor)(texu_i32));
 texu_ui32       texu_env_get_sysbgcolor(texu_env*, texu_i32);
 texu_wnd*       texu_env_get_focus(texu_env *env);
@@ -297,7 +280,7 @@ void                texu_wnd_del(texu_wnd*);
 
 texu_status         texu_wnd_create(texu_wnd*, texu_wnd*, const texu_wnd_attrs*);
 void                texu_wnd_destroy(texu_wnd*);
-texu_i64            texu_wnd_close(texu_wnd *wnd);
+texu_longptr            texu_wnd_close(texu_wnd *wnd);
 texu_status         texu_wnd_add_child(texu_wnd*, texu_wnd*);
 texu_status         texu_wnd_remove_child(texu_wnd*, texu_wnd*);
 texu_wnd*           texu_wnd_find_child(texu_wnd*, texu_ui32);
@@ -306,9 +289,9 @@ texu_wnd*           texu_wnd_is_window(texu_wnd*);
 texu_status         texu_wnd_add_keycmd(texu_wnd*, texu_i32, texu_ui32, texu_i32);
 texu_wnd_keycmd*    texu_wnd_find_keycmd(texu_wnd*, texu_i32, texu_i32);
 
-texu_i64            texu_wnd_send_msg(texu_wnd*, texu_ui32, texu_i64, texu_i64);  /*synchronous*/
-texu_i64            texu_wnd_invalidate(texu_wnd*);
-texu_i64            texu_wnd_post_msg(texu_wnd*, texu_ui32, texu_i64, texu_i64);
+texu_longptr            texu_wnd_send_msg(texu_wnd*, texu_ui32, texu_lparam, texu_lparam);  /*synchronous*/
+texu_i32            texu_wnd_invalidate(texu_wnd*);
+texu_longptr            texu_wnd_post_msg(texu_wnd*, texu_ui32, texu_lparam, texu_lparam);
 
 texu_wnd*           texu_wnd_get_frame(texu_wnd*);
 texu_ui32           texu_wnd_get_id(texu_wnd*);
@@ -327,7 +310,6 @@ texu_i32            texu_wnd_children(texu_wnd*);
 
 texu_status         texu_wnd_visible(texu_wnd*, texu_bool);
 texu_status         texu_wnd_enable(texu_wnd*, texu_bool);
-texu_bool           texu_wnd_is_parent_visible(texu_wnd*);
 texu_bool           texu_wnd_is_visible(texu_wnd*);
 texu_bool           texu_wnd_is_enable(texu_wnd*);
 texu_bool           texu_wnd_is_active(texu_wnd *wnd);
@@ -385,7 +367,7 @@ texu_menu*          texu_wnd_get_menu(texu_wnd*);
 typedef texu_i32  (*texu_tree_exp_proc)(FILE*, texu_treewnd_item*);
 typedef texu_i32  (*texu_tree_imp_proc)(texu_treewnd_item*, const texu_char*);
 
-typedef texu_i32  (*texu_tree_find_proc)(texu_i64, texu_i64, void*);
+typedef texu_i32  (*texu_tree_find_proc)(texu_lparam, texu_lparam, void*);
 
 
 #ifdef __cplusplus
