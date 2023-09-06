@@ -34,7 +34,7 @@ void test_list()
 
     for (i = 0; i < 8; ++i)
     {
-        texu_list_add(list, (texu_i64)s[i]);
+        texu_list_add(list, (texu_lparam)s[i]);
     }
 
     printf("Printing by the list...\n");
@@ -56,7 +56,7 @@ void test_array()
 
     for (i = 0; i < 8; ++i)
     {
-        texu_array_set(arr, i, (texu_i64)s[i]);
+        texu_array_set(arr, i, (texu_lparam)s[i]);
     }
 
     printf("Printing by the array...\n");
@@ -75,7 +75,7 @@ void test_stack()
 
     for (i = 0; i < 8; ++i)
     {
-        texu_stack_push(stack, (texu_i64)s[i]);
+        texu_stack_push(stack, (texu_lparam)s[i]);
     }
 
     printf("Printing by the stack...\n");
@@ -105,14 +105,14 @@ texu_i64 test_tree_populate(texu_tree_item *item, void *user)
 void test_tree()
 {
     texu_tree *tree = texu_tree_new();
-    texu_tree_item *item1 = texu_tree_add_item(tree, 0, (texu_i64)s[0]);
-    texu_tree_item *item2 = texu_tree_add_item(tree, item1, (texu_i64)s[1]);
-    texu_tree_item *item3 = texu_tree_add_item(tree, item2, (texu_i64)s[2]);
-    texu_tree_item *item4 = texu_tree_add_item(tree, 0, (texu_i64)s[3]);
-    texu_tree_item *item5 = texu_tree_add_item(tree, item4, (texu_i64)s[4]);
-    texu_tree_item *item6 = texu_tree_add_item(tree, item5, (texu_i64)s[5]);
-    texu_tree_item *item7 = texu_tree_add_item(tree, item6, (texu_i64)s[6]);
-    texu_tree_item *item8 = texu_tree_add_item(tree, item6, (texu_i64)s[7]);
+    texu_tree_item *item1 = texu_tree_add_item(tree, 0, (texu_lparam)s[0]);
+    texu_tree_item *item2 = texu_tree_add_item(tree, item1, (texu_lparam)s[1]);
+    texu_tree_item *item3 = texu_tree_add_item(tree, item2, (texu_lparam)s[2]);
+    texu_tree_item *item4 = texu_tree_add_item(tree, 0, (texu_lparam)s[3]);
+    texu_tree_item *item5 = texu_tree_add_item(tree, item4, (texu_lparam)s[4]);
+    texu_tree_item *item6 = texu_tree_add_item(tree, item5, (texu_lparam)s[5]);
+    texu_tree_item *item7 = texu_tree_add_item(tree, item6, (texu_lparam)s[6]);
+    texu_tree_item *item8 = texu_tree_add_item(tree, item6, (texu_lparam)s[7]);
 
     printf("Printing tree by pre-order traversal...\n");
     texu_tree_populate(tree, 0, -1, test_tree_populate, tree);
@@ -135,7 +135,7 @@ void test_map()
 
     for (i = 0; i < 8; ++i)
     {
-        texu_map_insert(map, 8 - i, (texu_i64)s[i]);
+        texu_map_insert(map, 8 - i, (texu_lparam)s[i]);
     }
 
     for (i = 0; i < 10; ++i)
@@ -161,13 +161,13 @@ void test_map2()
     char *val = 0;
     char *key = 0;
 
-    texu_map_insert(map, (texu_i64) "green", (texu_i64) "water melon");
-    texu_map_insert(map, (texu_i64) "yellow", (texu_i64) "banana");
-    texu_map_insert(map, (texu_i64) "red", (texu_i64) "apple");
-    texu_map_insert(map, (texu_i64) "orange", (texu_i64) "orange");
+    texu_map_insert(map, (texu_lparam) "green", (texu_lparam) "water melon");
+    texu_map_insert(map, (texu_lparam) "yellow", (texu_lparam) "banana");
+    texu_map_insert(map, (texu_lparam) "red", (texu_lparam) "apple");
+    texu_map_insert(map, (texu_lparam) "orange", (texu_lparam) "orange");
 
     key = "red";
-    rc = texu_map_find(map, (texu_i64)key, (texu_i64 *)&val);
+    rc = texu_map_find(map, (texu_lparam)key, (texu_i64 *)&val);
     if (TEXU_OK == rc)
     {
         printf("FOUND key=%s, val=%s\n", key, val);
@@ -178,7 +178,7 @@ void test_map2()
     }
 
     key = "blue";
-    rc = texu_map_cmp_find(map, (texu_i64)key, (texu_i64 *)&val, texu_map_strcmp);
+    rc = texu_map_cmp_find(map, (texu_lparam)key, (texu_i64 *)&val, texu_map_strcmp);
     if (TEXU_OK == rc)
     {
         printf("FOUND key=%s, val=%s\n", key, val);

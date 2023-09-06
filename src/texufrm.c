@@ -29,14 +29,14 @@
 #include "texui.h"
 #include "texumenu.h"
 #include "texust.h"
-#include "cJSON.h"
+#include "cjson.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-    texu_i64
-    TexuDefWndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2);
+    texu_longptr
+    TexuDefWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2);
 
     /*
     #-------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ extern "C"
     texu_i32
     _TexuFrameWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
-        texu_i64 rc = 0;
+        texu_i32 rc = 0;
         texu_wnd *activewnd = texu_wnd_get_activechild(wnd);
         texu_wnd *nextwnd = 0;
         texu_wnd *parent = texu_wnd_get_parent(wnd);
@@ -69,7 +69,7 @@ extern "C"
         if (keycmd && parent == desktop)
         {
             /* if there are any hotkey registered */
-            return texu_wnd_send_msg(wnd, TEXU_WM_COMMAND, (texu_i64)keycmd->cmd, alt);
+            return texu_wnd_send_msg(wnd, TEXU_WM_COMMAND, (texu_lparam)keycmd->cmd, alt);
         }
         if (parent == desktop)
         {
@@ -96,12 +96,12 @@ extern "C"
                 /* kill and set the new active window */
                 if (nextwnd)
                 {
-                    rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                    rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_lparam)nextwnd, 0);
                     if (rc != TEXU_OK)
                     {
                         return -1;
                     }
-                    rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
+                    rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                     /* the new active window */
                     wnd->activechild = nextwnd;
@@ -126,19 +126,19 @@ extern "C"
                             /*move the next active window to the last active child*/
                             nextwnd = lastwnd;
                         }
-                        rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                        rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_lparam)nextwnd, 0);
                         if (rc != TEXU_OK)
                         {
                             return -1;
                         }
-                        rc = texu_wnd_send_msg((nextwnd ? nextwnd : wnd), TEXU_WM_SETFOCUS, (texu_i64)activewnd, 0);
+                        rc = texu_wnd_send_msg((nextwnd ? nextwnd : wnd), TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                         /* the new active window */
                         wnd->activechild = nextwnd;
                         return 1;
                     }
 #endif
-                    return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                    return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch, alt);
                 }
             } /* child window is active */
             else
@@ -147,7 +147,7 @@ extern "C"
                 if (activewnd)
                 {
                     activewnd = texu_wnd_get_activechild(activewnd);
-                    return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                    return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch, alt);
                 }
             }
         }
@@ -155,14 +155,14 @@ extern "C"
         {
             if (activewnd)
             {
-                return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_i64)ch, alt);
+                return texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch, alt);
             }
         }
         return 0;
     }
 
-    texu_i64
-    TexuFrameWndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+    texu_longptr
+    TexuFrameWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
     {
         switch (msg)
         {

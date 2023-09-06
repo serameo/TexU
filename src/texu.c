@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "texu.h"
-#include "cJSON.h"
+#include "cjson.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -98,10 +98,6 @@ TexuRun()
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0))
     {
-        if (WM_TIMER == msg.message)
-        {
-            msg.hwnd = texu_env_get_hwnd(genv);
-        }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
@@ -213,8 +209,8 @@ TexuMessageBox(
         return 0;
     }
 
-    texu_wnd_send_msg(wnd, TEXU_MBM_SETOWNER,   (texu_i64)owner, 0);
-    texu_wnd_send_msg(wnd, TEXU_MBM_SETCAPTION, (texu_i64)caption, 0);
+    texu_wnd_send_msg(wnd, TEXU_MBM_SETOWNER,   (texu_lparam)owner, 0);
+    texu_wnd_send_msg(wnd, TEXU_MBM_SETCAPTION, (texu_lparam)caption, 0);
 
     _TexuPushWindow(wnd);
 
@@ -232,10 +228,10 @@ TexuMessageBox(
 
 #if USE_TCL_AUTOMATION
 texu_status
-TexuCreateControls(texu_wnd *wnd, texu_wnd_template *templ, texu_i32 nitems, texu_char *templname)
+TexuCreateControls(texu_wnd *wnd, const texu_wnd_template *templ, texu_i32 nitems, const texu_char *templname)
 #else
 texu_status
-TexuCreateControls(texu_wnd *wnd, texu_wnd_template *templ, texu_i32 nitems)
+TexuCreateControls(texu_wnd *wnd, const texu_wnd_template *templ, texu_i32 nitems)
 #endif
 {
     texu_status rc = TEXU_OK;
@@ -300,10 +296,10 @@ TexuCreateControls(texu_wnd *wnd, texu_wnd_template *templ, texu_i32 nitems)
 
 #if USE_TCL_AUTOMATION
 texu_status
-TexuCreateControls2(texu_wnd *wnd, texu_wnd_template2 *templ, texu_i32 nitems, texu_char *templname)
+TexuCreateControls2(texu_wnd *wnd, const texu_wnd_template2 *templ, texu_i32 nitems, const texu_char *templname)
 #else
 texu_status
-TexuCreateControls2(texu_wnd *wnd, texu_wnd_template2 *templ, texu_i32 nitems)
+TexuCreateControls2(texu_wnd *wnd, const texu_wnd_template2 *templ, texu_i32 nitems)
 #endif
 {
     texu_status rc = TEXU_OK;
@@ -507,10 +503,10 @@ TexuDestroyWindow(
     texu_wnd_del(wnd);
 }
 
-texu_i64
+texu_longptr
 TexuCloseWindow(texu_wnd *wnd)
 {
-    texu_i64 rc = texu_wnd_close(wnd);
+    texu_longptr rc = texu_wnd_close(wnd);
     if (TEXU_OK == rc)
     {
         TexuDestroyWindow(wnd);
@@ -572,41 +568,28 @@ TexuShowWindow(
 }
 
 void
-TexuUnlockUpdate()
-{
-    texu_env_lock_update(genv, TEXU_FALSE);
-}
-
-void
-TexuLockUpdate()
-{
-    texu_env_lock_update(genv, TEXU_TRUE);
-}
-
-
-void
 TexuInvalidateWindow(
     texu_wnd *wnd)
 {
     texu_wnd_invalidate(wnd);
 }
 
-texu_i64
+texu_longptr
 TexuSendMessage(
     texu_wnd *wnd,
     texu_ui32 msg,
-    texu_i64 param1,
-    texu_i64 param2)
+    texu_lparam param1,
+    texu_lparam param2)
 {
     return texu_wnd_send_msg(wnd, msg, param1, param2);
 }
 
-texu_i64
+texu_longptr
 TexuPostMessage(
     texu_wnd *wnd,
     texu_ui32 msg,
-    texu_i64 param1,
-    texu_i64 param2)
+    texu_lparam param1,
+    texu_lparam param2)
 {
     return texu_wnd_post_msg(wnd, msg, param1, param2);
 }
@@ -640,7 +623,7 @@ TexuGetWindowText(
   texu_i32          len
 )
 {
-    TexuSendMessage(wnd, TEXU_WM_GETTEXT, (texu_i64)text, len);
+    TexuSendMessage(wnd, TEXU_WM_GETTEXT, (texu_lparam)text, len);
     return texu_strlen(text);
 }
 
@@ -676,15 +659,15 @@ TexuGetSysBgColor(texu_i32 color)
 
 
 
-texu_i64
+texu_longptr
 TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
-    texu_i64 rc = TexuSendMessage(prevwnd, TEXU_WM_KILLFOCUS, 0, 0);
+    texu_longptr rc = TexuSendMessage(prevwnd, TEXU_WM_KILLFOCUS, 0, 0);
     if (rc != TEXU_OK)            
     {
         return rc;
     }
-    return TexuSendMessage(wnd, TEXU_WM_SETFOCUS, (texu_i64)prevwnd, 0);
+    return TexuSendMessage(wnd, TEXU_WM_SETFOCUS, (texu_lparam)prevwnd, 0);
 }
 
 void
@@ -730,16 +713,16 @@ TexuAddPopupMenu(
     const texu_char *info)
 {
     return texu_menu_add_menu_info(
-                menu,
-                text,
-                enable,
-                info);
+        menu,
+        text,
+        enable,
+        info);
 }
 
 texu_popup_menu_item *
 TexuAddPopupMenuItem(
     texu_menu *menu,
-    texu_popup_menu *popup,
+    texu_tree_item *popup,
     const texu_char *text,
     texu_ui32 id,
     texu_bool enable,

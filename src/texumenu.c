@@ -133,7 +133,7 @@ _texu_menu_item_del(texu_menu_item *item)
 }
 
 texu_i32
-_texu_menu_find_proc(texu_i64 itemdata, texu_i64 id, void *userdata)
+_texu_menu_find_proc(texu_longptr itemdata, texu_longptr id, void *userdata)
 {
     texu_menu_item *menuitem = (texu_menu_item *)itemdata;
     return (menuitem->id == id);
@@ -291,7 +291,7 @@ texu_menu_add_item_info(
     texu_env *env = texu_wnd_get_env(menu->owner);
     texu_menu_item *item = _texu_menu_item_new(env, text, barid, enable, info);
 
-    treeitem = texu_tree_add_item(menu->tree, baritem, (texu_i64)item);
+    treeitem = texu_tree_add_item(menu->tree, baritem, (texu_lparam)item);
     if (!(treeitem))
     {
         _texu_menu_item_del(item);
@@ -422,14 +422,10 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_cio_putstr_attr(dc, y, x, buf,
                          texu_cio_get_reverse(dc, normcolor));
 #else
-#if (defined WIN32 && defined _WINDOWS)
     texu_cio_draw_text(dc, y, x, buf, normcolor, normbg,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
-#else
-    texu_cio_putstr_attr(dc, y, x, buf,
-                         texu_cio_get_color(dc, normcolor));
-#endif
+
 #endif
 
     while (treeitem)
@@ -462,14 +458,9 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                                      texu_cio_get_reverse(dc, color));
 #else
 
-#if (defined WIN32 && defined _WINDOWS)
                 texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
-                                   texu_wnd_get_clsname(wnd),
-                                   texu_wnd_get_id(wnd));
-#else
-                texu_cio_putstr_attr(dc, y, x, buf,
-                                     texu_cio_get_color(dc, color));
-#endif
+                                      texu_wnd_get_clsname(wnd),
+                                      texu_wnd_get_id(wnd));
 
 #endif
             }
@@ -482,14 +473,10 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             texu_cio_putstr_attr(dc, y, x, buf,
                                  texu_cio_get_reverse(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
+
             texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
-                               texu_wnd_get_clsname(wnd),
-                               texu_wnd_get_id(wnd));
-#else
-            texu_cio_putstr_attr(dc, y, x, buf,
-                                 texu_cio_get_color(dc, color));
-#endif
+                                  texu_wnd_get_clsname(wnd),
+                                  texu_wnd_get_id(wnd));
 
 #endif
         }
@@ -499,8 +486,8 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     }
 }
 
-texu_i64
-_TexuMenuProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuMenuProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -529,7 +516,7 @@ _TexuMenuWndroc_NotifyItem(texu_wnd *wnd, texu_ui32 code, texu_ui32 id, const te
     notify.hdr.code = code;
     notify.id = id;
     texu_strcpy(notify.info, (info ? info : TEXUTEXT("")));
-    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
+    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
 }
 
 void
@@ -681,7 +668,7 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
         texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);
         texu_wnd_send_msg(menu->owner, TEXU_WM_COMMAND,
-                          (menuitem ? (texu_i64)menuitem->id : -1), 0);
+                          (menuitem ? (texu_lparam)menuitem->id : -1), 0);
         return;
     }
     else if (TEXU_KEY_ESCAPE == ch) /*pressed escape*/
@@ -975,8 +962,8 @@ _TexuMenuWndProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     return TEXU_OK;
 }
 
-texu_i64
-_TexuMenuWndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuMenuWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {

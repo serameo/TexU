@@ -15,6 +15,7 @@
 #include "texucio.h"
 #include "texust.h"
 #include "texuconst.h"
+#include "cjson.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -78,10 +79,10 @@ _TexuIPAddressProc_OnSetMinMax(texu_wnd *wnd, texu_i32 min, texu_i32 max)
 
     minmax.min = min;
     minmax.max = max;
-    texu_wnd_send_msg(ipctl->editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
-    texu_wnd_send_msg(ipctl->editwnd2, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
-    texu_wnd_send_msg(ipctl->editwnd3, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
-    texu_wnd_send_msg(ipctl->editwnd4, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
+    texu_wnd_send_msg(ipctl->editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
+    texu_wnd_send_msg(ipctl->editwnd2, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
+    texu_wnd_send_msg(ipctl->editwnd3, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
+    texu_wnd_send_msg(ipctl->editwnd4, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
 }
 
 texu_status
@@ -206,7 +207,7 @@ _TexuIPAddressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd);
         return TEXU_ERROR;
     }
-    texu_wnd_send_msg(editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&vmm);
+    texu_wnd_send_msg(editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
     /*second*/
     editwnd2 = texu_wnd_new(texu_wnd_get_env(wnd));
     if (!editwnd2)
@@ -224,7 +225,7 @@ _TexuIPAddressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd2);
         return TEXU_ERROR;
     }
-    texu_wnd_send_msg(editwnd2, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&vmm);
+    texu_wnd_send_msg(editwnd2, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
     /*third*/
     editwnd3 = texu_wnd_new(texu_wnd_get_env(wnd));
     if (!editwnd3)
@@ -244,7 +245,7 @@ _TexuIPAddressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd3);
         return TEXU_ERROR;
     }
-    texu_wnd_send_msg(editwnd3, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&vmm);
+    texu_wnd_send_msg(editwnd3, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
     /*third*/
     editwnd4 = texu_wnd_new(texu_wnd_get_env(wnd));
     if (!editwnd4)
@@ -266,7 +267,7 @@ _TexuIPAddressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd4);
         return TEXU_ERROR;
     }
-    texu_wnd_send_msg(editwnd4, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&vmm);
+    texu_wnd_send_msg(editwnd4, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
 
     ipctl = (texu_ipaddr *)malloc(sizeof(texu_ipaddr));
     if (!ipctl)
@@ -290,10 +291,10 @@ _TexuIPAddressProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     ipctl->editwnd3 = editwnd3;
     ipctl->editwnd4 = editwnd4;
 
-    texu_wnd_send_msg(ipctl->editwnd,  TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
-    texu_wnd_send_msg(ipctl->editwnd2, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
-    texu_wnd_send_msg(ipctl->editwnd3, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
-    texu_wnd_send_msg(ipctl->editwnd4, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_i64)&minmax);
+    texu_wnd_send_msg(ipctl->editwnd,  TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
+    texu_wnd_send_msg(ipctl->editwnd2, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
+    texu_wnd_send_msg(ipctl->editwnd3, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
+    texu_wnd_send_msg(ipctl->editwnd4, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
 
     /* save memory */
     texu_wnd_set_userdata(wnd, ipctl);
@@ -331,14 +332,16 @@ _TexuIPAddressProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     /*update value to window text */
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
-    texu_wnd *editwnd = texu_wnd_get_activechild(wnd);
+    texu_ipaddr *ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
+
     texu_ip_addr ip = { 0, 0, 0, 0 };
 
 
-    texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, 0, 0);
 
-    /*texu_wnd_get_text(ipctl->editwnd, buf, TEXU_MAX_WNDTEXT);*/
-    texu_wnd_send_msg(wnd, TEXU_IPM_GETIPADDRESS, (texu_i64)&ip, 0);
+    texu_wnd_send_msg(ipctl->editwnd, TEXU_WM_KILLFOCUS, 0, 0);
+
+
+    texu_wnd_send_msg(wnd, TEXU_IPM_GETIPADDRESS, (texu_lparam)&ip, 0);
 
     texu_sprintf(buf, sizeof(buf), TEXUTEXT("%d.%d.%d.%d"), ip._1st, ip._2nd, ip._3rd, ip._4th);
     texu_wnd_set_text(wnd, buf); /*text should be AAA.BBB.CCC.DDD*/
@@ -356,7 +359,7 @@ _TexuIPAddressProc_OnDestroy(texu_wnd *wnd)
     free(ipctl);
 }
 
-texu_i64
+texu_i32
 _TexuIPAddressProc_OnGetIPAddress(texu_wnd *wnd, texu_ip_addr* ip)
 {
     texu_ipaddr *ipctl = 0;
@@ -391,7 +394,7 @@ _TexuIPAddressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_i32 added = 0;
     texu_wnd *editwnd = 0;
     texu_wnd *nextwnd = 0;
-    texu_ip_addr ip;
+    texu_ip_addr ip = { 0, 0, 0, 0 };
     texu_status rc = TEXU_OK;
 
     if (!texu_wnd_is_enable(wnd))
@@ -437,10 +440,10 @@ _TexuIPAddressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             }
             else
             {
-                rc = texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                rc = texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, (texu_lparam)nextwnd, 0);
                 if (TEXU_OK == rc)
                 {
-                    texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)editwnd, 0);
+                    texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)editwnd, 0);
                 }
                 return;
             }
@@ -458,10 +461,10 @@ _TexuIPAddressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             }
             else
             {
-                rc = texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, (texu_i64)nextwnd, 0);
+                rc = texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, (texu_lparam)nextwnd, 0);
                 if (TEXU_OK == rc)
                 {
-                    texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_i64)editwnd, 0);
+                    texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)editwnd, 0);
                 }
                 return;
             }
@@ -493,14 +496,14 @@ _TexuIPAddressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         texu_wnd_set_text(editwnd, buf);
         texu_wnd_send_msg(editwnd, TEXU_WM_SETFOCUS, 0, 0);
 
-        texu_wnd_send_msg(wnd, TEXU_IPM_GETIPADDRESS, (texu_i64)&ip, 0);
+        texu_wnd_send_msg(wnd, TEXU_IPM_GETIPADDRESS, (texu_lparam)&ip, 0);
 
         texu_sprintf(buf, sizeof(buf), TEXUTEXT("%d.%d.%d.%d"), ip._1st, ip._2nd, ip._3rd, ip._4th); 
         texu_wnd_set_text(wnd, buf); /*text should be AAA.BBB.CCC.DDD*/
     }
     else
     {
-        texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+        texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_lparam)ch, 0);
     }
 }
 
@@ -508,10 +511,10 @@ texu_bool
 _TexuIPAddressProc_IsValidIP(texu_wnd *wnd, const texu_char *text, texu_ip_addr *ip)
 {
     texu_bool rc = TEXU_TRUE;
-    texu_i32 _1st = 0;
-    texu_i32 _2nd = 0;
-    texu_i32 _3rd = 0;
-    texu_i32 _4th = 0;
+    int _1st = 0;
+    int _2nd = 0;
+    int _3rd = 0;
+    int _4th = 0;
 
 #if (defined WIN32 && defined UNICODE)
     rc = swscanf_s(text, TEXUTEXT("%d.%d.%d.%d"), &_1st, &_2nd, &_3rd, &_4th);
@@ -570,41 +573,53 @@ _TexuIPAddressProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     texu_wnd_set_text(ipctl->editwnd3, buf3);
     texu_wnd_set_text(ipctl->editwnd4, buf4);
     /*default set text*/
-    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_i64)buf, 0);
+    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)buf, 0);
 }
-
 void
 _TexuIPAddressProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 {
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
+
     texu_env *env = texu_wnd_get_env(wnd);
     static texu_char ipdots[] = TEXUTEXT("   .   .   .   ");
-    texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_IPADDRESSCTRL);
+    texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_IPADDRESSCTRL);
+    texu_ui32 discolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_IPADDRESSCTRL_DISABLED);
+    texu_ui32 color = normcolor;
+    texu_ui32 normbgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_IPADDRESSCTRL);
+    texu_ui32 disbgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_IPADDRESSCTRL_DISABLED);
+    texu_ui32 bgcolor = normbgcolor;
 
-    texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_IPADDRESSCTRL);
+    texu_wnd_get_color(wnd, &normcolor, &discolor);
+    texu_wnd_get_bgcolor(wnd, &normbgcolor, &disbgcolor);
 
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
     }
+    if (texu_wnd_is_enable(wnd))
+    {
+        color = normcolor;
+        bgcolor = normbgcolor;
+    }
+    else
+    {
+        color = discolor;
+        bgcolor = disbgcolor;
+    }
 #ifdef TEXU_CIO_COLOR_MONO
     texu_cio_putstr_attr(dc, y, x, ipdots,
                         texu_cio_get_color(dc, color));
 #else
-
-
     texu_cio_draw_text(dc, y, x, ipdots, color, bgcolor,
-                       texu_wnd_get_clsname(wnd),
-                       texu_wnd_get_id(wnd));
-
-
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 
 #endif
 }
 
-texu_i64
-_TexuIPAddressProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuIPAddressProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -877,7 +892,7 @@ void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_i32 width = texu_wnd_get_width(wnd);
-    texu_ui32 color = (texu_wnd_is_enable(wnd) ? normcolor : discolor);
+    texu_ui32 color = normcolor;
 
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITMASKCTRL_DISABLED);
@@ -885,13 +900,17 @@ void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_ui32 bgcolor = normbg;
     texu_i32 cx = texu_env_screen_width(env);
 
-    texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
-    bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
-
     if (!texu_wnd_is_visible(wnd))
     {
         return;
     }
+
+    texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
+    bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
+
+    texu_wnd_get_color(wnd, &normcolor, &discolor);
+    color = (texu_wnd_is_enable(wnd) ? normcolor : discolor);
+
     emctl = (texu_editmask *)texu_wnd_get_userdata(wnd);
 
     texu_wnd_get_text(wnd, buf, TEXU_MAX_WNDTEXT);
@@ -907,11 +926,8 @@ void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
 #else
 
     texu_cio_draw_text(cio, y, x, text, color, bgcolor,
-                       texu_wnd_get_clsname(wnd),
-                       texu_wnd_get_id(wnd));
-
-
-
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 
 #endif /* TEXU_CIO_COLOR_MONO*/
 }
@@ -921,9 +937,9 @@ _TexuEditMaskProc_IsValidString(texu_wnd *wnd, const texu_char *str)
 {
     texu_bool valid = TEXU_TRUE;
     texu_editmask *emctl = (texu_editmask *)texu_wnd_get_userdata(wnd);
-    texu_i32 matched = 0;
+    int matched = 0;
     char expr[TEXU_MAX_WNDTEXT + 1] = "";
-    texu_i32 len = 0;
+    int len = 0;
 
     if (!str || 0 == texu_strlen(str) || 0 == strlen(emctl->pattern))
     {
@@ -965,9 +981,9 @@ _TexuEditMaskProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         texu_wnd_get_text(wnd, emctl->editbuf, TEXU_MAX_WNDTEXT);
         texu_wnd_set_text(editwnd, emctl->editbuf);
         /*simulate CTRL+A (select all)*/
-        texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_i64)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
+        texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_lparam)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
     }
-    texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+    texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_lparam)ch, 0);
 }
 
 texu_i32
@@ -1054,12 +1070,12 @@ _TexuEditMaskProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     }
     texu_wnd_set_text(emctl->editwnd, text);
 
-    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_i64)text, 0);
+    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)text, 0);
 }
 
 
-texu_i64
-_TexuEditMaskProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuEditMaskProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -1132,8 +1148,11 @@ struct texu_edit_pricespread
     texu_bool   allowed_invalid_ceiling_floor;
     texu_i32    decwidth;
     texu_bool   correct_floor_ceiling;
+#if (defined WIN32 && defined _WINDOWS)
+    HFONT       clsfont;    /*font class*/
+    HFONT       insfont;    /*instance class*/
+#endif
     void        *exparam;
-    texu_i32    hightlight_timeouted;
 };
 typedef struct texu_edit_pricespread texu_edit_pricespread;
 
@@ -1146,15 +1165,13 @@ texu_i32    _TexuEditPriceSpreadProc_OnKillFocus(texu_wnd *, texu_wnd *);
 texu_i32    _TexuEditPriceSpreadProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
 void        _TexuEditPriceSpreadProc_OnSetText(texu_wnd *wnd, const texu_char *text);
 void        _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
-void        _TexuEPSProc_TimerProc(texu_wnd *wnd, texu_i32 id, texu_i32 elapse, texu_i64 updown);
-
 /*
 texu_pricespread*    _TexuEditPriceSpreadProc_NewSpread(texu_i32 spread, texu_i32 min, texu_i32 max, texu_i32 multiplier);
 */
 void        _TexuEditPriceSpreadProc_OnInsertSpread(texu_wnd *wnd, texu_i32 spread, const texu_pricespread *ps);
 void        _TexuEditPriceSpreadProc_OnDeleteSpread(texu_wnd *wnd, texu_i32 spread);
-texu_status _TexuEditPriceSpreadProc_OnSetBasePrice(texu_wnd *wnd, const texu_baseprice *ps);
-texu_status _TexuEditPriceSpreadProc_OnGetBasePrice(texu_wnd *wnd, texu_baseprice *ps);
+texu_status _TexuEditPriceSpreadProc_OnSetBaseSpread(texu_wnd *wnd, const texu_baseprice *ps);
+texu_status _TexuEditPriceSpreadProc_OnGetBaseSpread(texu_wnd *wnd, texu_baseprice *ps);
 void        _TexuEditPriceSpreadProc_OnSetPriceDecimal(texu_wnd *wnd, texu_i32 decimal);
 void        _TexuEditPriceSpreadProc_OnLoadDefaultSpreads(texu_wnd *wnd);
 void        _TexuEditPriceSpreadProc_OnLoadSpreads(texu_wnd *wnd, const texu_pricespread *prices, texu_i32 max_prices);
@@ -1163,9 +1180,36 @@ void        _TexuEditPriceSpreadProc_OnAllowOverCeilingFloor(texu_wnd *wnd, texu
 void        _TexuEditPriceSpreadProc_OnCorrectCeilingFloor(texu_wnd *wnd, texu_bool fAllow);
 texu_i32    _TexuEditPriceSpreadProc_GetNearestPrice(texu_wnd *wnd, texu_char *nearest, texu_i32 len, const texu_char* price, texu_i32 updown);
 texu_bool   _TexuEditPriceSpreadProc_IsValidSpread(texu_wnd *wnd, const texu_char *str);
-texu_i32    _TexuEditPriceSpreadProc_CmpSpread(const void *v1, const void *v2);
-void        _TexuEditPriceSpreadProc_FreeSpread(texu_i64 key, texu_i64 value, void* user);
-void        _TexuEditPriceSpreadProc_OnSetHighlightTimeouted(texu_wnd *wnd, texu_i32 timeouted);
+int          _TexuEditPriceSpreadProc_CmpSpread(const void *v1, const void *v2);
+void        _TexuEditPriceSpreadProc_FreeSpread(texu_longptr key, texu_longptr value, void* user);
+void        _TexuEditPriceSpreadProc_CreateFonts(texu_wnd *wnd);
+
+void
+_TexuEditPriceSpreadProc_CreateFonts(texu_wnd *wnd)
+{
+#if (defined WIN32 && defined _WINDOWS)
+    texu_env *env = texu_wnd_get_env(wnd);
+    cJSON *prop = texu_env_get_prop(env);
+    texu_edit_pricespread *eps = (texu_edit_pricespread*)texu_wnd_get_userdata(wnd);
+
+    if (!prop)
+    {
+        eps->clsfont = texu_env_get_hfont(env);
+        eps->insfont = eps->clsfont;
+    }
+    {
+        cJSON *envjson = cJSON_GetObjectItem(prop, "env");
+        if (envjson)
+        {
+            cJSON *classes = cJSON_GetObjectItem(envjson, "classes");
+            cJSON *instances = cJSON_GetObjectItem(envjson, "instances");
+            if (classes)
+            {
+            }
+        }
+    }
+#endif
+}
 
 texu_status
 _TexuEditPriceSpreadProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
@@ -1231,7 +1275,6 @@ _TexuEditPriceSpreadProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     eps->prices = texu_map_new();
 
     eps->decwidth = 2;  /*2-decimal points*/
-    eps->hightlight_timeouted = 1000;
     /* save memory */
     texu_wnd_set_userdata(wnd, eps);
     /* set default color*/
@@ -1332,7 +1375,7 @@ _TexuEditPriceSpreadProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     return TEXU_CONTINUE;
 }
 
-texu_i32
+int
 _TexuEditPriceSpreadProc_CmpSpread(const void *v1, const void *v2)
 {
     texu_map_keyval *kv1 = (texu_map_keyval *)v1;
@@ -1350,7 +1393,7 @@ _TexuEditPriceSpreadProc_CmpSpread(const void *v1, const void *v2)
 }
 
 void
-_TexuEditPriceSpreadProc_FreeSpread(texu_i64 key, texu_i64 value, void* user)
+_TexuEditPriceSpreadProc_FreeSpread(texu_longptr key, texu_longptr value, void* user)
 {
     if (value)
     {
@@ -1403,7 +1446,7 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_char textcommas[TEXU_MAX_WNDTEXT + 1];
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
-    texu_bool enable = texu_wnd_is_enable(wnd);
+
     texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL);
     texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_DISABLED);
 
@@ -1411,14 +1454,15 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_i32  y = texu_wnd_get_y(wnd);
     texu_i32  x = texu_wnd_get_x(wnd);
     texu_i32  width = texu_wnd_get_width(wnd);
-    texu_ui32 color = (enable ? normcolor : discolor);
+    texu_ui32 color = normcolor;
 
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL);
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_DISABLED);
 
-    texu_ui32 bgcolor = (enable ? normbg : disbg);
+
+
+    texu_ui32 bgcolor = normbg;
     texu_i32 cx = texu_env_screen_width(env);
-    texu_char textcommas2[TEXU_MAX_WNDTEXT + 1];
 
     if (!texu_wnd_is_visible(wnd))
     {
@@ -1427,8 +1471,9 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
 
     texu_wnd_get_color(wnd, &normcolor, &discolor);
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
-    color = normcolor;
-    bgcolor = normbg;
+
+    color = (texu_wnd_is_enable(wnd) ? normcolor : discolor);
+    bgcolor = (texu_wnd_is_enable(wnd) ? normbg : disbg);
 
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
     if (TEXU_EPSS_AUTOCOMMAS & style)
@@ -1439,22 +1484,22 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     {
         texu_strcpy(textcommas, text);
     }
-    texu_strcpy(textcommas2, textcommas);
     /*show change price overrides show change percent if it is available*/
     if (TEXU_EPSS_SHOWCHANGEPRICE & style)
     {
         texu_i32  val = 0;
         texu_char longval[TEXU_MAX_WNDTEXT + 1];
-        texu_char prc[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
-        texu_f64  prcchange = 0.0;
+        texu_i32  change = 0;
+        texu_char pct[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
+
         texu_i32  decwidth = eps->decwidth;
         texu_char format[TEXU_MAX_WNDTEXT + 1];
-        texu_char prccommas[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
+        texu_char pctcommas[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
 
         texu_fs2ls(text, texu_strlen(text), decwidth, longval);
         val = texu_atol(longval); /*current price*/
-        prcchange = (val - eps->baseprice.price);
-        if (prcchange > 0)
+        change = (val - eps->baseprice.price);
+        if (change > 0)
         {
             texu_sprintf(format, TEXU_MAX_WNDTEXT, TEXUTEXT("+%%.0%df"), decwidth);
         }
@@ -1462,20 +1507,20 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
         {
             texu_sprintf(format, TEXU_MAX_WNDTEXT, TEXUTEXT("%%.0%df"), decwidth);
         }
-        texu_sprintf(prc, TEXU_MAX_WNDTEXT,
+        texu_sprintf(pct, TEXU_MAX_WNDTEXT,
                      format,
-                     ((texu_f64)prcchange / eps->baseprice.multiplier));
+                     ((texu_f64)change / eps->baseprice.multiplier));
 
         if (TEXU_EPSS_AUTOCOMMAS & style)
         {
-            texu_add_commas(prccommas, TEXU_MAX_WNDTEXT, prc);
+            texu_add_commas(pctcommas, TEXU_MAX_WNDTEXT, pct);
         }
         else
         {
-            texu_strcpy(prccommas, prc);
+            texu_strcpy(pctcommas, pct);
         }
         /*add percent*/
-        texu_sprintf(textcommas2, TEXU_MAX_WNDTEXT, TEXUTEXT("%s(%s)"), textcommas, prccommas);
+        texu_sprintf(textcommas, TEXU_MAX_WNDTEXT, TEXUTEXT("%s(%s)"), textcommas, pctcommas);
     }
     else if (TEXU_EPSS_SHOWCHANGE & style)
     {
@@ -1514,33 +1559,26 @@ void _TexuEditPriceSpreadProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
             {
                 texu_strcpy(pctcommas, pct);
             }
-#if (defined WIN32)
-            texu_strcat(pctcommas, TEXUTEXT("%"));
-#else
-            texu_strcat(pctcommas, TEXUTEXT("%%"));
-#endif
             /*add percent*/
-            texu_sprintf(textcommas2, TEXU_MAX_WNDTEXT, TEXUTEXT("%s(%s)"), textcommas, pctcommas);
+            texu_sprintf(textcommas, TEXU_MAX_WNDTEXT, TEXUTEXT("%s(%s%%)"), textcommas, pctcommas);
 
         }
     }
 
-    texu_printf_alignment3(buf, textcommas2, width, style, TEXU_TRUE, x, cx);
+    texu_printf_alignment3(buf, textcommas, width, style, TEXU_TRUE, x, cx);
 #ifdef TEXU_CIO_COLOR_MONO
     texu_cio_putstr_attr(cio, y, x, buf,
                          texu_cio_get_color(cio, color));
 #else
-
-
     texu_cio_draw_text(cio, y, x, buf, color, bgcolor,
-                       texu_wnd_get_clsname(wnd),
-                       texu_wnd_get_id(wnd));
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 
 #endif
 }
 
 texu_i32
-_TexuEditPriceSpreadProc_Foreach(texu_i64 key, texu_i64 value, void *user)
+_TexuEditPriceSpreadProc_Foreach(texu_longptr key, texu_longptr value, void *user)
 {
     texu_pricespread *spread = (texu_pricespread*)user;
     texu_pricespread *ps = (texu_pricespread*)value;
@@ -1649,6 +1687,7 @@ _TexuEditPriceSpreadProc_GetNearestPrice(texu_wnd *wnd, texu_char *nearest, texu
 texu_bool
 _TexuEditPriceSpreadProc_GetBestSpread(texu_wnd *wnd, const texu_char *str, texu_pricespread* prcspread)
 {
+
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
     texu_char prclong[TEXU_MAX_WNDTEXT + 1];
     texu_i32  value = texu_atol(str);
@@ -1752,6 +1791,7 @@ _TexuEditPriceSpreadProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_wnd *editwnd = editwnd = texu_wnd_get_activechild(wnd);
     texu_i32 updown = 0;
 
+
     if (!texu_wnd_is_enable(wnd))
     {
         return;
@@ -1763,7 +1803,7 @@ _TexuEditPriceSpreadProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         texu_wnd_get_text(wnd, eps->editbuf, TEXU_MAX_WNDTEXT);
         texu_wnd_set_text(editwnd, eps->editbuf);
         /*simulate CTRL+A (select all)*/
-        texu_wnd_send_msg(editwnd, TEXU_WM_KEYDOWN, (texu_i64)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
+        texu_wnd_send_msg(editwnd, TEXU_WM_KEYDOWN, (texu_lparam)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
     }
     switch (ch)
     {
@@ -1799,11 +1839,13 @@ _TexuEditPriceSpreadProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         rc = _TexuEditPriceSpreadProc_GetBestSpread(wnd, buf, &ps);
         if (TEXU_TRUE == rc)
         {
+
             texu_char format[TEXU_MAX_WNDTEXT + 1];
             texu_i32  multiplier = (0 >= eps->baseprice.multiplier ? 1 : eps->baseprice.multiplier);/*ensure that the multiplier != zero*/
 
             texu_fs2ls(buf, texu_strlen(buf), decwidth, prclong);
             value = texu_atol(prclong);
+
 
             texu_sprintf(format, TEXU_MAX_WNDTEXT, TEXUTEXT("%%.0%df"), decwidth);
             texu_sprintf(buf, TEXU_MAX_WNDTEXT, 
@@ -1839,16 +1881,7 @@ _TexuEditPriceSpreadProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             }
             texu_wnd_set_text(wnd, buf);
             /*simulate CTRL+A (select all)*/
-            texu_wnd_send_msg(editwnd, TEXU_WM_KEYDOWN, (texu_i64)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
-
-            /*goto*/
-            {
-                texu_cio *cio = texu_wnd_get_cio(wnd);
-                texu_i32 y = texu_wnd_get_x(wnd);
-                texu_i32 x = texu_wnd_get_y(wnd);
-                texu_i32 width = texu_wnd_get_width(wnd);
-                texu_cio_gotoyx(cio, y, x + width);
-            }
+            texu_wnd_send_msg(editwnd, TEXU_WM_KEYDOWN, (texu_lparam)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
         }
     }
 }
@@ -1856,7 +1889,10 @@ _TexuEditPriceSpreadProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 void
 _TexuEditPriceSpreadProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
+
     texu_wnd *editwnd = texu_wnd_get_activechild(wnd);
+
+
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -1864,46 +1900,8 @@ _TexuEditPriceSpreadProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
 
 
-    texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_i64)ch, 0);
+    texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_lparam)ch, 0);
     
-}
-
-void
-_TexuEPSProc_TimerProc(texu_wnd *wnd, texu_i32 id, texu_i32 elapse, texu_i64 updown)
-{
-    texu_env *env = texu_wnd_get_env(wnd);
-    texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_EQUAL);
-    texu_ui32 ltcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_LOWER);
-    texu_ui32 gtcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_GREATER);
-    texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_EQUAL);
-    texu_ui32 ltbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_LOWER);
-    texu_ui32 gtbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_GREATER);
-    texu_wnd *parent = texu_wnd_get_parent(wnd);
-    texu_wnd *activewnd = texu_wnd_get_activechild(parent);
-    texu_i32 y = texu_wnd_get_y(activewnd);
-    texu_i32 x = texu_wnd_get_x(activewnd);
-    texu_i32 width = texu_wnd_get_width(activewnd);
-
-    /*set color*/
-    if (updown < 0)
-    {
-        color = ltcolor;
-        bgcolor = ltbg;
-    }
-    else if (updown > 0)
-    {
-        color = gtcolor;
-        bgcolor = gtbg;
-    }
-
-    texu_wnd_set_color(wnd, color, color);
-    texu_wnd_set_bgcolor(wnd, bgcolor, bgcolor);
-
-    texu_env_kill_timer(env, TEXU_ID_EPSCHANGE);
-
-    texu_wnd_invalidate(wnd);
-    /*restore cursor*/
-    texu_cio_gotoyx(texu_wnd_get_cio(activewnd), y, x + width);
 }
 
 void
@@ -1911,7 +1909,7 @@ _TexuEditPriceSpreadProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 {
     texu_env *env = texu_wnd_get_env(wnd);
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
-
+    texu_f64 floatvalue = texu_atof(text);
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_EQUAL);
     texu_ui32 ltcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_LOWER);
@@ -1920,11 +1918,9 @@ _TexuEditPriceSpreadProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     texu_ui32 ltbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_LOWER);
     texu_ui32 gtbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_GREATER);
     texu_bool valid = TEXU_FALSE;
-    texu_i32  value = 0;
+    texu_i32 value = 0;
     texu_i32  decwidth = eps->decwidth;
     texu_char format[TEXU_MAX_WNDTEXT + 1];
-    texu_i32  curval = 0;
-    texu_ui32 style = texu_wnd_get_style(wnd);
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -1940,40 +1936,24 @@ _TexuEditPriceSpreadProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     value = texu_atol(buf);
 
     texu_sprintf(format, TEXU_MAX_WNDTEXT, TEXUTEXT("%%.0%df"), decwidth);/*format*/
-    texu_sprintf(buf, TEXU_MAX_WNDTEXT, format, ((texu_f64)value / eps->baseprice.multiplier));
+    texu_sprintf(buf, TEXU_MAX_WNDTEXT, format, floatvalue);
 
     /*set color*/
     if (value < eps->baseprice.price)
     {
         color = ltcolor;
         bgcolor = ltbg;
-        curval = -1;
     }
     else if (value > eps->baseprice.price)
     {
         color = gtcolor;
         bgcolor = gtbg;
-        curval = 1;
     }
-
-
-    if (TEXU_EPSS_SHOWHIGHLIGHT & style)
-    {
-        texu_wnd_set_bgcolor(wnd, color, color);
-        texu_wnd_set_color(wnd, bgcolor, bgcolor);
-
-        texu_env_set_timer(env, wnd, TEXU_ID_EPSCHANGE,
-                           eps->hightlight_timeouted, 
-                           _TexuEPSProc_TimerProc, curval);
-    }
-    else
-    {
-        texu_wnd_set_color(wnd, color, color);
-        texu_wnd_set_bgcolor(wnd, bgcolor, bgcolor);
-    }
+    texu_wnd_set_color(wnd, color, color);
+    texu_wnd_set_bgcolor(wnd, bgcolor, bgcolor);
     texu_wnd_set_text(eps->editwnd, buf);
 
-    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_i64)buf, 0);
+    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)buf, 0);
 }
 
 void
@@ -1986,7 +1966,7 @@ _TexuEditPriceSpreadProc_OnInsertSpread(texu_wnd *wnd, texu_i32 spread, const te
         return;
     }
 
-    texu_map_cmp_insert(eps->prices, spread, (texu_i64)newps, 
+    texu_map_cmp_insert(eps->prices, spread, (texu_lparam)newps, 
                         _TexuEditPriceSpreadProc_CmpSpread);
 }
 
@@ -2000,7 +1980,7 @@ _TexuEditPriceSpreadProc_OnDeleteSpread(texu_wnd *wnd, texu_i32 spread)
                        0);
 }
 
-texu_status _TexuEditPriceSpreadProc_OnSetBasePrice(texu_wnd *wnd, const texu_baseprice *ps)
+texu_status _TexuEditPriceSpreadProc_OnSetBaseSpread(texu_wnd *wnd, const texu_baseprice *ps)
 {
     texu_status rc = TEXU_OK;
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
@@ -2065,7 +2045,7 @@ texu_status _TexuEditPriceSpreadProc_OnSetBasePrice(texu_wnd *wnd, const texu_ba
     return rc;
 }
 
-texu_status _TexuEditPriceSpreadProc_OnGetBasePrice(texu_wnd *wnd, texu_baseprice *ps)
+texu_status _TexuEditPriceSpreadProc_OnGetBaseSpread(texu_wnd *wnd, texu_baseprice *ps)
 {
     texu_status rc = TEXU_OK;
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
@@ -2079,6 +2059,7 @@ texu_status _TexuEditPriceSpreadProc_OnGetBasePrice(texu_wnd *wnd, texu_basepric
 void
 _TexuEditPriceSpreadProc_OnSetPriceDecimal(texu_wnd *wnd, texu_i32 decimal)
 {
+
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
 
     decimal = TEXU_MIN(6, TEXU_MAX(0, decimal)); /*min=0, max=6*/
@@ -2098,14 +2079,6 @@ _TexuEditPriceSpreadProc_OnCorrectCeilingFloor(texu_wnd *wnd, texu_bool fAllow)
 {
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
     eps->correct_floor_ceiling = fAllow;
-}
-
-void
-_TexuEditPriceSpreadProc_OnSetHighlightTimeouted(texu_wnd *wnd, texu_i32 timeouted)
-{
-    texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
-    timeouted = TEXU_MIN(2000, TEXU_MAX(500, timeouted));
-    eps->hightlight_timeouted = timeouted;
 }
 
 void
@@ -2129,7 +2102,7 @@ _TexuEditPriceSpreadProc_OnLoadDefaultSpreads(texu_wnd *wnd)
 {
     /*SET: 2023-01-30 https://knowledge.bualuang.co.th/knowledge-base/pricespread/ */
     static texu_pricespread prices[] =
-    {   /*   min,    max, spread */
+    {   /*{ min, max, spread, multiplier */
         {      1,    199,    1 },
         {    200,    499,    2 },
         {    500,    999,    5 },
@@ -2145,11 +2118,12 @@ _TexuEditPriceSpreadProc_OnLoadDefaultSpreads(texu_wnd *wnd)
 
 
 
-texu_i64
-_TexuEditPriceSpreadProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuEditPriceSpreadProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
+
         case TEXU_WM_KEYDOWN:
             _TexuEditPriceSpreadProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
             return 0;
@@ -2185,11 +2159,11 @@ _TexuEditPriceSpreadProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64
             _TexuEditPriceSpreadProc_OnDeleteSpread(wnd, param1);
             return 0;
 
-        case TEXU_EPSM_SETBASEPRICE:
-            return _TexuEditPriceSpreadProc_OnSetBasePrice(wnd, (const texu_baseprice*)param1);
+        case TEXU_EPSM_SETBASESPREAD:
+            return _TexuEditPriceSpreadProc_OnSetBaseSpread(wnd, (const texu_baseprice*)param1);
 
-        case TEXU_EPSM_GETBASEPRICE:
-            return _TexuEditPriceSpreadProc_OnGetBasePrice(wnd, (texu_baseprice*)param1);
+        case TEXU_EPSM_GETBASESPREAD:
+            return _TexuEditPriceSpreadProc_OnGetBaseSpread(wnd, (texu_baseprice*)param1);
 
         case TEXU_EPSM_SETPRICEDECIMAL:
             _TexuEditPriceSpreadProc_OnSetPriceDecimal(wnd, param1);
@@ -2210,13 +2184,708 @@ _TexuEditPriceSpreadProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64
         case TEXU_EPSM_CORRECTCEILINGFLOOR:
             _TexuEditPriceSpreadProc_OnCorrectCeilingFloor(wnd, (texu_bool)param1);
             return 0;
+    }
+    return TexuDefWndProc(wnd, msg, param1, param2);
+}
 
-        case TEXU_EPSM_SETHIGHLIGHTTIMEOUTED:
-            _TexuEditPriceSpreadProc_OnSetHighlightTimeouted(wnd, param1);
+
+/*CLOCKCTRL*/
+/*
+#-------------------------------------------------------------------------------
+# TexU ClockCtrl
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+#include <time.h>
+
+void            _TexuClockCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *cio);
+texu_status     _TexuClockCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
+void            _TexuClockCtrlProc_GetCurTime(texu_char* ptime );
+void            _TexuClockCtrlProc_UpdateTime(texu_wnd *wnd);
+
+void
+_TexuClockCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
+{
+    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_char text[TEXU_MAX_WNDTEXT + 1];
+    texu_i32 y = texu_wnd_get_y(wnd);
+    texu_i32 x = texu_wnd_get_x(wnd);
+    texu_i32 width = texu_wnd_get_width(wnd);
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_LABEL);
+    texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_LABEL_DISABLED);
+    texu_ui32 style = texu_wnd_get_style(wnd);
+    texu_ui32 color = normcolor;
+
+    texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL);
+    texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL_DISABLED);
+    texu_ui32 colorbg = normbg;
+    texu_i32 cx = texu_env_screen_width(env);
+
+    if (!texu_wnd_is_visible(wnd))
+    {
+        return;
+    }
+
+    texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
+    texu_printf_alignment3(buf, text, width, style, TEXU_TRUE, x, cx);
+
+    texu_wnd_get_color(wnd, &normcolor, &discolor);
+    color = normcolor;
+    if (!(texu_wnd_is_enable(wnd)))
+    {
+        color = discolor;
+    }
+    texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
+    colorbg = normbg;
+    if (!(texu_wnd_is_enable(wnd)))
+    {
+        colorbg = disbg;
+    }
+    texu_cio_draw_text(cio, y, x, text, color, colorbg,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
+
+}
+
+texu_status
+_TexuClockCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
+{
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_wnd_enable(wnd, TEXU_FALSE);
+    texu_wnd_set_color(wnd,
+                       texu_env_get_syscolor(env, TEXU_COLOR_LABEL),
+                       texu_env_get_syscolor(env, TEXU_COLOR_LABEL_DISABLED));
+
+    texu_wnd_set_bgcolor(wnd,
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL),
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_LABEL_DISABLED));
+
+    return TEXU_OK;
+}
+
+void _TexuClockCtrlProc_GetCurTime(texu_char* ptime )
+{
+    time_t      time_location;
+    struct tm   tmbuf, *tm_ptr;
+
+    time( &time_location );
+    tm_ptr = &tmbuf;
+    tm_ptr = localtime( &time_location );
+    strftime((char*)ptime, 12, "%H:%M:%S %p", tm_ptr);
+}
+
+void _TexuClockCtrlProc_UpdateTime(texu_wnd *wnd)
+{
+    texu_char now[16];
+    
+    _TexuClockCtrlProc_GetCurTime(now);
+    texu_wnd_set_text(wnd, now);
+}
+
+
+texu_longptr
+_TexuClockCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
+{
+    switch (msg)
+    {
+        case TEXU_WM_CREATE:
+            return _TexuClockCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+
+        case TEXU_WM_PAINT:
+            _TexuClockCtrlProc_OnPaint(wnd, (texu_cio *)param1);
+            return 0;
+
+        case TEXU_WM_ENABLE:
+            return TexuDefWndProc(wnd, msg, 0, 0);
+
+        case TEXU_CLKM_UPDATE:
+            _TexuClockCtrlProc_UpdateTime(wnd);
             return 0;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
+/*
+#-------------------------------------------------------------------------------
+# TexU DateCtrl
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+struct texu_datewnd
+{
+    texu_wnd*       daywnd;
+    texu_wnd*       monwnd;
+    texu_wnd*       yearwnd;
+    texu_i32        format; /*YYYYMMDD = 0 (default), DDMMYYY = 1, YYYYMONDD = 2, DDMONYYYY = 3*/
+};
+typedef struct texu_datewnd texu_datewnd;
+
+texu_status     _TexuDateCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
+void            _TexuDateCtrlProc_OnDestroy(texu_wnd *wnd);
+void            _TexuDateCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *cio);
+
+texu_status
+_TexuDateCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
+{
+    texu_wnd_attrs attrs2;
+    texu_wnd *daywnd = 0;
+    texu_wnd *monwnd = 0;
+    texu_wnd *yearwnd = 0;
+
+    texu_status rc = TEXU_OK;
+
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_editminmax vmm = { 1, 31 };
+    texu_datewnd *datewnd = 0;
+
+    daywnd = texu_wnd_new(texu_wnd_get_env(wnd));
+    if (!daywnd)
+    {
+        return TEXU_NOMEM;
+    }
+
+    memset(&attrs2, 0, sizeof(attrs2));
+    attrs2.y = attrs->y;
+    attrs2.x = attrs->x;
+    attrs2.height = attrs->height;
+    attrs2.width = 2;
+    attrs2.enable = TEXU_TRUE;
+    attrs2.visible = TEXU_TRUE;
+    attrs2.text = TEXUTEXT("1");
+    attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_FOCUSED);
+
+    attrs2.normalbg         = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledbg       = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor    = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_FOCUSED);
+
+    attrs2.id = 1;
+    attrs2.clsname = TEXU_EDIT_CLASS;
+    attrs2.userdata = 0;
+    attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_NUMBER | TEXU_ES_RIGHT;
+    attrs2.exstyle = 0;
+    /*day*/
+    rc = texu_wnd_create(daywnd, wnd, &attrs2);
+    if (rc != TEXU_OK)
+    {
+        texu_wnd_del(daywnd);
+        return TEXU_ERROR;
+    }
+    texu_wnd_send_msg(daywnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
+    /*month*/
+    monwnd = texu_wnd_new(texu_wnd_get_env(wnd));
+    if (!monwnd)
+    {
+        return TEXU_NOMEM;
+    }
+    attrs2.id = 2;
+    attrs2.width = 2;
+    attrs2.x += 3;
+    rc = texu_wnd_create(monwnd, wnd, &attrs2);
+    if (rc != TEXU_OK)
+    {
+        texu_wnd_del(daywnd);
+        texu_wnd_del(monwnd);
+        return TEXU_ERROR;
+    }
+    vmm.max = 12;
+    texu_wnd_send_msg(monwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
+    /*year*/
+    yearwnd = texu_wnd_new(texu_wnd_get_env(wnd));
+    if (!yearwnd)
+    {
+        return TEXU_NOMEM;
+    }
+    attrs2.id = 3;
+    attrs2.width = 4;
+    attrs2.x += 3;
+    attrs2.text = TEXUTEXT("1970");
+
+    rc = texu_wnd_create(yearwnd, wnd, &attrs2);
+    if (rc != TEXU_OK)
+    {
+        texu_wnd_del(daywnd);
+        texu_wnd_del(monwnd);
+        texu_wnd_del(yearwnd);
+        return TEXU_ERROR;
+    }
+    vmm.min = 0;
+    vmm.max = 9999;
+    texu_wnd_send_msg(yearwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
+
+    datewnd = (texu_datewnd*)malloc(sizeof(texu_datewnd));
+    if (!datewnd)
+    {
+        texu_wnd_del(daywnd);
+        texu_wnd_del(monwnd);
+        texu_wnd_del(yearwnd);
+        return TEXU_ERROR;
+    }
+    datewnd->daywnd  = daywnd;
+    datewnd->monwnd  = monwnd;
+    datewnd->yearwnd = yearwnd;
+
+    texu_wnd_set_userdata(wnd, datewnd);
+    texu_wnd_set_color(wnd,
+                       texu_env_get_syscolor(env, TEXU_COLOR_EDIT),
+                       texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED));
+
+    texu_wnd_set_bgcolor(wnd,
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT),
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED));
+
+    return TEXU_OK;
+}
+
+void
+_TexuDateCtrlProc_OnDestroy(texu_wnd *wnd)
+{
+    texu_datewnd *datewnd = (texu_datewnd*)texu_wnd_get_userdata(wnd);
+    free(datewnd);
+    texu_wnd_set_userdata(wnd, 0);
+}
+
+void
+_TexuDateCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
+{
+
+    texu_char text[TEXU_MAX_WNDTEXT + 1];
+    texu_i32 y = texu_wnd_get_y(wnd);
+    texu_i32 x = texu_wnd_get_x(wnd);
+
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    texu_ui32 discolor  = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+
+    texu_ui32 color = normcolor;
+
+    texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    texu_ui32 disbg  = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    texu_ui32 colorbg = normbg;
+
+    static texu_char ddmmyyyy[] = TEXUTEXT("  /  /    ");
+    static texu_char yyyymmdd[] = TEXUTEXT("    /  /  ");
+    static texu_char ddmonyyyy[] = TEXUTEXT("  -   -    ");
+    static texu_char yyyymondd[] = TEXUTEXT("    -   -  ");
+    texu_datewnd *datewnd = (texu_datewnd*)texu_wnd_get_userdata(wnd);
+
+    if (!texu_wnd_is_visible(wnd))
+    {
+        return;
+    }
+
+    if (TEXU_DTFMT_YYYYMONDD == datewnd->format)
+    {
+        texu_strcpy(text, yyyymondd);
+    }
+    else if (TEXU_DTFMT_DDMONYYYY == datewnd->format)
+    {
+        texu_strcpy(text, ddmonyyyy);
+    }
+    else if (TEXU_DTFMT_YYYYMMDD == datewnd->format)
+    {
+        texu_strcpy(text, yyyymmdd);
+    }
+    else
+    {
+        texu_strcpy(text, ddmmyyyy);
+    }
+
+    texu_wnd_get_color(wnd, &normcolor, &discolor);
+    color = normcolor;
+    if (!(texu_wnd_is_enable(wnd)))
+    {
+        color = discolor;
+    }
+    texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
+    colorbg = normbg;
+    if (!(texu_wnd_is_enable(wnd)))
+    {
+        colorbg = disbg;
+    }
+    texu_cio_draw_text(cio, y, x, text, color, colorbg,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
+
+}
+
+texu_longptr _TexuDateCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
+{
+    switch (msg)
+    {
+        case TEXU_WM_CREATE:
+            return _TexuDateCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+
+        case TEXU_WM_DESTROY:
+            _TexuDateCtrlProc_OnDestroy(wnd);
+            break;
+
+        case TEXU_WM_PAINT:
+            _TexuDateCtrlProc_OnPaint(wnd, (texu_cio *)param1);
+            return 0;
+    }
+    return TexuDefWndProc(wnd, msg, param1, param2);
+}
+/*
+#-------------------------------------------------------------------------------
+# TexU TimeCtrl
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+struct texu_timewnd
+{
+    texu_wnd*       hourwnd;
+    texu_wnd*       minwnd;
+    texu_wnd*       secwnd;
+    texu_i32        format; /*HH_MM_SS = 0 (Default), HH_MM = 1*/
+    texu_char       stime[16];
+};
+typedef struct texu_timewnd texu_timewnd;
+texu_status     _TexuTimeCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
+void            _TexuTimeCtrlProc_OnDestroy(texu_wnd *wnd);
+void            _TexuTimeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *cio);
+void            _TexuTimeCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+texu_i32        _TexuTimeCtrlProc_OnGetTime(texu_wnd* wnd, texu_char* textout, texu_i32 textlen);
+
+texu_status
+_TexuTimeCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
+{
+    texu_wnd_attrs attrs2;
+    texu_wnd *hourwnd = 0;
+    texu_wnd *minwnd = 0;
+    texu_wnd *secwnd = 0;
+
+    texu_status rc = TEXU_OK;
+
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_editminmax vmm = { 0, 23 };
+    texu_timewnd *timewnd = 0;
+
+    hourwnd = texu_wnd_new(texu_wnd_get_env(wnd));
+    if (!hourwnd)
+    {
+        return TEXU_NOMEM;
+    }
+
+    memset(&attrs2, 0, sizeof(attrs2));
+    attrs2.y = attrs->y;
+    attrs2.x = attrs->x;
+    attrs2.height = attrs->height;
+    attrs2.width = 2;
+    attrs2.enable = TEXU_TRUE;
+    attrs2.visible = TEXU_TRUE;
+    attrs2.text = TEXUTEXT("0");
+    attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_FOCUSED);
+
+    attrs2.normalbg         = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledbg       = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor    = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_FOCUSED);
+
+    attrs2.id = 1;
+    attrs2.clsname = TEXU_EDIT_CLASS;
+    attrs2.userdata = 0;
+    attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_NUMBER | TEXU_ES_RIGHT;
+    attrs2.exstyle = 0;
+    /*hour*/
+    rc = texu_wnd_create(hourwnd, wnd, &attrs2);
+    if (rc != TEXU_OK)
+    {
+        texu_wnd_del(hourwnd);
+        return TEXU_ERROR;
+    }
+    texu_wnd_send_msg(hourwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
+    /*minute*/
+    minwnd = texu_wnd_new(texu_wnd_get_env(wnd));
+    if (!minwnd)
+    {
+        return TEXU_NOMEM;
+    }
+    attrs2.id  = 2;
+    attrs2.x  += 3;
+    rc = texu_wnd_create(minwnd, wnd, &attrs2);
+    if (rc != TEXU_OK)
+    {
+        texu_wnd_del(hourwnd);
+        texu_wnd_del(minwnd);
+        return TEXU_ERROR;
+    }
+    vmm.max = 59;
+    texu_wnd_send_msg(minwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
+    /*second*/
+    secwnd = texu_wnd_new(texu_wnd_get_env(wnd));
+    if (!minwnd)
+    {
+        return TEXU_NOMEM;
+    }
+    attrs2.id = 3;
+    attrs2.x  += 3;
+    rc = texu_wnd_create(secwnd, wnd, &attrs2);
+    if (rc != TEXU_OK)
+    {
+        texu_wnd_del(hourwnd);
+        texu_wnd_del(minwnd);
+        texu_wnd_del(secwnd);
+        return TEXU_ERROR;
+    }
+    texu_wnd_send_msg(secwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&vmm);
+
+    timewnd = (texu_timewnd*)malloc(sizeof(texu_timewnd));
+    if (!timewnd)
+    {
+        texu_wnd_del(hourwnd);
+        texu_wnd_del(minwnd);
+        texu_wnd_del(secwnd);
+        return TEXU_ERROR;
+    }
+    timewnd->hourwnd = hourwnd;
+    timewnd->minwnd  = minwnd;
+    timewnd->secwnd  = secwnd;
+
+    texu_wnd_set_userdata(wnd, timewnd);
+    texu_wnd_set_color(wnd,
+                       texu_env_get_syscolor(env, TEXU_COLOR_EDIT),
+                       texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED));
+
+    texu_wnd_set_bgcolor(wnd,
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT),
+                       texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED));
+
+    return TEXU_OK;
+}
+
+void
+_TexuTimeCtrlProc_OnDestroy(texu_wnd *wnd)
+{
+    texu_timewnd *timewnd = (texu_timewnd*)texu_wnd_get_userdata(wnd);
+    free(timewnd);
+    texu_wnd_set_userdata(wnd, 0);
+}
+
+void
+_TexuTimeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
+{
+
+    texu_char text[TEXU_MAX_WNDTEXT + 1];
+    texu_i32 y = texu_wnd_get_y(wnd);
+    texu_i32 x = texu_wnd_get_x(wnd);
+
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    texu_ui32 discolor  = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+
+    texu_ui32 color = normcolor;
+
+    texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    texu_ui32 disbg  = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    texu_ui32 colorbg = normbg;
+
+    static texu_char hhmmss[] = TEXUTEXT("  :  :  ");
+    static texu_char hhmm[] = TEXUTEXT("  :  ");
+    texu_timewnd *timewnd = (texu_timewnd*)texu_wnd_get_userdata(wnd);
+
+    if (!texu_wnd_is_visible(wnd))
+    {
+        return;
+    }
+
+    if (TEXU_TMFMT_HHMM == timewnd->format)
+    {
+        texu_strcpy(text, hhmm);
+    }
+    else
+    {
+        texu_strcpy(text, hhmmss);
+    }
+
+    texu_wnd_get_color(wnd, &normcolor, &discolor);
+    color = normcolor;
+    if (!(texu_wnd_is_enable(wnd)))
+    {
+        color = discolor;
+    }
+    texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
+    colorbg = normbg;
+    if (!(texu_wnd_is_enable(wnd)))
+    {
+        colorbg = disbg;
+    }
+    texu_cio_draw_text(cio, y, x, text, color, colorbg,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
+
+}
+
+void
+_TexuTimeCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+{
+    texu_timewnd *timewnd = 0;
+    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_i32 val = 0;
+    texu_bool updown = TEXU_FALSE;
+    texu_i32 added = 0;
+    texu_wnd *editwnd = 0;
+    texu_wnd *nextwnd = 0;
+
+    texu_status rc = TEXU_OK;
+
+    if (!texu_wnd_is_enable(wnd))
+    {
+        return;
+    }
+    timewnd = (texu_timewnd *)texu_wnd_get_userdata(wnd);
+    editwnd = texu_wnd_get_activechild(wnd);
+    switch (ch)
+    {
+        case TEXU_KEY_UP:
+        {
+            added += 1;
+            updown = TEXU_TRUE;
+            break;
+        }
+        case TEXU_KEY_DOWN:
+        {
+            added -= 1;
+            updown = TEXU_TRUE;
+            break;
+        }
+        case TEXU_KEY_NPAGE:
+        {
+            added -= 5;
+            updown = TEXU_TRUE;
+            break;
+        }
+        case TEXU_KEY_PPAGE:
+        {
+            added += 5;
+            updown = TEXU_TRUE;
+            break;
+        }
+
+        case TEXU_KEY_LEFT:
+        {
+            /*move to the prev edit window*/
+            nextwnd = texu_wnd_get_prev_activechild(wnd, editwnd);
+            if (!nextwnd)
+            {
+                return;
+            }
+            else
+            {
+                rc = texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, (texu_lparam)nextwnd, 0);
+                if (TEXU_OK == rc)
+                {
+                    texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)editwnd, 0);
+                }
+                return;
+            }
+            break;
+        }
+
+        case TEXU_KEY_RIGHT:
+        case TEXUTEXT(':'):
+        {
+            /*move to the next edit window*/
+            nextwnd = texu_wnd_get_next_activechild(wnd, editwnd);
+            if (!nextwnd)
+            {
+                return;
+            }
+            else
+            {
+                rc = texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, (texu_lparam)nextwnd, 0);
+                if (TEXU_OK == rc)
+                {
+                    texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)editwnd, 0);
+                }
+                return;
+            }
+            break;
+        }
+    }
+
+    editwnd = texu_wnd_get_activechild(wnd);
+    if (updown)
+    {
+        texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, 0, 0); /*make sure the last buffer was safed*/
+
+        texu_wnd_get_text(editwnd, buf, TEXU_MAX_WNDTEXT); /*get the last buffer*/
+
+        val = texu_atol(buf);   /*convert text to integer*/
+        val += added;
+        /*if (val < ipctl->min)
+        {
+            val = ipctl->min;
+        }
+        if (val > ipctl->max)
+        {
+            val = ipctl->max;
+        }*/
+
+        /*_TexuWndProc_Notify(wnd, TEXU_IPN_STEP);*/
+
+        texu_sprintf(buf, sizeof(buf), TEXUTEXT("%d"), val);
+        texu_wnd_set_text(editwnd, buf);
+        texu_wnd_send_msg(editwnd, TEXU_WM_SETFOCUS, 0, 0);
+
+        texu_wnd_send_msg(wnd, TEXU_TMM_GETTIME, (texu_lparam)(texu_char*)buf, TEXU_MAX_WNDTEXT);
+
+        texu_wnd_set_text(wnd, buf); /*text should be HH:MM:SS*/
+    }
+    else
+    {
+        texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, (texu_lparam)ch, 0);
+    }
+}
+
+texu_i32 _TexuTimeCtrlProc_OnGetTime(texu_wnd* wnd, texu_char* textout, texu_i32 textlen)
+{
+    texu_timewnd* timewnd = (texu_timewnd*)texu_wnd_get_userdata(wnd);
+    texu_char hh[3];
+    texu_char mm[3];
+    texu_char ss[3];
+    texu_wnd_get_text(timewnd->hourwnd, hh, 3);
+    texu_wnd_get_text(timewnd->minwnd,  mm, 3);
+    texu_wnd_get_text(timewnd->secwnd,  ss, 3);
+
+    return texu_sprintf(textout, textlen, TEXUTEXT("%02d:%02d:%02d"), hh, mm, ss);
+}
+
+texu_longptr _TexuTimeCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
+{
+    switch (msg)
+    {
+        case TEXU_WM_CREATE:
+            return _TexuTimeCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+
+        case TEXU_WM_DESTROY:
+            _TexuTimeCtrlProc_OnDestroy(wnd);
+            break;
+
+        case TEXU_WM_PAINT:
+            _TexuTimeCtrlProc_OnPaint(wnd, (texu_cio *)param1);
+            return 0;
+
+        case TEXU_WM_CHAR:
+            _TexuTimeCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
+
+        case TEXU_TMM_GETTIME:
+            return _TexuTimeCtrlProc_OnGetTime(wnd, (texu_char*)param1, (texu_i32)param2);
+    }
+    return TexuDefWndProc(wnd, msg, param1, param2);
+}
+
+
 
 #ifdef __cplusplus
 }

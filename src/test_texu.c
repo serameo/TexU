@@ -26,13 +26,13 @@
 #define IDC_LIST3           9
 */
 
-texu_i64 MyWndProc(texu_wnd *, texu_ui32, texu_i64, texu_i64);
-texu_i64 MyWndProc2(texu_wnd *, texu_ui32, texu_i64, texu_i64);
-texu_i64 MyWndProc3(texu_wnd *, texu_ui32, texu_i64, texu_i64);
-texu_i64 MyWndProc4(texu_wnd *, texu_ui32, texu_i64, texu_i64);
-texu_i64 MyWndProc5(texu_wnd *, texu_ui32, texu_i64, texu_i64);
-texu_i64 MyWndProc5_Page1(texu_wnd *, texu_ui32, texu_i64, texu_i64);
-texu_i64 MyWndProc5_Page2(texu_wnd *, texu_ui32, texu_i64, texu_i64);
+texu_longptr MyWndProc(texu_wnd *, texu_ui32,  texu_lparam, texu_lparam);
+texu_longptr MyWndProc2(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr MyWndProc3(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr MyWndProc4(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr MyWndProc5(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr MyWndProc5_Page1(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr MyWndProc5_Page2(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
 /*
 struct texu_wnd_template
 {
@@ -351,7 +351,7 @@ void _MyWndProc_OnNotify(texu_wnd *wnd, texu_wnd_notify *notify)
     memset(text, 0, sizeof(text));
     if (notify->id == IDC_LIST1)
     {
-        TexuSendMessage(lb, TEXU_LBM_GETITEMTEXT, (texu_i64)lbntf->index, (texu_i64)text);
+        TexuSendMessage(lb, TEXU_LBM_GETITEMTEXT, (texu_lparam)lbntf->index, (texu_lparam)text);
         TexuSetWindowText(status, text);
     }
 
@@ -362,8 +362,8 @@ void _MyWndProc_OnNotify(texu_wnd *wnd, texu_wnd_notify *notify)
         TexuSendMessage(pgb, TEXU_PGBM_SETPOS, val, 0);
         /*TexuRestoreCursorPosition(udctl);*/
 
-        TexuSendMessage(pgb, TEXU_WM_GETTEXT, (texu_i64)text, TEXU_MAX_WNDTEXT);
-        TexuSendMessage(status, TEXU_SBM_SETTEXT, 1, (texu_i64)text);
+        TexuSendMessage(pgb, TEXU_WM_GETTEXT, (texu_lparam)text, TEXU_MAX_WNDTEXT);
+        TexuSendMessage(status, TEXU_SBM_SETTEXT, 1, (texu_lparam)text);
     }
 
     if (notify->code == TEXU_MBN_ENDDIALOG)
@@ -629,17 +629,17 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         IDC_COMBO1, /* id */
         0           /* user data */
     );
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64) "combo1", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64) "combo2", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64) "combo3", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64) "combo4", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam) "combo1", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam) "combo2", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam) "combo3", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam) "combo4", 0);
     /*
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo5", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo6", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo7", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo8", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"combo9", 0);
-    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_i64)"comboA", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam)"combo5", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam)"combo6", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam)"combo7", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam)"combo8", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam)"combo9", 0);
+    TexuSendMessage(child, TEXU_CBM_ADDITEM, (texu_lparam)"comboA", 0);
     */
     child = (texu_wnd *)TexuSendMessage(child, TEXU_CBM_GETLISTBOX, 0, 0);
     TexuSetColor(child, TEXU_CIO_COLOR_BLUE_WHITE, TEXU_CIO_COLOR_BLUE_WHITE);
@@ -658,24 +658,24 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         IDC_LIST1,  /* id */
         0           /* user data */
     );
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 1", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 2", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 3", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 4", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 5", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 6", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 7", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 8", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 9", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 10", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 1", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 2", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 3", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 4", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 5", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 6", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 7", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 8", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 9", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 10", 0);
 
     TexuSetColor(child, TEXU_CIO_COLOR_BLUE_WHITE, TEXU_CIO_COLOR_BLACK_WHITE);
     TexuSendMessage(child, TEXU_LBM_SETSELCOLOR, TEXU_CIO_COLOR_BLUE_CYAN, 0);
 
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)2, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)3, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)5, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)7, (texu_i64)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)2, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)3, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)5, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)7, (texu_lparam)TEXU_FALSE);
 
     child = TexuCreateWindow(
         "1.234",
@@ -690,21 +690,21 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         8,                 /* id */
         0                  /* user data */
     );
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 1", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 2", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 3", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 4", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 5", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 6", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 7", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 8", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 9", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 10", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 1", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 2", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 3", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 4", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 5", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 6", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 7", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 8", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 9", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 10", 0);
 
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)2, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)3, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)5, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)7, (texu_i64)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)2, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)3, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)5, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)7, (texu_lparam)TEXU_FALSE);
 
     child = TexuCreateWindow(
         "1.234",
@@ -719,21 +719,21 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
         9,                 /* id */
         0                  /* user data */
     );
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 1", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 2", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 3", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 4", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 5", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 6", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 7", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 8", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 9", 0);
-    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 10", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 1", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 2", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 3", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 4", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 5", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 6", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 7", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 8", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 9", 0);
+    TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 10", 0);
 
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)2, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)3, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)5, (texu_i64)TEXU_FALSE);
-    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_i64)7, (texu_i64)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)2, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)3, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)5, (texu_lparam)TEXU_FALSE);
+    TexuSendMessage(child, TEXU_LBM_ENABLEITEM, (texu_lparam)7, (texu_lparam)TEXU_FALSE);
 #if 0
     child = TexuCreateWindow(
         "F1 - Help",
@@ -868,11 +868,11 @@ texu_status _MyWndProc_OnCreate(texu_wnd *wnd)
     );
     TexuSendMessage(child, TEXU_SBM_SETCOLOR, 0, TEXU_CIO_COLOR_BLUE_YELLOW);
 
-    TexuSendMessage(child, TEXU_SBM_ADDPART, (texu_i64) "Part 2", 30);
+    TexuSendMessage(child, TEXU_SBM_ADDPART, (texu_lparam) "Part 2", 30);
     TexuSendMessage(child, TEXU_SBM_SETCOLOR, 1, TEXU_CIO_COLOR_WHITE_BLUE);
     TexuSendMessage(child, TEXU_SBM_SETALIGN, 1, TEXU_ALIGN_CENTER);
 
-    TexuSendMessage(child, TEXU_SBM_ADDPART, (texu_i64) "Part 3", 20);
+    TexuSendMessage(child, TEXU_SBM_ADDPART, (texu_lparam) "Part 3", 20);
     TexuSendMessage(child, TEXU_SBM_SETCOLOR, 2, TEXU_CIO_COLOR_WHITE_RED);
     TexuSendMessage(child, TEXU_SBM_SETALIGN, 2, TEXU_ALIGN_RIGHT);
 
@@ -889,8 +889,8 @@ void _MyWndProc_OnCommand(texu_wnd *wnd, texu_i32 id)
     TexuSetWindowText(status, text);
 }
 
-texu_i64
-MyWndProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+MyWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -981,8 +981,8 @@ void _MyWndProc2_OnPaint(texu_wnd *wnd, texu_cio *dc)
                         TexuGetColor(dc, TEXU_CIO_COLOR_WHITE_BLUE));
 }
 
-texu_i64
-MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -1105,16 +1105,16 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             7,   /* id */
             0    /* user data */
         );
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 1", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 2", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 3", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 4", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 5", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 6", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 7", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 8", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 9", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 10", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 1", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 2", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 3", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 4", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 5", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 6", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 7", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 8", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 9", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 10", 0);
 
         child = TexuCreateWindow(
             "1.234",
@@ -1129,16 +1129,16 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             8,                 /* id */
             0                  /* user data */
         );
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 1", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 2", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 3", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 4", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 5", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 6", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 7", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 8", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 9", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 10", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 1", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 2", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 3", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 4", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 5", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 6", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 7", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 8", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 9", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 10", 0);
 
         child = TexuCreateWindow(
             "1.234",
@@ -1153,16 +1153,16 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             9,                 /* id */
             0                  /* user data */
         );
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 1", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 2", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 3", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 4", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 5", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 6", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 7", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 8", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 9", 0);
-        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_i64) "Item 10", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 1", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 2", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 3", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 4", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 5", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 6", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 7", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 8", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 9", 0);
+        TexuSendMessage(child, TEXU_LBM_ADDITEM, (texu_lparam) "Item 10", 0);
 
         child = TexuCreateWindow(
             "F1 - Help",
@@ -1252,7 +1252,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         band.childwnd = child2;
         band.width    = 15;
         band.height   = 1;
-        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_i64)&band, 0);
+        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_lparam)&band, 0);
 
         child2 = TexuCreateWindow(
             "This is the second window",
@@ -1267,15 +1267,15 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             IDC_CHILD_REBAR2, /* id */
             0              /* user data */
         );
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello world", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Java", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C/C++", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Python", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello javascript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello typescript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Ruby", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello PL/SQL", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C#", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello world", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Java", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C/C++", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Python", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello javascript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello typescript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Ruby", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello PL/SQL", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C#", 0);
         
         
         memset(&band, 0, sizeof(band));
@@ -1284,7 +1284,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;
-        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_i64)&band, 0);
+        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_lparam)&band, 0);
         
 
 
@@ -1301,15 +1301,15 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             IDC_CHILD_REBAR3, /* id */
             0              /* user data */
         );
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello world", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Java", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C/C++", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Python", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello javascript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello typescript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Ruby", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello PL/SQL", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C#", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello world", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Java", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C/C++", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Python", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello javascript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello typescript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Ruby", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello PL/SQL", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C#", 0);
         
         
         memset(&band, 0, sizeof(band));
@@ -1318,7 +1318,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;
-        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_i64)&band, 0);
+        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_lparam)&band, 0);
         
 
 
@@ -1335,15 +1335,15 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             IDC_CHILD_REBAR4, /* id */
             0              /* user data */
         );
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello world", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Java", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C/C++", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Python", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello javascript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello typescript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Ruby", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello PL/SQL", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C#", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello world", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Java", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C/C++", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Python", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello javascript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello typescript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Ruby", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello PL/SQL", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C#", 0);
         
         
         memset(&band, 0, sizeof(band));
@@ -1352,7 +1352,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;
-        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_i64)&band, 0);
+        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_lparam)&band, 0);
         
 
 
@@ -1396,7 +1396,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         band.childwnd = child2;
         band.width    = 15;
         band.height   = 1;
-        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_i64)&band, 0);
+        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_lparam)&band, 0);
 
         child2 = TexuCreateWindow(
             "This is the second window",
@@ -1411,15 +1411,15 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             IDC_CHILD_REBAR2, /* id */
             0              /* user data */
         );
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello world", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Java", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C/C++", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Python", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello javascript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello typescript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Ruby", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello PL/SQL", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C#", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello world", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Java", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C/C++", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Python", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello javascript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello typescript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Ruby", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello PL/SQL", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C#", 0);
         
         
         memset(&band, 0, sizeof(band));
@@ -1427,7 +1427,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;
-        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_i64)&band, 0);
+        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_lparam)&band, 0);
         
 
 
@@ -1444,15 +1444,15 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             IDC_CHILD_REBAR2, /* id */
             0              /* user data */
         );
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello world", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Java", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C/C++", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Python", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello javascript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello typescript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Ruby", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello PL/SQL", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C#", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello world", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Java", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C/C++", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Python", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello javascript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello typescript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Ruby", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello PL/SQL", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C#", 0);
         
         
         memset(&band, 0, sizeof(band));
@@ -1460,7 +1460,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;
-        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_i64)&band, 0);
+        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_lparam)&band, 0);
         
 
 
@@ -1477,15 +1477,15 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
             IDC_CHILD_REBAR3, /* id */
             0              /* user data */
         );
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello world", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Java", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C/C++", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Python", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello javascript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello typescript", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello Ruby", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello PL/SQL", 0);
-        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_i64)"Hello C#", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello world", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Java", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C/C++", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Python", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello javascript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello typescript", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello Ruby", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello PL/SQL", 0);
+        TexuSendMessage(child2, TEXU_LBM_ADDITEM, (texu_lparam)"Hello C#", 0);
         
         
         memset(&band, 0, sizeof(band));
@@ -1493,7 +1493,7 @@ MyWndProc2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         band.childwnd = child2;
         band.width    = 20;
         band.height   = 5;
-        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_i64)&band, 0);
+        TexuSendMessage(child, TEXU_RBM_ADDBAND, (texu_lparam)&band, 0);
 
 
         child = TexuCreateWindow(
@@ -1547,8 +1547,8 @@ void _MyWndProc3_OnExit(texu_wnd *wnd)
     /*TexuDestroyWindow(wnd);*/
 }
 
-texu_i64
-MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -1596,35 +1596,35 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         header.selcolor = TEXU_CIO_COLOR_YELLOW_BLUE;
         header.editstyle = TEXU_ES_AUTOHSCROLL;
         header.decwidth = 2;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.align = TEXU_ALIGN_CENTER;
         header.caption = "Header 2";
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.align = TEXU_ALIGN_LEFT;
         header.caption = "Header 3";
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.caption = "Header 4";
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.caption = "Header 5";
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.caption = "Header 6";
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 1\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 2\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 3\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 4\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 5\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 6\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 7\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 8\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t 9\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t10\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 1\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 2\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 3\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 4\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 5\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 6\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 7\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 8\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t 9\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t10\tHello world\tSawasdee\tAloha\tMeo\tMatt", 6);
 
         subitem.idx = 0;
         subitem.col = 0;
@@ -1632,7 +1632,7 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         subitem.discolor = TEXU_CIO_COLOR_GREEN_WHITE;
         subitem.selcolor = TEXU_CIO_COLOR_WHITE_GREEN;
 
-        TexuSendMessage(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
+        TexuSendMessage(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_lparam)&subitem);
 
         subitem.idx = 1;
         subitem.col = 1;
@@ -1640,7 +1640,7 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         subitem.discolor = TEXU_CIO_COLOR_GREEN_MAGENTA;
         subitem.selcolor = TEXU_CIO_COLOR_MAGENTA_GREEN;
 
-        TexuSendMessage(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
+        TexuSendMessage(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_lparam)&subitem);
 
         subitem.idx = 2;
         subitem.col = 2;
@@ -1648,7 +1648,7 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         subitem.discolor = TEXU_CIO_COLOR_RED_YELLOW;
         subitem.selcolor = TEXU_CIO_COLOR_YELLOW_RED;
 
-        TexuSendMessage(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_i64)&subitem);
+        TexuSendMessage(child, TEXU_LCM_SETITEM, TEXU_LCFM_COLOR, (texu_lparam)&subitem);
 #endif
     
         memset(&header, 0, sizeof(header));
@@ -1662,55 +1662,55 @@ MyWndProc3(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         header.normcolor = TEXU_CIO_COLOR_BLUE_CYAN;
         header.align = TEXU_ALIGN_RIGHT;
         header.cols = 4;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.caption = "IP Address";
         header.normcolor = TEXU_CIO_COLOR_BLUE_YELLOW;
         header.align = TEXU_ALIGN_CENTER;
         header.cols = 12;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.align = TEXU_ALIGN_RIGHT;
         header.normcolor = TEXU_CIO_COLOR_BLUE_CYAN;
         header.caption = "Port";
         header.cols = 8;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.align = TEXU_ALIGN_CENTER;
         header.caption = "St";
         header.cols = 4;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.caption = "Total Packets";
         header.cols = 16;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.caption = "Recv Packets";
         header.cols = 16;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.caption = "Start Packet";
         header.cols = 16;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.align = TEXU_ALIGN_RIGHT;
         header.caption = "Start";
         header.cols = 8;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
         header.align = TEXU_ALIGN_RIGHT;
         header.caption = "End";
         header.cols = 8;
-        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_i64)&header, 0);
+        TexuSendMessage(child, TEXU_LCM_ADDCOLUMN, (texu_lparam)&header, 0);
 
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t1\t10.138.61.107\t49305\tA\t71869\t845  \t71024\t105954\t0", 9);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t2\t10.138.61.107\t65408\tA\t71869\t28534\t43335\t102309\t0", 9);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t3\t10.138.61.107\t65387\tA\t71869\t31193\t40676\t102028\t0", 9);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t4\t10.242.11.6  \t51949\tA\t71869\t28996\t42873\t102242\t0", 9);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t5\t10.138.61.118\t50000\tA\t71869\t29408\t42461\t102212\t0", 9);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t6\t10.138.61.118\t50001\tA\t71869\t29408\t42461\t102212\t0", 9);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t7\t10.138.61.118\t49987\tA\t71869\t31193\t40676\t102028\t0", 9);
-        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_i64) "\t8\t10.242.11.6  \t51940\tA\t71869\t31192\t40677\t102028\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t1\t10.138.61.107\t49305\tA\t71869\t845  \t71024\t105954\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t2\t10.138.61.107\t65408\tA\t71869\t28534\t43335\t102309\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t3\t10.138.61.107\t65387\tA\t71869\t31193\t40676\t102028\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t4\t10.242.11.6  \t51949\tA\t71869\t28996\t42873\t102242\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t5\t10.138.61.118\t50000\tA\t71869\t29408\t42461\t102212\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t6\t10.138.61.118\t50001\tA\t71869\t29408\t42461\t102212\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t7\t10.138.61.118\t49987\tA\t71869\t31193\t40676\t102028\t0", 9);
+        TexuSendMessage(child, TEXU_LCM_ADDITEMS, (texu_lparam) "\t8\t10.242.11.6  \t51940\tA\t71869\t31192\t40677\t102028\t0", 9);
 
         child = TexuCreateWindow(
             "F2 - Tree Demo",
@@ -1771,8 +1771,8 @@ void _MyWndProc4_OnExit(texu_wnd *wnd)
     /*  TexuDestroyWindow(wnd);*/
 }
 
-texu_i64
-MyWndProc4(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+MyWndProc4(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     texu_env *env = texu_wnd_get_env(wnd);
     switch (msg)
@@ -1814,36 +1814,36 @@ MyWndProc4(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         data.discolor = texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_ITEM_DISABLED);
         data.selcolor = texu_env_get_syscolor(env, TEXU_COLOR_TREECTRL_ITEM_SELECTED);
         strcpy(data.itemtext, "Item 1");
-        item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, 0, (texu_i64)&data);
+        item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, 0, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 1 - 1");
-        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_lparam)item, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 1 - 2");
         parent = item;
-        item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_i64)parent, (texu_i64)&data);
+        item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_lparam)parent, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 1 - 3");
-        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_lparam)item, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 1 - 4");
-        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_lparam)item, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 2");
-        item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, 0, (texu_i64)&data);
+        item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, 0, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 2 - 1");
-        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_lparam)item, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 2 - 2");
         parent = item;
-        item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_i64)parent, (texu_i64)&data);
+        item = (texu_tree_item *)TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_lparam)parent, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 2 - 3");
-        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_lparam)item, (texu_lparam)&data);
 
         strcpy(data.itemtext, "Item 2 - 4");
-        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_i64)item, (texu_i64)&data);
+        TexuSendMessage(child, TEXU_TCM_INSERTITEM, (texu_lparam)item, (texu_lparam)&data);
 
         child = TexuCreateWindow(
             "F3 - Exit",
@@ -1892,8 +1892,8 @@ void _MyWndProc5_OnExit(texu_wnd *wnd)
     TexuExit();
 }
 
-texu_i64
-MyWndProc5(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+MyWndProc5(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -1926,13 +1926,32 @@ MyWndProc5(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
                 0              /* user data */
             );
             /*
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass5_Page1, IDC_PAGE1);
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass5_Page2, IDC_PAGE2);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)MyWndClass5_Page1, IDC_PAGE1);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)MyWndClass5_Page2, IDC_PAGE2);
             */
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass,  IDC_PAGE1);
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass2, IDC_PAGE2);
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass3, IDC_PAGE3);
-            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_i64)MyWndClass4, IDC_PAGE4);
+            /*
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)MyWndClass,  IDC_PAGE1);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)MyWndClass2, IDC_PAGE2);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)MyWndClass3, IDC_PAGE3);
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)MyWndClass4, IDC_PAGE4);
+            */
+            texu_page pg;
+            pg.id = IDC_PAGE1;
+            pg.clsname = MyWndClass;
+            pg.caption = MyWndClass;
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)&pg, 0);
+            pg.id = IDC_PAGE2;
+            pg.clsname = MyWndClass2;
+            pg.caption = MyWndClass2;
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)&pg, 0);
+            pg.id = IDC_PAGE3;
+            pg.clsname = MyWndClass3;
+            pg.caption = MyWndClass3;
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)&pg, 0);
+            pg.id = IDC_PAGE4;
+            pg.clsname = MyWndClass4;
+            pg.caption = MyWndClass4;
+            TexuSendMessage(child, TEXU_PGM_ADDPAGE, (texu_lparam)&pg, 0);
 
             TexuAddHotKey(wnd, KEY_F(1), ID_HELP, 0);
             TexuAddHotKey(wnd, KEY_F(3), ID_DELETE, 0);
@@ -1944,8 +1963,8 @@ MyWndProc5(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
 
-texu_i64
-MyWndProc5_Page1(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+MyWndProc5_Page1(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -1958,8 +1977,8 @@ MyWndProc5_Page1(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
 
-texu_i64
-MyWndProc5_Page2(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+MyWndProc5_Page2(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {

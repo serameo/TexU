@@ -28,11 +28,11 @@ extern "C"
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
 
-texu_list_item *_texu_list_item_new(texu_i64 data);
+texu_list_item *_texu_list_item_new(texu_longptr data);
 void _texu_list_item_del(texu_list_item *);
 
 texu_list_item *
-_texu_list_item_new(texu_i64 data)
+_texu_list_item_new(texu_longptr data)
 {
     texu_list_item *item = (texu_list_item *)malloc(sizeof(texu_list_item));
     if (item)
@@ -101,15 +101,11 @@ texu_list_free(texu_list *list)
 void
 texu_list_cb_free(
     texu_list *list,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *user)
 {
     texu_list_item *delitem = 0;
     texu_list_item *item = 0;
-    if (!list)
-    {
-        return ;
-    }
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
@@ -135,14 +131,9 @@ texu_list_cb_free(
 }
 
 texu_status
-texu_list_insert_first(texu_list *list, texu_i64 data)
+texu_list_insert_first(texu_list *list, texu_longptr data)
 {
-    texu_list_item *newitem = 0;
-    if (!list)
-    {
-        return 0;
-    }
-    newitem = _texu_list_item_new(data);
+    texu_list_item *newitem = _texu_list_item_new(data);
     if (!newitem)
     {
         return TEXU_NOMEM;
@@ -169,7 +160,7 @@ texu_list_insert_first(texu_list *list, texu_i64 data)
 }
 
 texu_status
-texu_list_insert_last(texu_list *list, texu_i64 data)
+texu_list_insert_last(texu_list *list, texu_longptr data)
 {
     return texu_list_add(list, data);
 }
@@ -178,15 +169,10 @@ texu_status
 texu_list_insert(
     texu_list *list,
     texu_list_item *after,
-    texu_i64 data)
+    texu_longptr data)
 {
     texu_list_item *prev = 0;
-    texu_list_item *newitem = 0;
-    if (!list)
-    {
-        return 0;
-    }
-    newitem = _texu_list_item_new(data);
+    texu_list_item *newitem = _texu_list_item_new(data);
     if (!newitem)
     {
         return TEXU_NOMEM;
@@ -221,14 +207,9 @@ texu_list_insert(
 }
 
 texu_status
-texu_list_add(texu_list *list, texu_i64 data)
+texu_list_add(texu_list *list, texu_longptr data)
 {
-    texu_list_item *newitem = 0;
-    if (!list)
-    {
-        return 0;
-    }
-    newitem = _texu_list_item_new(data);
+    texu_list_item *newitem = _texu_list_item_new(data);
     if (!newitem)
     {
         return TEXU_NOMEM;
@@ -264,7 +245,7 @@ texu_status
 texu_list_cb_remove(
     texu_list *list,
     texu_list_item *item,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *user)
 {
     texu_list_item *prev = 0;
@@ -273,10 +254,6 @@ texu_list_cb_remove(
     if (!item)
     {
         return TEXU_OK;
-    }
-    if (!list)
-    {
-        return 0;
     }
     /* make a new link */
 #ifdef TEXU_THREAD_SAFE
@@ -329,10 +306,6 @@ texu_list_item *
 texu_list_first(texu_list *list)
 {
     texu_list_item *item = 0;
-    if (!list)
-    {
-        return 0;
-    }
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
@@ -347,10 +320,6 @@ texu_list_item *
 texu_list_last(texu_list *list)
 {
     texu_list_item *item = 0;
-    if (!list)
-    {
-        return 0;
-    }
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
@@ -365,14 +334,10 @@ texu_ui64
 texu_list_count(texu_list *list)
 {
     texu_ui64 nitems = 0;
-    if (!list)
-    {
-        return 0;
-    }
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
-    nitems = (list ? list->nitems : 0);
+    nitems = list->nitems;
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&list->mutex);
 #endif
@@ -382,7 +347,7 @@ texu_list_count(texu_list *list)
 texu_list_item *
 texu_list_find_first(
     texu_list *list,
-    texu_i64 data)
+    texu_longptr data)
 {
     return texu_list_find_next(list, 0, data);
 }
@@ -391,7 +356,7 @@ texu_list_item *
 texu_list_find_next(
     texu_list *list,
     texu_list_item *curitem,
-    texu_i64 data)
+    texu_longptr data)
 {
     texu_list_item *next = 0;
     if (!curitem)
@@ -417,7 +382,7 @@ texu_list_find_next(
 texu_list_item *
 texu_list_rfind_last(
     texu_list *list,
-    texu_i64 data)
+    texu_longptr data)
 {
     return texu_list_rfind_prev(list, 0, data);
 }
@@ -426,7 +391,7 @@ texu_list_item *
 texu_list_rfind_prev(
     texu_list *list,
     texu_list_item *curitem,
-    texu_i64 data)
+    texu_longptr data)
 {
     texu_list_item *prev = 0;
     if (!curitem)
@@ -491,7 +456,7 @@ texu_queue_free(texu_queue *queue)
 void
 texu_queue_cb_free(
     texu_queue *queue,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *userdata)
 {
     texu_list_cb_free(queue->list, cb, userdata);
@@ -499,7 +464,7 @@ texu_queue_cb_free(
 
 /* add/insert a new item */
 texu_status
-texu_queue_enqueue(texu_queue *queue, texu_i64 data)
+texu_queue_enqueue(texu_queue *queue, texu_longptr data)
 {
     return texu_list_add(queue->list, data);
 }
@@ -513,14 +478,14 @@ texu_status texu_queue_dequeue(texu_queue *queue)
 texu_status
 texu_queue_cb_dequeue(
     texu_queue *queue,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *userdata)
 {
     texu_list_item *item = texu_list_first(queue->list);
     return texu_list_cb_remove(queue->list, item, cb, userdata);
 }
 
-texu_i64
+texu_longptr
 texu_queue_first(texu_queue *queue)
 {
     texu_list_item *item = texu_list_first(queue->list);
@@ -541,8 +506,8 @@ texu_queue_empty(texu_queue *queue)
 */
 struct texu_array
 {
-    texu_i64 nitems;
-    texu_i64 *items;
+    texu_longptr nitems;
+    texu_longptr *items;
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_t mutex;
 #endif
@@ -552,7 +517,7 @@ texu_array *
 texu_array_new(texu_ui64 nitems)
 {
     texu_array *array = (texu_array *)malloc(sizeof(texu_array));
-    texu_i64 *items = 0;
+    texu_longptr *items = 0;
     size_t size = 0;
     if (array)
     {
@@ -563,8 +528,8 @@ texu_array_new(texu_ui64 nitems)
         }
         array->nitems = nitems;
 
-        size = sizeof(texu_i64) * nitems;
-        items = (texu_i64 *)malloc(size);
+        size = sizeof(texu_lparam) * nitems;
+        items = (texu_longptr *)malloc(size);
         if (!items) /*cannot allocate a new memory*/
         {
             free(array);
@@ -602,10 +567,10 @@ texu_array_free(texu_array *array)
 void
 texu_array_cb_free(
     texu_array *array,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *user)
 {
-    texu_i64 i = 0;
+    texu_longptr i = 0;
     if (cb)
     {
         for (; i < array->nitems; ++i)
@@ -617,14 +582,14 @@ texu_array_cb_free(
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&array->mutex);
 #endif
-    memset(array->items, 0, sizeof(texu_i64)* array->nitems);
+    memset(array->items, 0, sizeof(texu_lparam)* array->nitems);
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&array->mutex);
 #endif
 }
 
-texu_i64
-texu_array_get(texu_array *array, texu_i64 idx)
+texu_longptr
+texu_array_get(texu_array *array, texu_longptr idx)
 {
     if (idx < 0 || idx >= array->nitems)
     {
@@ -634,7 +599,7 @@ texu_array_get(texu_array *array, texu_i64 idx)
 }
 
 void
-texu_array_set(texu_array *array, texu_i64 idx, texu_i64 data)
+texu_array_set(texu_array *array, texu_longptr idx, texu_longptr data)
 {
     if (idx < 0 || idx >= array->nitems)
     {
@@ -650,17 +615,17 @@ texu_array_set(texu_array *array, texu_i64 idx, texu_i64 data)
 }
 
 texu_status
-texu_array_realloc(texu_array *array, texu_i64 nitems)
+texu_array_realloc(texu_array *array, texu_longptr nitems)
 {
-    texu_i64 *items = 0;
+    texu_longptr *items = 0;
     size_t size = 0;
     if (0 >= nitems)
     {
         return TEXU_OK;
     }
     /* new memory */
-    size = sizeof(texu_i64) * nitems;
-    items = (texu_i64 *)malloc(size);
+    size = sizeof(texu_lparam) * nitems;
+    items = (texu_longptr *)malloc(size);
     if (!items)
     {
         return TEXU_NOMEM;
@@ -669,7 +634,7 @@ texu_array_realloc(texu_array *array, texu_i64 nitems)
 
     /* copy to new memory */
     nitems = TEXU_MIN(nitems, array->nitems);
-    size = sizeof(texu_i64) * nitems;
+    size = sizeof(texu_lparam) * nitems;
     memcpy(items, array->items, size);
 
     /* delete the old memory */
@@ -700,19 +665,19 @@ texu_array_count(texu_array *array)
 */
 struct texu_stack
 {
-    texu_i64 index;
-    texu_i64 nitems;
-    texu_i64 *items;
+    texu_longptr index;
+    texu_longptr nitems;
+    texu_longptr *items;
     #ifdef TEXU_THREAD_SAFE
     pthread_mutex_t mutex;
     #endif
 };
 
 texu_stack *
-texu_stack_new(texu_i64 nitems)
+texu_stack_new(texu_longptr nitems)
 {
     texu_stack *stack = (texu_stack *)malloc(sizeof(texu_stack));
-    texu_i64 *items = 0;
+    texu_longptr *items = 0;
     size_t size = 0;
     if (stack)
     {
@@ -728,8 +693,8 @@ texu_stack_new(texu_i64 nitems)
         stack->nitems = nitems;
         stack->index = -1;
 
-        size = sizeof(texu_i64) * nitems;
-        items = (texu_i64 *)malloc(size);
+        size = sizeof(texu_lparam) * nitems;
+        items = (texu_longptr *)malloc(size);
         if (!items) /*cannot allocate a new memory*/
         {
             free(stack);
@@ -767,10 +732,10 @@ texu_stack_free(texu_stack *stack)
 void
 texu_stack_cb_free(
     texu_stack *stack,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *user)
 {
-    texu_i64 i = 0;
+    texu_longptr i = 0;
     if (cb)
     {
         for (; i <= stack->index; ++i)
@@ -782,7 +747,7 @@ texu_stack_cb_free(
     #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&stack->mutex);
     #endif
-    memset(stack->items, 0, sizeof(texu_i64) * stack->nitems);
+    memset(stack->items, 0, sizeof(texu_lparam) * stack->nitems);
     stack->index = -1;
     #ifdef TEXU_THREAD_SAFE
     pthread_mutex_unlock(&stack->mutex);
@@ -801,7 +766,7 @@ texu_stack_full(texu_stack *stack)
     return (stack->index >= (stack->nitems - 1) ? TEXU_TRUE : TEXU_FALSE);
 }
 
-texu_i64
+texu_longptr
 texu_stack_top(texu_stack *stack)
 {
     if (texu_stack_empty(stack))
@@ -812,7 +777,7 @@ texu_stack_top(texu_stack *stack)
 }
 
 texu_status
-texu_stack_push(texu_stack *stack, texu_i64 data)
+texu_stack_push(texu_stack *stack, texu_longptr data)
 {
     if (texu_stack_full(stack))
     {
@@ -838,7 +803,7 @@ texu_stack_pop(texu_stack *stack)
 texu_status
 texu_stack_cb_pop(
     texu_stack *stack,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *user)
 {
     if (texu_stack_empty(stack))
@@ -861,7 +826,7 @@ texu_stack_cb_pop(
     return TEXU_OK;
 }
 
-texu_i64
+texu_longptr
 texu_stack_count(texu_stack *stack)
 {
     return stack->nitems;
@@ -881,31 +846,31 @@ struct texu_tree
     #endif
 };
 
-texu_tree_item *_texu_tree_item_new(texu_i64);
+texu_tree_item *_texu_tree_item_new(texu_longptr);
 void _texu_tree_item_del(texu_tree_item *);
 texu_status _texu_tree_cb_remove_item(
     texu_tree *tree,
     texu_tree_item *delitem,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *user);
 texu_status _texu_tree_populate_pre(
     texu_tree *tree,
     texu_tree_item *item,
-    texu_i64 (*proc)(texu_tree_item *, void *),
+    texu_longptr (*proc)(texu_tree_item *, void *),
     void *user);
 texu_status _texu_tree_populate_in(
     texu_tree *tree,
     texu_tree_item *item,
-    texu_i64 (*proc)(texu_tree_item *, void *),
+    texu_longptr (*proc)(texu_tree_item *, void *),
     void *user);
 texu_status _texu_tree_populate_post(
     texu_tree *tree,
     texu_tree_item *item,
-    texu_i64 (*proc)(texu_tree_item *, void *),
+    texu_longptr (*proc)(texu_tree_item *, void *),
     void *user);
 
 texu_tree_item *
-_texu_tree_item_new(texu_i64 data)
+_texu_tree_item_new(texu_longptr data)
 {
     texu_tree_item *item = (texu_tree_item *)malloc(sizeof(texu_tree_item));
     if (item)
@@ -930,7 +895,7 @@ texu_status
 _texu_tree_cb_remove_item(
     texu_tree *tree,
     texu_tree_item *delitem,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *user)
 {
     texu_tree_item *prev = 0;
@@ -958,10 +923,10 @@ texu_status
 _texu_tree_populate_pre(
     texu_tree *tree,
     texu_tree_item *item,
-    texu_i64 (*proc)(texu_tree_item *, void *),
+    texu_longptr (*proc)(texu_tree_item *, void *),
     void *user)
 {
-    texu_i64 rc = TEXU_OK;
+    texu_longptr rc = TEXU_OK;
     if (item && proc)
     {
         rc = proc(item, user);
@@ -983,10 +948,10 @@ texu_status
 _texu_tree_populate_in(
     texu_tree *tree,
     texu_tree_item *item,
-    texu_i64 (*proc)(texu_tree_item *, void *),
+    texu_longptr (*proc)(texu_tree_item *, void *),
     void *user)
 {
-    texu_i64 rc = TEXU_OK;
+    texu_longptr rc = TEXU_OK;
     if (item && proc)
     {
         rc = _texu_tree_populate_in(
@@ -1008,10 +973,10 @@ texu_status
 _texu_tree_populate_post(
     texu_tree *tree,
     texu_tree_item *item,
-    texu_i64 (*proc)(texu_tree_item *, void *),
+    texu_longptr (*proc)(texu_tree_item *, void *),
     void *user)
 {
-    texu_i64 rc = TEXU_OK;
+    texu_longptr rc = TEXU_OK;
     if (item && proc)
     {
         rc = _texu_tree_populate_post(
@@ -1064,7 +1029,7 @@ texu_tree_del(texu_tree *tree)
 }
 
 texu_tree_item *
-texu_tree_add_item(texu_tree *tree, texu_tree_item *parent, texu_i64 data)
+texu_tree_add_item(texu_tree *tree, texu_tree_item *parent, texu_longptr data)
 {
     texu_tree_item *newitem = _texu_tree_item_new(data);
     if (!newitem)
@@ -1113,7 +1078,7 @@ texu_status
 texu_tree_cb_remove_item(
     texu_tree *tree,
     texu_tree_item *delitem,
-    void (*cb)(texu_i64, void *),
+    void (*cb)(texu_longptr, void *),
     void *user)
 {
     texu_tree_item *parent = 0;
@@ -1178,8 +1143,8 @@ texu_tree_cb_remove_item(
 
 texu_tree_item *texu_tree_find_item(
     texu_tree *tree,
-    texu_i64 data,
-    texu_i32 (*cmp)(texu_i64, texu_i64, void *),
+    texu_longptr data,
+    texu_i32 (*cmp)(texu_longptr, texu_longptr, void *),
     void *user)
 {
     if (!cmp)
@@ -1192,12 +1157,12 @@ texu_tree_item *texu_tree_find_item(
 texu_tree_item *texu_tree_find_next_item(
     texu_tree *tree,
     texu_tree_item *curitem,
-    texu_i64 data,
-    texu_i32 (*cmp)(texu_i64, texu_i64, void *),
+    texu_longptr data,
+    texu_i32 (*cmp)(texu_longptr, texu_longptr, void *),
     void *user)
 {
     texu_tree_item *founditem = 0;
-    texu_i64 rc = -1;
+    texu_longptr rc = -1;
 
     if (curitem)
     {
@@ -1236,11 +1201,11 @@ texu_status
 texu_tree_populate(
     texu_tree *tree,
     texu_tree_item *item,
-    texu_i64 order,
-    texu_i64 (*proc)(texu_tree_item *, void *),
+    texu_longptr order,
+    texu_longptr (*proc)(texu_tree_item *, void *),
     void *user)
 {
-    texu_i64 rc = TEXU_OK;
+    texu_longptr rc = TEXU_OK;
 
     if (!item)
     {
@@ -1286,9 +1251,9 @@ texu_tree_count(texu_tree *tree)
 struct texu_map
 {
     texu_map_keyval *keyvals;
-    texu_i64 nitems;
-    texu_i64 nkeys;
-    texu_i64 ndels;
+    texu_longptr nitems;
+    texu_longptr nkeys;
+    texu_longptr ndels;
     texu_bool sorted;
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_t mutex;
@@ -1296,11 +1261,11 @@ struct texu_map
 };
 #define TEXU_MAP_INCREMENTAL_ITEMS 256
 
-texu_i32 _texu_map_cmp(const void *, const void *);
-texu_map_keyval *_texu_map_find(texu_map *, texu_i64);
-texu_map_keyval *_texu_map_cmp_find(texu_map *map, texu_i64 key, texu_i32 (*cmp)(const void *, const void *));
+int _texu_map_cmp(const void *, const void *);
+texu_map_keyval *_texu_map_find(texu_map *, texu_longptr);
+texu_map_keyval *_texu_map_cmp_find(texu_map *map, texu_longptr key, int (*cmp)(const void *, const void *));
 texu_map_keyval *_texu_map_keyval_init(texu_ui64, texu_map_keyval *);
-void _texu_map_sort(texu_map *map, texu_i32 (*cmp)(const void *, const void *));
+void _texu_map_sort(texu_map *map, int (*cmp)(const void *, const void *));
 
 texu_map_keyval *
 _texu_map_keyval_init(texu_ui64 nitems, texu_map_keyval *src)
@@ -1320,7 +1285,7 @@ _texu_map_keyval_init(texu_ui64 nitems, texu_map_keyval *src)
 }
 
 void
-_texu_map_sort(texu_map *map, texu_i32 (*cmp)(const void *, const void *))
+_texu_map_sort(texu_map *map, int (*cmp)(const void *, const void *))
 {
     if (0 == map->nkeys)
     {
@@ -1384,11 +1349,11 @@ texu_map_free(texu_map *map)
 void
 texu_map_cb_free(
     texu_map *map,
-    void (*cb)(texu_i64, texu_i64, void *),
+    void (*cb)(texu_longptr, texu_longptr, void *),
     void *user)
 {
     texu_ui64 size = 0;
-    texu_i64 i = 0;
+    texu_longptr i = 0;
     if (cb)
     {
         for (i = 0; i < map->nkeys; ++i)
@@ -1412,7 +1377,7 @@ texu_map_cb_free(
 #endif
 }
 
-texu_i32
+int
 texu_map_strcmp(const void *v1, const void *v2)
 {
     texu_map_keyval *kv1 = (texu_map_keyval *)v1;
@@ -1422,13 +1387,13 @@ texu_map_strcmp(const void *v1, const void *v2)
     {
         if (kv1->used && kv2->used)
         {
-            return strcmp((char *)kv1->key, (char *)kv2->key);
+            return strcmp((const char *)kv1->key, (const char *)kv2->key);
         }
     }
     return TEXU_CMP_GT;
 }
 
-texu_i32
+int
 texu_map_wstrcmp(const void *v1, const void *v2)
 {
     texu_map_keyval *kv1 = (texu_map_keyval *)v1;
@@ -1437,14 +1402,14 @@ texu_map_wstrcmp(const void *v1, const void *v2)
     {
         if (kv1->used && kv2->used)
         {
-            return wcscmp((wchar_t *)kv1->key, (wchar_t *)kv2->key);
+            return wcscmp((const wchar_t *)kv1->key, (const wchar_t *)kv2->key);
         }
     }
     return TEXU_CMP_GT;
 }
 
 
-texu_i32
+int
 _texu_map_cmp(const void *v1, const void *v2)
 {
     texu_map_keyval *kv1 = (texu_map_keyval *)v1;
@@ -1460,13 +1425,13 @@ _texu_map_cmp(const void *v1, const void *v2)
 }
 
 texu_map_keyval *
-_texu_map_find(texu_map *map, texu_i64 key)
+_texu_map_find(texu_map *map, texu_longptr key)
 {
     return _texu_map_cmp_find(map, key, _texu_map_cmp);
 }
 
 texu_map_keyval *
-_texu_map_cmp_find(texu_map *map, texu_i64 key, texu_i32 (*cmp)(const void *, const void *))
+_texu_map_cmp_find(texu_map *map, texu_longptr key, int (*cmp)(const void *, const void *))
 {
     texu_map_keyval *keyval = 0;
     texu_map_keyval kv = {key, 0, TEXU_TRUE};
@@ -1485,8 +1450,8 @@ _texu_map_cmp_find(texu_map *map, texu_i64 key, texu_i32 (*cmp)(const void *, co
 texu_status
 texu_map_insert(
     texu_map *map,
-    texu_i64 key,
-    texu_i64 value)
+    texu_longptr key,
+    texu_longptr value)
 {
     return texu_map_cmp_insert(map, key, value, 0);
 }
@@ -1494,9 +1459,9 @@ texu_map_insert(
 texu_status
 texu_map_cmp_insert(
     texu_map *map,
-    texu_i64 key,
-    texu_i64 value,
-    texu_i32 (*cmp)(const void *, const void *))
+    texu_longptr key,
+    texu_longptr value,
+    int (*cmp)(const void *, const void *))
 {
     texu_status rc = TEXU_OK;
     texu_map_keyval *kv = 0;
@@ -1540,7 +1505,7 @@ texu_map_cmp_insert(
 texu_status
 texu_map_remove(
     texu_map *map,
-    texu_i64 key)
+    texu_longptr key)
 {
     return texu_map_cmp_remove(map, key, 0);
 }
@@ -1548,8 +1513,8 @@ texu_map_remove(
 texu_status
 texu_map_cmp_remove(
     texu_map *map,
-    texu_i64 key,
-    texu_i32 (*cmp)(const void *, const void *))
+    texu_longptr key,
+    int (*cmp)(const void *, const void *))
 {
     return texu_map_cb_remove(map, key, cmp, 0, 0);
 }
@@ -1557,9 +1522,9 @@ texu_map_cmp_remove(
 texu_status
 texu_map_cb_remove(
     texu_map *map,
-    texu_i64 key,
-    texu_i32 (*cmp)(const void *, const void *),
-    void (*cb)(texu_i64, texu_i64, void *),
+    texu_longptr key,
+    int (*cmp)(const void *, const void *),
+    void (*cb)(texu_longptr, texu_longptr, void *),
     void *user)
 {
     texu_status rc = TEXU_OK;
@@ -1598,8 +1563,8 @@ texu_map_cb_remove(
 texu_status
 texu_map_find(
     texu_map *map,
-    texu_i64 key,
-    texu_i64 *value)
+    texu_longptr key,
+    texu_longptr *value)
 {
     return texu_map_cmp_find(map, key, value, 0);
 }
@@ -1607,9 +1572,9 @@ texu_map_find(
 texu_status
 texu_map_cmp_find(
     texu_map *map,
-    texu_i64 key,
-    texu_i64 *value,
-    texu_i32 (*cmp)(const void *, const void *))
+    texu_longptr key,
+    texu_longptr *value,
+    int (*cmp)(const void *, const void *))
 {
     texu_status rc = TEXU_OK;
     texu_map_keyval *kv = 0;
@@ -1640,13 +1605,13 @@ texu_map_cmp_find(
 
 texu_status texu_map_foreach(
     texu_map *map,
-    texu_i32(*cb)(texu_i64, texu_i64, void *),
-    texu_i32(*cmp)(const void *, const void *),
+    texu_i32 (*cb)(texu_longptr, texu_longptr, void *),
+    int (*cmp)(const void *, const void *),
     void *user)
 {
     texu_status rc = TEXU_OK;
     texu_map_keyval *kv = 0;
-    texu_i64 i = 0;
+    texu_longptr i = 0;
 
     if (!map->sorted)
     {
@@ -1670,6 +1635,88 @@ texu_status texu_map_foreach(
     }
     return rc;
 }
+/*
+# TexU bits
+#
+         1         2         3         4         5         6         7         8
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+*/
+
+struct texu_bits
+{
+    texu_ui32           nbits;
+    texu_byte*          bytes;
+};
+
+
+texu_bits* texu_bits_new(texu_ui32 nbits)
+{
+    texu_i32 nbytes = 1 + (nbits / 8);
+    texu_bits* bits = (texu_bits*)malloc(sizeof(texu_bits) + nbytes);
+    if (bits)
+    {
+        memset(bits, 0, sizeof(texu_bits));
+        bits->nbits  = nbits;
+        bits->bytes  = (texu_byte*)(bits + sizeof(texu_bits));
+    }
+    return bits;
+}
+void       texu_bits_del(texu_bits* bits)
+{
+    free(bits);
+}
+void       texu_bits_set_all(texu_bits* bits, texu_i32 on)
+{
+    texu_i32 nbytes = 1 + (bits->nbits / 8);
+    on = (TEXU_BITS_OFF == on ? 0 : 0xff);
+    memset(bits->bytes, on, nbytes);
+}
+
+texu_i32   texu_bits_set(texu_bits* bits, texu_i32 at, texu_i32 on)
+{
+    texu_i32  block = 0;
+    texu_i32  pos   = 0;
+    texu_byte mask  = 0;
+    texu_byte byte  = 0;
+
+    if (at < 0 || at >= bits->nbits)
+    {
+        return -1; /*bit position is out-of-bound*/
+    }
+
+    block = (at / 8); /* 1 byte = 8 bits */
+    pos   = at - (block * 8);
+    mask  = 0x01 << pos;
+    byte  = bits->bytes[block];
+
+    if (on)
+    {
+        byte |= mask;
+    }
+    else
+    {
+        byte &= ~mask;
+    }
+    
+    bits->bytes[block] = byte;
+    return 0;
+}
+texu_i32   texu_bits_get(texu_bits* bits, texu_i32 at)
+{
+    texu_i32  block = 0;
+    texu_i32  pos   = 0;
+    texu_byte mask  = 0;
+
+    if (at < 0 || at >= bits->nbits)
+    {
+        return -1; /*bit position is out-of-bound*/
+    }
+    block = (at / 8); /* 1 byte = 8 bits */
+    pos   = at - (block * 8);
+    mask  = 0x01 << pos;
+    return (bits->bytes[block] & mask);
+}
+
 
 #ifdef __cplusplus
 }

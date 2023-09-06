@@ -86,7 +86,7 @@ _TexuMsgBoxProc_Notify(texu_wnd *wnd, texu_ui32 code, texu_ui32 id)
     notify.hdr.id = texu_wnd_get_id(wnd);
     notify.hdr.code = code;
     notify.id = id;
-    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
+    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
 }
 void _TexuWndProc_Notify(texu_wnd *, texu_ui32);
 
@@ -99,7 +99,7 @@ _TexuWndProc_Notify(texu_wnd *wnd, texu_ui32 code)
     notify.wnd = wnd;
     notify.id = texu_wnd_get_id(wnd);
     notify.code = code;
-    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
+    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
 }
 
 
@@ -603,8 +603,8 @@ void _TexuMsgBoxProc_OnSetOwner(texu_wnd *wnd, texu_wnd *owner)
     msgbox->owner = owner;
 }
 
-texu_i64
-_TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -673,8 +673,8 @@ _TexuDesktopWndProc_OnEnable(texu_wnd *wnd, texu_bool enable)
     return TEXU_TRUE;
 }
 
-texu_i64
-_TexuDesktopProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuDesktopProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -758,13 +758,10 @@ _TexuLabelProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
 
     return TEXU_OK;
 }
-void
-_TexuLabelProc_OnSetText(texu_wnd *wnd, const texu_char *text)
-{
-}
 
-texu_i64
-_TexuLabelProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+
+texu_longptr
+_TexuLabelProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -777,10 +774,6 @@ _TexuLabelProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
         case TEXU_WM_ENABLE:
             return TexuDefWndProc(wnd, msg, 0, 0);
-        
-        case TEXU_WM_SETTEXT:
-            _TexuLabelProc_OnSetText(wnd, (const texu_char *)param1);
-            break;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
@@ -938,8 +931,8 @@ _TexuButtonProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     return 0;
 }
 
-texu_i64
-_TexuButtonProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuButtonProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -987,23 +980,22 @@ _TexuButtonProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 
 struct texu_editwnd
 {
-    texu_i32    firstvisit;
-    texu_i32    selected;
-    texu_char   passchar;
-    texu_bool   showpass;
-    texu_i32    firstchar;
-    texu_i32    limitchars;
-    texu_i32    editing;
-    texu_i32    decwidth;
-    texu_i32    min;
-    texu_i32    max;
-    texu_i32    onminmax;
-    texu_bool   invalid;
-    void        *exparam;
-    texu_char   validstr[TEXU_MAX_WNDTEXT + 1];
-    texu_char   editbuf[TEXU_MAX_WNDTEXT + 1];
-    texu_char   editsuffix[TEXU_MAX_WNDTEXT + 1];
-    texu_i32    (*on_validate)(texu_wnd*, texu_char*);
+    texu_i32 firstvisit;
+    texu_i32 selected;
+    texu_char passchar;
+    texu_bool showpass;
+    texu_i32 firstchar;
+    texu_i32 limitchars;
+    texu_i32 editing;
+    texu_i32 decwidth;
+    texu_i32 min;
+    texu_i32 max;
+    texu_i32 onminmax;
+    texu_bool invalid;
+    void *exparam;
+    texu_char validstr[TEXU_MAX_WNDTEXT + 1];
+    texu_char editbuf[TEXU_MAX_WNDTEXT + 1];
+    texu_i32  (*on_validate)(texu_wnd*, texu_char*);
 };
 typedef struct texu_editwnd texu_editwnd;
 
@@ -1011,10 +1003,9 @@ typedef struct texu_editwnd texu_editwnd;
 #define TEXU_EDITWND_MEGA   (1000000)
 #define TEXU_EDITWND_GIGA   (1000000000)
 #define TEXU_EDITWND_TERA   (1000000000000)
-/*
 #define TEXU_EDITWND_PETA   (1000000000000000)
 #define TEXU_EDITWND_EXA    (1000000000000000000)
-*/
+
 texu_status _TexuEditProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
 void _TexuEditProc_OnChar(texu_wnd *, texu_i32 ch, texu_i32 alt);
 void _TexuEditProc_OnDestroy(texu_wnd *);
@@ -1118,7 +1109,7 @@ _TexuEditProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen)
     }
     else
     {
-       TexuDefWndProc(wnd, TEXU_WM_GETTEXT, (texu_i64)text, textlen);
+       TexuDefWndProc(wnd, TEXU_WM_GETTEXT, (texu_lparam)text, textlen);
     }
 
     return textlen;
@@ -1142,21 +1133,10 @@ void _TexuEditProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     /*copy to buffer to prevent Mac crashed*/
     texu_strcpy(buf, text);
 
-    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_i64)text, 0);
+    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)text, 0);
     edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
     texu_strcpy(edit->editbuf, buf);
     edit->firstvisit = 1;
-
-    texu_strcpy(edit->editsuffix, buf);
-    if ((TEXU_ES_SUFFIX & style) &&
-        ((TEXU_ES_NUMBER | TEXU_ES_DECIMAL) & style))
-    {
-        if (TEXU_ES_AUTODECIMALCOMMA & style)
-        {
-            _TexuEditProc_RemoveDecimalFormat(edit);
-            texu_strcpy(edit->editsuffix, edit->editbuf);
-        }
-    }
 
     if (TEXU_ES_AUTODECIMALCOMMA & style)
     {
@@ -1228,12 +1208,11 @@ texu_i32 _TexuEditProc_AddDecimalFormat(texu_editwnd *edit)
     texu_char *pbuf;
     texu_i32 len = texu_strlen(edit->editbuf) - 1;
     texu_char *psz = &edit->editbuf[len];
-    texu_char *pos = texu_strchr(edit->editbuf, TEXUTEXT('.'));
 
     memset(buf, 0, sizeof(buf));
     pbuf = buf;
 
-    while (pos && *psz != 0 && *psz != TEXUTEXT('.'))
+    while (*psz != 0 && *psz != TEXUTEXT('.'))
     {
         *pbuf = *psz;
         ++pbuf;
@@ -1320,7 +1299,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
     texu_i32 rc = TEXU_OK;
 
     /* check if style is TEXU_ES_DECIMAL */
-    if (TEXU_ES_DECIMAL & style)/* && TEXU_ES_AUTODECIMALCOMMA & style)*/
+    if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
     {
         decimal = texu_atof(edit->editbuf);
 
@@ -1474,7 +1453,7 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit
 {
     texu_status rc = TEXU_OK;
     texu_char *decimal = texu_strchr(edit->editbuf, TEXUTEXT('.'));
-    texu_i64 len = texu_strlen(edit->editbuf);
+    texu_i32 len = texu_strlen(edit->editbuf);
     texu_i32 pos = -1;
     texu_i32 declen = 0;
 
@@ -1542,7 +1521,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_editwnd *edit = 0;
     texu_i32 changed = 0;
     texu_cio *dc = texu_wnd_get_cio(wnd);
-    texu_i64 len = 0;
+    texu_i32 len = 0;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_ui32 style = texu_wnd_get_style(wnd);
@@ -1550,7 +1529,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
     texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
     texu_ui32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
-    texu_i64 ret = TEXU_OK;
+    texu_i32 ret = TEXU_OK;
     texu_char *psz = 0;
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
@@ -1961,7 +1940,7 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
 {
     texu_env *env = texu_wnd_get_env(wnd);
     texu_editwnd *edit = 0;
-    texu_i64 len = 0;
+    texu_i32 len = 0;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
@@ -2058,11 +2037,9 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio)
     texu_cio_putstr_attr(cio, y, x, text,
                             texu_cio_get_reverse(cio, color));
 #else
-
     texu_cio_draw_text(cio, y, x, text, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
-
 
 #endif /* TEXU_CIO_COLOR_MONO*/
     len = (texu_i32)TEXU_MIN(texu_strlen(buf), (texu_ui32)width);
@@ -2116,8 +2093,8 @@ texu_status _TexuEditProc_OnGetFloat(texu_wnd *wnd, texu_f64 *out)
 }
 
 
-texu_i64
-_TexuEditProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuEditProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -2216,7 +2193,7 @@ _TexuEditProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
 struct texu_lbwnd_item
 {
     texu_char itemtext[TEXU_MAX_WNDTEXT + 1];
-    texu_i64 data;
+    texu_longptr data;
     texu_i32 checked;
     texu_i32 enable;
     texu_i32 visible;
@@ -2269,8 +2246,8 @@ void _TexuListBoxProc_OnSelChanged(texu_wnd *wnd);
 texu_i32 _TexuListBoxProc_OnCountItemCheck(texu_wnd *wnd);
 texu_i32 _TexuListBoxProc_OnGetItemChecked(texu_wnd *wnd, texu_i32 idx);
 texu_i32 _TexuListBoxProc_OnSetItemChecked(texu_wnd *wnd, texu_i32 idx, texu_i32 check);
-texu_i64 _TexuListBoxProc_OnGetItemData(texu_wnd *wnd, texu_i32 idx);
-void _TexuListBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_i64 data);
+texu_longptr _TexuListBoxProc_OnGetItemData(texu_wnd *wnd, texu_i32 idx);
+void _TexuListBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_longptr data);
 void _TexuListBoxProc_OnSetCurSel(texu_wnd *wnd, texu_i32 idx);
 texu_i32 _TexuListBoxProc_OnGetItemCount(texu_wnd *wnd);
 void _TexuListBoxProc_OnSetItemText(texu_wnd *wnd, texu_i32 idx, const texu_char *text);
@@ -2588,7 +2565,7 @@ void _TexuListBoxProc_OnSetCurSel(texu_wnd *wnd, texu_i32 idx)
     lb->firstvisibleitem = _TexuListBoxProc_FindItemByIndex(lb, lb->firstvisible);
 }
 
-void _TexuListBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_i64 data)
+void _TexuListBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_longptr data)
 {
     texu_lbwnd_item *item = 0;
     texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
@@ -2600,7 +2577,7 @@ void _TexuListBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_i64 data)
     }
 }
 
-texu_i64 _TexuListBoxProc_OnGetItemData(texu_wnd *wnd, texu_i32 idx)
+texu_longptr _TexuListBoxProc_OnGetItemData(texu_wnd *wnd, texu_i32 idx)
 {
     texu_lbwnd_item *item = 0;
     texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
@@ -2717,7 +2694,7 @@ _TexuListBoxProc_Notify(texu_wnd *wnd, texu_ui32 code, texu_i32 index)
     notify.hdr.id = texu_wnd_get_id(wnd);
     notify.hdr.code = code;
     notify.index = index;
-    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
+    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
 }
 
 texu_lbwnd_item *
@@ -3166,8 +3143,8 @@ _TexuListBoxProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     _TexuListBoxProc_OnSetItemText(wnd, sel, text);
 }
 
-texu_i64
-_TexuListBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuListBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -3229,12 +3206,12 @@ _TexuListBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
         }
         case TEXU_LBM_SETITEMDATA:
         {
-            _TexuListBoxProc_OnSetItemData(wnd, (texu_i32)param1, (texu_i64)param2);
+            _TexuListBoxProc_OnSetItemData(wnd, (texu_i32)param1, (texu_lparam)param2);
             return 0;
         }
         case TEXU_LBM_GETITEMDATA:
         {
-            return (texu_i64)_TexuListBoxProc_OnGetItemData(wnd, (texu_i32)param1);
+            return (texu_lparam)_TexuListBoxProc_OnGetItemData(wnd, (texu_i32)param1);
         }
         case TEXU_LBM_SETITEMTEXT:
         {
@@ -3300,8 +3277,8 @@ texu_i32 _TexuComboBoxProc_OnAddItem(texu_wnd *wnd, const texu_char *text);
 texu_i32 _TexuComboBoxProc_OnCountItemCheck(texu_wnd *wnd);
 texu_i32 _TexuComboBoxProc_OnGetItemChecked(texu_wnd *wnd, texu_i32 idx);
 texu_i32 _TexuComboBoxProc_OnSetItemChecked(texu_wnd *wnd, texu_i32 idx, texu_i32 check);
-texu_i64 _TexuComboBoxProc_OnGetItemData(texu_wnd *wnd, texu_i32 idx);
-void _TexuComboBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_i64 data);
+texu_longptr _TexuComboBoxProc_OnGetItemData(texu_wnd *wnd, texu_i32 idx);
+void _TexuComboBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_longptr data);
 texu_i32 _TexuComboBoxProc_OnGetItemCount(texu_wnd *wnd);
 void _TexuComboBoxProc_OnSetItemText(texu_wnd *wnd, texu_i32 idx, const texu_char *text);
 texu_i32 _TexuComboBoxProc_OnGetItemText(texu_wnd *wnd, texu_i32 idx, texu_char *text);
@@ -3332,7 +3309,7 @@ _TexuComboBoxProc_Notify(texu_wnd *wnd, texu_ui32 code, texu_i32 index)
     notify.hdr.id = texu_wnd_get_id(wnd);
     notify.hdr.code = code;
     notify.index = index;
-    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_i64)&notify, 0);
+    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
 }
 
 texu_i32
@@ -3346,7 +3323,7 @@ _TexuComboBoxProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
     texu_i32 cursel = texu_wnd_send_msg(cb->lb, TEXU_LBM_GETCURSEL, 0, 0);
     texu_char text[TEXU_MAX_WNDTEXT + 1];
 
-    texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMTEXT, cursel, (texu_i64)text);
+    texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMTEXT, cursel, (texu_lparam)text);
     texu_wnd_set_text(wnd, text);
 
     texu_wnd_move(cb->lb, y, x, height, width, TEXU_TRUE);
@@ -3432,7 +3409,7 @@ texu_i32
 _TexuComboBoxProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen)
 {
     texu_cbwnd *cb = (texu_cbwnd *)texu_wnd_get_userdata(wnd);
-    return texu_wnd_send_msg(cb->lb, TEXU_WM_GETTEXT, (texu_i64)text, (texu_i64)textlen);
+    return texu_wnd_send_msg(cb->lb, TEXU_WM_GETTEXT, (texu_lparam)text, (texu_lparam)textlen);
 }
 
 void
@@ -3443,21 +3420,21 @@ _TexuComboBoxProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     {
         return;
     }
-    texu_wnd_send_msg(cb->lb, TEXU_WM_SETTEXT, (texu_i64)text, (texu_i64)-1);
+    texu_wnd_send_msg(cb->lb, TEXU_WM_SETTEXT, (texu_lparam)text, (texu_lparam)-1);
 }
 
 void
 _TexuComboBoxProc_OnSetItemText(texu_wnd *wnd, texu_i32 idx, const texu_char *text)
 {
     texu_cbwnd *cb = (texu_cbwnd *)texu_wnd_get_userdata(wnd);
-    texu_wnd_send_msg(cb->lb, TEXU_LBM_SETITEMTEXT, idx, (texu_i64)text);
+    texu_wnd_send_msg(cb->lb, TEXU_LBM_SETITEMTEXT, idx, (texu_lparam)text);
 }
 
 texu_i32
 _TexuComboBoxProc_OnGetItemText(texu_wnd *wnd, texu_i32 idx, texu_char *text)
 {
     texu_cbwnd *cb = (texu_cbwnd *)texu_wnd_get_userdata(wnd);
-    return texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMTEXT, idx, (texu_i64)text);
+    return texu_wnd_send_msg(cb->lb, TEXU_LBM_GETITEMTEXT, idx, (texu_lparam)text);
 }
 
 void
@@ -3474,7 +3451,7 @@ _TexuComboBoxProc_OnEnableItem(texu_wnd *wnd, texu_i32 idx, texu_i32 enable)
     texu_wnd_send_msg(cb->lb, TEXU_LBM_ENABLEITEM, idx, enable);
 }
 
-texu_i64
+texu_longptr
 _TexuComboBoxProc_OnGetItemData(texu_wnd *wnd, texu_i32 idx)
 {
     texu_cbwnd *cb = (texu_cbwnd *)texu_wnd_get_userdata(wnd);
@@ -3482,7 +3459,7 @@ _TexuComboBoxProc_OnGetItemData(texu_wnd *wnd, texu_i32 idx)
 }
 
 void
-_TexuComboBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_i64 data)
+_TexuComboBoxProc_OnSetItemData(texu_wnd *wnd, texu_i32 idx, texu_longptr data)
 {
     texu_cbwnd *cb = (texu_cbwnd *)texu_wnd_get_userdata(wnd);
     texu_wnd_send_msg(cb->lb, TEXU_LBM_SETITEMDATA, idx, data);
@@ -3499,7 +3476,7 @@ texu_i32
 _TexuComboBoxProc_OnAddItem(texu_wnd *wnd, const texu_char *text)
 {
     texu_cbwnd *cb = (texu_cbwnd *)texu_wnd_get_userdata(wnd);
-    return texu_wnd_send_msg(cb->lb, TEXU_LBM_ADDITEM, (texu_i64)text, 0);
+    return texu_wnd_send_msg(cb->lb, TEXU_LBM_ADDITEM, (texu_lparam)text, 0);
 }
 
 void
@@ -3642,8 +3619,8 @@ _TexuComboBoxProc_OnDestroy(texu_wnd *wnd)
     free(cb);
 }
 
-texu_i64
-_TexuComboBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuComboBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -3705,7 +3682,7 @@ _TexuComboBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
         }
         case TEXU_CBM_SETITEMDATA:
         {
-            _TexuComboBoxProc_OnSetItemData(wnd, (texu_i32)param1, (texu_i64)param2);
+            _TexuComboBoxProc_OnSetItemData(wnd, (texu_i32)param1, (texu_lparam)param2);
             return 0;
         }
         case TEXU_CBM_GETITEMDATA:
@@ -3740,7 +3717,7 @@ _TexuComboBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2
         }
         case TEXU_CBM_GETLISTBOX:
         {
-            return (texu_i64)_TexuComboBoxProc_OnGetListBox(wnd);
+            return (texu_lparam)_TexuComboBoxProc_OnGetListBox(wnd);
         }
     }
 
@@ -4003,7 +3980,7 @@ _TexuStatusBarProc_OnAddPart(texu_wnd *wnd, const texu_char *text, texu_i32 widt
                                                  TEXU_ALIGN_LEFT);
 
     part->id = nparts;
-    texu_list_add(sb->parts, (texu_i64)part);
+    texu_list_add(sb->parts, (texu_lparam)part);
 
     item = texu_list_first(sb->parts);
     part = (texu_sbwnd_part *)item->data;
@@ -4091,7 +4068,7 @@ _TexuStatusBarProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         bgcolor,
         TEXU_ALIGN_LEFT);
 
-    texu_list_add(sb->parts, (texu_i64)sb->firstpart);
+    texu_list_add(sb->parts, (texu_lparam)sb->firstpart);
 
     texu_wnd_set_color(wnd, color, color);
     texu_wnd_set_userdata(wnd, sb);
@@ -4102,8 +4079,8 @@ _TexuStatusBarProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     return TEXU_OK;
 }
 
-texu_i64
-_TexuStatusBarProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param2)
+texu_longptr
+_TexuStatusBarProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
@@ -4130,35 +4107,35 @@ _TexuStatusBarProc(texu_wnd *wnd, texu_ui32 msg, texu_i64 param1, texu_i64 param
         return 0;
 
     case TEXU_SBM_GETTEXT:
-        return (texu_i64)_TexuStatusBarProc_OnGetText(wnd, (texu_i32)param1);
+        return (texu_lparam)_TexuStatusBarProc_OnGetText(wnd, (texu_i32)param1);
 
     case TEXU_SBM_SETWIDTH:
         _TexuStatusBarProc_OnSetWidth(wnd, (texu_i32)param1, (texu_i32)param2);
         return 0;
 
     case TEXU_SBM_GETWIDTH:
-        return (texu_i64)_TexuStatusBarProc_OnGetWidth(wnd, (texu_i32)param1);
+        return (texu_lparam)_TexuStatusBarProc_OnGetWidth(wnd, (texu_i32)param1);
 
     case TEXU_SBM_SETALIGN:
         _TexuStatusBarProc_OnSetAlign(wnd, (texu_i32)param1, (texu_i32)param2);
         return 0;
 
     case TEXU_SBM_GETALIGN:
-        return (texu_i64)_TexuStatusBarProc_OnGetAlign(wnd, (texu_i32)param1);
+        return (texu_lparam)_TexuStatusBarProc_OnGetAlign(wnd, (texu_i32)param1);
 
     case TEXU_SBM_SETCOLOR:
         _TexuStatusBarProc_OnSetColor(wnd, (texu_i32)param1, (texu_ui32)param2);
         return 0;
 
     case TEXU_SBM_GETCOLOR:
-        return (texu_i64)_TexuStatusBarProc_OnGetColor(wnd, (texu_i32)param1);
+        return (texu_lparam)_TexuStatusBarProc_OnGetColor(wnd, (texu_i32)param1);
 
     case TEXU_SBM_SETBGCOLOR:
         _TexuStatusBarProc_OnSetBgColor(wnd, (texu_i32)param1, (texu_ui32)param2);
         return 0;
 
     case TEXU_SBM_GETBGCOLOR:
-        return (texu_i64)_TexuStatusBarProc_OnGetBgColor(wnd, (texu_i32)param1);
+        return (texu_lparam)_TexuStatusBarProc_OnGetBgColor(wnd, (texu_i32)param1);
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }

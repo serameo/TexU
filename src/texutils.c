@@ -215,6 +215,42 @@ texu_strcat(texu_char* dest, const texu_char* src)
 }
 
 texu_char*
+texu_rtrim(texu_char* in)
+{
+    texu_char sz[TEXU_MAX_BUFFER + 1];
+    texu_char* psz = sz;
+    texu_char* pin = in;
+
+    while (*pin && ' ' == *pin) ++pin;
+    while (*pin)
+    {
+        *psz = *pin;
+        ++pin;
+        ++psz;
+    }
+    *psz = 0;
+    texu_strcpy(in, sz);
+    return in;
+}
+texu_char*
+texu_ltrim(texu_char* in)
+{
+    texu_char rsz[TEXU_MAX_BUFFER + 1];
+    texu_char* psz;
+    texu_strrcpy(rsz, in);  /*reverse*/
+    psz = texu_rtrim(rsz);
+    texu_strrcpy(in, psz);  /*reverse back*/
+    return in;
+}
+texu_char*
+texu_trim(texu_char* in)
+{
+    texu_ltrim(in);
+    texu_rtrim(in);
+    return in;
+}
+
+texu_char*
 texu_strcpy(texu_char* dest, const texu_char *str)
 {
 #if (defined WIN32 && defined UNICODE)
@@ -602,7 +638,7 @@ struct texu_xcnf
 };
 
 texu_status _texu_xcnf_parse(texu_xcnf *, texu_char *, texu_char *, texu_char *);
-void _texu_xcnf_free_map(texu_i64, texu_i64, void *);
+void _texu_xcnf_free_map(texu_longptr, texu_longptr, void *);
 
 texu_status
 _texu_xcnf_parse(texu_xcnf *xcnf, texu_char *line, texu_char *key, texu_char *val)
@@ -663,12 +699,16 @@ _texu_xcnf_parse(texu_xcnf *xcnf, texu_char *line, texu_char *key, texu_char *va
 
 texu_char *texu_strncpy(texu_char *dest, const texu_char *src, size_t size)
 {
+    texu_char out[TEXU_MAX_WNDTEXT + 1];
+
+    memset(out, 0, sizeof(out));
 #if (defined WIN32 && defined UNICODE)
-    wcsncpy_s(dest, sizeof(texu_char)*(texu_strlen(src)+1), src, size);
-    return dest;
+    wcsncpy_s(out, sizeof(texu_char)*(texu_strlen(src)+1), src, size);
 #else
-    return strncpy(dest, src, size);
+    strncpy(out, src, size);
 #endif
+    texu_strcpy(dest, out);
+    return dest;
 }
 
 texu_char *texu_strnrcpy(texu_char *dest, const texu_char *src, size_t size)
@@ -676,8 +716,8 @@ texu_char *texu_strnrcpy(texu_char *dest, const texu_char *src, size_t size)
     texu_char out[TEXU_MAX_WNDTEXT + 1];
     texu_char in[TEXU_MAX_WNDTEXT + 1];
 
-    memset(in, 0, sizeof(in));
     memset(out, 0, sizeof(out));
+    memset(in, 0, sizeof(int));
     texu_strrcpy(in, src);
 #if (defined WIN32 && defined UNICODE)
     wcsncpy_s(out, sizeof(texu_char)*(texu_strlen(in)+1), in, size);
@@ -745,7 +785,7 @@ texu_xcnf
 */
 
 void
-_texu_xcnf_free_map(texu_i64 key, texu_i64 val, void *user)
+_texu_xcnf_free_map(texu_longptr key, texu_longptr val, void *user)
 {
     if (key)
     {
@@ -824,7 +864,7 @@ texu_xcnf_load(texu_xcnf *xcnf, FILE *fp)
         vl = (texu_char *)malloc(sizeof(texu_char)* (texu_strlen(val) + 1));
         texu_strcpy(ky, key);
         texu_strcpy(vl, val);
-        texu_map_cmp_insert(xcnf->map, (texu_i64)ky, (texu_i64)vl, texu_map_strcmp);
+        texu_map_cmp_insert(xcnf->map, (texu_lparam)ky, (texu_lparam)vl, texu_map_strcmp);
     }
 
     if (TEXU_XCNF_SKIP == rc)
@@ -840,7 +880,7 @@ texu_xcnf_get_string(texu_xcnf *xcnf, texu_char *key, texu_char *def)
     texu_char *val = 0;
     texu_status rc = TEXU_OK;
 
-    rc = texu_map_cmp_find(xcnf->map, (texu_i64)key, (texu_i64 *)&val, texu_map_strcmp);
+    rc = texu_map_cmp_find(xcnf->map, (texu_lparam)key, (texu_lparam *)&val, texu_map_strcmp);
     if (TEXU_OK == rc)
     {
         return val;
