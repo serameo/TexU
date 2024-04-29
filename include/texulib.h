@@ -71,7 +71,7 @@ texu_list_item *texu_list_rfind_prev(texu_list *, texu_list_item *, texu_longptr
 /* properties */
 texu_list_item *texu_list_first(texu_list *);
 texu_list_item *texu_list_last(texu_list *);
-texu_ui64 texu_list_count(texu_list *);
+texu_i32 texu_list_count(texu_list *);
 
 /*
 # TexU queue
@@ -113,7 +113,7 @@ struct texu_array;
 typedef struct texu_array texu_array;
 
 /* new an array*/
-texu_array *texu_array_new(texu_ui64);
+texu_array *texu_array_new(texu_i32);
 /* delete the array */
 void texu_array_del(texu_array *);
 /* free the array */
@@ -131,7 +131,7 @@ void texu_array_set(texu_array *, texu_longptr, texu_longptr);
 texu_status texu_array_realloc(texu_array *, texu_longptr);
 
 /* properties */
-texu_ui64 texu_array_count(texu_array *);
+texu_i32 texu_array_count(texu_array *);
 
 /*
 # TexU stack
@@ -183,7 +183,7 @@ struct texu_tree_item
     struct texu_tree_item *lastchild;
     struct texu_tree_item *prev;
     struct texu_tree_item *next;
-    texu_ui64 nchildren;
+    texu_i32 nchildren;
     texu_i32 nlevel;
     /* CAN READ AND WRITE */
     texu_longptr data;
@@ -213,7 +213,7 @@ texu_tree_item *texu_tree_find_next_item(
     texu_i32 (*)(texu_longptr, texu_longptr, void *),
     void *);
 texu_tree_item *texu_tree_get_root(texu_tree *);
-texu_ui64 texu_tree_count(texu_tree *);
+texu_i32 texu_tree_count(texu_tree *);
 
 /*
 # 3rd parameter
@@ -313,7 +313,7 @@ typedef struct texu_bits texu_bits;
 #define TEXU_BITS_OFF       0
 #define TEXU_BITS_ON        1
 
-texu_bits* texu_bits_new(texu_ui32 nbits);
+texu_bits* texu_bits_new(texu_i32 nbits);
 void       texu_bits_del(texu_bits*);
 texu_i32   texu_bits_get(texu_bits*, texu_i32 at);
 texu_i32   texu_bits_set(texu_bits*, texu_i32 at, texu_i32 on);

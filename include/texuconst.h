@@ -236,6 +236,11 @@ enum
 #define TEXU_CONTINUE                   (texu_i32)(0)
 #define TEXU_BREAK                      (texu_i32)(-1)
 
+#define TEXU_ENV_STATE_STARTING     100
+#define TEXU_ENV_STATE_RUNNING      200
+#define TEXU_ENV_STATE_ENDING       0
+
+
 /* boolean */
 #define TEXU_FALSE                      (texu_i32)(0)
 #define TEXU_TRUE                       (texu_i32)(1)
@@ -275,6 +280,8 @@ enum
 #define TEXU_WM_CLOSE                   (TEXU_WM_FIRST + 22)
 #define TEXU_WM_QUERYCLOSE              (TEXU_WM_FIRST + 23)
 #define TEXU_WM_KEYDOWN                 (TEXU_WM_FIRST + 24)
+#define TEXU_WM_SIZE                    (TEXU_WM_FIRST + 25)
+#define TEXU_WM_SETTEXTCOLOR            (TEXU_WM_FIRST + 26)
 
 /* notify */
 #define TEXU_WN_FIRST                   0
@@ -282,7 +289,7 @@ enum
 #define TEXU_WN_GOLASTCHILD             (TEXU_WN_FIRST +  2)
 
 /* EDIT */
-#define TEXU_EM_FIRST                   200
+#define TEXU_EM_FIRST                   (TEXU_WM_FIRST + 200)
 #define TEXU_EM_LIMITTEXT               (TEXU_EM_FIRST +  1)
 #define TEXU_EM_SETPASSWDCHAR           (TEXU_EM_FIRST +  2)
 #define TEXU_EM_SETDECWIDTH             (TEXU_EM_FIRST +  3)
@@ -302,7 +309,7 @@ enum
 
 
 /* BUTTON */
-#define TEXU_BM_FIRST                   250
+#define TEXU_BM_FIRST                   (TEXU_WM_FIRST + 250)
 #define TEXU_BM_PUSH                    (TEXU_BM_FIRST +  1)
 
 /* BUTTON notification */
@@ -313,7 +320,7 @@ enum
 
 
 /* LISTBOX */
-#define TEXU_LBM_FIRST                  300
+#define TEXU_LBM_FIRST                  (TEXU_WM_FIRST + 300)
 #define TEXU_LBM_ADDITEM                (TEXU_LBM_FIRST +  1)
 #define TEXU_LBM_DELETEITEM             (TEXU_LBM_FIRST +  2)
 #define TEXU_LBM_GETCURSEL              (TEXU_LBM_FIRST +  3)
@@ -340,7 +347,7 @@ enum
 
 
 /* listctrl notification */
-#define TEXU_LCM_FIRST                  400
+#define TEXU_LCM_FIRST                  (TEXU_WM_FIRST + 400)
 #define TEXU_LCM_SETEDITABLECOLS        (TEXU_LCM_FIRST +  1)
 #define TEXU_LCM_GETITEMSPERPAGE        (TEXU_LCM_FIRST +  2)
 #define TEXU_LCM_GETCURPAGE             (TEXU_LCM_FIRST +  3)
@@ -386,7 +393,7 @@ enum
 
 
 /*TREE CTRL*/
-#define TEXU_TCM_FIRST                  500
+#define TEXU_TCM_FIRST                  (TEXU_WM_FIRST + 500)
 #define TEXU_TCM_EXPANDALLITEMS         (TEXU_TCM_FIRST +  1)
 #define TEXU_TCM_COLLAPSEALLITEMS       (TEXU_TCM_FIRST +  2)
 #define TEXU_TCM_IMPORTFROMFILE         (TEXU_TCM_FIRST +  3)
@@ -419,7 +426,7 @@ enum
 
 
 /*UP DOWN CTRL*/
-#define TEXU_UDCM_FIRST                 600
+#define TEXU_UDCM_FIRST                 (TEXU_WM_FIRST + 600)
 #define TEXU_UDCM_SETMINMAX             (TEXU_UDCM_FIRST +  1)
 #define TEXU_UDCM_GETMINMAX             (TEXU_UDCM_FIRST +  2)
 #define TEXU_UDCM_SETSTEP               (TEXU_UDCM_FIRST +  3)
@@ -438,7 +445,7 @@ enum
 
 
 /*PROGRESS BAR*/
-#define TEXU_PGBM_FIRST                 700
+#define TEXU_PGBM_FIRST                 (TEXU_WM_FIRST + 700)
 #define TEXU_PGBM_SETMAX                (TEXU_PGBM_FIRST +  1)
 #define TEXU_PGBM_GETMAX                (TEXU_PGBM_FIRST +  2)
 #define TEXU_PGBM_SETPOS                (TEXU_PGBM_FIRST +  3)
@@ -447,12 +454,14 @@ enum
 #define TEXU_PGBM_GETSTEP               (TEXU_PGBM_FIRST +  6)
 #define TEXU_PGBM_STEP                  (TEXU_PGBM_FIRST +  7)
 #define TEXU_PGBM_GETPERCENT            (TEXU_PGBM_FIRST +  8)
+#define TEXU_PGBM_SETDECIMAL            (TEXU_PGBM_FIRST +  9)
+#define TEXU_PGBM_GETDECIMAL            (TEXU_PGBM_FIRST + 10)
 
 #define TEXU_PGBN_FIRST                 TEXU_PGBM_FIRST
 
 
 /*STATUS BAR*/
-#define TEXU_SBM_FIRST                  800
+#define TEXU_SBM_FIRST                  (TEXU_WM_FIRST + 800)
 #define TEXU_SBM_ADDPART                (TEXU_SBM_FIRST +  1)
 #define TEXU_SBM_SETTEXT                (TEXU_SBM_FIRST +  2)
 #define TEXU_SBM_GETTEXT                (TEXU_SBM_FIRST +  3)
@@ -468,7 +477,7 @@ enum
 #define TEXU_SBN_FIRST                  TEXU_SBM_FIRST
 
 /*MESSAGE BOX*/
-#define TEXU_MBM_FIRST                  900
+#define TEXU_MBM_FIRST                  (TEXU_WM_FIRST + 900)
 #define TEXU_MBM_SETOWNER               (TEXU_MBM_FIRST +  1)
 #define TEXU_MBM_SETCAPTION             (TEXU_MBM_FIRST +  2)
 
@@ -477,7 +486,7 @@ enum
 
 
 /*PAGECTRL*/
-#define TEXU_PGM_FIRST                  1000
+#define TEXU_PGM_FIRST                  (TEXU_WM_FIRST + 1000)
 #define TEXU_PGM_ADDPAGE                (TEXU_PGM_FIRST +  1)
 #define TEXU_PGM_SETCURPAGE             (TEXU_PGM_FIRST +  2)
 #define TEXU_PGM_GETCURPAGE             (TEXU_PGM_FIRST +  3)
@@ -489,7 +498,7 @@ enum
 #define TEXU_PGN_FIRST                  TEXU_PGM_FIRST
 
 /* COMBOXBOX */
-#define TEXU_CBM_FIRST                  1100
+#define TEXU_CBM_FIRST                  (TEXU_WM_FIRST + 1100)
 #define TEXU_CBM_ADDITEM                (TEXU_CBM_FIRST +  1)
 #define TEXU_CBM_DELETEITEM             (TEXU_CBM_FIRST +  2)
 #define TEXU_CBM_GETCURSEL              (TEXU_CBM_FIRST +  3)
@@ -514,7 +523,7 @@ enum
 #define TEXU_CBN_SELCHANGED             (TEXU_CBN_FIRST +  4)
 
 /* TEXT CTRL */
-#define TEXU_TXCM_FIRST                 1200
+#define TEXU_TXCM_FIRST                 (TEXU_WM_FIRST + 1200)
 #define TEXU_TXCM_ADDSENTENCE           (TEXU_TXCM_FIRST +  1)
 #define TEXU_TXCM_REMOVESENTENCE        (TEXU_TXCM_FIRST +  2)
 #define TEXU_TXCM_INSERTSENTENCE        (TEXU_TXCM_FIRST +  3)
@@ -531,7 +540,7 @@ enum
 #define TEXU_TXCN_FIRST                 TEXU_TXCM_FIRST
 
 /* REBAR */
-#define TEXU_RBM_FIRST                  1300
+#define TEXU_RBM_FIRST                  (TEXU_WM_FIRST + 1300)
 #define TEXU_RBM_ADDBAND                (TEXU_RBM_FIRST +   1)
 #define TEXU_RBM_REMOVEBAND             (TEXU_RBM_FIRST +   2)
 #define TEXU_RBM_SETINFOWIDTH           (TEXU_RBM_FIRST +   3)
@@ -539,7 +548,7 @@ enum
 #define TEXU_RBN_FIRST                  TEXU_RBM_FIRST
 
 /*IP ADDRESS CTRL*/
-#define TEXU_IPM_FIRST                 1400
+#define TEXU_IPM_FIRST                 (TEXU_WM_FIRST + 1400)
 #define TEXU_IPM_SETMINMAX             (TEXU_IPM_FIRST +  1)
 #define TEXU_IPM_GETMINMAX             (TEXU_IPM_FIRST +  2)
 #define TEXU_IPM_SETSTEP               (TEXU_IPM_FIRST +  3)
@@ -557,13 +566,13 @@ enum
 
 
 /*EDIT MASK CTRL*/
-#define TEXU_EMM_FIRST                  1500
+#define TEXU_EMM_FIRST                  (TEXU_WM_FIRST + 1500)
 #define TEXU_EMM_SETMASK                (TEXU_EMM_FIRST +  1)
 #define TEXU_EMM_GETMASK                (TEXU_EMM_FIRST +  2)
 #define TEXU_EMM_SETINFO                (TEXU_EMM_FIRST +  3)
 
 
-#define TEXU_EMN_FIRST                  TEXU_EMM_FIRST
+#define TEXU_EMN_FIRST                  (TEXU_WM_FIRST + TEXU_EMM_FIRST)
 #define TEXU_EMN_SETFOCUS               (TEXU_EMM_FIRST +  1)
 #define TEXU_EMN_KILLFOCUS              (TEXU_EMM_FIRST +  2)
 #define TEXU_EMN_INVALIDEXPR            (TEXU_EMM_FIRST +  3)
@@ -571,7 +580,7 @@ enum
 #define TEXU_EDITMASK_EMAIL             TEXUTEXT("^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$")
 
 /*EDIT PRICE SPREAD CTRL*/
-#define TEXU_EPSM_FIRST                 1600
+#define TEXU_EPSM_FIRST                 (TEXU_WM_FIRST + 1600)
 #define TEXU_EPSM_INSERTSPREAD          (TEXU_EPSM_FIRST +  1)
 #define TEXU_EPSM_DELETESPREAD          (TEXU_EPSM_FIRST +  2)
 #define TEXU_EPSM_SETBASESPREAD         (TEXU_EPSM_FIRST +  3)
@@ -590,20 +599,20 @@ enum
 #define TEXU_EPSN_INVALIDFLOOR          (TEXU_EPSM_FIRST +  5)
 
 /*CLOCK CTRL*/
-#define TEXU_CLKM_FIRST                 1700
+#define TEXU_CLKM_FIRST                 (TEXU_WM_FIRST + 1700)
 #define TEXU_CLKM_UPDATE                (TEXU_CLKM_FIRST +  1)
 
 #define TEXU_CLKN_FIRST                 TEXU_CLKM_FIRST
 
 /*DATE CTRL*/
-#define TEXU_DTM_FIRST                  1800
+#define TEXU_DTM_FIRST                  (TEXU_WM_FIRST + 1800)
 #define TEXU_DTM_GETDATE                (TEXU_DTM_FIRST +  1)
 #define TEXU_DTM_SETDATE                (TEXU_DTM_FIRST +  2)
 
 #define TEXU_DTN_FIRST                  TEXU_DTM_FIRST
 
 /*TIME CTRL*/
-#define TEXU_TMM_FIRST                  1900
+#define TEXU_TMM_FIRST                  (TEXU_WM_FIRST + 1900)
 #define TEXU_TMM_GETTIME                (TEXU_TMM_FIRST +  1)
 #define TEXU_TMM_SETTIME                (TEXU_TMM_FIRST +  2)
 
@@ -611,13 +620,15 @@ enum
 #define TEXU_TMN_FIRST                  TEXU_TMM_FIRST
 
 /*MENU */
-#define TEXU_MNM_FIRST                  10000
+#define TEXU_MNM_FIRST                  (TEXU_WM_FIRST + 10000)
 
 #define TEXU_MNN_FIRST                  TEXU_MNM_FIRST
 #define TEXU_MNN_ITEMCHANGED            (TEXU_MNN_FIRST +  1)
 
-
-
+/*PANEL*/
+#define TEXU_PNM_FIRST                  (TEXU_WM_FIRST + 10100)
+#define TEXU_PNM_SETTITLECOLOR          (TEXU_PNM_FIRST +    1)
+#define TEXU_PNM_SETTITLEALIGNMENT      (TEXU_PNM_FIRST +    2)
 
 
 
@@ -636,6 +647,22 @@ enum
 #define TEXU_KEY_UP                     KEY_UP
 #define TEXU_KEY_PPAGE                  KEY_PPAGE
 #define TEXU_KEY_NPAGE                  KEY_NPAGE
+#define TEXU_KEY_ESCAPE                 27
+#elif (defined __VMS__)
+#define TEXU_KEY_SELMENU                10
+#define TEXU_KEY_NEXTWND                13
+#define TEXU_KEY_ENTER                  10
+#define TEXU_KEY_TAB                    9
+#define TEXU_KEY_PREVWND                511
+#define TEXU_KEY_BACKSPACE              127
+#define TEXU_KEY_IC                     312
+#define TEXU_KEY_DC                     313
+#define TEXU_KEY_LEFT                   276
+#define TEXU_KEY_RIGHT                  277
+#define TEXU_KEY_DOWN                   275
+#define TEXU_KEY_UP                     274
+#define TEXU_KEY_PPAGE                  315
+#define TEXU_KEY_NPAGE                  316
 #define TEXU_KEY_ESCAPE                 27
 #else
 #define TEXU_KEY_ENTER                  VK_RETURN
@@ -679,6 +706,7 @@ enum
 #define TEXU_MSGBOX_CLASS               L"TexuMsgBoxClassW"
 #define TEXU_DESKTOP_CLASS              L"TexuDesktopClassW"
 #define TEXU_LABEL_CLASS                L"TexuLabelClassW"
+#define TEXU_PANEL_CLASS                L"TexuPanelClassW"
 #define TEXU_BUTTON_CLASS               L"TexuButtonClassW"
 #define TEXU_STATUSBAR_CLASS            L"TexuStatusBarClassW"
 #define TEXU_EDIT_CLASS                 L"TexuEditClassW"
@@ -704,6 +732,7 @@ enum
 #define TEXU_MSGBOX_CLASS               "TexuMsgBoxClassA"
 #define TEXU_DESKTOP_CLASS              "TexuDesktopClassA"
 #define TEXU_LABEL_CLASS                "TexuLabelClassA"
+#define TEXU_PANEL_CLASS                "TexuPanelClassA"
 #define TEXU_BUTTON_CLASS               "TexuButtonClassA"
 #define TEXU_STATUSBAR_CLASS            "TexuStatusBarClassA"
 #define TEXU_EDIT_CLASS                 "TexuEditClassA"
@@ -735,6 +764,8 @@ enum
 #define TEXU_WS_DISABLED                0x00000008          /* disable when created */
 #define TEXU_WS_HIDE                    0x00000010          /* hide when created */
 #define TEXU_WS_BORDER                  0x00000020          /* draw border */
+#define TEXU_WS_CLIPWINDOW              0x00000040          /* clip window if it is out-of-bound of parent window*/
+#define TEXU_WS_POPUP                   0x00000080          /* allow window to display out area of the parent window*/
 
 #define TEXU_ALIGN_LEFT                TEXU_WS_LEFT
 #define TEXU_ALIGN_CENTER              TEXU_WS_CENTER
@@ -773,6 +804,7 @@ enum
 #define TEXU_ES_UPPERCASE               0x00400000
 #define TEXU_ES_LOWERCASE               0x00800000
 #define TEXU_ES_A2Z                     0x01000000
+#define TEXU_ES_AUTOCOMMAS              0x02000000
 
 
 /* LISTBOX */
@@ -859,5 +891,8 @@ enum
 #define TEXU_DTFMT_YYYYMONDD            2
 #define TEXU_DTFMT_DDMONYYYY            3
 
+
+/* PANEL */
+#define TEXU_PNS_TITLE                  0x00010000
 
 #endif /*_TEXUCONST_H_*/

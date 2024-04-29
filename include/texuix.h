@@ -321,6 +321,12 @@
 #define TexuProgressBar_GetPercent(wnd, pct) \
     texu_wnd_send_msg(wnd, TEXU_PGBM_GETPERCENT, (texu_lparam)(texu_f32 *)(pct), 0)
 
+#define TexuProgressBar_GetDecimal(wnd) \
+    texu_wnd_send_msg(wnd, TEXU_PGBM_GETDECIMAL, 0, 0)
+
+#define TexuProgressBar_SetDecimal(wnd, dec) \
+    texu_wnd_send_msg(wnd, TEXU_PGBM_SETDECIMAL, (texu_i32)dec, 0)
+
 /*PAGECTRL*/
 #define TexuPageCtrl_AddPage(wnd, clsname, id) \
     (texu_status) texu_wnd_send_msg(wnd, TEXU_PGM_ADDPAGE, (texu_lparam)(const texu_char *)(pct), (texu_lparam)(texu_ui32)(id))

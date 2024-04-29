@@ -43,9 +43,8 @@ typedef float                          texu_float;
 typedef double                         texu_double;
 
 typedef int                            texu_status;
-
-typedef wchar_t                        texu_wchar;
-typedef wchar_t*                       texu_wstring;
+typedef char                           texu_wchar;
+typedef char*                          texu_wstring;
 typedef char                           texu_achar;
 typedef char*                          texu_astring;
 

@@ -152,8 +152,8 @@ typedef struct texu_wnd_header texu_lc_header;  /*list control header item*/
 /* edit */
 struct texu_editminmax
 {
-    texu_i32 min;
-    texu_i32 max;
+    texu_f64 min;
+    texu_f64 max;
 };
 typedef struct texu_editminmax texu_editminmax;
 

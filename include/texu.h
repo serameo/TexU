@@ -268,6 +268,12 @@ texu_i32                TexuDrawVRects(texu_cio* cio, texu_rect* rect, texu_i32*
 texu_i32                TexuDrawFrame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_i32 attrs);
 #endif
 
+/*text*/
+void                    TexuDrawText(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* text, 
+                            texu_i32 color, texu_i32 bgcolor, const texu_char* clsname, texu_i32 id);
+void                    TexuFormatText(texu_char* text, const texu_char* buf, texu_i32 x, texu_i32 limit, 
+                            texu_i32 cx, texu_i32 align, texu_bool more)
+;
 
 #ifdef __cplusplus
 }

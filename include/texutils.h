@@ -34,6 +34,7 @@ size_t              texu_strlen(const texu_char *str);
 texu_char          *texu_strcpy(texu_char* dest, const texu_char *str);
 texu_char          *texu_strrcpy(texu_char* dest, const texu_char *str); /*reverse copy*/
 texu_char          *texu_strncpy(texu_char *dest, const texu_char *src, size_t size);
+texu_char          *texu_strncpy2(texu_char *dest, const texu_char *src, size_t size);
 texu_char          *texu_strnrcpy(texu_char *dest, const texu_char *src, size_t size); /*reverse copy*/
 texu_i32            texu_strcmp(const texu_char *s1, const texu_char *s2);
 texu_i32            texu_strncmp(const texu_char *s1, const texu_char *s2, texu_i32 len);
@@ -52,11 +53,16 @@ texu_i32            texu_remove_commas(texu_char *nocommas, texu_i32 len, const 
 texu_char*          texu_ltrim(texu_char* in);
 texu_char*          texu_rtrim(texu_char* in);
 texu_char*          texu_trim(texu_char* in);
-#if (defined WIN32)
+#if (defined WIN32 && defined UNICODE)
 /*texu_a2w to convert multi-byte string (ascii string) to wide string*/
 texu_i32            texu_a2w(wchar_t *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen);
 /*texu_w2a to convert wide string to multi-byte string (ascii string)*/
 texu_i32            texu_w2a(char *out, texu_i32 outlen, const wchar_t *wide, texu_i32 widelen);
+#else
+/*texu_a2w to convert multi-byte string (ascii string) to wide string*/
+texu_i32            texu_a2w(char *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen);
+/*texu_w2a to convert wide string to multi-byte string (ascii string)*/
+texu_i32            texu_w2a(char *out, texu_i32 outlen, const char *wide, texu_i32 widelen);
 #endif
 
 texu_i32            texu_atol(const texu_char *buf);

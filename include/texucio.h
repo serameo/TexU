@@ -148,20 +148,37 @@ texu_i32            texu_cio_init(texu_cio*, texu_i32, texu_i32);
 #endif
 void                texu_cio_release(texu_cio*);
 
+
+#if (defined VMS || defined __VMS__)
+void texu_cio_set_timeout(texu_cio* cio, void(*on_timeout)(texu_cio*));
+void texu_cio_erase_chars(texu_cio* cio, texu_i32 no_chars, texu_i32 y, texu_i32 x);
+void texu_cio_flip_display(texu_cio* cio);
+void texu_cio_begin_update(texu_cio* cio);
+void texu_cio_end_update(texu_cio* cio);
+#endif
+texu_i32 texu_cio_get_keyname(texu_cio* cio, texu_i32 keycode, texu_char* keyname, texu_i32 len);
+
 /* simple screen control */
 texu_i32            texu_cio_clear(texu_cio*);
 texu_i32            texu_cio_clearln(texu_cio*, texu_i32);
 texu_i32            texu_cio_echo(texu_cio*, texu_bool);
 /* cursor */
 texu_i32            texu_cio_gotoyx(texu_cio*, texu_i32, texu_i32);
-texu_i32            texu_cio_getyx(texu_cio*, texu_i32, texu_i32);
+texu_i32            texu_cio_getyx(texu_cio*, texu_i32* y, texu_i32* x);
 /* get/put */
 texu_i32            texu_cio_getch(texu_cio*);
 texu_i32            texu_cio_getstr(texu_cio*, texu_char*);
 
 texu_i32            texu_cio_putch(texu_cio*, texu_i32, texu_i32, texu_i32);
+texu_i32            texu_cio_putch_erase(texu_cio*, texu_i32, texu_i32, texu_i32, texu_bool);
 texu_i32            texu_cio_putch_attr(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
 texu_i32            texu_cio_putch_attr2(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32, texu_i32);
+
+texu_i32            texu_cio_putch_attr_erase(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32,
+                                       texu_bool erase);
+texu_i32            texu_cio_putstr_attr_erase(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32,
+                                       texu_bool erase);
+
 texu_i32            texu_cio_putstr(texu_cio*, texu_i32, texu_i32, const texu_char*);
 texu_i32            texu_cio_putstr_attr(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32);
 texu_i32            texu_cio_putstr_attr2(texu_cio*, texu_i32, texu_i32, const texu_char*, texu_i32, texu_i32);
@@ -170,10 +187,22 @@ texu_i32            texu_cio_draw_text(texu_cio *cio, texu_i32 y, texu_i32 x, co
                                        texu_ui32 color, texu_ui32 bgcolor,
                                        const texu_char *clsname,
                                        texu_ui32 id);
+
+texu_i32            texu_cio_draw_text_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
+                                       texu_ui32 color, texu_ui32 bgcolor,
+                                       const texu_char *clsname,
+                                       texu_ui32 id,
+                                       texu_bool erase);
+
 texu_i32            texu_cio_draw_char(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
                                         texu_ui32 color, texu_ui32 bgcolor,
                                         const texu_char *clsname,
                                         texu_ui32 id);
+texu_i32            texu_cio_draw_char_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
+                                        texu_ui32 color, texu_ui32 bgcolor,
+                                        const texu_char *clsname,
+                                        texu_ui32 id,
+                                       texu_bool erase);
 
 texu_i32            texu_cio_refresh(texu_cio*);
 /* text attributes */
@@ -200,7 +229,7 @@ texu_i32            texu_cio_save_screen(texu_cio*, FILE*);
 texu_i32            texu_cio_restore_screen(texu_cio*, FILE*);
 
 texu_i32            texu_cio_nodelay(texu_cio* cio, texu_i32 delay);
-void                texu_cio_interval(texu_cio cio, texu_i32 msec /*1000 msec = 1sec*/);
+void                texu_cio_interval(texu_cio* cio, texu_i32 msec /*1000 msec = 1sec*/);
 #ifdef __cplusplus
 }
 #endif
