@@ -8,6 +8,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include <wchar.h>
 
 #include "texutypes.h"
@@ -268,7 +269,11 @@ texu_strtok(texu_char *str, const texu_char *delim)
 #if (defined WIN32 && defined UNICODE)
     return wcstok_s(str, delim, (texu_char**)&brkb);
 #else
+#if defined __LINUX__
     return strtok_r(str, delim, (char**)&brkb);
+#else
+    return strtok(str, delim);
+#endif
 #endif
 }
 
@@ -304,7 +309,7 @@ int MultiByteToWideChar(
     );
 */
 #if (defined WIN32)
-
+#if (defined UNICODE)
 texu_i32
 texu_a2w(wchar_t *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen)
 {
@@ -331,14 +336,32 @@ texu_w2a(char *out, texu_i32 outlen, const wchar_t *wide, texu_i32 widelen)
 {
     memset(out, 0, sizeof(char)*outlen);
     return WideCharToMultiByte(CP_ACP,
-                WC_COMPOSITECHECK, 
-                wide,
-                widelen,
-                out,
-                outlen,
-                NULL,
-                NULL);
+                               WC_COMPOSITECHECK,
+                               wide,
+                               widelen,
+                               out,
+                               outlen,
+                               NULL,
+                               NULL);
 }
+
+#else
+texu_i32
+texu_a2w(char *out, texu_i32 outlen, const char *ascii, texu_i32 asciilen)
+{
+    memset(out, 0, outlen); 
+    strncpy(out, ascii, outlen);
+    return strlen(out);
+}
+texu_i32
+texu_w2a(char *out, texu_i32 outlen, const char *wide, texu_i32 widelen)
+{
+    memset(out, 0, sizeof(char)*outlen);
+    strncpy(out, wide, outlen);
+    return strlen(out);
+}
+
+#endif
 #endif
 
 
@@ -421,9 +444,7 @@ texu_printf_alignment3(
 {
     texu_i32    len     = 0;
     texu_char   text[TEXU_MAX_WNDTEXT + 1];
-    texu_i32    firstlen = 0;
-    texu_i32    lastlen = 0;
-    texu_i32    outlen  = 0;
+    texu_i32    mid = 0;
 
     if (limit < 1)
     {
@@ -434,7 +455,7 @@ texu_printf_alignment3(
     {
         if (x + limit > cx)
         {
-            limit = cx - x;
+            limit = cx;
         }
     }
     memset(text, 0, sizeof(texu_char)*(limit + 1));
@@ -443,46 +464,48 @@ texu_printf_alignment3(
     if ((TEXU_ALIGN_CENTER == align) || (TEXU_WS_CENTER & align))
     {
         len = texu_strlen(in);
-        if (len > limit)
+        if (len >= limit)
         {
-            len = limit;
-        }
-        firstlen = (limit - len) / 2;
-        lastlen = limit - (len + firstlen);
-        if (firstlen > 0 && lastlen > 0)
-        {
-            texu_sprintf(text, sizeof(text), TEXUTEXT("%*s%s%*s"),
-                         firstlen, TEXUTEXT(" "),
-                         in,
-                         lastlen, TEXUTEXT(" "));
-        }
-        else if (lastlen > 0)
-        {
-            texu_sprintf(text, sizeof(text), TEXUTEXT("%s%*s"),
-                     in,
-                     lastlen, TEXUTEXT(" "));
+            texu_strncpy(out, in, limit);
         }
         else
         {
-            texu_sprintf(text, sizeof(text), TEXUTEXT("%s"), in);
+            memset(out, ' ', limit);
+            mid = (limit - len)/2;
+            texu_strncpy2(&out[mid], in, len);
         }
-        texu_strcpy(out, text);
     }
     else if ((TEXU_ALIGN_RIGHT == align) || (TEXU_WS_RIGHT & align))
     {
-        texu_sprintf(text, sizeof(text), TEXUTEXT("%*s"),
-                 (texu_i32)(limit),
-                 in);
-        texu_strnrcpy(out, text, limit);
+        len = texu_strlen(in);
+        if (len >= limit)
+        {
+            mid = (len - limit);
+            texu_strncpy(out, &in[mid], limit);
+        }
+        else
+        {
+            memset(out, ' ', limit);
+            mid = (limit - len);
+            texu_strncpy2(&out[mid], in, len);
+            /*memcpy(&out[mid], in, len);*/
+        }
     }
     else
     {
-        texu_sprintf(text, sizeof(text), TEXUTEXT("%-*s"),
-                 (texu_i32)(limit),
-                 in);
-        texu_strncpy(out, text, limit);
+        len = texu_strlen(in);
+        if (len >= limit)
+        {
+            texu_strncpy(out, in, limit);
+        }
+        else
+        {
+            memset(out, ' ', limit);
+            texu_strncpy2(out, in, len);
+        }
     }
     /*final trim string*/
+#if 0
     if (more != TEXU_FALSE)
     {
         outlen = texu_strlen(out);
@@ -504,8 +527,8 @@ texu_printf_alignment3(
             }
         }
     }
+#endif
 
-    /*free(text);*/
     return texu_strlen(out);
 }
 
@@ -534,28 +557,39 @@ texu_i32 texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *no
     texu_char *pbuf;
     texu_i32 len = texu_strlen(nocommas) - 1;
     texu_char *psz = (texu_char*)&nocommas[len];
+    texu_char* pos = texu_strchr(nocommas, '.');
+    texu_char number[TEXU_MAX_WNDTEXT + 1] = "";
+    texu_char dec[TEXU_MAX_WNDTEXT + 1] = "";
+    texu_char* neg = texu_strchr(nocommas, '-');
+    texu_char* plus = texu_strchr(nocommas, '+');
+    texu_char rnumber[TEXU_MAX_WNDTEXT + 1] = "";
+
+    if (neg && plus)
+    {
+        return -1;
+    }
 
     memset(buf, 0, sizeof(buf));
     pbuf = buf;
 
-    while (*psz != 0 && *psz != TEXUTEXT('.'))
+    memset(commas, 0, outlen);
+
+    if (pos)
     {
-        *pbuf = *psz;
-        ++pbuf;
-        --psz;
-        --len;
+        texu_strncpy(number, nocommas, (texu_longptr)(pos)-(texu_longptr)nocommas);
+        texu_strrcpy(rnumber, number);
+        texu_strcpy(dec, pos);
     }
-    if (TEXUTEXT('.') == *psz)
+    else
     {
-        *pbuf = *psz;
-        ++pbuf;
-        --psz;
-        --len;
+        texu_strrcpy(rnumber, nocommas);
     }
+    len = texu_strlen(rnumber);
+    psz = rnumber;
 
     while (len >= 0)
     {
-        if (cnt % 4 == 0 && *psz != TEXUTEXT('-'))
+        if (len > 0 && cnt % 4 == 0 && *psz != TEXUTEXT('-'))
         {
             *pbuf = TEXUTEXT(',');
             ++pbuf;
@@ -563,7 +597,7 @@ texu_i32 texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *no
         }
         *pbuf = *psz;
         ++pbuf;
-        --psz;
+        ++psz;
         --len;
         ++cnt;
     }
@@ -572,15 +606,10 @@ texu_i32 texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *no
     {
         memset(commas, 0, outlen);
         /* reverse copy */
-        len = texu_strlen(buf) - 1;
-        pbuf = &buf[len];
-        psz = commas;
-        while (len >= 0)
+        texu_strrcpy(commas, buf);
+        if (texu_strlen(dec))
         {
-            *psz = *pbuf;
-            ++psz;
-            --pbuf;
-            --len;
+            texu_strcat(commas, dec);
         }
     }
     return TEXU_OK;
@@ -708,6 +737,20 @@ texu_char *texu_strncpy(texu_char *dest, const texu_char *src, size_t size)
     strncpy(out, src, size);
 #endif
     texu_strcpy(dest, out);
+    return dest;
+}
+
+texu_char *texu_strncpy2(texu_char *dest, const texu_char *src, size_t size)
+{
+    texu_char out[TEXU_MAX_WNDTEXT + 1];
+
+    memset(out, 0, sizeof(out));
+#if (defined WIN32 && defined UNICODE)
+    wcsncpy_s(out, sizeof(texu_char)*(texu_strlen(src)+1), src, size);
+#else
+    strncpy(out, src, size);
+#endif
+    texu_memcpy(dest, out, texu_strlen(out));
     return dest;
 }
 

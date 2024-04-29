@@ -53,10 +53,10 @@ texu_menu_item *_texu_menu_item_new(texu_env *env, const texu_char *text, texu_u
 void _texu_menu_item_del(texu_menu_item *);
 texu_tree_item *_texu_menu_find_item(texu_menu *, texu_tree_item *, texu_ui32 id);
 
-void _TexuMenuProc_OnPaint(texu_wnd *, texu_cio *);
+void _TexuMenuProc_OnPaint(texu_wnd *, texu_cio *, texu_rect* rect);
 
 void _TexuMenuWndroc_NotifyItem(texu_wnd *wnd, texu_ui32 code, texu_ui32 id, const texu_char *info);
-void _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+void _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect);
 void _TexuMenuWndProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 texu_status _TexuMenuWndProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
@@ -384,7 +384,7 @@ texu_menu_enable_menuitem(texu_menu *menu, texu_tree_item *baritem, texu_ui32 id
 }
 
 void
-_TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+_TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 {
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
@@ -405,6 +405,10 @@ _TexuMenuProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_ui32 selbg = menu->selbg;
 
     /*draw menu bar*/
+    if (!texu_wnd_can_paint(wnd))
+    {
+        return;
+    }
     if (!(texu_wnd_is_visible(wnd)))
     {
         return;
@@ -492,7 +496,7 @@ _TexuMenuProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam para
     switch (msg)
     {
     case TEXU_WM_PAINT:
-        _TexuMenuProc_OnPaint(wnd, (texu_cio *)param1);
+        _TexuMenuProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
         return 0;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
@@ -831,7 +835,7 @@ _TexuMenuWndProc_DrawPopupMenu(
 }
 
 void
-_TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+_TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 {
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
@@ -852,6 +856,10 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM);
 
     /*draw menu bar*/
+    if (!texu_wnd_can_paint(wnd))
+    {
+        return;
+    }
     if (!(texu_wnd_is_visible(wnd)))
     {
         return;
@@ -973,7 +981,7 @@ _TexuMenuWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam p
         return 0;
 
         case TEXU_WM_PAINT:
-            _TexuMenuWndProc_OnPaint(wnd, (texu_cio *)param1);
+            _TexuMenuWndProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
             return 0;
 
         case TEXU_WM_CREATE:

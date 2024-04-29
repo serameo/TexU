@@ -50,6 +50,8 @@ struct texu_lcwnd_cell
 
     struct texu_lcwnd_cell *prev;
     struct texu_lcwnd_cell *next;
+    struct texu_lcwnd_cell *left;
+    struct texu_lcwnd_cell *right;
 };
 typedef struct texu_lcwnd_cell texu_lcwnd_cell;
 
@@ -77,12 +79,24 @@ struct texu_lcwnd_header
 };
 typedef struct texu_lcwnd_header texu_lcwnd_header;
 
+struct texu_lcwnd_row
+{
+    texu_lcwnd_cell*    first;
+    texu_lcwnd_cell*    last;
+};
+typedef struct texu_lcwnd_row texu_lcwnd_row;
+
 struct texu_lcwnd
 {
     texu_lcwnd_header *firsthdr;
     texu_lcwnd_header *lasthdr;
     texu_lcwnd_header *firstvisiblehdr;
     texu_lcwnd_header *lastvisiblehdr;
+    
+    texu_lcwnd_row*     firstrow;
+    texu_lcwnd_row*     lastrow;
+    texu_lcwnd_row*     first_visible_row;
+    texu_lcwnd_row*     last_visible_row;
 
     texu_i32 nheaders;
     texu_i32 nitems;
@@ -129,7 +143,7 @@ texu_i32 _TexuListCtrlProc_GetColIdx(texu_lcwnd *lctl, texu_lcwnd_header *header
 
 texu_i32 _TexuListCtrlProc_GetVisibleWidth(texu_lcwnd *lctl);
 void _TexuListCtrlProc_NotifyItem(texu_wnd *wnd, texu_ui32 code, texu_i32 row, texu_i32 col);
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
 void _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lc,
                                texu_cio *dc, texu_i32 row,
                                texu_ui32 color, texu_ui32 bgcolor);
@@ -160,7 +174,7 @@ void _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
 #endif
 void _TexuListCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
-void _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+void _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect);
 texu_i32 _TexuListCtrlProc_OnAddItems(texu_wnd *wnd, texu_char *text, texu_i32 nitems);
 texu_i32 _TexuListCtrlProc_OnAddItem(texu_wnd *wnd, const texu_char *);
 void _TexuListCtrlProc_OnDeleteAllItems(texu_wnd *wnd);
@@ -197,6 +211,8 @@ void _TexuListCtrlProc_OnDeleteItem(texu_wnd *wnd, texu_i32 idx);
 void _TexuListCtrlProc_OnDeleteAllColumns(texu_wnd *wnd);
 texu_i32    _TexuListCtrlProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
 void        _TexuListCtrlProc_OnSetText(texu_wnd *wnd, const texu_char *text);
+texu_i32 _TexuListCtrlProc_OnGetItemCount(texu_wnd *wnd);
+void _TexuListCtrlProc_DrawRow(texu_wnd* wnd, texu_i32 row, texu_i32 sel);
 
 texu_i32
 _TexuListCtrlProc_FindHeaderIndex(texu_lcwnd *lctl, texu_lcwnd_header *header)
@@ -344,15 +360,15 @@ _TexuListCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.enable   = TEXU_FALSE;
     attrs2.visible  = TEXU_FALSE;
     attrs2.text     = TEXU_EMPTY_STR;
-    attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL);
+    attrs2.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL);
     attrs2.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_DISABLED);
     attrs2.selectedcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_SELECTED);
-    attrs2.focusedcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL);
+    attrs2.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL);
 
     attrs2.normalbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL);
     attrs2.disabledbg   = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_DISABLED);
-    attrs2.selectedbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_SELECTED);
-    attrs2.focusedbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL);
+    attrs2.selectedbg   = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_SELECTED);
+    attrs2.focusedbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL);
 
     attrs2.id = 1;
     attrs2.clsname = TEXU_EDIT_CLASS;
@@ -407,12 +423,14 @@ _TexuListCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
                        texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_DISABLED));
     texu_wnd_set_focused_color(wnd,
                                texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_FOCUSED));
+    texu_wnd_set_selected_color(wnd, texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_SELECTED));
 
     texu_wnd_set_bgcolor(wnd,
                          texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL),
                          texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_DISABLED));
     texu_wnd_set_bgfocused_color(wnd,
                                  texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_FOCUSED));
+    texu_wnd_set_bgselected_color(wnd, texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_SELECTED));
 
     texu_wnd_set_userdata(wnd, lctl);
     return TEXU_OK;
@@ -731,7 +749,8 @@ _TexuListCtrlProc_OnAddItems(texu_wnd *wnd, texu_char *text, texu_i32 nitems)
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_lcwnd_cell *newcell = 0;
     texu_env *env = texu_wnd_get_env(wnd);
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+
     texu_char *pszContext;
 #endif
 
@@ -819,7 +838,7 @@ _TexuListCtrlProc_GetVisibleWidth(texu_lcwnd *lctl)
     return width;
 }
 
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
 void
 _TexuListCtrlProc_FillCell(texu_wnd *wnd, texu_lcwnd *lctl,
     texu_cio *dc, texu_i32 row, texu_i32 col,
@@ -850,7 +869,7 @@ _TexuListCtrlProc_FillCell(texu_wnd *wnd, texu_lcwnd *lctl,
         buf,
         texu_cio_get_reverse(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
     texu_cio_draw_text(dc, rccell.y, rccell.x, buf, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
@@ -865,7 +884,7 @@ _TexuListCtrlProc_FillCell(texu_wnd *wnd, texu_lcwnd *lctl,
 
 #endif
 }
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
 void
 _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lctl,
                           texu_cio *dc, texu_i32 row,
@@ -898,7 +917,7 @@ _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lctl,
         buf,
         texu_cio_get_reverse(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
     texu_cio_draw_text(dc, rccell.y, rccell.x, buf, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
@@ -913,7 +932,7 @@ _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lctl,
 #endif
 }
 
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
 void
 _TexuListCtrlProc_DrawItem(texu_wnd *wnd,
     texu_cio *dc, texu_rect *rccell, const texu_char *caption,
@@ -937,7 +956,7 @@ texu_ui32 color, texu_i32 align, texu_i32 isheader)
 }
 #endif
 
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
 void
 _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     texu_cio *dc, texu_rect *rccell, const texu_char *caption,
@@ -1022,7 +1041,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
             buf,
             texu_cio_get_reverse(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
         texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
@@ -1038,7 +1057,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     }
     else
     {
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
         texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
@@ -1054,16 +1073,22 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     }
 }
 
-void
-_TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+
+void _TexuListCtrlProc_DrawRow(texu_wnd* wnd, texu_i32 row, texu_i32 sel)
 {
+}
+
+void
+_TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
+{
+    texu_env *env = texu_wnd_get_env(wnd);
     texu_lcwnd *lctl = 0;
     texu_lcwnd_header *header = 0;
     texu_lcwnd_header *prevheader = 0;
     texu_i32 width = 0;
     texu_rect rcitem, rcwnd, rccell;
-    texu_ui32 normcolor = 0;
-    texu_ui32 selcolor = 0;
+    texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_ITEM);
+    texu_ui32 selcolor = texu_env_get_syscolor(env, TEXU_COLOR_LISTCTRL_ITEM_SELECTED);
     texu_lcwnd_cell *visiblecell = 0;
     texu_i32 i = 0;
     texu_i32 forcewidth = 0;
@@ -1073,12 +1098,15 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_bool fDrewLastCol = TEXU_FALSE;
     texu_i32 itemwidth = 0;
     texu_i32 x, y;
-#if (defined WIN32 && defined _WINDOWS)
-    texu_env *env = texu_wnd_get_env(wnd);
-    texu_ui32 selbg = 0;
-    texu_ui32 normbg = 0;
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+    texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_ITEM_SELECTED);
+    texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_ITEM);
 #endif
 
+    if (!texu_wnd_can_paint(wnd))
+    {
+        return;
+    }
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
@@ -1110,7 +1138,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         width = rcwnd.cols - 1;
         forcewidth = 1;
     }
-
+/*begin drawing cells including the header if its style has been set*/
     while (header)
     {
         if (!fDrewLastCol && width > rcwnd.cols)
@@ -1151,7 +1179,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 
         normcolor = header->normcolor;
         selcolor = header->selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
         normbg = header->normbg;
         selbg = header->selbg;
 #endif
@@ -1165,7 +1193,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             }
             if (itemwidth == header->cols)
             {
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor, normbg,
@@ -1182,7 +1210,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             else
             {
                 border = 2; /*column with extra 1 space*/
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor, normbg,
@@ -1215,7 +1243,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             {
                 normcolor = visiblecell->normcolor;
                 selcolor = visiblecell->selcolor;
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
                 normbg = visiblecell->normbg;
                 selbg = visiblecell->selbg;
 #endif
@@ -1224,7 +1252,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                 {
                     normcolor = selcolor;
                     /* draw the item that it can be seen */
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
                     normbg = selbg;
                     _TexuListCtrlProc_DrawItem2(wnd, dc, &rccell,
                                                 visiblecell->caption,
@@ -1242,7 +1270,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                 else
                 {
                     /* draw the item that it can be seen */
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
                     _TexuListCtrlProc_DrawItem(wnd, dc, &rccell,
                                                visiblecell->caption,
                                                normcolor, normbg,
@@ -1282,31 +1310,36 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 
         ++col;
     } /* while header */
-
+/*end drawing cells including the header*/
     /* print arrow controls */
     if (visiblecell)
     {
         normcolor = visiblecell->normcolor;
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
         normbg = visiblecell->normbg;
 #endif
     }
     else
     {
         normcolor = 0;
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
         normbg = TEXU_CIO_COLOR_WHITE_BLACK;
 #endif
     }
     if (lctl->firsthdr != lctl->firstvisiblehdr)
     {
+        /*draw symbols '<' if the first visible header is not the first*/
         if (!(style & TEXU_LCS_NOHEADER))
         {
-#if (defined WIN32 && defined _WINDOWS)
+#if ((defined WIN32 && defined _WINDOWS))
+
             texu_env_draw_char_ex(env, rcwnd.y, rcwnd.x + 1, TEXUTEXT('<'), normcolor, normbg,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
-
+#elif defined __VMS__
+        texu_cio_draw_char(dc, rcwnd.y, rcwnd.x + 1, TEXUTEXT('<'), normcolor, normbg,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
 #else
             texu_cio_putch_attr(dc, rcwnd.y, rcwnd.x + 1, TEXUTEXT('<'), 
                 texu_cio_get_color(dc, normcolor));
@@ -1325,10 +1358,15 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             {
                 x = rcwnd.cols - 1;
             }
-#if (defined WIN32 && defined _WINDOWS)
+#if ((defined WIN32 && defined _WINDOWS))
+
             texu_env_draw_char_ex(env, y, x, TEXUTEXT('>'), normcolor, normbg,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
+#elif defined __VMS__
+        texu_cio_draw_char(dc, y, x, TEXUTEXT('>'), normcolor, normbg,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
 
 #else
             texu_cio_putch_attr(dc, y, x, '>', 
@@ -1346,8 +1384,13 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             if (x >= rcwnd.cols)
             {
                 x = rcwnd.cols - 1;
-#if (defined WIN32 && defined _WINDOWS)
+#if ((defined WIN32 && defined _WINDOWS))
+
                 texu_env_draw_char_ex(env, y, x, TEXUTEXT('>'), normcolor, normbg,
+                                      texu_wnd_get_clsname(wnd),
+                                      texu_wnd_get_id(wnd));
+#elif defined __VMS__
+                texu_cio_draw_char(dc, y, x, TEXUTEXT('>'), normcolor, normbg,
                                       texu_wnd_get_clsname(wnd),
                                       texu_wnd_get_id(wnd));
 
@@ -1405,7 +1448,7 @@ void _TexuListCtrlProc_OnBeginMoving(texu_wnd *wnd)
     header = _TexuListCtrlProc_FindHeaderByIndex(lctl, lctl->curselcol);
     cell = _TexuListCtrlProc_FindCellByHeader(lctl, header, lctl->curselrow);
     _TexuListCtrlProc_GetCellRect(cell, &rccell);
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
     _TexuListCtrlProc_DrawItem2(wnd, dc, &rccell,
                                 cell->caption,
                                 cell->normcolor, cell->normbg,
@@ -1527,7 +1570,7 @@ void _TexuListCtrlProc_OnMovingCursor(texu_wnd *wnd, texu_i32 ch)
         header = _TexuListCtrlProc_FindHeaderByIndex(lctl, lctl->curselcol);
         cell = _TexuListCtrlProc_FindCellByHeader(lctl, header, lctl->curselrow);
         _TexuListCtrlProc_GetCellRect(cell, &rccell);
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
         _TexuListCtrlProc_DrawItem(
             wnd,
             texu_wnd_get_cio(wnd),
@@ -1551,7 +1594,7 @@ void _TexuListCtrlProc_OnMovingCursor(texu_wnd *wnd, texu_i32 ch)
         header = _TexuListCtrlProc_FindHeaderByIndex(lctl, newcol);
         cell = _TexuListCtrlProc_FindCellByHeader(lctl, header, newrow);
         _TexuListCtrlProc_GetCellRect(cell, &rccell);
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
         _TexuListCtrlProc_DrawItem(wnd, texu_wnd_get_cio(wnd),
                                    &rccell,
                                    cell->caption,
@@ -1605,7 +1648,7 @@ void _TexuListCtrlProc_OnEndMoving(texu_wnd *wnd)
     cell = _TexuListCtrlProc_FindCellByHeader(lctl, header, lctl->curselrow);
     _TexuListCtrlProc_GetCellRect(cell, &rccell);
 
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
     _TexuListCtrlProc_DrawItem2(
         wnd,
         dc,
@@ -1893,6 +1936,9 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_i32 row = 0;
     /*texu_i32 col = 0;*/
+    texu_i32 currow = -1;
+/*    texu_i32 curcol = -1;*/
+    texu_i32 lastrow = _TexuListCtrlProc_OnGetItemCount(wnd);
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -1907,15 +1953,17 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     /*ensure the row is available*/
     row = lctl->curselrow;
+    currow = row;
     if (row < 0)
     {
         row = 0;
     }
     
     /*find the first column*/
-    /*col = lctl->curselcol;*/
+/*    curcol = lctl->curselcol;*/
 
-#if (defined WIN32 && defined _WINDOWS)
+#if ((defined WIN32 && defined _WINDOWS))
+
     if (lctl->nitems > 0 && (VK_RETURN == ch || VK_F2 == ch || ch == lctl->editkey) && (style & TEXU_LCS_EDITABLE))
 #else
     if (lctl->nitems > 0 && ch == lctl->editkey && (style & TEXU_LCS_EDITABLE))
@@ -2107,7 +2155,10 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             else
             {
                 ++lines;
-                ++repaint;
+                if (currow + 1 < lastrow)
+                {
+                    ++repaint;
+                }
             }
             break;
         }
@@ -2131,7 +2182,10 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             else
             {
                 --lines;
-                ++repaint;
+                if (currow > 0)
+                {
+                    ++repaint;
+                }
             }
             break;
         }
@@ -2155,7 +2209,10 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             else
             {
                 lines -= rc.lines - 1;
-                ++repaint;
+                if (currow > 0)
+                {
+                    ++repaint;
+                }
             }
             break;
         }
@@ -2179,7 +2236,10 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             else
             {
                 lines += rc.lines - 1;
-                ++repaint;
+                if (currow + 1 < lastrow)
+                {
+                    ++repaint;
+                }
             }
             break;
         }
@@ -2726,7 +2786,8 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
     texu_rect rcwnd;
     texu_rect rccell;
     texu_i32 color = 0;
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+
     texu_i32 bgcolor = 0;
     texu_env *env = texu_wnd_get_env(wnd);
 #endif
@@ -2748,7 +2809,8 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
 
                 color = cell->normcolor;
 
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+
                 bgcolor = cell->normbg;
 #endif
                 if (row == lctl->curselrow)
@@ -2756,7 +2818,7 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
                     color = cell->selcolor;
 
                     /* draw th item that it can be seen */
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
                     bgcolor = cell->selbg;
                     _TexuListCtrlProc_DrawItem2(wnd, dc, &rccell,
                                                 cell->caption, color, bgcolor, header->align, 0, 1);
@@ -2768,7 +2830,7 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
                 else
                 {
                     /* draw th item that it can be seen */
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
                     _TexuListCtrlProc_DrawItem(wnd, texu_wnd_get_cio(wnd), &rccell,
                                                cell->caption, color, bgcolor, header->align, 0);
 #else
@@ -3002,7 +3064,7 @@ _TexuListCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam 
             return _TexuListCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
         case TEXU_WM_PAINT:
-            _TexuListCtrlProc_OnPaint(wnd, (texu_cio *)param1);
+            _TexuListCtrlProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
             return 0;
 
         case TEXU_WM_DESTROY:
@@ -3153,7 +3215,7 @@ typedef struct texu_treewnd texu_treewnd;
 
 void _TexuTreeProc_Notify(texu_wnd *wnd, texu_ui32, texu_tree_item *);
 
-void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect);
 texu_tree_item *_TexuTreeCtrlProc_OnInsertItem(texu_wnd *wnd, texu_tree_item *parentitem, const texu_treewnd_item *insertitem);
 texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *);
 texu_i32 _TexuTreeCtrlProc_OnDeleteItem(texu_wnd *wnd, texu_tree_item *item);
@@ -3463,7 +3525,8 @@ texu_i32 _TexuTreeCtrlProc_OnExportToFile(texu_wnd *wnd, FILE *fp, texu_tree_exp
         }
         else
         {
-#if (defined WIN32 && defined _WINDOWS)
+#if ((defined WIN32 && defined _WINDOWS && defined UNICODE))
+
             fwprintf(fp, TEXUTEXT("%s\n"), buf);
 #else
             fprintf(fp, TEXUTEXT("%s\n"), buf);
@@ -4304,7 +4367,7 @@ _TexuTreeCtrlProc_OnFindNextItem(texu_wnd *wnd, texu_tree_item *previtem, texu_t
 
 texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
 {
-    texu_treewnd *tc = 0;
+    texu_treewnd *tc = (texu_treewnd *)malloc(sizeof(texu_treewnd));
     texu_env *env = texu_wnd_get_env(wnd);
     texu_wnd *editwnd = texu_wnd_new(env);
     texu_wnd_attrs attrs2;
@@ -4347,7 +4410,6 @@ texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         return TEXU_ERROR;
     }
 
-    tc = (texu_treewnd *)malloc(sizeof(texu_treewnd));
     if (!tc)
     {
         return TEXU_NOMEM;
@@ -4372,7 +4434,6 @@ texu_i32 _TexuTreeCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     if (!tc->tree)
     {
         free(tc);
-        texu_wnd_del(editwnd);
         return TEXU_NOMEM;
     }
     /* set tree */
@@ -4510,7 +4571,7 @@ texu_i32 _TexuTreeCtrlProc_PreorderTraverseProc(texu_tree_item *item, void *args
     return 0;
 }
 
-void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 {
     texu_rect rc;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
@@ -4535,6 +4596,10 @@ void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_TREECTRL_ITEM);
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_TREECTRL_ITEM_SELECTED);
 
+    if (!texu_wnd_can_paint(wnd))
+    {
+        return;
+    }
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
@@ -4695,7 +4760,7 @@ _TexuTreeCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam 
     {
         case TEXU_WM_PAINT:
         {
-            _TexuTreeCtrlProc_OnPaint(wnd, (texu_cio *)param1);
+            _TexuTreeCtrlProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
             return 0;
         }
         case TEXU_WM_CREATE:
@@ -4822,6 +4887,7 @@ struct texu_udwnd
 };
 typedef struct texu_udwnd texu_udwnd;
 
+void _TexuUpDownCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void _TexuUpDownCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 texu_status _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
 void _TexuUpDownCtrlProc_OnDestroy(texu_wnd *wnd);
@@ -4834,7 +4900,8 @@ texu_status _TexuUpDownCtrlProc_OnGetMinMax(texu_wnd *wnd, texu_i32 *, texu_i32 
 void _TexuUpDownCtrlProc_OnSetStep(texu_wnd *wnd, texu_i32);
 texu_i32 _TexuUpDownCtrlProc_OnGetStep(texu_wnd *wnd);
 void _TexuUpDownCtrlProc_OnStep(texu_wnd *wnd, texu_i32);
-void _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+void _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect);
+void _TexuUpDownCtrlProc_OnEraseBg(texu_wnd *wnd, texu_cio *dc, texu_rect* rect);
 void _TexuUpDownCtrlProc_OnSetPage(texu_wnd *wnd, texu_i32);
 texu_i32 _TexuUpDownCtrlProc_OnGetPage(texu_wnd *wnd);
 void _TexuUpDownCtrlProc_OnPage(texu_wnd *wnd, texu_i32);
@@ -4852,6 +4919,29 @@ _TexuUpDownCtrlProc_OnSetMinMax(texu_wnd *wnd, texu_i32 min, texu_i32 max)
     minmax.min = min;
     minmax.max = max;
     texu_wnd_send_msg(udctl->editwnd, TEXU_EM_SETVALIDMINMAX, TEXU_TRUE, (texu_lparam)&minmax);
+}
+
+void _TexuUpDownCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
+{
+    texu_udwnd *udctl = 0;
+    udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
+    switch (ch)
+    {
+        case TEXU_KEY_UP:
+        case TEXU_KEY_RIGHT:
+            _TexuUpDownCtrlProc_OnStep(wnd, 1);
+            break;
+        case TEXU_KEY_DOWN:
+        case TEXU_KEY_LEFT:
+            _TexuUpDownCtrlProc_OnStep(wnd, -1);
+            break;
+        case TEXU_KEY_NPAGE:
+            _TexuUpDownCtrlProc_OnPage(wnd, 1);
+            break;
+        case TEXU_KEY_PPAGE:
+            _TexuUpDownCtrlProc_OnPage(wnd, -1);
+            break;
+    }
 }
 
 texu_status
@@ -4943,18 +5033,22 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     }
 
     memset(&attrs2, 0, sizeof(attrs2));
+#if 1//defined _WIN32
+    attrs2.y = 0;
+#else
     attrs2.y = attrs->y;
+#endif
     if (TEXU_UDS_SHOWPLUSMINUS & attrs->style)
     {
-        attrs2.x = attrs->x + 1;
+        attrs2.x = 1;
         attrs2.width = attrs->width - 2;
     }
     else
     {
-        attrs2.x = attrs->x;
+        attrs2.x = 0;
         attrs2.width = attrs->width;
     }
-    attrs2.height   = attrs->height;
+    attrs2.height   = 1;
     attrs2.enable   = TEXU_TRUE;
     attrs2.visible  = TEXU_TRUE;
     attrs2.text     = TEXUTEXT("0");
@@ -5015,6 +5109,7 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_set_bgfocused_color(wnd,
                                texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED));
 
+    texu_wnd_set_style(wnd, attrs->style | TEXU_WS_CLIPWINDOW);
     return TEXU_OK;
 }
 
@@ -5178,8 +5273,13 @@ _TexuUpDownCtrlProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)buf, 0);
 }
 
+void _TexuUpDownCtrlProc_OnEraseBg(texu_wnd* wnd, texu_cio* dc, texu_rect* rect)
+{
+    TexuDefWndProc(wnd, TEXU_WM_ERASEBG, (texu_lparam)dc, (texu_lparam)rect);
+}
+
 void
-_TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+_TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 {
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_i32 y = texu_wnd_get_y(wnd);
@@ -5187,10 +5287,14 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
     texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
 #endif
 
+    if (!texu_wnd_can_paint(wnd))
+    {
+        return;
+    }
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
@@ -5203,7 +5307,8 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLUS,
                             texu_cio_get_color(dc, color));
 #else
-#if (defined WIN32 && defined _WINDOWS)
+#if ((defined WIN32 && defined _WINDOWS))
+
         texu_env_draw_char_ex(env, y, x, TEXU_ACS_MINUS, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
@@ -5213,10 +5318,19 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                               texu_wnd_get_id(wnd));
 
 #else
+#if defined __VMS__
+        texu_cio_draw_char(dc, y, x, TEXU_ACS_MINUS, color, bgcolor,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
+        texu_cio_draw_char(dc, y, x + width - 1, TEXU_ACS_PLUS, color, bgcolor,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
+#else
         texu_cio_putch_attr(dc, y, x, TEXU_ACS_MINUS,
                             texu_cio_get_color(dc, color));
         texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLUS,
                             texu_cio_get_color(dc, color));
+#endif
 #endif
 #endif
     }
@@ -5227,73 +5341,81 @@ _TexuUpDownCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lpara
 {
     switch (msg)
     {
-    case TEXU_WM_CHAR:
-        _TexuUpDownCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
-        return 0;
+        case TEXU_WM_KEYDOWN:
+            _TexuUpDownCtrlProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
 
-    case TEXU_WM_CREATE:
-        return _TexuUpDownCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+        case TEXU_WM_CHAR:
+            _TexuUpDownCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
 
-    case TEXU_WM_PAINT:
-        _TexuUpDownCtrlProc_OnPaint(wnd, (texu_cio *)param1);
-        return 0;
+        case TEXU_WM_CREATE:
+            return _TexuUpDownCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
-    case TEXU_WM_DESTROY:
-        _TexuUpDownCtrlProc_OnDestroy(wnd);
-        break;
+        case TEXU_WM_ERASEBG:
+            _TexuUpDownCtrlProc_OnEraseBg(wnd, (texu_cio *)param1, (texu_rect*)param2);
+            return 0;
 
-    case TEXU_WM_SETFOCUS:
-        _TexuUpDownCtrlProc_OnSetFocus(wnd, (texu_wnd *)param1);
-        break;
+        case TEXU_WM_PAINT:
+            _TexuUpDownCtrlProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
+            return 0;
 
-    case TEXU_WM_KILLFOCUS:
-        return _TexuUpDownCtrlProc_OnKillFocus(wnd, (texu_wnd *)param1);
+        case TEXU_WM_DESTROY:
+            _TexuUpDownCtrlProc_OnDestroy(wnd);
+            break;
 
-    case TEXU_WM_SETTEXT:
-        _TexuUpDownCtrlProc_OnSetText(wnd, (const texu_char *)param1);
-        return 0;
+        case TEXU_WM_SETFOCUS:
+            _TexuUpDownCtrlProc_OnSetFocus(wnd, (texu_wnd *)param1);
+            break;
 
-    case TEXU_UDCM_SETMINMAX:
-    {
-        _TexuUpDownCtrlProc_OnSetMinMax(wnd, (texu_i32)param1, (texu_i32)param2);
-        return 0;
-    }
-    case TEXU_UDCM_GETMINMAX:
-    {
-        return _TexuUpDownCtrlProc_OnGetMinMax(wnd, (texu_i32 *)param1, (texu_i32 *)param2);
-    }
-    case TEXU_UDCM_SETSTEP:
-    {
-        _TexuUpDownCtrlProc_OnSetStep(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_UDCM_GETSTEP:
-    {
-        return _TexuUpDownCtrlProc_OnGetStep(wnd);
-    }
-    case TEXU_UDCM_STEP:
-    {
-        _TexuUpDownCtrlProc_OnStep(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_UDCM_SETPAGE:
-    {
-        _TexuUpDownCtrlProc_OnSetPage(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_UDCM_GETPAGE:
-    {
-        return _TexuUpDownCtrlProc_OnGetPage(wnd);
-    }
-    case TEXU_UDCM_PAGE:
-    {
-        _TexuUpDownCtrlProc_OnPage(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_UDCM_GETINT:
-    {
-        return _TexuUpDownCtrlProc_OnGetInt(wnd);
-    }
+        case TEXU_WM_KILLFOCUS:
+            return _TexuUpDownCtrlProc_OnKillFocus(wnd, (texu_wnd *)param1);
+
+        case TEXU_WM_SETTEXT:
+            _TexuUpDownCtrlProc_OnSetText(wnd, (const texu_char *)param1);
+            return 0;
+
+        case TEXU_UDCM_SETMINMAX:
+        {
+            _TexuUpDownCtrlProc_OnSetMinMax(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
+        }
+        case TEXU_UDCM_GETMINMAX:
+        {
+            return _TexuUpDownCtrlProc_OnGetMinMax(wnd, (texu_i32 *)param1, (texu_i32 *)param2);
+        }
+        case TEXU_UDCM_SETSTEP:
+        {
+            _TexuUpDownCtrlProc_OnSetStep(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_UDCM_GETSTEP:
+        {
+            return _TexuUpDownCtrlProc_OnGetStep(wnd);
+        }
+        case TEXU_UDCM_STEP:
+        {
+            _TexuUpDownCtrlProc_OnStep(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_UDCM_SETPAGE:
+        {
+            _TexuUpDownCtrlProc_OnSetPage(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_UDCM_GETPAGE:
+        {
+            return _TexuUpDownCtrlProc_OnGetPage(wnd);
+        }
+        case TEXU_UDCM_PAGE:
+        {
+            _TexuUpDownCtrlProc_OnPage(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_UDCM_GETINT:
+        {
+            return _TexuUpDownCtrlProc_OnGetInt(wnd);
+        }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
@@ -5312,6 +5434,7 @@ struct texu_pgbwnd
     texu_i32 pos;
     texu_i32 max;
     void *exparam;
+    texu_i32 decimal;
 };
 typedef struct texu_pgbwnd texu_pgbwnd;
 
@@ -5323,9 +5446,11 @@ texu_i32 _TexuProgressBarProc_OnGetPos(texu_wnd *wnd);
 void _TexuProgressBarProc_OnSetStep(texu_wnd *wnd, texu_i32);
 texu_i32 _TexuProgressBarProc_OnGetStep(texu_wnd *wnd);
 void _TexuProgressBarProc_OnStep(texu_wnd *wnd, texu_i32);
-void _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+void _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect);
 texu_i32 _TexuProgressBarProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen);
 void _TexuProgressBarProc_OnGetPercent(texu_wnd *wnd, texu_f32 *pct);
+texu_i32 _TexuProgressBarProc_OnGetDecimal(texu_wnd *wnd);
+void    _TexuProgressBarProc_OnSetDecimal(texu_wnd* wnd, texu_i32 dec);
 
 texu_f32 _TexuProgressBarProc_GetPercent(texu_wnd *wnd);
 
@@ -5441,6 +5566,7 @@ _TexuProgressBarProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     pgb->step = 1;
     pgb->max = 100;
     pgb->pos = 0;
+    pgb->decimal = 2;
 
     texu_wnd_set_color(wnd,
                        texu_env_get_syscolor(env, TEXU_COLOR_PROGRESSBAR),
@@ -5476,8 +5602,36 @@ _TexuProgressBarProc_GetPercent(texu_wnd *wnd)
     return pct;
 }
 
+texu_i32 _TexuProgressBarProc_OnGetDecimal(texu_wnd *wnd)
+{
+    texu_pgbwnd *pgb = 0;
+
+    pgb = (texu_pgbwnd *)texu_wnd_get_userdata(wnd);
+    return pgb->decimal;
+}
+
+void    _TexuProgressBarProc_OnSetDecimal(texu_wnd* wnd, texu_i32 dec)
+{
+    texu_pgbwnd *pgb = 0;
+
+    if (!texu_wnd_can_paint(wnd))
+    {
+        return;
+    }
+    pgb = (texu_pgbwnd *)texu_wnd_get_userdata(wnd);
+    if (dec < 0)
+    {
+        dec = 0;
+    }
+    else if (dec > 6)
+    {
+        dec = 6;
+    }
+    pgb->decimal = dec;
+}
+
 void
-_TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+_TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 {
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
@@ -5489,6 +5643,7 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
 
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_char text[TEXU_MAX_WNDTEXT + 1];
+    texu_char format[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("%.02f");
     texu_f32 pct = 0.0;
     texu_pgbwnd *pgb = 0;
     texu_i32 pgwidth = 0;
@@ -5511,8 +5666,9 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     pct = (0 == pgb->max ? 0.0f : (texu_f32)(pgb->pos * 100.0f / pgb->max));
     pct = (pct > 100.0f ? 100.0f : pct);
 
-    texu_sprintf(text, sizeof(text), TEXUTEXT("%.02f%%"), pct);
-    /*texu_strcat(text, TEXUTEXT("%"));*/
+    texu_sprintf(format, sizeof(format), TEXUTEXT("%s.0%df"), "%", pgb->decimal);
+    texu_sprintf(text, sizeof(text), format, pct);
+    texu_strcat(text, TEXUTEXT("%"));
     /*get drawable width*/
     pgwidth = (0 == pgb->max ? 0 : ((texu_i32)pct >= 100 ? width : (pgb->pos * width / pgb->max)));
     if ((texu_ui32)pgwidth < texu_strlen(text))
@@ -5553,61 +5709,70 @@ _TexuProgressBarProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lpar
 {
     switch (msg)
     {
-    case TEXU_WM_GETTEXT:
-        return _TexuProgressBarProc_OnGetText(wnd, (texu_char *)param1, (texu_i32)param2);
+        case TEXU_WM_GETTEXT:
+            return _TexuProgressBarProc_OnGetText(wnd, (texu_char *)param1, (texu_i32)param2);
 
-    case TEXU_WM_CREATE:
-        return _TexuProgressBarProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+        case TEXU_WM_CREATE:
+            return _TexuProgressBarProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
-    case TEXU_WM_PAINT:
-        _TexuProgressBarProc_OnPaint(wnd, (texu_cio *)param1);
-        return 0;
+        case TEXU_WM_PAINT:
+            _TexuProgressBarProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
+            return 0;
 
-    case TEXU_WM_DESTROY:
-        _TexuProgressBarProc_OnDestroy(wnd);
-        break;
+        case TEXU_WM_DESTROY:
+            _TexuProgressBarProc_OnDestroy(wnd);
+            break;
 
-    case TEXU_WM_ENABLE:
-        return TexuDefWndProc(wnd, msg, 0, 0);
+        case TEXU_WM_ENABLE:
+            return TexuDefWndProc(wnd, msg, 0, 0);
 
-    case TEXU_PGBM_SETMAX:
-    {
-        _TexuProgressBarProc_OnSetMax(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_PGBM_GETMAX:
-    {
-        return _TexuProgressBarProc_OnGetMax(wnd);
-    }
+        case TEXU_PGBM_SETMAX:
+        {
+            _TexuProgressBarProc_OnSetMax(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_PGBM_GETMAX:
+        {
+            return _TexuProgressBarProc_OnGetMax(wnd);
+        }
 
-    case TEXU_PGBM_SETPOS:
-    {
-        _TexuProgressBarProc_OnSetPos(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_PGBM_GETPOS:
-    {
-        return _TexuProgressBarProc_OnGetPos(wnd);
-    }
-    case TEXU_PGBM_SETSTEP:
-    {
-        _TexuProgressBarProc_OnSetStep(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_PGBM_GETSTEP:
-    {
-        return _TexuProgressBarProc_OnGetStep(wnd);
-    }
-    case TEXU_PGBM_STEP:
-    {
-        _TexuProgressBarProc_OnStep(wnd, (texu_i32)param1);
-        return 0;
-    }
-    case TEXU_PGBM_GETPERCENT:
-    {
-        _TexuProgressBarProc_OnGetPercent(wnd, (texu_f32 *)param1);
-        return 0;
-    }
+        case TEXU_PGBM_SETPOS:
+        {
+            _TexuProgressBarProc_OnSetPos(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_PGBM_GETPOS:
+        {
+            return _TexuProgressBarProc_OnGetPos(wnd);
+        }
+        case TEXU_PGBM_SETSTEP:
+        {
+            _TexuProgressBarProc_OnSetStep(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_PGBM_GETSTEP:
+        {
+            return _TexuProgressBarProc_OnGetStep(wnd);
+        }
+        case TEXU_PGBM_STEP:
+        {
+            _TexuProgressBarProc_OnStep(wnd, (texu_i32)param1);
+            return 0;
+        }
+        case TEXU_PGBM_GETPERCENT:
+        {
+            _TexuProgressBarProc_OnGetPercent(wnd, (texu_f32 *)param1);
+            return 0;
+        }
+        case TEXU_PGBM_GETDECIMAL:
+        {
+            return _TexuProgressBarProc_OnGetDecimal(wnd);
+        }
+        case TEXU_PGBM_SETDECIMAL:
+        {
+            _TexuProgressBarProc_OnSetDecimal(wnd, (texu_i32)param1);
+            return 0;
+        }
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
@@ -5649,9 +5814,21 @@ typedef struct texu_pagewnd texu_pagewnd;
 
 texu_status _TexuPageCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
 void _TexuPageCtrlProc_OnDestroy(texu_wnd *wnd);
-void _TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+void _TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect);
 void _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
-void _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+texu_i32 _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
+void        _TexuPageCtrlProc_OnSetFocus(texu_wnd *, texu_wnd *prevwnd);
+
+
+void
+_TexuPageCtrlProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
+{
+    /*to make sure that the first active child is set focus*/
+    texu_wnd* activechild = texu_wnd_get_activechild(wnd);
+    /*texu_wnd_invalidate(activechild);*/
+    /*simulate key down to the first active child*/
+    texu_wnd_send_msg(activechild, TEXU_WM_KEYDOWN, (texu_lparam)TEXU_KEY_LEFT, 0);
+}
 
 texu_status _TexuPageCtrlProc_OnAddPage(texu_wnd *wnd, const texu_page* pg);
 texu_wnd    *_TexuPageCtrlProc_OnSetCurPage(texu_wnd *wnd, texu_i32 idx);
@@ -5833,6 +6010,8 @@ _TexuPageCtrlProc_SetCurPage(texu_wnd *wnd, texu_wnd *newpage)
         texu_wnd_visible(newpage, TEXU_TRUE);
         texu_wnd_send_msg(pgctl->activewnd, TEXU_WM_SETFOCUS, (texu_lparam)pgctl->activewnd, 0);
         texu_wnd_invalidate(wnd);
+        /*simulate key down to the first time*/
+        texu_wnd_send_msg(pgctl->activewnd, TEXU_WM_KEYDOWN, (texu_lparam)TEXU_KEY_LEFT, 0);
     }
     return curpage;
 }
@@ -5885,7 +6064,7 @@ _TexuPageCtrl_CreatePage(
     attrs.id = pg->id;
     attrs.clsname = pg->clsname;
     attrs.userdata = 0;
-    attrs.style = TEXU_WS_HIDE;
+    attrs.style = TEXU_WS_HIDE|TEXU_PGM_ADDPAGE;
     attrs.exstyle = 0;
 
     rc = texu_wnd_create(childwnd, wnd, &attrs);
@@ -5894,7 +6073,6 @@ _TexuPageCtrl_CreatePage(
         texu_wnd_del(childwnd);
         return 0;
     }
-
     return childwnd;
 }
 
@@ -6053,6 +6231,8 @@ _TexuPageCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
                                texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW));
 
     texu_wnd_set_userdata(wnd, pgctl);
+    /*container MUST BE clip all children*/
+    texu_wnd_set_style(wnd, attrs->style | TEXU_WS_CLIPWINDOW);
 
     return TEXU_OK;
 }
@@ -6070,7 +6250,7 @@ _TexuPageCtrlProc_OnDestroy(texu_wnd *wnd)
 }
 
 void
-_TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+_TexuPageCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 {
     /*
     if (TEXU_FALSE == texu_wnd_is_visible(wnd))
@@ -6115,7 +6295,7 @@ _TexuPageCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     return;
 }
 
-void
+texu_i32
 _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);
@@ -6136,13 +6316,13 @@ _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 
     if (!texu_wnd_is_enable(wnd))
     {
-        return;
+        return 0;
     }
 
     if ((TEXU_KEYPRESSED_CTRL & alt) && ((TEXUTEXT('k') == ch) || (TEXUTEXT('K') == ch)))
     {
         pgctl->ctl_k_pressed = !pgctl->ctl_k_pressed;
-        return;
+        return 0;
     }
     switch (ch)
     {
@@ -6256,7 +6436,7 @@ _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             if (menu)
             {
                 rc = texu_wnd_send_msg(curpage, TEXU_WM_ENTERMENU, ch, alt);
-                return;
+                return 0;
             }
         }
         if (activewnd && activewnd != wnd)
@@ -6291,7 +6471,7 @@ _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                         if (rc != TEXU_OK)
                         {
                             texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, (texu_lparam)activechild, 0);
-                            return;
+                            return 0;
                         }
                     }
                     /*active window need to be done something by itself*/
@@ -6299,7 +6479,7 @@ _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     if (rc != TEXU_OK)
                     {
                         texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
-                        return;
+                        return 0;
                     }
                     rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
                     y = texu_wnd_get_y(nextwnd);
@@ -6311,18 +6491,18 @@ _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 
                     /* the new active window */
                     pgctl->activewnd = nextwnd;
-                    return;
+                    return 0;
                 }
                 else
                 {
                     texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_lparam)ch, alt);
-                    return;
+                    return 0;
                 }
             }
             else
             {
                 texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_lparam)ch, alt);
-                return;
+                return 0;
             }
         } /* child window is active */
         else
@@ -6332,10 +6512,11 @@ _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             {
                 activewnd = texu_wnd_get_activechild(activewnd);
                 texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch, alt);
-                return;
+                return 0;
             }
         }
     }
+    return 0;
 }
 
 texu_longptr
@@ -6343,47 +6524,51 @@ _TexuPageCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam 
 {
     switch (msg)
     {
-    case TEXU_WM_CREATE:
-        return _TexuPageCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
+        case TEXU_WM_CREATE:
+            return _TexuPageCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
-    /*case TEXU_WM_PAINT:
-        _TexuPageCtrlProc_OnPaint(wnd, (texu_cio *)param1);
-        return 0;*/
+        /*case TEXU_WM_PAINT:
+            _TexuPageCtrlProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
+            return 0;*/
 
-    case TEXU_WM_DESTROY:
-        _TexuPageCtrlProc_OnDestroy(wnd);
-        break;
+        case TEXU_WM_SETFOCUS:
+            TexuDefWndProc(wnd, msg, param1, param2);   /*call default proc first*/
+            _TexuPageCtrlProc_OnSetFocus(wnd, (texu_wnd *)param1); /*set the first focus if it has not*/
+            break;
 
-    case TEXU_WM_CHAR:
-        _TexuPageCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
-        return 0;
+        case TEXU_WM_DESTROY:
+            _TexuPageCtrlProc_OnDestroy(wnd);
+            break;
 
-    case TEXU_WM_KEYDOWN:
-        _TexuPageCtrlProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
-        return 0;
+        case TEXU_WM_CHAR:
+            _TexuPageCtrlProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
 
-    case TEXU_PGM_ADDPAGE:
-        return _TexuPageCtrlProc_OnAddPage(wnd, (const texu_page *)param1);
+        case TEXU_WM_KEYDOWN:
+            return _TexuPageCtrlProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);
 
-    case TEXU_PGM_SETCURPAGE:
-        return (texu_lparam)_TexuPageCtrlProc_OnSetCurPage(wnd, (texu_i32)param1);
+        case TEXU_PGM_ADDPAGE:
+            return _TexuPageCtrlProc_OnAddPage(wnd, (const texu_page *)param1);
 
-    case TEXU_PGM_GETCURPAGE:
-        return (texu_lparam)_TexuPageCtrlProc_OnGetCurPage(wnd);
+        case TEXU_PGM_SETCURPAGE:
+            return (texu_lparam)_TexuPageCtrlProc_OnSetCurPage(wnd, (texu_i32)param1);
 
-    case TEXU_PGM_GETPAGEINDEX:
-        return _TexuPageCtrlProc_OnGetPageIndex(wnd, (texu_wnd *)param1);
+        case TEXU_PGM_GETCURPAGE:
+            return (texu_lparam)_TexuPageCtrlProc_OnGetCurPage(wnd);
 
-    case TEXU_PGM_COUNTPAGE:
-        return _TexuPageCtrlProc_OnGetCountPage(wnd);
+        case TEXU_PGM_GETPAGEINDEX:
+            return _TexuPageCtrlProc_OnGetPageIndex(wnd, (texu_wnd *)param1);
 
-    case TEXU_PGM_REMOVEPAGE:
-        _TexuPageCtrlProc_OnRemovePage(wnd, (texu_i32)param1);
-        return 0;
+        case TEXU_PGM_COUNTPAGE:
+            return _TexuPageCtrlProc_OnGetCountPage(wnd);
 
-    case TEXU_PGM_REMOVEALLPAGES:
-        _TexuPageCtrlProc_OnRemoveAllPages(wnd);
-        return 0;
+        case TEXU_PGM_REMOVEPAGE:
+            _TexuPageCtrlProc_OnRemovePage(wnd, (texu_i32)param1);
+            return 0;
+
+        case TEXU_PGM_REMOVEALLPAGES:
+            _TexuPageCtrlProc_OnRemoveAllPages(wnd);
+            return 0;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
@@ -6411,7 +6596,7 @@ typedef struct texu_rbwnd texu_rbwnd;
 
 void _TexuReBarProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
 void _TexuReBarProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt);
-void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc);
+void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect);
 texu_i32 _TexuReBarProc_OnAddBand(texu_wnd *wnd, const texu_rbwnd_band* band);
 void _TexuReBarProc_OnDestroy(texu_wnd *wnd);
 texu_status _TexuReBarProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs);
@@ -6419,7 +6604,7 @@ texu_i32 _TexuReBarProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd);
 void     _TexuReBarProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
 texu_wnd* _TexuReBarProc_OnQueryNextWnd(texu_wnd* wnd);
 texu_wnd* _TexuReBarProc_OnQueryPrevWnd(texu_wnd* wnd);
-
+void _TexuReBarProc_OnEraseBg(texu_wnd* wnd, texu_cio* cio, texu_rect* rect);
 
 void _TexuReBarProc_SetFirstVisibleBand(texu_rbwnd *rbwnd, texu_wnd *childwnd);
 void _TexuReBarProc_SetCurBand(texu_rbwnd *rbwnd, texu_wnd *childwnd);
@@ -6622,6 +6807,11 @@ texu_wnd* _TexuReBarProc_OnQueryNextWnd(texu_wnd* wnd)
     return 0;
 }
 
+void _TexuReBarProc_OnEraseBg(texu_wnd* wnd, texu_cio* cio, texu_rect* rect)
+{
+    TexuDefWndProc(wnd, TEXU_WM_ERASEBG, (texu_lparam)cio, (texu_lparam)rect);
+}
+
 texu_wnd* _TexuReBarProc_OnQueryPrevWnd(texu_wnd* wnd)
 {
     texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
@@ -6663,6 +6853,7 @@ void _TexuReBarProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 
 texu_i32 _TexuReBarProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
 {
+    /*
     texu_rbwnd *rbwnd = (texu_rbwnd *)texu_wnd_get_userdata(wnd);
     texu_list_item *item = texu_list_first(rbwnd->bands);
     if (item)
@@ -6670,7 +6861,7 @@ texu_i32 _TexuReBarProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
         rbwnd->firstvisibleband = rbwnd->curband = (texu_rbwnd_band*)item->data;
         texu_wnd_invalidate(wnd);
     }
-    texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
+    texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);*/
     return TEXU_OK;
 }
 
@@ -6822,14 +7013,14 @@ void _TexuReBarProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 
 }
 
-void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
+void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 {
     texu_rbwnd *rbwnd = (texu_rbwnd*)texu_wnd_get_userdata(wnd);
     texu_list_item *item = texu_list_first(rbwnd->bands);
     texu_rbwnd_band *band = 0;
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
-    texu_i32 width = texu_wnd_get_width(wnd);
+/*    texu_i32 width = texu_wnd_get_width(wnd);*/
     texu_i32 height = texu_wnd_get_height(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_REBAR);
@@ -6852,6 +7043,10 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
     /*texu_wnd *activewnd = texu_wnd_get_activechild(parent);*/
     texu_i32 cx = texu_env_screen_width(env);
 
+    if (!texu_wnd_can_paint(wnd))
+    {
+        return;
+    }
     /*if (TEXU_FALSE == texu_wnd_is_visible(wnd))
     {
         return;
@@ -6925,7 +7120,7 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                         band->caption,
                         rbwnd->capwidth,
                         band->align,
-                        TEXU_TRUE,
+                        TEXU_FALSE,
                         x,
                         cx);
 
@@ -6936,19 +7131,19 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
                     texu_cio_draw_text(dc, y, x, caption, color, bgcolor,
                                           texu_wnd_get_clsname(wnd),
                                           texu_wnd_get_id(wnd));
-
 #endif
                 }
                 /*clip window*/
-                if (width < x+capwidth+1+w)
+                /*
+                if (width < x+capwidth+w)
                 {
-                    w = width - (x+capwidth+1);
+                    w = width - (x+capwidth);
                     if (w < 0)
                     {
                         w = 0;
                     }
-                }
-                texu_wnd_move(band->childwnd, y, x+capwidth+1, h, w, TEXU_TRUE);
+                }*/
+                texu_wnd_move(band->childwnd, y, x+capwidth, h, w, TEXU_TRUE);
             }
             item = item->next;
             continue; /*no more draw*/
@@ -6972,16 +7167,31 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
             texu_cio_putstr_attr(dc, y, x, caption,
                                  texu_cio_get_color(dc, color));
 #else
-
             texu_cio_draw_text(dc, y, x, caption, color, bgcolor,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
-
 #endif
         }
-        
+        /*band height > 1*/
+        if (h > 1 && capwidth > 0)
+        {
+            texu_i32 i = 1;
+            texu_memset(caption, 0, sizeof(caption));
+            texu_memset(caption, TEXUTEXT(' '), capwidth);
+            for (; i < h; ++i)
+            {
+#ifdef TEXU_CIO_COLOR_MONO
+                texu_cio_putstr_attr(dc, y+i, x, caption,
+                                     texu_cio_get_color(dc, color));
+#else
+                texu_cio_draw_text(dc, y+i, x, caption, color, bgcolor,
+                                      texu_wnd_get_clsname(wnd),
+                                      texu_wnd_get_id(wnd));
+#endif
+            }
+        }
         /*draw window*/
-        texu_wnd_move(band->childwnd, y, x+capwidth+1, h, w, TEXU_TRUE);
+        texu_wnd_move(band->childwnd, y, x+capwidth, h, w, TEXU_TRUE);
 
         /*save the last visible band*/
         rbwnd->lastvisibleband = band;
@@ -6992,7 +7202,7 @@ void _TexuReBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc)
         /*increment y*/
         y += h;
         hchilds += h;
-    }
+    }/*while (item)*/
 }
 
 texu_i32 _TexuReBarProc_OnAddBand(texu_wnd *wnd, const texu_rbwnd_band* band)
@@ -7045,6 +7255,7 @@ texu_status _TexuReBarProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     rbwnd->capwidth = attrs->width/2;
 
     texu_wnd_set_userdata(wnd, rbwnd);
+
     return TEXU_OK;
 }
 
@@ -7063,7 +7274,7 @@ _TexuReBarProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam par
             return _TexuReBarProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
         case TEXU_WM_PAINT:
-            _TexuReBarProc_OnPaint(wnd, (texu_cio *)param1);
+            _TexuReBarProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
             return 0;
 
         case TEXU_WM_DESTROY:
@@ -7085,6 +7296,10 @@ _TexuReBarProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam par
 
         case TEXU_WM_SETFOCUS:
             _TexuReBarProc_OnSetFocus(wnd, (texu_wnd*)param1);
+            return 0;
+
+        case TEXU_WM_ERASEBG:
+            _TexuReBarProc_OnEraseBg(wnd, (texu_cio*)param1, (texu_rect*)param2);
             return 0;
 
         case TEXU_RBM_ADDBAND:

@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <termios.h>
 
 #include "texumacros.h"
 #include "texutypes.h"
@@ -21,6 +20,9 @@
 extern "C"
 {
 #endif
+
+#if !(defined VMS || defined __VMS__)
+#include <termios.h>
 
 struct termios old_kbd_mode;    /* orig keyboard settings   */
 struct termios new_kbd_mode;    /* new  keyboard settings   */
@@ -116,7 +118,7 @@ texu_i32 texu_tty_getch(texu_i32 sec, texu_i32 usec)
     
     return ch;
 }
-
+#endif /*!__VMS__*/
 struct _tty_color_pairs
 {
     texu_i32     id;

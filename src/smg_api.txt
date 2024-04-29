@@ -1,0 +1,485 @@
+
+smg$add_key_def      
+smg$begin_display_update        
+smg$begin_pasteboard_update     
+smg$cancel_input
+
+smg$change_pbd_characteristics  
+smg$change_rendition 
+smg$change_viewport  
+smg$change_virtual_display
+
+smg$check_for_occlusion         
+smg$control_mode     
+smg$copy_virtual_display        
+smg$create_key_table
+
+smg$create_menu      
+smg$create_pasteboard
+smg$create_subprocess
+smg$create_viewport
+
+smg$create_virtual_display      
+smg$create_virtual_keyboard     
+smg$cursor_column    
+smg$cursor_row
+
+smg$define_key       
+smg$delete_chars     
+smg$delete_key_def   
+smg$delete_line      
+smg$delete_menu
+
+smg$delete_pasteboard
+smg$delete_subprocess
+smg$delete_viewport  
+smg$delete_virtual_display
+
+smg$delete_virtual_keyboard     
+smg$del_term_table   
+smg$disable_broadcast_trapping
+
+smg$disable_unsolicited_input   
+smg$draw_char        
+smg$draw_line        
+smg$draw_rectangle
+
+smg$enable_unsolicited_input    
+smg$end_display_update          
+smg$end_pasteboard_update
+
+smg$erase_chars      
+smg$erase_column     
+
+
+smg$erase_line       
+smg$erase_pasteboard
+
+smg$execute_command  
+smg$find_cursor_display         
+smg$flush_buffer     
+smg$flush_display_update
+
+smg$get_broadcast_message       
+smg$get_char_at_physical_cursor 
+smg$get_display_attr
+
+smg$get_keyboard_attributes     
+smg$get_key_def      
+smg$get_numeric_data 
+smg$get_pasteboard_attributes
+
+smg$get_pasting_info 
+smg$get_term_data    
+smg$get_viewport_char
+smg$home_cursor      
+smg$init_term_table
+
+smg$init_term_table_by_type     
+smg$insert_chars     
+smg$insert_line      
+smg$invalidate_display
+
+smg$keycode_to_name  
+smg$label_border     
+smg$list_key_defs    
+smg$list_pasteboard_order
+
+smg$list_pasting_order          
+smg$load_key_defs    
+smg$load_virtual_display        
+smg$move_text
+
+smg$move_virtual_display        
+smg$name_to_keycode  
+smg$paste_virtual_display       
+smg$pop_virtual_display
+
+smg$print_pasteboard 
+smg$put_chars        
+smg$put_chars_highwide          
+smg$put_chars_multi
+
+smg$put_chars_wide   
+smg$put_help_text    
+smg$put_line         
+smg$put_line_highwide
+smg$put_line_multi
+
+smg$put_line_wide    
+smg$put_pasteboard   
+smg$put_status_line  
+smg$read_composed_line
+
+smg$read_from_display
+smg$read_keystroke   
+smg$read_locator     
+smg$read_string      
+smg$read_verify
+
+smg$remove_line      
+smg$repaint_line     
+smg$repaint_screen   
+smg$repaste_virtual_display
+
+smg$replace_input_line          
+smg$restore_physical_screen     
+smg$return_cursor_pos
+smg$return_input_line
+
+smg$ring_bell        
+smg$save_physical_screen        
+smg$save_virtual_display        
+smg$scroll_display_area
+
+smg$scroll_viewport  
+smg$select_from_menu 
+smg$set_broadcast_trapping      
+smg$set_cursor_abs
+
+smg$set_cursor_mode  
+smg$set_cursor_rel   
+smg$set_default_state
+smg$set_display_scroll_region
+
+smg$set_keypad_mode  
+smg$set_out_of_band_asts        
+smg$set_physical_cursor
+
+smg$set_term_characteristics    
+smg$snapshot         
+smg$snapshot_to_printer
+
+smg$unpaste_virtual_display
+
+
+
+
+
+SMG$READ_STRING  keyboard-id ,resultant-string [,prompt-string]
+
+                            [,maximum-length] [,modifiers] [,timeout]
+
+                            [,terminator-set] [,resultant-length]
+
+                            [,word-terminator-code] [,display-id]
+
+                            [,initial-string] [,rendition-set]
+
+                            [,rendition-complement] [,terminator-string]
+
+        keyboard-id
+
+           OpenVMS usage:identifier
+           type:         longword (unsigned)
+           access:       read only
+           mechanism:    by reference
+
+           Specifies the virtual keyboard from which input is to be read.
+           The keyboard-id argument is the address of an unsigned longword
+           that contains the keyboard identifier.
+
+           The keyboard identifier is returned by SMG$CREATE_VIRTUAL_
+           KEYBOARD.
+
+        resultant-string
+
+           OpenVMS usage:char_string
+           type:         character string
+           access:       write only
+           mechanism:    by descriptor
+
+           String into which the input line is written. The resultant-string
+           argument is the address of a descriptor pointing to the string
+           into which the text is written.
+
+
+        prompt-string
+
+           OpenVMS usage:char_string
+           type:         character string
+           access:       read only
+           mechanism:    by descriptor
+
+           String used to prompt for the read operation. The prompt-string
+           argument is the address of a descriptor pointing to the prompt
+           string.
+
+
+        maximum-length
+           OpenVMS usage:longword_signed
+           type:         longword (signed)
+           access:       read only
+           mechanism:    by reference
+
+           Specifies the maximum number of characters to be read. The
+           maximum-length argument is the address of a signed longword that
+           contains the maximum number of characters to be read. The maximum
+           valid value for this argument is 512. If omitted, 512 is the
+           default.
+
+
+        modifiers
+
+           OpenVMS usage:mask_longword
+           type:         longword (unsigned)
+           access:       read only
+           mechanism:    by reference
+
+           Optional bit mask that specifies optional behavior. The modifiers
+           argument is the address of an unsigned longword that contains the
+           flag.
+
+           Valid values for modifiers are as follows:
+
+           TRM$M_TM_CVTLOW    Converts lowercase characters to uppercase
+                              characters.
+           TRM$M_TM_NOECHO    Characters entered are not echoed on the
+                              screen.
+           TRM$M_TM_NOEDIT    Advanced editing is disabled for this read
+                              operation.
+           TRM$M_TM_NORECALL  Line recall is disabled.
+           TRM$M_TM_PURGE     Type-ahead buffer is purged before read is
+                              begun.
+           TRM$M_TM_          Termination character, if any, is not
+           TRMNOECHO          displayed.
+
+           The TRM$ symbols are defined by the $TRMDEF macro/module in
+           system symbol libraries supplied by Compaq. See the terminal
+           driver section of the OpenVMS I/O User's Reference Manual for
+           more information on modifiers for read operations.
+
+
+        timeout
+
+           OpenVMS usage:longword_signed
+           type:         longword (signed)
+           access:       read only
+           mechanism:    by reference
+
+           Specifies the number of seconds allowed between the time the
+           prompt is issued and the completion of the input operation.
+           The timeout argument is the address of a signed longword that
+           contains the timeout value.
+
+           If timeout is specified, all characters typed before the
+           expiration time or until a terminate key is entered are returned
+           in resultant-string. If omitted, the input operation remains
+           active until a terminator is typed.
+
+
+        terminator-set
+
+           OpenVMS usage:unspecified
+           type:         unspecified
+           access:       read only
+           mechanism:    by descriptor, fixed length
+
+           Either a mask that specifies which characters are to be treated
+           as terminators (short form) or a descriptor pointing to such a
+           mask (long form). The terminator-set argument is the address of a
+           descriptor pointing to the mask.
+
+           If you want to use terminators with ASCII values in the range 0
+           to 31, use the short form, which consists of two longwords. The
+           first longword is zero, and the second longword is a terminator
+           character bit mask. You create this mask by setting the bit that
+           corresponds to the ASCII value of the desired terminator. For
+           example, to specify that Ctrl/A (ASCII value 1) is a terminator,
+           you set bit 1 in the terminator-set mask.
+
+           To use terminators with ASCII values outside the range 0 to 31,
+           use the long form. First create a descriptor of this form:
+
+           31                            16 15                            0
+           ----------------------------------------------------------------
+           |                               |                              |
+           |           (not used)          |    mask size in bytes        |
+           |                               |                              |
+           ----------------------------------------------------------------
+           |                                                              |
+           |                        address of mask                       |
+           |                                                              |
+           ----------------------------------------------------------------
+
+           The mask itself has the same format as that of the short form;
+           however, the long form allows the use of a more comprehensive set
+           of terminator characters. For example, a mask size of 16 bytes
+           allows any 7-bit ASCII character to be set as a terminator, while
+           a mask size of 32 bytes allows any 8-bit character to be set as a
+           terminator. Any mask size between 1 and 32 bytes is acceptable.
+
+           If the terminator mask is all zeros, there are no specified
+           terminators. In that case, the read terminates when the number
+           of characters specified in maximum-length has been transferred or
+           when timeout is reached.
+
+           If the terminator-set argument is omitted, the set of terminators
+           is the OpenVMS default terminator set. For more information, see
+           the OpenVMS I/O User's Reference Manual.
+
+
+        resultant-length
+
+           OpenVMS usage:word_unsigned
+           type:         word (unsigned)
+           access:       write only
+           mechanism:    by reference
+
+           Receives the number of characters read or the maximum size
+           of resultant-string, whichever is less. The resultant-length
+           argument is the address of an unsigned word into which is written
+           the number of characters read or the maximum size.
+
+
+        word-terminator-code
+
+           OpenVMS usage:word_unsigned
+           type:         word (unsigned)
+           access:       write only
+           mechanism:    by reference
+
+           Key terminator code. The word-terminator-code argument is an
+           unsigned word into which is written a code indicating what
+           character or key terminated the read. Key terminator codes are
+           of the form SMG$K_TRM_keyname.
+
+
+        display-id
+
+           OpenVMS usage:identifier
+           type:         longword (unsigned)
+           access:       read only
+           mechanism:    by reference
+
+           Display identifier. The display-id argument is the address of
+           an unsigned longword that contains the display identifier.
+           This argument is optional only if you are not using the Screen
+           Management Facility's output routines.
+
+           If you are using the Screen Management Facility input and output
+           routines, this argument specifies the virtual display in which
+           the input is to occur. The virtual display specified must be
+           pasted to the same pasteboard as specified by keyboard-id and
+           must not be occluded. You cannot accept input from an occluded
+           area of the virtual display.
+
+           In the case of multiple virtual displays, each virtual display
+           has an associated virtual cursor position. At the same time,
+           there is a single physical cursor position corresponding to
+           the current location of the physical cursor. If the display-id
+           argument is specified, the read begins at the current virtual
+           cursor position in the specified virtual display. If display-
+           id is omitted, the read begins in the current physical cursor
+           position. Note that the length of the prompt-string plus the
+           key entered is limited to the number of visible columns in the
+           display.
+
+                                          NOTE
+
+              This virtual display must be pasted in column 1 and may
+              not have any other virtual displays to its right. This
+              restriction applies because otherwise the occurrence of a
+              Ctrl/R or Ctrl/U would cause the entire line to be blanked,
+              including any output to the right. To circumvent this
+              restriction, you may use SMG$REPAINT_LINE to repaint the
+              line when a Ctrl/R or Ctrl/U is detected.
+
+
+        initial-string
+
+           OpenVMS usage:char_string
+           type:         character string
+           access:       read only
+           mechanism:    by descriptor
+
+           Initial character string. The initial-string argument is the
+           address of a descriptor pointing to the optional string that
+           contains the initial characters of the field. The string is
+           written to the display in the input area, as if it had been
+           entered from the keyboard. It may be edited in the usual
+           way (provided that TRM$M_TM_NOEDIT is not set). It must be
+           shorter than maximum-length, otherwise SMG$READ_STRING returns
+           immediately without accepting any keyboard input.
+
+
+        rendition-set
+
+           OpenVMS usage:mask_longword
+           type:         longword (unsigned)
+           access:       read only
+           mechanism:    by reference
+
+
+
+           Attribute specifier. The optional rendition-set argument is
+           the address of a longword bit mask in which each attribute set
+           causes the corresponding attribute to be set in the display. The
+           following attributes can be specified using the rendition-set
+           argument:
+
+           SMG$M_BLINK      Displays blinking characters.
+           SMG$M_BOLD       Displays characters in higher-than-normal
+                            intensity (bolded).
+           SMG$M_REVERSE    Displays characters in reverse video; that is,
+                            using the opposite default rendition of the
+                            virtual display.
+           SMG$M_UNDERLINE  Displays underlined characters.
+           SMG$M_INVISIBLE  Specifies invisible characters; that is, the
+                            characters exist in the virtual display but do
+                            not appear on the pasteboard.
+           SMG$M_USER1      Displays user-defined attributes.
+           through
+           SMG$M_USER8
+
+           The display-id argument must be specified when you use the
+           rendition-set argument.
+
+
+        rendition-complement
+
+           OpenVMS usage:mask_longword
+           type:         longword (unsigned)
+           access:       read only
+           mechanism:    by reference
+
+           Attribute complement specifier. The optional rendition-
+           complement argument is the address of a longword bit mask in
+           which each attribute set causes the corresponding attribute to
+           be complemented in the display. All of the attributes that can be
+           specified with the rendition-set argument can be complemented
+           with rendition-complement. The display-id argument must be
+           specified when you use the rendition-complement argument.
+
+           The optional arguments rendition-set and rendition-complement let
+           the user control the attributes of the virtual display in which
+           the read is done. The rendition-set argument sets certain virtual
+           display attributes, while rendition-complement complements
+           these attributes. If the same bit is specified in both the
+           rendition-set and rendition-complement parameters, rendition-
+           set is evaluated first, followed by rendition-complement.
+           By using these two parameters together, the user can control
+           each virtual display attribute in a single procedure call.
+           On a single-attribute basis, the user can cause the following
+           transformations:
+
+           Set  Complement Action
+
+           0    0          Attribute set to default
+           1    0          Attribute on
+           0    1          Attribute set to complement of current setting
+           1    1          Attribute off
+
+
+        terminator-string
+
+           OpenVMS usage:char_string
+           type:         character string
+           access:       write only
+           mechanism:    by descriptor
+
+           Characters that terminate I/O. The optional terminator-string
+           argument is the address of a descriptor pointing to the character
+           string containing the terminating characters. The terminator-
+           string argument returns the actual terminating characters, not
+           the key that was pressed to terminate the I/O.

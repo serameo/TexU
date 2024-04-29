@@ -55,7 +55,7 @@ _texu_list_item_del(texu_list_item *item)
 
 struct texu_list
 {
-    texu_ui64 nitems;
+    texu_i32 nitems;
     texu_list_item *first;
     texu_list_item *last;
 #ifdef TEXU_THREAD_SAFE
@@ -330,10 +330,10 @@ texu_list_last(texu_list *list)
     return item;
 }
 
-texu_ui64
+texu_i32
 texu_list_count(texu_list *list)
 {
-    texu_ui64 nitems = 0;
+    texu_i32 nitems = 0;
 #ifdef TEXU_THREAD_SAFE
     pthread_mutex_lock(&list->mutex);
 #endif
@@ -514,7 +514,7 @@ struct texu_array
 };
 
 texu_array *
-texu_array_new(texu_ui64 nitems)
+texu_array_new(texu_i32 nitems)
 {
     texu_array *array = (texu_array *)malloc(sizeof(texu_array));
     texu_longptr *items = 0;
@@ -651,7 +651,7 @@ texu_array_realloc(texu_array *array, texu_longptr nitems)
     return TEXU_OK;
 }
 
-texu_ui64
+texu_i32
 texu_array_count(texu_array *array)
 {
     return array->nitems;
@@ -840,7 +840,7 @@ texu_stack_count(texu_stack *stack)
 struct texu_tree
 {
     texu_tree_item *root;
-    texu_ui64 nitems;
+    texu_i32 nitems;
     #ifdef TEXU_THREAD_SAFE
     pthread_mutex_t mutex;
     #endif
@@ -1235,7 +1235,7 @@ texu_tree_get_root(texu_tree *tree)
     return tree->root;
 }
 
-texu_ui64
+texu_i32
 texu_tree_count(texu_tree *tree)
 {
     return tree->nitems;
@@ -1264,14 +1264,14 @@ struct texu_map
 int _texu_map_cmp(const void *, const void *);
 texu_map_keyval *_texu_map_find(texu_map *, texu_longptr);
 texu_map_keyval *_texu_map_cmp_find(texu_map *map, texu_longptr key, int (*cmp)(const void *, const void *));
-texu_map_keyval *_texu_map_keyval_init(texu_ui64, texu_map_keyval *);
+texu_map_keyval *_texu_map_keyval_init(texu_i32, texu_map_keyval *);
 void _texu_map_sort(texu_map *map, int (*cmp)(const void *, const void *));
 
 texu_map_keyval *
-_texu_map_keyval_init(texu_ui64 nitems, texu_map_keyval *src)
+_texu_map_keyval_init(texu_i32 nitems, texu_map_keyval *src)
 {
     texu_map_keyval *keyvals = 0;
-    texu_ui64 size = sizeof(texu_map_keyval) * nitems;
+    texu_i32 size = sizeof(texu_map_keyval) * nitems;
     keyvals = (texu_map_keyval *)malloc(size);
     if (keyvals)
     {
@@ -1300,7 +1300,7 @@ _texu_map_sort(texu_map *map, int (*cmp)(const void *, const void *))
 texu_map *
 texu_map_new()
 {
-    texu_ui64 size = 0;
+    texu_i32 size = 0;
     texu_map_keyval *keyvals = 0;
     texu_map *map = (texu_map *)malloc(sizeof(texu_map));
     if (map)
@@ -1352,7 +1352,7 @@ texu_map_cb_free(
     void (*cb)(texu_longptr, texu_longptr, void *),
     void *user)
 {
-    texu_ui64 size = 0;
+    texu_i32 size = 0;
     texu_longptr i = 0;
     if (cb)
     {
@@ -1465,7 +1465,7 @@ texu_map_cmp_insert(
 {
     texu_status rc = TEXU_OK;
     texu_map_keyval *kv = 0;
-    texu_ui64 nitems = 0;
+    texu_i32 nitems = 0;
 
     /* always sort before inserting the new item */
     _texu_map_sort(map, cmp);
@@ -1644,12 +1644,12 @@ texu_status texu_map_foreach(
 
 struct texu_bits
 {
-    texu_ui32           nbits;
+    texu_i32           nbits;
     texu_byte*          bytes;
 };
 
 
-texu_bits* texu_bits_new(texu_ui32 nbits)
+texu_bits* texu_bits_new(texu_i32 nbits)
 {
     texu_i32 nbytes = 1 + (nbits / 8);
     texu_bits* bits = (texu_bits*)malloc(sizeof(texu_bits) + nbytes);

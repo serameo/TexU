@@ -571,6 +571,8 @@ void
 TexuInvalidateWindow(
     texu_wnd *wnd)
 {
+    /*force env to be able to end of starting-state*/
+    texu_env_set_state(texu_wnd_get_env(wnd), TEXU_ENV_STATE_RUNNING);
     texu_wnd_invalidate(wnd);
 }
 
@@ -712,6 +714,10 @@ TexuAddPopupMenu(
     texu_bool enable,
     const texu_char *info)
 {
+    if (!menu)
+    {
+        return 0;
+    }
     return texu_menu_add_menu_info(
         menu,
         text,
@@ -728,6 +734,10 @@ TexuAddPopupMenuItem(
     texu_bool enable,
     const texu_char *info)
 {
+    if (!menu)
+    {
+        return 0;
+    }
     return texu_menu_add_item_info(
                 menu,
                 popup,
@@ -740,6 +750,10 @@ TexuAddPopupMenuItem(
 texu_popup_menu *
 TexuGetPopupMenu(texu_menu *menu, texu_ui32 idx)
 {
+    if (!menu)
+    {
+        return 0;
+    }
     return texu_menu_get_menu(menu, idx);
 }
 
@@ -749,18 +763,30 @@ TexuGetPopupMenuItem(
     texu_popup_menu *popup,
     texu_ui32 id)
 {
+    if (!menu)
+    {
+        return 0;
+    }
     return texu_menu_get_menuitem(menu, popup, id);
 }
 
 texu_bool
 TexuEnablePopupMenu(texu_menu *menu, texu_ui32 idx, texu_bool enable)
 {
+    if (!menu)
+    {
+        return TEXU_FALSE;
+    }
     return texu_menu_enable_menu(menu, idx, enable);
 }
 
 texu_bool
 TexuEnablePopupMenuItem(texu_menu *menu, texu_popup_menu *popup, texu_ui32 id, texu_bool enable)
 {
+    if (!menu || !popup)
+    {
+        return TEXU_FALSE;
+    }
     return texu_menu_enable_menuitem(menu, popup, id, enable);
 }
 
@@ -876,6 +902,33 @@ TexuDrawFrame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_i32 at
     return texu_cio_draw_frame(cio, text, rect, attrs);
 }
 #endif
+
+void
+TexuDrawText(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* text, texu_i32 color, texu_i32 bgcolor, const texu_char* clsname, texu_i32 id)
+{
+    texu_cio_draw_text(cio, 
+        0,  /*y*/ 
+        0,  /*x*/
+        text, 
+        color,
+        bgcolor, 
+        clsname, 
+        id
+        );
+}
+
+void
+TexuFormatText(texu_char* text, const texu_char* buf, texu_i32 x, texu_i32 limit, texu_i32 cx, texu_i32 align, texu_bool more)
+{
+    texu_printf_alignment3(text,    /*formatted output*/ 
+        buf,                        /*raw input*/
+        limit,                      /*output width*/
+        align,                      /*TEXU_ALIGN_CENTER or TEXU_ALIGN_RIGHT or TEXU_ALIGN_LEFT (default)*/
+        more,                       /*no effect at the moment*/ 
+        x,                          /*x: x-position*/ 
+        cx                          /*max width (screen width)*/
+    );
+}
 
 #ifdef __cplusplus
 }

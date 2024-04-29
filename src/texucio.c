@@ -13,8 +13,9 @@
 #include "texutils.h"
 #include "texucio.h"
 #include "texui.h"
+#include "texuconst.h"
 
-#ifdef __USE_TTY__
+#if 1 /*(defined __USE_TTY__ || defined __VMS__)*/
 #include "texutty.h"
 #endif
 
@@ -30,16 +31,213 @@ extern "C"
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
+enum
+{
+  BLACK_BLACK = TEXU_CIO_COLOR_BLACK_BLACK,      /*0*/
+  BLACK_RED,
+  BLACK_GREEN,
+  BLACK_YELLOW,
+  BLACK_BLUE,
+  BLACK_MAGENTA,
+  BLACK_CYAN,
+  BLACK_WHITE,
+  RED_BLACK,        /*8*/
+  RED_RED,
+  RED_GREEN,
+  RED_YELLOW,
+  RED_BLUE,
+  RED_MAGENTA,
+  RED_CYAN,
+  RED_WHITE,
+  GREEN_BLACK,      /*16*/
+  GREEN_RED,
+  GREEN_GREEN,
+  GREEN_YELLOW,
+  GREEN_BLUE,
+  GREEN_MAGENTA,
+  GREEN_CYAN,
+  GREEN_WHITE,
+  YELLOW_BLACK,     /*24*/
+  YELLOW_RED,
+  YELLOW_GREEN,
+  YELLOW_YELLOW,
+  YELLOW_BLUE,
+  YELLOW_MAGENTA,
+  YELLOW_CYAN,
+  YELLOW_WHITE,
+  BLUE_BLACK,       /*32*/
+  BLUE_RED,
+  BLUE_GREEN,
+  BLUE_YELLOW,
+  BLUE_BLUE,
+  BLUE_MAGENTA,
+  BLUE_CYAN,
+  BLUE_WHITE,
+  MAGENTA_BLACK,    /*40*/
+  MAGENTA_RED,
+  MAGENTA_GREEN,
+  MAGENTA_YELLOW,
+  MAGENTA_BLUE,
+  MAGENTA_MAGENTA,
+  MAGENTA_CYAN,
+  MAGENTA_WHITE,
+  CYAN_BLACK,       /*56*/
+  CYAN_RED,
+  CYAN_GREEN,
+  CYAN_YELLOW,
+  CYAN_BLUE,
+  CYAN_MAGENTA,
+  CYAN_CYAN,
+  CYAN_WHITE,
+  WHITE_BLACK,
+  WHITE_RED,
+  WHITE_GREEN,
+  WHITE_YELLOW,
+  WHITE_BLUE,
+  WHITE_MAGENTA,
+  WHITE_CYAN,
+  WHITE_WHITE,
+  /* no color */
+  COLOR_MAX
+};
+
+struct _cio_color_s
+{
+    texu_i32   fg;
+    texu_i32   bg;
+    texu_i32   rfg;
+    texu_i32   rbg;
+};
+typedef struct _cio_color_s cio_colorpair;
+cio_colorpair gcolors[COLOR_MAX];
+void cio__init_pair(texu_i32 idx, texu_i32 fg, texu_i32 bg, texu_i32 rfg, texu_i32 rbg)
+{
+    gcolors[idx].fg = fg;
+    gcolors[idx].bg = bg;
+    gcolors[idx].rfg = rfg;
+    gcolors[idx].rbg = rbg;
+}
+texu_i32 cio__color_pair(texu_i32 idx)
+{
+    if (idx < 0 || idx >= COLOR_MAX)
+    {
+        idx = 0;
+    }
+#ifdef __USE_VMS__
+    return TTY_MAKECOLOR(gcolors[idx].fg, gcolors[idx].bg);
+#elif (defined __VMS__)
+    return (gcolors[idx].fg);
+#else
+#if defined __LINUX__
+    return (gcolors[idx].fg | gcolors[idx].bg);
+#else
+    return (gcolors[idx].fg);
+#endif
+#endif
+}
+
+texu_i32 cio__reverse_color_pair(texu_i32 idx)
+{
+    if (idx < 0 || idx >= COLOR_MAX)
+    {
+        idx = 0;
+    }
+#ifdef __USE_VMS__
+    return TTY_MAKECOLOR(gcolors[idx].rfg, gcolors[idx].rbg);
+#else
+    return (gcolors[idx].rfg | gcolors[idx].rbg);
+#endif
+}
+
+#if (defined VMS || defined __VMS__)
+#include <descrip.h>
+#include <descrip.h>
+#include <ssdef.h>
+#include <smgdef.h>
+#include <smg$routines.h>
+#include <stsdef.h>
+#include <starlet.h>
+#include <lib$routines.h>
+#include <libdtdef.h>
+
+struct _smg$r_attribute_info_block 
+{
+    unsigned int        smg$l_dev_char;         /* Device characteristics           */
+    unsigned int        smg$l_dev_depend;       /* Specific characteristics (1)     */
+    unsigned int        smg$l_dev_depend2;      /* Specific characteristics (2)     */
+    unsigned char       smg$b_dev_class;        /* Device class (e.g. DC$_TERM)     */
+    unsigned char       smg$r_dev_overlay;
+    unsigned char       smg$b_dev_type;         /* Physical device type (e.g. DT$_VT100) */
+    unsigned char       smg$r_row_overlay;
+    unsigned short int  smg$w_num_columns;      /* Terminal width                 */
+    unsigned short int  smg$r_count_overlay;
+    unsigned short int  smg$w_dev_speed;        /* Terminal Speed (+)               */
+    unsigned short int  smg$w_dev_fill;         /* Fill characteristics (+)         */
+    unsigned short int  smg$w_phys_cursor_row;  /* Row where physical cursor is */
+    unsigned short int  smg$w_phys_cursor_col;  /* Col where physical cursor is */
+    unsigned int        smg$l_display_id;       /* Display containing phy cursor    */
+    unsigned int        smg$l_dev_depend3;      /* Specific characteristics (3)     */
+};
+typedef struct _smg$r_attribute_info_block smg$r_attribute_info_block;
+
+long texu__cio_get_on_display(texu_cio* cio);
+long texu__cio_get_off_display(texu_cio* cio);
+#endif
+
 struct texu_cio
 {
 #ifdef __USE_TTY__
     FILE    *wndscr;
 #elif (defined WIN32 && defined _WINDOWS)
     texu_env    *env;
+#elif (defined VMS || defined __VMS__)
+    long smg_pastebd_id;
+    long smg_display_id;
+    long smg_keybd_id;
+    long smg_offscreens[2];
+    long smg_flipflop;  /*only 0 or 1 of sgm_offscreens[]*/
+    void(*on_timeout)(texu_cio* cio);
 #else
     WINDOW  *wndscr;
 #endif
 };
+
+void _texu_cio_init_colors(texu_cio *cio);
+void _texu_cio_init_colors_mono(texu_cio *cio);
+
+
+#if (defined VMS || defined __VMS__)
+long texu__cio_get_on_display(texu_cio* cio)
+{
+    return cio->smg_offscreens[cio->smg_flipflop];
+}
+
+long texu__cio_get_off_display(texu_cio* cio)
+{
+    long flipflop = (cio->smg_flipflop ? 0 : 1);
+    return cio->smg_offscreens[flipflop];
+}
+
+void  texu_cio_flip_display(texu_cio* cio)
+{
+    /*unpasted*/
+    smg$unpaste_virtual_display(&cio->smg_offscreens[cio->smg_flipflop], &cio->smg_pastebd_id);
+    cio->smg_flipflop = !cio->smg_flipflop;
+    smg$paste_virtual_display(&cio->smg_offscreens[cio->smg_flipflop], &cio->smg_pastebd_id);
+}
+
+void texu_cio_begin_update(texu_cio* cio)
+{
+/*    smg$begin_display_update(&cio->smg_display_id);*/
+    smg$begin_pasteboard_update(&cio->smg_pastebd_id);
+}
+void texu_cio_end_update(texu_cio* cio)
+{
+/*    smg$end_display_update(&cio->smg_display_id);*/
+    smg$end_pasteboard_update(&cio->smg_pastebd_id);
+}
+
+#endif
 
 #if (defined WIN32 && defined _WINDOWS)
 texu_env
@@ -49,7 +247,14 @@ texu_env
 }
 #endif
 
-void _texu_cio_init_colors(texu_cio *cio);
+#if (defined VMS || defined __VMS__)
+void texu_cio_set_timeout(texu_cio* cio, void(*on_timeout)(texu_cio*))
+{
+    cio->on_timeout = on_timeout;
+}
+#endif
+
+
 
 texu_cio *
 texu_cio_new()
@@ -73,7 +278,7 @@ texu_cio_del(texu_cio *cio)
     }
 }
 
-#if (defined __USE_TTY__ || defined WIN32)
+#if (defined __USE_TTY__ || defined WIN32 || defined VMS)
 texu_i32
 texu_cio_nodelay(texu_cio *cio, texu_i32 delay)
 {
@@ -98,14 +303,318 @@ _texu_cio_init_keys(texu_cio *cio)
     */
 }
 
-#ifdef __USE_TTY__
+#if defined __LINUX__ && defined __USE_CURSES__
 void
 _texu_cio_init_colors_mono(texu_cio *cio)
 {
+    init_color(COLOR_WHITE, 1000, 1000, 1000);
+
+    init_pair(TEXU_CIO_COLOR_BLACK_BLACK,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLACK_RED,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLACK_GREEN,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLACK_YELLOW,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLACK_BLUE,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLACK_MAGENTA,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLACK_CYAN,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLACK_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_BLACK,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_RED,           COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_GREEN,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_YELLOW,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_BLUE,          COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_MAGENTA,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_CYAN,          COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_WHITE,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_BLACK,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_RED,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_GREEN,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_YELLOW,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_BLUE,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_MAGENTA,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_CYAN,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_BLACK,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_RED,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_GREEN,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_YELLOW,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_BLUE,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_MAGENTA,    COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_CYAN,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_WHITE,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_BLACK,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_RED,          COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_GREEN,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_YELLOW,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_BLUE,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_MAGENTA,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_CYAN,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_WHITE,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_BLACK,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_RED,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_GREEN,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_YELLOW,    COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_BLUE,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_MAGENTA,   COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_CYAN,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_WHITE,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_BLACK,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_RED,          COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_GREEN,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_YELLOW,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_BLUE,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_MAGENTA,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_CYAN,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_WHITE,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_BLACK,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_RED,         COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_GREEN,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_YELLOW,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_BLUE,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_MAGENTA,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_CYAN,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+
+    /*BRIGHT WHITE*/
+    init_pair(TEXU_CIO_BRIGHT_WHITE_BLACK,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_RED,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_GREEN,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_YELLOW,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_BLUE,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_MAGENTA,    COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_CYAN,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_WHITE,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BLACK_BRIGHT_WHITE,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_RED_BRIGHT_WHITE,        COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_GREEN_BRIGHT_WHITE,      COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_YELLOW_BRIGHT_WHITE,     COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BLUE_BRIGHT_WHITE,       COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_MAGENTA_BRIGHT_WHITE,    COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_CYAN_BRIGHT_WHITE,       COLOR_WHITE,    COLOR_BLACK);
 }
 void
 _texu_cio_init_colors(texu_cio *cio)
 {
+    init_color(COLOR_WHITE, 1000, 1000, 1000);
+
+    init_pair(TEXU_CIO_COLOR_BLACK_BLACK,   COLOR_BLACK,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLACK_RED,     COLOR_BLACK,    COLOR_RED);
+    init_pair(TEXU_CIO_COLOR_BLACK_GREEN,   COLOR_BLACK,    COLOR_GREEN);
+    init_pair(TEXU_CIO_COLOR_BLACK_YELLOW,  COLOR_BLACK,    COLOR_YELLOW);
+    init_pair(TEXU_CIO_COLOR_BLACK_BLUE,    COLOR_BLACK,    COLOR_BLUE);
+    init_pair(TEXU_CIO_COLOR_BLACK_MAGENTA, COLOR_BLACK,    COLOR_MAGENTA);
+    init_pair(TEXU_CIO_COLOR_BLACK_CYAN,    COLOR_BLACK,    COLOR_CYAN);
+    init_pair(TEXU_CIO_COLOR_BLACK_WHITE,   COLOR_BLACK,    COLOR_WHITE);
+    init_pair(TEXU_CIO_COLOR_RED_BLACK,     COLOR_RED,      COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_RED_RED,       COLOR_RED,      COLOR_RED);
+    init_pair(TEXU_CIO_COLOR_RED_GREEN,     COLOR_RED,      COLOR_GREEN);
+    init_pair(TEXU_CIO_COLOR_RED_YELLOW,    COLOR_RED,      COLOR_YELLOW);
+    init_pair(TEXU_CIO_COLOR_RED_BLUE,      COLOR_RED,      COLOR_BLUE);
+    init_pair(TEXU_CIO_COLOR_RED_MAGENTA,   COLOR_RED,      COLOR_MAGENTA);
+    init_pair(TEXU_CIO_COLOR_RED_CYAN,      COLOR_RED,      COLOR_CYAN);
+    init_pair(TEXU_CIO_COLOR_RED_WHITE,     COLOR_RED,      COLOR_WHITE);
+    init_pair(TEXU_CIO_COLOR_GREEN_BLACK,   COLOR_GREEN,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_GREEN_RED,     COLOR_GREEN,    COLOR_RED);
+    init_pair(TEXU_CIO_COLOR_GREEN_GREEN,   COLOR_GREEN,    COLOR_GREEN);
+    init_pair(TEXU_CIO_COLOR_GREEN_YELLOW,  COLOR_GREEN,    COLOR_YELLOW);
+    init_pair(TEXU_CIO_COLOR_GREEN_BLUE,    COLOR_GREEN,    COLOR_BLUE);
+    init_pair(TEXU_CIO_COLOR_GREEN_MAGENTA, COLOR_GREEN,    COLOR_MAGENTA);
+    init_pair(TEXU_CIO_COLOR_GREEN_CYAN,    COLOR_GREEN,    COLOR_CYAN);
+    init_pair(TEXU_CIO_COLOR_GREEN_WHITE,   COLOR_GREEN,    COLOR_WHITE);
+    init_pair(TEXU_CIO_COLOR_YELLOW_BLACK,  COLOR_YELLOW,   COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_YELLOW_RED,    COLOR_YELLOW,   COLOR_RED);
+    init_pair(TEXU_CIO_COLOR_YELLOW_GREEN,  COLOR_YELLOW,   COLOR_GREEN);
+    init_pair(TEXU_CIO_COLOR_YELLOW_YELLOW, COLOR_YELLOW,   COLOR_YELLOW);
+    init_pair(TEXU_CIO_COLOR_YELLOW_BLUE,   COLOR_YELLOW,   COLOR_BLUE);
+    init_pair(TEXU_CIO_COLOR_YELLOW_MAGENTA, COLOR_YELLOW,  COLOR_MAGENTA);
+    init_pair(TEXU_CIO_COLOR_YELLOW_CYAN,   COLOR_YELLOW,   COLOR_CYAN);
+    init_pair(TEXU_CIO_COLOR_YELLOW_WHITE,  COLOR_YELLOW,   COLOR_WHITE);
+    init_pair(TEXU_CIO_COLOR_BLUE_BLACK,    COLOR_BLUE,     COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_BLUE_RED,      COLOR_BLUE,     COLOR_RED);
+    init_pair(TEXU_CIO_COLOR_BLUE_GREEN,    COLOR_BLUE,     COLOR_GREEN);
+    init_pair(TEXU_CIO_COLOR_BLUE_YELLOW,   COLOR_BLUE,     COLOR_YELLOW);
+    init_pair(TEXU_CIO_COLOR_BLUE_BLUE,     COLOR_BLUE,     COLOR_BLUE);
+    init_pair(TEXU_CIO_COLOR_BLUE_MAGENTA,  COLOR_BLUE,     COLOR_MAGENTA);
+    init_pair(TEXU_CIO_COLOR_BLUE_CYAN,     COLOR_BLUE,     COLOR_CYAN);
+    init_pair(TEXU_CIO_COLOR_BLUE_WHITE,    COLOR_BLUE,     COLOR_WHITE);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_BLACK, COLOR_MAGENTA,  COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_RED,   COLOR_MAGENTA,  COLOR_RED);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_GREEN, COLOR_MAGENTA,  COLOR_GREEN);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_YELLOW, COLOR_MAGENTA, COLOR_YELLOW);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_BLUE,  COLOR_MAGENTA,  COLOR_BLUE);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_MAGENTA, COLOR_MAGENTA, COLOR_MAGENTA);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_CYAN,  COLOR_MAGENTA,  COLOR_CYAN);
+    init_pair(TEXU_CIO_COLOR_MAGENTA_WHITE, COLOR_MAGENTA,  COLOR_WHITE);
+    init_pair(TEXU_CIO_COLOR_CYAN_BLACK,    COLOR_CYAN,     COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_CYAN_RED,      COLOR_CYAN,     COLOR_RED);
+    init_pair(TEXU_CIO_COLOR_CYAN_GREEN,    COLOR_CYAN,     COLOR_GREEN);
+    init_pair(TEXU_CIO_COLOR_CYAN_YELLOW,   COLOR_CYAN,     COLOR_YELLOW);
+    init_pair(TEXU_CIO_COLOR_CYAN_BLUE,     COLOR_CYAN,     COLOR_BLUE);
+    init_pair(TEXU_CIO_COLOR_CYAN_MAGENTA,  COLOR_CYAN,     COLOR_MAGENTA);
+    init_pair(TEXU_CIO_COLOR_CYAN_CYAN,     COLOR_CYAN,     COLOR_CYAN);
+    init_pair(TEXU_CIO_COLOR_CYAN_WHITE,    COLOR_CYAN,     COLOR_WHITE);
+    init_pair(TEXU_CIO_COLOR_WHITE_BLACK,   COLOR_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_COLOR_WHITE_RED,     COLOR_WHITE,    COLOR_RED);
+    init_pair(TEXU_CIO_COLOR_WHITE_GREEN,   COLOR_WHITE,    COLOR_GREEN);
+    init_pair(TEXU_CIO_COLOR_WHITE_YELLOW,  COLOR_WHITE,    COLOR_YELLOW);
+    init_pair(TEXU_CIO_COLOR_WHITE_BLUE,    COLOR_WHITE,    COLOR_BLUE);
+    init_pair(TEXU_CIO_COLOR_WHITE_MAGENTA, COLOR_WHITE,    COLOR_MAGENTA);
+    init_pair(TEXU_CIO_COLOR_WHITE_CYAN,    COLOR_WHITE,    COLOR_CYAN);
+    init_pair(TEXU_CIO_COLOR_WHITE_WHITE,   COLOR_WHITE,    COLOR_WHITE);
+
+    /*BRIGHT WHITE*/
+    init_pair(TEXU_CIO_BRIGHT_WHITE_BLACK,  TEXU_CIO_BRIGHT_WHITE_WHITE,    COLOR_BLACK);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_RED,    TEXU_CIO_BRIGHT_WHITE_WHITE,      COLOR_RED);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_GREEN,  TEXU_CIO_BRIGHT_WHITE_WHITE,    COLOR_GREEN);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_YELLOW, TEXU_CIO_BRIGHT_WHITE_WHITE,   COLOR_YELLOW);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_BLUE,   TEXU_CIO_BRIGHT_WHITE_WHITE,     COLOR_BLUE);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_MAGENTA,TEXU_CIO_BRIGHT_WHITE_WHITE,  COLOR_MAGENTA);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_CYAN,   TEXU_CIO_BRIGHT_WHITE_WHITE,     COLOR_CYAN);
+    init_pair(TEXU_CIO_BRIGHT_WHITE_WHITE,  TEXU_CIO_BRIGHT_WHITE_WHITE,    COLOR_WHITE);
+    init_pair(TEXU_CIO_BLACK_BRIGHT_WHITE,  COLOR_BLACK,    TEXU_CIO_BRIGHT_WHITE_WHITE);
+    init_pair(TEXU_CIO_RED_BRIGHT_WHITE,    COLOR_RED,      TEXU_CIO_BRIGHT_WHITE_WHITE);
+    init_pair(TEXU_CIO_GREEN_BRIGHT_WHITE,  COLOR_GREEN,    TEXU_CIO_BRIGHT_WHITE_WHITE);
+    init_pair(TEXU_CIO_YELLOW_BRIGHT_WHITE, COLOR_YELLOW,   TEXU_CIO_BRIGHT_WHITE_WHITE);
+    init_pair(TEXU_CIO_BLUE_BRIGHT_WHITE,   COLOR_BLUE,     TEXU_CIO_BRIGHT_WHITE_WHITE);
+    init_pair(TEXU_CIO_MAGENTA_BRIGHT_WHITE,COLOR_MAGENTA,  TEXU_CIO_BRIGHT_WHITE_WHITE);
+    init_pair(TEXU_CIO_CYAN_BRIGHT_WHITE,   COLOR_CYAN,     TEXU_CIO_BRIGHT_WHITE_WHITE);
+}
+
+#elif (defined __USE_TTY__ || defined __VMS__ || defined __UNIX__)
+void
+_texu_cio_init_colors_mono(texu_cio *cio)
+{
+    cio__init_pair(BLACK_BLACK,     TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_RED,       TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_GREEN,     TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_YELLOW,    TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_BLUE,      TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_MAGENTA,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_CYAN,      TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_WHITE,     TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_BLACK);
+    cio__init_pair(RED_BLACK,       TTY_FOREGROUND_RED,     TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_RED);
+    cio__init_pair(RED_RED,         TTY_FOREGROUND_RED,     TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_RED);
+    cio__init_pair(RED_GREEN,       TTY_FOREGROUND_RED,     TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_RED);
+    cio__init_pair(RED_YELLOW,      TTY_FOREGROUND_RED,     TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_RED);
+    cio__init_pair(RED_BLUE,        TTY_FOREGROUND_RED,     TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_RED);
+    cio__init_pair(RED_MAGENTA,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_RED);
+    cio__init_pair(RED_CYAN,        TTY_FOREGROUND_RED,     TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_RED);
+    cio__init_pair(RED_WHITE,       TTY_FOREGROUND_RED,     TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_RED);
+    cio__init_pair(GREEN_BLACK,     TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_RED,       TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_GREEN,     TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_YELLOW,    TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_BLUE,      TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_MAGENTA,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_CYAN,      TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_WHITE,     TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_GREEN);
+    cio__init_pair(YELLOW_BLACK,    TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_RED,      TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_GREEN,    TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_YELLOW,   TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_BLUE,     TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_MAGENTA,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_CYAN,     TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_WHITE,    TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_YELLOW);
+    cio__init_pair(BLUE_BLACK,      TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_RED,        TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_GREEN,      TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_YELLOW,     TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_BLUE,       TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_MAGENTA,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_CYAN,       TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_WHITE,      TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_BLUE);
+    cio__init_pair(MAGENTA_BLACK,   TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_RED,     TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_GREEN,   TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_YELLOW,  TTY_FOREGROUND_MAGENTA, TTY_FOREGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_BLUE,    TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_CYAN,    TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_WHITE,   TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(CYAN_BLACK,      TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_RED,        TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_GREEN,      TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_YELLOW,     TTY_FOREGROUND_CYAN,    TTY_FOREGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_BLUE,       TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_MAGENTA,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_CYAN,       TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_WHITE,      TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_CYAN);
+    cio__init_pair(WHITE_BLACK,     TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_RED,       TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_GREEN,     TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_YELLOW,    TTY_FOREGROUND_WHITE,   TTY_FOREGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_BLUE,      TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_MAGENTA,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_CYAN,      TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_WHITE,     TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_WHITE);
+}
+void
+_texu_cio_init_colors(texu_cio *cio)
+{
+    cio__init_pair(BLACK_BLACK,     TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_RED,       TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_GREEN,     TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_YELLOW,    TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_BLUE,      TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_MAGENTA,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_CYAN,      TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_BLACK);
+    cio__init_pair(BLACK_WHITE,     TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_BLACK);
+    cio__init_pair(RED_BLACK,       TTY_FOREGROUND_RED,     TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_RED);
+    cio__init_pair(RED_RED,         TTY_FOREGROUND_RED,     TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_RED);
+    cio__init_pair(RED_GREEN,       TTY_FOREGROUND_RED,     TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_RED);
+    cio__init_pair(RED_YELLOW,      TTY_FOREGROUND_RED,     TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_RED);
+    cio__init_pair(RED_BLUE,        TTY_FOREGROUND_RED,     TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_RED);
+    cio__init_pair(RED_MAGENTA,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_RED);
+    cio__init_pair(RED_CYAN,        TTY_FOREGROUND_RED,     TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_RED);
+    cio__init_pair(RED_WHITE,       TTY_FOREGROUND_RED,     TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_RED);
+    cio__init_pair(GREEN_BLACK,     TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_RED,       TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_GREEN,     TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_YELLOW,    TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_BLUE,      TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_MAGENTA,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_CYAN,      TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_GREEN);
+    cio__init_pair(GREEN_WHITE,     TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_GREEN);
+    cio__init_pair(YELLOW_BLACK,    TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_RED,      TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_GREEN,    TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_YELLOW,   TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_BLUE,     TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_MAGENTA,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_CYAN,     TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_YELLOW);
+    cio__init_pair(YELLOW_WHITE,    TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_YELLOW);
+    cio__init_pair(BLUE_BLACK,      TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_RED,        TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_GREEN,      TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_YELLOW,     TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_BLUE,       TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_MAGENTA,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_CYAN,       TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_BLUE);
+    cio__init_pair(BLUE_WHITE,      TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_BLUE);
+    cio__init_pair(MAGENTA_BLACK,   TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_RED,     TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_GREEN,   TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_YELLOW,  TTY_FOREGROUND_MAGENTA, TTY_FOREGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_BLUE,    TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_CYAN,    TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(MAGENTA_WHITE,   TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_MAGENTA);
+    cio__init_pair(CYAN_BLACK,      TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_RED,        TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_GREEN,      TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_YELLOW,     TTY_FOREGROUND_CYAN,    TTY_FOREGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_BLUE,       TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_MAGENTA,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_CYAN,       TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_CYAN);
+    cio__init_pair(CYAN_WHITE,      TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_CYAN);
+    cio__init_pair(WHITE_BLACK,     TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_BLACK,   TTY_FOREGROUND_BLACK,   TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_RED,       TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_RED,     TTY_FOREGROUND_RED,     TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_GREEN,     TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_GREEN,   TTY_FOREGROUND_GREEN,   TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_YELLOW,    TTY_FOREGROUND_WHITE,   TTY_FOREGROUND_YELLOW,  TTY_FOREGROUND_YELLOW,  TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_BLUE,      TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_BLUE,    TTY_FOREGROUND_BLUE,    TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_MAGENTA,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_MAGENTA, TTY_FOREGROUND_MAGENTA, TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_CYAN,      TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_CYAN,    TTY_FOREGROUND_CYAN,    TTY_BACKGROUND_WHITE);
+    cio__init_pair(WHITE_WHITE,     TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_WHITE,   TTY_FOREGROUND_WHITE,   TTY_BACKGROUND_WHITE);
 }
 #elif (defined WIN32 && defined _WINDOWS)
 void
@@ -204,7 +713,6 @@ _texu_cio_init_colors_mono(texu_cio *cio)
     init_pair(TEXU_CIO_MAGENTA_BRIGHT_WHITE,    COLOR_WHITE,    COLOR_BLACK);
     init_pair(TEXU_CIO_CYAN_BRIGHT_WHITE,       COLOR_WHITE,    COLOR_BLACK);
 }
-
 void
 _texu_cio_init_colors(texu_cio *cio)
 {
@@ -294,11 +802,30 @@ _texu_cio_init_colors(texu_cio *cio)
 }
 
 #endif
+
+#if (defined VMS || defined __VMS__)
+void texu__cio_on_timeout(void* data)
+{
+    texu_cio* cio = (texu_cio*)data;
+    /*trig the registered function by the application*/
+    if (cio->on_timeout)
+    {
+        cio->on_timeout(cio);
+    }
+}
+#endif
 void
-texu_cio_interval(texu_cio cio, texu_i32 msec)
+texu_cio_interval(texu_cio* cio, texu_i32 msec)
 {
 #ifdef __USE_TTY__
 #elif (defined WIN32 && defined _WINDOWS)
+#elif (defined VMS || defined __VMS__)
+#define TIMER_INTERVAL 5
+    long timer = TIMER_INTERVAL * 100; // Convert seconds to 1/100th of seconds
+    long status = 0;
+    long timeout = 0;
+    status = sys$setimr(3, timer, &texu__cio_on_timeout, cio, &timeout);
+    status = smg$repaint_screen(&cio->smg_pastebd_id);
 #else
     if (msec <= 0)
     {
@@ -331,10 +858,92 @@ texu_cio_init(texu_cio *cio, texu_env *env)
     cio->env = env;
     return TEXU_OK;
 }
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
+{
+    long status = 0;
+    long rows = lines;
+    long columns = cols;
+    long smg_pastebd_id = 0;
+    long smg_display_id = 0;
+    long smg_display_id2 = 0;
+    long smg_keybd_id = 0;
+    long start_row = 1;
+    long start_column = 1;
+    smg$r_attribute_info_block pbinfo;
+    long pbsz = sizeof(pbinfo);
+#ifdef TEXU_CIO_COLOR_MONO
+    _texu_cio_init_colors_mono(cio);
+#else
+    _texu_cio_init_colors(cio);
+#endif
+    status = smg$create_pasteboard(&smg_pastebd_id);
+    if (!(status & 1))
+    {
+        fprintf(stderr, "Error creating pasteboard: %ld\n", status);
+        return status;
+    }
+    status = smg$get_pasteboard_attributes(&smg_pastebd_id, &pbinfo, &pbsz);
+    if (!(status & 1))
+    {
+        fprintf(stderr, "Error get pasteboard attributes: %ld\n", status);
+        return status;
+    }
+    
+    rows = pbinfo.smg$r_row_overlay;
+    columns = pbinfo.smg$w_num_columns;
+    status = smg$create_virtual_display(&rows, &columns, &smg_display_id);
+    if (!(status & 1))
+    {
+        fprintf(stderr, "Error creating display: %ld\n", status);
+        return status;
+    }
+    status = smg$copy_virtual_display(&smg_display_id, &smg_display_id2);
+    if (!(status & 1))
+    {
+        fprintf(stderr, "Error creating display: %ld\n", status);
+        return status;
+    }
+    
+    status = smg$paste_virtual_display(&smg_display_id, &smg_pastebd_id);
+    if (!(status & 1))
+    {
+        fprintf(stderr, "Error creating paste display: %ld\n", status);
+        return status;
+    }
+    /*status = smg$set_display_scroll_region(&smg_display_id, &start_row, &start_column);
+    if (!(status & 1))
+    {
+        fprintf(stderr, "Error creating scroll: %ld\n", status);
+        return status;
+    }*/
+    status = smg$create_virtual_keyboard(&smg_keybd_id);
+    if (!(status & 1))
+    {
+        fprintf(stderr, "Error creating keyboard: %ld\n", status);
+        return status;
+    }
+
+    cio->smg_pastebd_id = smg_pastebd_id;
+    cio->smg_display_id = smg_display_id;
+    cio->smg_keybd_id   = smg_keybd_id;
+    /*double-buffering technic*/
+    cio->smg_flipflop   = 0;
+    cio->smg_offscreens[0] = smg_display_id;
+    cio->smg_offscreens[1] = smg_display_id2;
+
+    texu_cio_echo(cio, TEXU_FALSE);
+    
+    smg$save_physical_screen(&cio->smg_pastebd_id, &cio->smg_display_id);
+
+    return TEXU_OK;
+}
 #else
 texu_i32
 texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
 {
+    int colors = 0;
     initscr();
     /*raw();*/
     cbreak();
@@ -342,7 +951,14 @@ texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
     noecho();
     timeout(500); /*if there is no key pressed, make TEXU_MW_IDLE msg sent to the top window*/
 
-    start_color();
+    colors = has_colors();
+    if (!colors)
+    {
+    }
+    else
+    {
+        start_color();
+    }
 #ifdef TEXU_CIO_COLOR_MONO
     _texu_cio_init_colors_mono(cio);
 #else
@@ -372,6 +988,27 @@ void
 texu_cio_release(texu_cio *cio)
 {
 }
+#elif (defined VMS || defined __VMS__)
+void texu_cio_erase_chars(texu_cio* cio, texu_i32 no_chars, texu_i32 y, texu_i32 x)
+{
+    /*vms start from (1, 1)*/
+    long smg_display_id = texu__cio_get_on_display(cio);
+    y++;
+    x++;
+/*    smg$erase_chars(&cio->smg_display_id, &no_chars, &y, &x);*/
+    smg$erase_chars(&smg_display_id, &no_chars, &y, &x);
+}
+
+void
+texu_cio_release(texu_cio *cio)
+{
+    smg$restore_physical_screen(&cio->smg_pastebd_id, &cio->smg_display_id);
+    smg$delete_virtual_keyboard(&cio->smg_keybd_id);
+/*    smg$delete_virtual_display(&cio->smg_display_id);*/
+    smg$delete_virtual_display(&cio->smg_offscreens[0]);
+    smg$delete_virtual_display(&cio->smg_offscreens[1]);
+    smg$delete_pasteboard(&cio->smg_pastebd_id);
+}
 #else
 void
 texu_cio_release(texu_cio *cio)
@@ -398,6 +1035,19 @@ texu_cio_echo(texu_cio *cio, texu_bool echo_)
 {
     return TEXU_OK;
 }
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_echo(texu_cio *cio, texu_bool echo_)
+{
+    long smg_cursor_mode = SMG$M_CURSOR_OFF;
+    long status = 0;
+    if (echo_)
+    {
+        smg_cursor_mode = SMG$M_CURSOR_ON;
+    }
+    status = smg$set_cursor_mode(&cio->smg_pastebd_id, &smg_cursor_mode);
+    return status;
+}
 #else
 texu_i32
 texu_cio_echo(texu_cio *cio, texu_bool echo_)
@@ -422,6 +1072,19 @@ texu_cio_getch(texu_cio *cio)
 {
     return 0;
 }
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_getch(texu_cio *cio)
+{
+    unsigned short key;
+    int timeout = 1;
+    long status = smg$read_keystroke(&cio->smg_keybd_id, &key, 0, &timeout);
+    if (SS$_TIMEOUT == status)
+    {
+        return -1;
+    }
+    return key;
+}
 #else
 texu_i32
 texu_cio_getch(texu_cio *cio)
@@ -442,6 +1105,13 @@ texu_i32
 texu_cio_getstr(texu_cio *cio, texu_char *str)
 {
     return 0;
+}
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_getstr(texu_cio *cio, texu_char *str)
+{
+    long status = smg$read_string(&cio->smg_keybd_id, str);
+    return status;
 }
 #else
 texu_i32
@@ -465,6 +1135,17 @@ texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
 {
     return texu_env_gotoyx(cio->env, y, x);
 }
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
+{
+    long smg_display_id = texu__cio_get_on_display(cio);
+    long x_coord = x + 1;
+    long y_coord = y + 1;
+/*    long status = smg$set_cursor_abs(&cio->smg_display_id, &y_coord, &x_coord);*/
+    long status = smg$set_cursor_abs(&smg_display_id, &y_coord, &x_coord);
+    return status;
+}
 #else
 texu_i32
 texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
@@ -476,21 +1157,33 @@ texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
 
 #ifdef __USE_TTY__
 texu_i32
-texu_cio_getyx(texu_cio *cio, texu_i32 y, texu_i32 x)
+texu_cio_getyx(texu_cio *cio, texu_i32* y, texu_i32* x)
 {
     return 0;
 }
 #elif (defined WIN32 && defined _WINDOWS)
 texu_i32
-texu_cio_getyx(texu_cio *cio, texu_i32 y, texu_i32 x)
+texu_cio_getyx(texu_cio *cio, texu_i32* y, texu_i32* x)
 {
     return 0;
 }
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_getyx(texu_cio *cio, texu_i32* y, texu_i32* x)
+{
+    long smg_display_id = texu__cio_get_on_display(cio);
+/*    return smg$return_cursor_pos(cio->smg_display_id, x, y);*/
+    return smg$return_cursor_pos(smg_display_id, x, y);
+}
 #else
 texu_i32
-texu_cio_getyx(texu_cio *cio, texu_i32 y, texu_i32 x)
+texu_cio_getyx(texu_cio *cio, texu_i32* y, texu_i32* x)
 {
-    return getyx(cio->wndscr, y, x);
+    int _y = 0, _x = 0;
+    getyx(cio->wndscr, _y, _x);
+    *y = _y;
+    *x = _x;
+    return 0;
 }
 #endif
 
@@ -502,6 +1195,14 @@ texu_cio_clear(texu_cio *cio)
     return texu_tty_clear();
 }
 #elif (defined WIN32 && defined _WINDOWS)
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_clear(texu_cio *cio)
+{
+    long smg_display_id = texu__cio_get_on_display(cio);
+    return smg$erase_display(&smg_display_id);
+/*    return smg$erase_display(&cio->smg_display_id);*/
+}
 #else
 texu_i32
 texu_cio_clear(texu_cio *cio)
@@ -522,6 +1223,14 @@ texu_cio_clearln(texu_cio *cio, texu_i32 y)
 {
     return 0;
 }
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_clearln(texu_cio *cio, texu_i32 y)
+{
+    long smg_display_id = texu__cio_get_on_display(cio);
+    return smg$erase_line(&smg_display_id, &y);
+/*    return smg$erase_line(&cio->smg_display_id, &y);*/
+}
 #else
 texu_i32
 texu_cio_clearln(texu_cio *cio, texu_i32 y)
@@ -533,46 +1242,145 @@ texu_cio_clearln(texu_cio *cio, texu_i32 y)
 
 #ifdef __USE_TTY__
 texu_i32
-texu_cio_putch(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch)
+texu_cio_putch_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_bool erase)
 {
     return texu_tty_putch(y, x, ch);
 }
-#elif (defined WIN32 && defined _WINDOWS)
 texu_i32
 texu_cio_putch(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch)
+{
+    return texu_cio_putch_erase(cio, y, x, ch, TEXU_FALSE);
+}
+#elif (defined WIN32 && defined _WINDOWS)
+texu_i32
+texu_cio_putch_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_bool erase)
 {
     return 0;
 }
-#else
 texu_i32
 texu_cio_putch(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch)
 {
+    return texu_cio_putch_erase(cio, y, x, ch, TEXU_FALSE);
+}
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_putch_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_bool erase)
+{
+    char sz[2] = { ch, 0 };
+    $DESCRIPTOR(text, sz);
+    texu_i32 status = 0;
+    long smg_display_id = texu__cio_get_on_display(cio);
+    
+    /*texu_tty_attron(attrs);*/
+    /*status = texu_cio_gotoyx(cio, y+1, x+1);*/
+#if 0
+    texu_cio_gotoyx(cio, y, x);
+    texu_cio_get_color(cio, WHITE_BLACK);
+    printf(sz);
+#else
+    y++;    /*curses start (0, 0)*/
+    x++;    /*vms start (1, 1)*/
+    status = smg$put_chars(&cio->smg_display_id, &text, &y, &x,/*&x, &y,*/
+                &erase,     /*0 - Does not erase line (the default), 1 - Erase */
+                &0, &0);    /*Set   Complement  Action*/
+                            /*0     0           Attribute set to default*/
+                            /*1     0           Attribute on*/
+                            /*0     1           Attribute set to complement of default setting*/
+                            /*1     1           Attribute off*/
+#endif
+    texu_cio_get_color(cio, WHITE_BLACK);
+    return status;
+}
+texu_i32
+texu_cio_putch(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch)
+{
+    return texu_cio_putch_erase(cio, y, x, ch, TEXU_FALSE);
+}
+#else
+texu_i32
+texu_cio_putch_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_bool erase)
+{
     return mvwaddch(cio->wndscr, y, x, ch);
+}
+texu_i32
+texu_cio_putch(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch)
+{
+    return texu_cio_putch_erase(cio, y, x, ch, TEXU_FALSE);
 }
 #endif /*__USE_TTY__*/
 
 #ifdef __USE_TTY__
 texu_i32
-texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
+texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs, texu_bool erase)
 {
     texu_tty_attron(attrs);
     texu_tty_putch(y, x, ch);
     return texu_tty_attroff(cio, attrs);
 }
-#elif (defined WIN32 && defined _WINDOWS)
 texu_i32
 texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
 {
+    return texu_cio_putch_attr_erase(cio, y, x, ch, attrs, TEXU_FALSE);
+}
+#elif (defined WIN32 && defined _WINDOWS)
+texu_i32
+texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs, texu_bool erase)
+{
     return 0;
+}
+texu_i32
+texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
+{
+    return texu_cio_putch_attr_erase(cio, y, x, ch, attrs, TEXU_FALSE);
+}
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs, texu_bool erase)
+{
+    char sz[2] = { ch, 0 };
+    $DESCRIPTOR(text, sz);
+    texu_i32 status = 0;
+    
+    /*texu_tty_attron(attrs);*/
+    /*status = texu_cio_gotoyx(cio, y+1, x+1);*/
+#if 0
+    texu_cio_gotoyx(cio, y, x);
+/*    texu_cio_get_color(cio, attrs);*/
+    printf(sz);
+#else
+    y++;    /*curses start (0, 0)*/
+    x++;    /*vms start (1, 1)*/
+    status = smg$put_chars(&cio->smg_display_id, &text, &y, &x,/*&x, &y,*/
+                &erase,     /*Does not erase line (the default)*/
+                &1, &0);    /*Set   Complement  Action*/
+                            /*0     0           Attribute set to default*/
+                            /*1     0           Attribute on*/
+                            /*0     1           Attribute set to complement of default setting*/
+                            /*1     1           Attribute off*/
+#endif
+    /*texu_tty_attroff(cio, attrs);*/
+    texu_cio_get_color(cio, WHITE_BLACK);
+    return status;
+}
+texu_i32
+texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
+{
+    return texu_cio_putch_attr_erase(cio, y, x, ch, attrs, TEXU_FALSE);
 }
 #else
 texu_i32
-texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
+texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs, texu_bool erase)
 {
     texu_cio_attron(cio, attrs);
     mvwaddch(cio->wndscr, y, x, ch);
     return texu_cio_attroff(cio, attrs);
 }
+texu_i32
+texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
+{
+    return texu_cio_putch_attr_erase(cio, y, x, ch, attrs, TEXU_FALSE);
+}
+
 #endif /*__USE_TTY__*/
 
 
@@ -598,21 +1406,90 @@ texu_cio_putch_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i3
 
 #ifdef __USE_TTY__
 texu_i32
+texu_cio_putstr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_bool erase)
+{
+    return texu_tty_putstr(y, x, str);
+}
+texu_i32
 texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
 {
     return texu_tty_putstr(y, x, str);
 }
 #elif (defined WIN32 && defined _WINDOWS)
 texu_i32
-texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
+texu_cio_putstr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_bool erase)
 {
     return 0;
 }
-#else
 texu_i32
 texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
 {
+    return texu_cio_putstr_erase(cio, y, x, str, TEXU_FALSE);
+}
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_putstr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_bool erase)
+{
+    /*char* psz = (char*)str;*/
+    texu_char sz[TEXU_MAX_WNDTEXT + 1];
+    $DESCRIPTOR(text, sz);
+    texu_i32 status = 0;
+    texu_i32 newx = x;
+    texu_i32 newy = y;
+
+    memset(sz, 0, sizeof(sz));
+    strcpy(sz, str);
+    /*status = texu_cio_gotoyx(cio, y+1, x+1);*/
+#if 0
+    texu_cio_gotoyx(cio, y, x);
+    texu_cio_get_color(cio, WHITE_BLACK);
+    printf(sz);
+#else
+    texu_cio_getyx(cio, &newy, &newx);
+    if (y < 0)
+    {
+        y = newy;
+    }
+    else
+    {
+        ++y;
+    }
+    if (x < 0)
+    {
+        x = newx;
+    }
+    else
+    {
+        ++x;
+    }
+//    y++;    /*curses start (0, 0)*/
+//    x++;    /*vms start (1, 1)*/
+    status = smg$put_chars(&cio->smg_display_id, &text, &y, &x,/*&x, &y,*/
+                &erase,         /*Does not erase line (the default)*/
+                &0, &0);    /*Set   Complement  Action*/
+                            /*0     0           Attribute set to default*/
+                            /*1     0           Attribute on*/
+                            /*0     1           Attribute set to complement of default setting*/
+                            /*1     1           Attribute off*/
+#endif
+    texu_cio_get_color(cio, WHITE_BLACK);
+    return status;
+}
+texu_i32
+texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
+{
+    return texu_cio_putstr_erase(cio, y, x, str, TEXU_FALSE);
+}
+#else
+texu_i32
+texu_cio_putstr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_bool erase)
+{
     return mvwprintw(cio->wndscr, y, x, str);
+}
+texu_i32
+texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
+{
+    return texu_cio_putstr_erase(cio, y, x, str, TEXU_FALSE);
 }
 #endif
 
@@ -630,15 +1507,100 @@ texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str
 {
     return 0;
 }
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_putstr_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs, texu_bool erase)
+{
+//    texu_char* psz = (char*)malloc(strlen(str)+1);
+    texu_char sz[TEXU_MAX_WNDTEXT + 1];
+    $DESCRIPTOR(text, sz);
+    texu_i32 status = 0;
+    texu_i32 newx = x;
+    texu_i32 newy = y;
+
+    memset(sz, 0, sizeof(sz));
+    strcpy(sz, str);
+    /*texu_tty_attron(attrs);*/
+    /*status = texu_cio_gotoyx(cio, y+1, x+1);*/
+#if 0
+    texu_cio_gotoyx(cio, y, x);
+/*    texu_cio_get_color(cio, attrs);*/
+    printf(sz);
 #else
+    texu_cio_getyx(cio, &newy, &newx);
+    if (y < 0)
+    {
+        y = newy;
+    }
+    else
+    {
+        ++y;
+    }
+    if (x < 0)
+    {
+        x = newx;
+    }
+    else
+    {
+        ++x;
+    }
+//    y++;    /*curses start (0, 0)*/
+//    x++;    /*vms start (1, 1)*/
+    status = smg$put_chars(&cio->smg_display_id, &text, &y, &x,/*&x, &y,*/
+                &erase,     /*0 - do not erase, 1-erase before paint*/
+                &0, &0);    /*Set   Complement  Action*/
+                            /*0     0           Attribute set to default*/
+                            /*1     0           Attribute on*/
+                            /*0     1           Attribute set to complement of default setting*/
+                            /*1     1           Attribute off*/
+#endif
+    /*texu_tty_attroff(cio, attrs);*/
+    texu_cio_get_color(cio, WHITE_BLACK);
+    return status;
+}
 texu_i32
 texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs)
+{
+    return texu_cio_putstr_attr_erase(cio, y, x, str, attrs, TEXU_FALSE);
+}
+#else
+
+texu_i32
+texu_cio_putstr_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs, texu_bool erase)
 {
     texu_cio_attron(cio, attrs);
     mvwprintw(cio->wndscr, y, x, str);
     return texu_cio_attroff(cio, attrs);
 }
+texu_i32
+texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs)
+{
+    return texu_cio_putstr_attr_erase(cio, y, x, str, attrs, TEXU_FALSE);
+}
+
 #endif
+
+texu_i32 texu_cio_get_keyname(texu_cio* cio, texu_i32 keycode, texu_char* outname, texu_i32 len)
+{
+    texu_i32 rc = -1;
+#if (defined __VMS__)
+    texu_char           key_name[32];
+    $DESCRIPTOR(keydesc, key_name);
+
+    memset(key_name, 0, sizeof(key_name));
+    smg$keycode_to_name(&keycode, &keydesc);
+    
+    texu_strncpy(outname, key_name, len);
+    rc = texu_strlen(outname);
+#elif (defined __USE_TTY__)
+#elif (defined _WINDOWS)
+#else
+    texu_char* keypressed = keyname(keycode);
+    texu_strncpy(outname, keypressed, len);
+    rc = texu_strlen(outname);
+#endif
+    return rc;
+}
 
 texu_i32
 texu_cio_draw_text(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
@@ -649,9 +1611,47 @@ texu_cio_draw_text(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
 #if (defined WIN32 && defined _WINDOWS)
     return texu_env_draw_text_ex(cio->env, y, x, text, color, bgcolor,
                                     clsname, id);
+#elif (defined __USE_TTY__)
+    return texu_cio_putstr_attr(cio, y, x, text,
+            texu_cio_get_color(cio, cio__color_pair(color)));
+#elif (defined __VMS__)
+    return texu_cio_putstr_attr(cio, y, x, text,
+            texu_cio_get_color(cio, color));
+#else
+#if defined __LINUX__
+    return texu_cio_putstr_attr(cio, y, x, text,
+            texu_cio_get_color(cio, color));
 #else
     return texu_cio_putstr_attr(cio, y, x, text,
             texu_cio_get_color(cio, color));
+#endif
+#endif
+}
+
+texu_i32
+texu_cio_draw_text_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
+    texu_ui32 color, texu_ui32 bgcolor,
+    const texu_char *clsname,
+    texu_ui32 id,
+    texu_bool erase)
+{
+#if (defined WIN32 && defined _WINDOWS)
+    return texu_env_draw_text_ex(cio->env, y, x, text, color, bgcolor,
+                                    clsname, id);
+#elif (defined __USE_TTY__)
+    return texu_cio_putstr_attr(cio, y, x, text,
+            texu_cio_get_color(cio, cio__color_pair(color)));
+#elif (defined __VMS__)
+    return texu_cio_putstr_attr_erase(cio, y, x, text,
+            texu_cio_get_color(cio, color), erase);
+#else
+#if defined __LINUX__
+    return texu_cio_putstr_attr(cio, y, x, text,
+            texu_cio_get_color(cio, color));
+#else
+    return texu_cio_putstr_attr_erase(cio, y, x, text,
+            texu_cio_get_color(cio, color), erase);
+#endif
 #endif
 }
 
@@ -664,9 +1664,48 @@ texu_cio_draw_char(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
 #if (defined WIN32 && defined _WINDOWS)
     return texu_env_draw_char_ex(cio->env, y, x, ch, color, bgcolor,
                                  clsname, id);
+#elif (defined __USE_TTY__)
+    return texu_cio_putch_attr(cio, y, x, ch, 
+            texu_cio_get_color(cio, cio__color_pair(color)));
+#elif (defined __VMS__)
+    return texu_cio_putch_attr(cio, y, x, ch, 
+            texu_cio_get_color(cio, color));
+#else
+#if defined __LINUX__
+    return texu_cio_putch_attr(cio, y, x, ch, 
+            texu_cio_get_color(cio, color));
 #else
     return texu_cio_putch_attr(cio, y, x, ch, 
             texu_cio_get_color(cio, color));
+#endif
+#endif
+}
+
+
+texu_i32
+texu_cio_draw_char_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
+    texu_ui32 color, texu_ui32 bgcolor,
+    const texu_char *clsname,
+    texu_ui32 id,
+    texu_bool erase)
+{
+#if (defined WIN32 && defined _WINDOWS)
+    return texu_env_draw_char_ex(cio->env, y, x, ch, color, bgcolor,
+                                 clsname, id);
+#elif (defined __USE_TTY__)
+    return texu_cio_putch_attr(cio, y, x, ch, 
+            texu_cio_get_color(cio, cio__color_pair(color)));
+#elif (defined __VMS__)
+    return texu_cio_putch_attr_erase(cio, y, x, ch, 
+            texu_cio_get_color(cio, color), erase);
+#else
+#if defined __LINUX__
+    return texu_cio_putch_attr(cio, y, x, ch, 
+            texu_cio_get_color(cio, color));
+#else
+    return texu_cio_putch_attr(cio, y, x, ch, 
+            texu_cio_get_color(cio, color));
+#endif
 #endif
 }
 
@@ -682,6 +1721,12 @@ texu_cio_putstr_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *st
 {
     return 0;
 }
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_putstr_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 color, texu_i32 attrs)
+{
+    return texu_cio_putstr_attr(cio, y, x, str, attrs);
+}
 #else
 texu_i32
 texu_cio_putstr_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 color, texu_i32 attrs)
@@ -691,7 +1736,7 @@ texu_cio_putstr_attr2(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *st
 #endif
 
 
-#ifdef __USE_TTY__
+#if (defined __USE_TTY__ || defined __VMS__)
 texu_i32
 texu_cio_attron(texu_cio *cio, texu_i32 attrs)
 {
@@ -704,6 +1749,7 @@ texu_cio_attroff(texu_cio *cio, texu_i32 attrs)
     return texu_tty_attroff();
 }
 #elif (defined WIN32 && defined _WINDOWS)
+texu_i32
 texu_cio_attron(texu_cio *cio, texu_i32 attrs)
 {
     return 0;
@@ -715,6 +1761,7 @@ texu_cio_attroff(texu_cio *cio, texu_i32 attrs)
     return 0;
 }
 #else
+#if defined __LINUX__ && defined __USE_CURSES__
 texu_i32
 texu_cio_attron(texu_cio *cio, texu_i32 attrs)
 {
@@ -726,6 +1773,19 @@ texu_cio_attroff(texu_cio *cio, texu_i32 attrs)
 {
     return wattroff(cio->wndscr, attrs);
 }
+#else
+texu_i32
+texu_cio_attron(texu_cio *cio, texu_i32 attrs)
+{
+    return texu_tty_attron(attrs);
+}
+
+texu_i32
+texu_cio_attroff(texu_cio *cio, texu_i32 attrs)
+{
+    return texu_tty_attroff();
+}
+#endif
 #endif
 
 #ifdef __USE_TTY__
@@ -739,6 +1799,12 @@ texu_i32
 texu_cio_refresh(texu_cio *cio)
 {
     return 0;
+}
+#elif (defined VMS || defined __VMS__)
+texu_i32
+texu_cio_refresh(texu_cio *cio)
+{
+    return smg$repaint_screen(&cio->smg_display_id);
 }
 #else
 texu_i32
@@ -759,14 +1825,24 @@ texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_
     {
         len = texu_strlen(text);
 
-#ifdef __USE_TTY__
+#if (defined __USE_TTY__)
         texu_cio_get_reverse(cio, attrs);
         texu_cio_putstr_attr(cio, rect->y,
                              rect->x + (rect->cols - len) / 2, text, attrs);
 #elif (defined WIN32 && defined _WINDOWS)
+#elif (defined __VMS__)
+        texu_cio_putstr_attr(cio, rect->y,
+                             rect->x + (rect->cols - len) / 2, text, 
+                             texu_cio_get_color(cio, cio__reverse_color_pair(attrs)));
 #else
+#if defined __LINUX__
         texu_cio_putstr_attr(cio, rect->y,
                              rect->x + (rect->cols - len) / 2, text, attrs | A_REVERSE);
+#else
+        texu_cio_putstr_attr(cio, rect->y,
+                             rect->x + (rect->cols - len) / 2, text, 
+                             texu_cio_get_color(cio, cio__reverse_color_pair(attrs)));
+#endif
 #endif
     }
     return TEXU_OK;
@@ -775,8 +1851,12 @@ texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_
 texu_i32
 texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
 {
+#if (defined __VMS__)
+    texu_cio_get_color(cio, cio__color_pair(attrs));
+    texu_i32 status = smg$draw_rectangle(&cio->smg_display_id, &rect->y+1, &rect->x+1, &rect->cols, &rect->lines, &0, &0);
+    texu_cio_get_color(cio, WHITE_BLACK);
+#else
     texu_cio_attron(cio, attrs);
-
     /*draw top line*/
     texu_cio_draw_line(cio, rect->y, rect->x, rect->cols, attrs);
     /*draw bottom line*/
@@ -808,6 +1888,8 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
 #endif
 
     return texu_cio_attroff(cio, attrs);
+#endif /*__VMS__*/
+    return 0;
 }
 
 texu_i32
@@ -815,15 +1897,21 @@ texu_cio_draw_line(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 width, texu_i
 {
     texu_i32 i = 0;
     texu_cio_attron(cio, attrs);
+#if (defined __VMS__)
+    texu_cio_get_color(cio, cio__color_pair(attrs));
+    smg$draw_line(&cio->smg_display_id, &y, &x, &y, &width, &0, &0);
+    texu_cio_get_color(cio, WHITE_BLACK);
+#else
     for (i = 0; i < width; ++i)
     {
 #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
         texu_cio_putch_attr(cio, y, x + i, '-', attrs);
-#elif (defined WIN32 && defined _WINDOWS)
+#elif (defined WIN32 && defined _WINDOWS)  
 #else
         texu_cio_putch_attr(cio, y, x + i, ACS_HLINE, attrs);
 #endif
     }
+#endif
     return texu_cio_attroff(cio, attrs);
 }
 
@@ -832,15 +1920,21 @@ texu_cio_draw_vline(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu
 {
     texu_i32 i = 0;
     texu_cio_attron(cio, attrs);
+#if (defined __VMS__)
+    texu_cio_get_color(cio, cio__color_pair(attrs));
+    smg$draw_line(&cio->smg_display_id, &y, &x, &height, &x, &0, &0);
+    texu_cio_get_color(cio, WHITE_BLACK);
+#else
     for (i = 0; i < height; ++i)
     {
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
         texu_cio_putch_attr(cio, y + i, x, '|', attrs);
 #elif (defined WIN32 && defined _WINDOWS)
 #else
         texu_cio_putch_attr(cio, y + i, x, ACS_VLINE, attrs);
 #endif
     }
+#endif
     return texu_cio_attroff(cio, attrs);
 }
 
@@ -854,7 +1948,7 @@ texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 
     {
         rc.cols = widths[i];
         texu_cio_draw_rect(cio, &rc, attrs);
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
         texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
         texu_cio_putch_attr(cio, rc.y + rc.lines, rc.x, '+', attrs);
 #elif (defined WIN32 && defined _WINDOWS)
@@ -864,7 +1958,7 @@ texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 
 #endif
         rc.x += widths[i];
     }
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
     texu_cio_putch_attr(cio, rect->y + rect->lines, rect->x, '+', attrs);
 #elif (defined WIN32 && defined _WINDOWS)
@@ -886,7 +1980,7 @@ texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32
         rc.lines = heights[i];
         texu_cio_draw_rect(cio, &rc, attrs);
 
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
         texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
         texu_cio_putch_attr(cio, rc.y + rc.lines, rc.x, '+', attrs);
 #elif (defined WIN32 && defined _WINDOWS)
@@ -896,7 +1990,7 @@ texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32
 #endif
         rc.y += heights[i];
     }
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
     texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols, '+', attrs);
 #elif (defined WIN32 && defined _WINDOWS)
@@ -906,7 +2000,7 @@ texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32
 #endif
     return TEXU_OK;
 }
-#ifdef __USE_TTY__
+#if (defined __USE_TTY__)
 texu_i32
 texu_cio_get_color(texu_cio *cio, texu_i32 clridx)
 {
@@ -923,6 +2017,41 @@ texu_i32
 texu_cio_get_reverse(texu_cio *cio, texu_i32 clridx)
 {
     return texu_tty_get_reverse(clridx);
+}
+
+texu_i32
+texu_cio_get_blink(texu_cio *cio, texu_i32 clridx)
+{
+    return texu_tty_get_blink(clridx);
+}
+#elif (defined __VMS__)
+texu_i32
+texu_cio_get_color(texu_cio *cio, texu_i32 clridx)
+{
+    /*return texu_tty_get_color(clridx);*/
+    texu_char color[16];
+    sprintf(color, TTY_FMT_COLOR_LL, gcolors[clridx].fg, gcolors[clridx].bg);
+    printf(color);
+/*//core dump
+    texu_cio_putstr(cio, -1, -1, color);
+    */
+    return 0;
+}
+
+texu_i32
+texu_cio_get_underline(texu_cio *cio, texu_i32 clridx)
+{
+    return texu_tty_get_underline(clridx);
+}
+
+texu_i32
+texu_cio_get_reverse(texu_cio *cio, texu_i32 clridx)
+{
+    /*return texu_tty_get_reverse(clridx);*/
+    texu_char color[16];
+    sprintf(color, TTY_FMT_COLOR_LL, gcolors[clridx].rfg, gcolors[clridx].rbg);
+    printf(color);
+    return 0;
 }
 
 texu_i32
@@ -955,6 +2084,8 @@ texu_cio_get_blink(texu_cio *cio, texu_i32 clridx)
     return 0;
 }
 #else
+
+#if defined __LINUX__
 texu_i32
 texu_cio_get_color(texu_cio *cio, texu_i32 clridx)
 {
@@ -978,9 +2109,46 @@ texu_cio_get_blink(texu_cio *cio, texu_i32 clridx)
 {
     return COLOR_PAIR(clridx) | A_BLINK;
 }
+#else
+texu_i32
+texu_cio_get_color(texu_cio *cio, texu_i32 clridx)
+{
+    /*return texu_tty_get_color(clridx);*/
+    texu_char color[16];
+    sprintf(color, TTY_FMT_COLOR_LL, gcolors[clridx].fg, gcolors[clridx].bg);
+    printf(color);
+/*//core dump
+    texu_cio_putstr(cio, -1, -1, color);
+    */
+    return 0;
+}
+
+texu_i32
+texu_cio_get_underline(texu_cio *cio, texu_i32 clridx)
+{
+    return texu_tty_get_underline(clridx);
+}
+
+texu_i32
+texu_cio_get_reverse(texu_cio *cio, texu_i32 clridx)
+{
+    /*return texu_tty_get_reverse(clridx);*/
+    texu_char color[16];
+    sprintf(color, TTY_FMT_COLOR_LL, gcolors[clridx].rfg, gcolors[clridx].rbg);
+    printf(color);
+    return 0;
+}
+
+texu_i32
+texu_cio_get_blink(texu_cio *cio, texu_i32 clridx)
+{
+    return texu_tty_get_blink(clridx);
+}
+
+#endif
 #endif
 
-#ifdef __USE_TTY__
+#if (defined __USE_TTY__ || defined __VMS__)
 texu_i32
 texu_cio_get_color_attr(texu_cio *cio, texu_i32 clridx, texu_i32 attrs)
 {
