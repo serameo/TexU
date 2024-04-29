@@ -6,6 +6,7 @@ To create your own controls, see src/texuproc.c and src/texuctrl.c
 These files are included many text objects by the following:
 - Window
 - Label (TEXU_LABEL_CLASS)
+- Panel (TEXU_PANEL_CLASS) - This class is a container class. All children can be moved/hiden/showed simply. 
 - Button (TEXU_BUTTON_CLASS)
 - Edit (TEXU_EDIT_CLASS)
 - List box (radio (TEXU_LBS_RADIOBOX), check box (TEXU_LBS_CHECKBOK), or simple list box) (TEXU_LISTBOX_CLASS)
