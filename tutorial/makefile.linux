@@ -1,0 +1,104 @@
+
+# File Name: makefile
+# Author: Seree Rakwong
+# Date: 06-MAY-2020
+#
+
+TESTUI  = test_texu
+TESTLIB = test_texulib
+LIBTEXU32 = libtexu32.a
+LIBTEXU64 = libtexu64.a
+LIBTEXU = $(LIBTEXU32)
+HELLOWORLD = helloworld
+KEYSTROKE = keystroke
+MULTIWND = multiwnd
+CLOCK = clock
+CC     = gcc -g
+CFLAGS = -Wall -m32
+LFLAGS = -lm -lcurses -lpthread -ltexu32
+
+.PHONY: default all clean helloworld keystroke multiwnd clock
+
+default: $(LIBTEXU) $(HELLOWORLD) $(KEYSTROKE) $(MULTIWND) $(CLOCK)
+libtexu: $(LIBTEXU)
+helloworld: $(HELLOWORLD)
+keystroke: $(KEYSTROKE)
+multiwnd: $(MULTIWND)
+clock: $(CLOCK)
+all: default
+
+CJSON_SRC_DIR= ../src
+CJSON_INC_DIR= ../include
+CJSON_SOURCES= $(CJSON_SRC_DIR)/cjson.c
+CJSON_OBJECTS= $(CJSON_SOURCES:.c=.o)
+
+TEXU_SRC_DIR = ../src
+TEXU_INC_DIR = ../include
+TEXU_LIB_DIR = ./linux
+TEXU_SOURCES = $(TEXU_SRC_DIR)/texulib.c \
+               $(TEXU_SRC_DIR)/texutils.c \
+               $(TEXU_SRC_DIR)/texucio.c \
+               $(TEXU_SRC_DIR)/texui.c \
+               $(TEXU_SRC_DIR)/texuproc.c \
+               $(TEXU_SRC_DIR)/texuctrl.c \
+               $(TEXU_SRC_DIR)/texuctrlx.c \
+               $(TEXU_SRC_DIR)/texumenu.c \
+               $(TEXU_SRC_DIR)/texu.c \
+               $(TEXU_SRC_DIR)/slre.c \
+               $(TEXU_SRC_DIR)/re.c
+
+
+TEXU_OBJECTS  = $(TEXU_SOURCES:.c=.o)
+TEXU_INCLUDES = -I$(TEXU_INC_DIR) -I$(CJSON_INC_DIR)
+TEXU_LIBS     = -L$(TEXU_LIB_DIR) $(TEXU_LIB_DIR)/$(LIBTEXU)
+
+TEST_SRC_DIR = .
+TEST_INC_DIR = .
+TEST_BIN_DIR = ./linux
+HELLOWORLD_SOURCES = $(TEST_SRC_DIR)/helloworld.c
+HELLOWORLD_OBJECTS = $(HELLOWORLD_SOURCES:.c=.o)
+HELLOWORLD_EXE = $(TEST_BIN_DIR)/helloworld
+
+KEYSTROKE_SOURCES = $(TEST_SRC_DIR)/keystroke.c
+KEYSTROKE_OBJECTS = $(KEYSTROKE_SOURCES:.c=.o)
+KEYSTROKE_EXE = $(TEST_BIN_DIR)/keystroke
+
+MULTIWND_SOURCES = $(TEST_SRC_DIR)/multiwnd.c
+MULTIWND_OBJECTS = $(MULTIWND_SOURCES:.c=.o)
+MULTIWND_EXE = $(TEST_BIN_DIR)/multiwnd
+
+CLOCK_SOURCES = $(TEST_SRC_DIR)/clock.c
+CLOCK_OBJECTS = $(CLOCK_SOURCES:.c=.o)
+CLOCK_EXE = $(TEST_BIN_DIR)/clock
+
+DEFINES = -DXTERM_256COLOR -D__UNIX__ -D__LINUX__ -DTEXU_THREAD_SAFE -D__USE_CURSES__
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
+
+
+$(LIBTEXU): $(TEXU_OBJECTS) $(CJSON_OBJECTS)
+	ar -rus $(TEXU_LIB_DIR)/$@ $^
+
+$(HELLOWORLD): $(HELLOWORLD_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $(HELLOWORLD_EXE) $^ $(TEXU_LIBS)
+
+
+$(KEYSTROKE): $(KEYSTROKE_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $(KEYSTROKE_EXE) $^ $(TEXU_LIBS)
+
+
+$(MULTIWND): $(MULTIWND_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $(MULTIWND_EXE) $^ $(TEXU_LIBS)
+
+
+$(CLOCK): $(CLOCK_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $(CLOCK_EXE) $^ $(TEXU_LIBS)
+
+$(TESTLIB): $(TESTLIB_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
+
+clean:
+	rm -f $(TEXU_SRC_DIR)/*.o $(TEST_SRC_DIR)/*.o $(TEXU_LIB_DIR)/$(LIBTEXU)
+
+
