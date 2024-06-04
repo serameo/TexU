@@ -473,6 +473,7 @@ enum
 #define TEXU_SBM_GETCOLOR               (TEXU_SBM_FIRST +  9)
 #define TEXU_SBM_SETBGCOLOR             (TEXU_SBM_FIRST + 10)
 #define TEXU_SBM_GETBGCOLOR             (TEXU_SBM_FIRST + 11)
+#define TEXU_SBM_GETPARTCOUNT           (TEXU_SBM_FIRST + 12)
 
 #define TEXU_SBN_FIRST                  TEXU_SBM_FIRST
 
@@ -629,8 +630,8 @@ enum
 #define TEXU_PNM_FIRST                  (TEXU_WM_FIRST + 10100)
 #define TEXU_PNM_SETTITLECOLOR          (TEXU_PNM_FIRST +    1)
 #define TEXU_PNM_SETTITLEALIGNMENT      (TEXU_PNM_FIRST +    2)
-
-
+#define TEXU_PNM_GETSTATUSBAR           (TEXU_PNM_FIRST +    3)
+#define TEXU_PNM_GETTITLE               (TEXU_PNM_FIRST +    4)
 
 #ifdef __USE_CURSES__
 #define TEXU_KEY_SELMENU                10
@@ -894,5 +895,7 @@ enum
 
 /* PANEL */
 #define TEXU_PNS_TITLE                  0x00010000
+#define TEXU_PNS_BORDER                 0x00020000
+#define TEXU_PNS_STATUS                 0x00040000
 
 #endif /*_TEXUCONST_H_*/
