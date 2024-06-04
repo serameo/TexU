@@ -3135,8 +3135,12 @@ _TexuDefWndProc_OnShow(texu_wnd *wnd, texu_bool visible)
     if (visible != oldvisible)
     {
         /*texu_wnd_send_msg(wnd, TEXU_WM_PAINT, (texu_lparam)wnd->env->cio, 0);*/
-        texu_wnd_invalidate(texu_wnd_get_parent(wnd));
-        texu_wnd_invalidate(wnd);
+        texu_wnd* parent = texu_wnd_get_parent(wnd);
+        if (texu_wnd_is_visible(parent))
+        {
+            texu_wnd_invalidate(texu_wnd_get_parent(wnd));
+            texu_wnd_invalidate(wnd);
+        }
     }
     return oldvisible;
 }
@@ -3825,7 +3829,7 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
     
     /*re-size then*/
     texu_rect newsz = { wnd->y, wnd->x, wnd->height, wnd->width };
-    texu_wnd_send_msg(wnd, TEXU_WM_SIZE, (texu_lparam)&newsz, 0);
+    texu_wnd_send_msg(wnd, TEXU_WM_SIZE, (texu_lparam)&newsz, (texu_lparam)0);
 
     wnd->lockedupdate = TEXU_FALSE;
 
@@ -4869,7 +4873,7 @@ texu_i32 texu__wnd_create_blank_lines(texu_env *env, texu_wnd* parent)
         attrs.width         = w;
         attrs.enable        = TEXU_FALSE;
         attrs.visible       = TEXU_TRUE;
-#if (defined __VMS__)
+#if 1//(defined __VMS__)
         attrs.text          = TEXUTEXT(">");
 #else
         attrs.text          = TEXUTEXT("");

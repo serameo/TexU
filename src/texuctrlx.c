@@ -939,7 +939,7 @@ void _TexuEditMaskProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     emctl = (texu_editmask *)texu_wnd_get_userdata(wnd);
 
     texu_wnd_get_text(wnd, buf, TEXU_MAX_WNDTEXT);
-    if (texu_strlen(buf) == 0)
+    if (texu_strlen(buf) == 0 && texu_strlen(emctl->infobuf) > 0)
     {
         texu_strcpy(buf, emctl->infobuf);
     }

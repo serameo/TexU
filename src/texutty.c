@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined __UNIX__
 #include <unistd.h>
+#endif
 
 #include "texumacros.h"
 #include "texutypes.h"
@@ -21,7 +23,7 @@ extern "C"
 {
 #endif
 
-#if !(defined VMS || defined __VMS__)
+#if !(defined VMS || defined __VMS__ || defined _WIN32)
 #include <termios.h>
 
 struct termios old_kbd_mode;    /* orig keyboard settings   */
