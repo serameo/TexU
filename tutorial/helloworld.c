@@ -37,7 +37,7 @@ MyWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
             panel = TexuCreateWindow(
                         "Hello World",
                         TEXU_PANEL_CLASS,
-                        TEXU_PNS_TITLE, /* style*/
+                        TEXU_PNS_TITLE|TEXU_PNS_BORDER, /* style*/
                         0,              /* exstyle*/
                         10,              /* y */
                         20,              /* x */

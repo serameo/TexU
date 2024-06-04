@@ -13,18 +13,23 @@ HELLOWORLD = helloworld
 KEYSTROKE = keystroke
 MULTIWND = multiwnd
 CLOCK = clock
+TEST_TEXU = test_texu
+EDITS = edits
+
 CC     = gcc -g
 CFLAGS = -Wall -m32
 LFLAGS = -lm -lcurses -lpthread -ltexu32
 
-.PHONY: default all clean helloworld keystroke multiwnd clock
+.PHONY: default all clean helloworld keystroke multiwnd clock test_texu edits
 
-default: $(LIBTEXU) $(HELLOWORLD) $(KEYSTROKE) $(MULTIWND) $(CLOCK)
+default: $(LIBTEXU) $(HELLOWORLD) $(KEYSTROKE) $(MULTIWND) $(CLOCK) $(TEST_TEXU) $(EDITS)
 libtexu: $(LIBTEXU)
 helloworld: $(HELLOWORLD)
 keystroke: $(KEYSTROKE)
 multiwnd: $(MULTIWND)
 clock: $(CLOCK)
+test_texu: $(TEST_TEXU)
+edits: $(EDITS)
 all: default
 
 CJSON_SRC_DIR= ../src
@@ -71,6 +76,14 @@ CLOCK_SOURCES = $(TEST_SRC_DIR)/clock.c
 CLOCK_OBJECTS = $(CLOCK_SOURCES:.c=.o)
 CLOCK_EXE = $(TEST_BIN_DIR)/clock
 
+TEST_TEXU_SOURCES = $(TEST_SRC_DIR)/test_texu.c
+TEST_TEXU_OBJECTS = $(TEST_TEXU_SOURCES:.c=.o)
+TEST_TEXU_EXE = $(TEST_BIN_DIR)/test_texu
+
+EDITS_SOURCES = $(TEST_SRC_DIR)/edits.c
+EDITS_OBJECTS = $(EDITS_SOURCES:.c=.o)
+EDITS_EXE = $(TEST_BIN_DIR)/edits
+
 DEFINES = -DXTERM_256COLOR -D__UNIX__ -D__LINUX__ -DTEXU_THREAD_SAFE -D__USE_CURSES__
 
 %.o: %.c
@@ -94,6 +107,12 @@ $(MULTIWND): $(MULTIWND_OBJECTS)
 
 $(CLOCK): $(CLOCK_OBJECTS)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $(CLOCK_EXE) $^ $(TEXU_LIBS)
+
+$(TEST_TEXU): $(TEST_TEXU_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $(TEST_TEXU_EXE) $^ $(TEXU_LIBS)
+
+$(EDITS): $(EDITS_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $(EDITS_EXE) $^ $(TEXU_LIBS)
 
 $(TESTLIB): $(TESTLIB_OBJECTS)
 	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
