@@ -11,6 +11,69 @@
 
 
 /* miscellaneous */
+#if defined WIN32 /*see winuser.h*/
+#define TVK_TAB            VK_TAB
+#define TVK_ENTER          VK_RETURN
+#define TVK_SPACE          VK_SPACE
+
+#define TVK_BACK           VK_BACK
+#define TVK_PRIOR          VK_PRIOR 
+#define TVK_NEXT           VK_NEXT  
+#define TVK_END            VK_END   
+#define TVK_HOME           VK_HOME  
+#define TVK_LEFT           VK_LEFT  
+#define TVK_UP             VK_UP    
+#define TVK_RIGHT          VK_RIGHT 
+#define TVK_DOWN           VK_DOWN  
+#define TVK_INSERT         VK_INSERT
+#define TVK_DELETE         VK_DELETE
+#define TVK_HELP           VK_HELP  
+
+#define TVK_ESCAPE         VK_ESCAPE   
+#define TVK_NUMPAD0        VK_NUMPAD0  
+#define TVK_NUMPAD1        VK_NUMPAD1  
+#define TVK_NUMPAD2        VK_NUMPAD2  
+#define TVK_NUMPAD3        VK_NUMPAD3  
+#define TVK_NUMPAD4        VK_NUMPAD4  
+#define TVK_NUMPAD5        VK_NUMPAD5  
+#define TVK_NUMPAD6        VK_NUMPAD6  
+#define TVK_NUMPAD7        VK_NUMPAD7  
+#define TVK_NUMPAD8        VK_NUMPAD8  
+#define TVK_NUMPAD9        VK_NUMPAD9  
+#define TVK_MULTIPLY       VK_MULTIPLY 
+#define TVK_ADD            VK_ADD      
+#define TVK_SEPARATOR      VK_SEPARATOR
+#define TVK_SUBTRACT       VK_SUBTRACT 
+#define TVK_DECIMAL        VK_DECIMAL  
+#define TVK_DIVIDE         VK_DIVIDE   
+#define TVK_F1             VK_F1 
+#define TVK_F2             VK_F2 
+#define TVK_F3             VK_F3 
+#define TVK_F4             VK_F4 
+#define TVK_F5             VK_F5 
+#define TVK_F6             VK_F6 
+#define TVK_F7             VK_F7 
+#define TVK_F8             VK_F8 
+#define TVK_F9             VK_F9 
+#define TVK_F10            VK_F10
+#define TVK_F11            VK_F11
+#define TVK_F12            VK_F12
+#define TVK_F13            VK_F13
+#define TVK_F14            VK_F14
+#define TVK_F15            VK_F15
+#define TVK_F16            VK_F16
+#define TVK_F17            VK_F17
+#define TVK_F18            VK_F18
+#define TVK_F19            VK_F19
+#define TVK_F20            VK_F20
+#define TVK_F21            VK_F21
+#define TVK_F22            VK_F22
+#define TVK_F23            VK_F23
+#define TVK_F24            VK_F24
+#define TVK_NUMLOCK        VK_NUMLOCK
+#define TVK_SCROLL         VK_SCROLL 
+
+#else
 
 #define TVK_TAB            0x09
 #define TVK_ENTER          0x0A
@@ -183,4 +246,5 @@
 #define TVK_NUMLOCK        0x90
 #define TVK_SCROLL         0x91
 
+#endif /*WIN32*/
 #endif /*__TEXUKEYS_H__ */

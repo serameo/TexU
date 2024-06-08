@@ -143,6 +143,8 @@ void                texu_cio_del(texu_cio*);
 
 #if (defined WIN32 && defined _WINDOWS)
 texu_i32            texu_cio_init(texu_cio*, texu_env *env);
+#elif (defined WIN32 && defined _CONSOLE)
+texu_i32            texu_cio_init(texu_cio*, texu_env* env, texu_i32, texu_i32);
 #else
 texu_i32            texu_cio_init(texu_cio*, texu_i32, texu_i32);
 #endif
