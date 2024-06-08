@@ -2432,6 +2432,10 @@ texu_env_new(texu_i32 lines, texu_i32 cols)
         /*texu_env_createwnd(env, hWndParent, nID);*/
         env->has_cursor = TEXU_FALSE;
         texu_env_register_envcls(env, hinst, lines, cols);
+#elif (defined WIN32 && defined _CONSOLE)
+        texu_cio_init(env->cio, env, lines, cols);
+        env->cols = cols;
+        env->lines = lines;
 #else
         texu_cio_init(env->cio, lines, cols);
         env->cols  = cols;
@@ -2683,6 +2687,7 @@ texu_env_run(texu_env *env)
             continue;
         }
 #if (defined WIN32 && (defined UNICODE || defined _UNICODE))
+#elif (defined WIN32 && defined _CONSOLE)
 #elif (defined VMS || defined __VMS__)
         /*set cursor to the position*/
         /*texu_cio_gotoyx(env->cio, y, x);*/
@@ -2924,6 +2929,11 @@ struct texu_wnd
 
     texu_menu *menu;
 };
+
+void _texu_wnd_inc_blankline(texu_wnd* wnd)
+{
+    ++wnd->nblanklines;
+}
 
 /*
 #-------------------------------------------------------------------------------
@@ -3385,13 +3395,13 @@ texu_i32
 _TexuDefWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_i32 rc = 0;
-    texu_wnd *activewnd = texu_wnd_get_activechild(wnd);
+    texu_wnd *activewnd = (wnd ? texu_wnd_get_activechild(wnd) : 0);
     texu_wnd *nextwnd = 0;
-    texu_wnd *parent = texu_wnd_get_parent(wnd);
-    texu_wnd *desktop = (wnd ? texu_env_get_desktop(wnd->env) : 0);
+    texu_wnd *parent = (wnd ? texu_wnd_get_parent(wnd) : 0);
+    texu_env* env = texu_wnd_get_env(wnd);
+    texu_wnd *desktop = texu_env_get_desktop(env);
     texu_wnd_keycmd *keycmd = 0;
     texu_menu *menu = 0;
-    texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 chNextKey = texu_env_get_movenext(env);
     texu_i32 chPrevKey = texu_env_get_moveprev(env);
 
@@ -3409,7 +3419,7 @@ _TexuDefWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
         if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
         {
-            menu = wnd->menu;
+            menu = texu_wnd_get_menu(wnd);
             if (menu)
             {
                 rc = texu_wnd_send_msg(wnd, TEXU_WM_ENTERMENU, ch, alt);
@@ -4208,7 +4218,7 @@ texu_wnd *
 texu_wnd_set_activechild(texu_wnd *wnd, texu_wnd *childwnd)
 {
     texu_wnd *oldchild = 0;
-    if (childwnd != wnd)
+    if (childwnd != wnd && wnd)
     {
         oldchild = wnd->activechild;
         wnd->activechild = childwnd;
@@ -4513,9 +4523,12 @@ texu_wnd_add_keycmd(texu_wnd *wnd, texu_i32 key, texu_ui32 cmd, texu_i32 alt)
     if (wnd)
     {
         texu_wnd_keycmd *keycmd = (texu_wnd_keycmd *)malloc(sizeof(texu_wnd_keycmd));
-        keycmd->key = key;
-        keycmd->cmd = cmd;
-        keycmd->alt = alt;
+        if (keycmd)
+        {
+            keycmd->key = key;
+            keycmd->cmd = cmd;
+            keycmd->alt = alt;
+        }
         
         texu_list_add(wnd->keycmds, (texu_lparam)keycmd);
     }
@@ -4903,7 +4916,8 @@ texu_i32 texu__wnd_create_blank_lines(texu_env *env, texu_wnd* parent)
             return id;
         }
         /*texu_wnd_set_color(label, attrs.normalcolor, attrs.disabledcolor);*/
-        ++parent->nblanklines;
+        //++parent->nblanklines;
+        _texu_wnd_inc_blankline(parent);
     }
     return 0;
 }
@@ -5078,7 +5092,7 @@ _TexuFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                 /* the new active window */
-                wnd->activechild = nextwnd;
+                texu_wnd_set_activechild(wnd, nextwnd);
                 return 1;
             }
             else
@@ -5117,8 +5131,8 @@ _TexuFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg((nextwnd ? nextwnd : wnd), TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                     /* the new active window */
-                    wnd->activechild = nextwnd;
-                    
+                    texu_wnd_set_activechild(wnd, nextwnd);
+
                     /* send notification to the window*/
                     _TexuFrameWndProc_Notify(wnd, nextwnd, code);
                     return 1;
@@ -5165,10 +5179,10 @@ _TexuManualFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_wnd *activewnd = texu_wnd_get_activechild(wnd);
     texu_wnd *nextwnd = 0;
     texu_wnd *parent = texu_wnd_get_parent(wnd);
-    texu_wnd *desktop = (wnd ? texu_env_get_desktop(wnd->env) : 0);
+    texu_env* env = texu_wnd_get_env(wnd);
+    texu_wnd *desktop = texu_env_get_desktop(env);
     texu_wnd_keycmd *keycmd = 0;
     texu_menu *menu = 0;
-    texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 chNextKey = texu_env_get_movenext(env);
     texu_i32 chPrevKey = texu_env_get_moveprev(env);
 
@@ -5182,7 +5196,7 @@ _TexuManualFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
         if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
         {
-            menu = wnd->menu;
+            menu = texu_wnd_get_menu(wnd);
             if (menu)
             {
                 rc = texu_wnd_send_msg(wnd, TEXU_WM_ENTERMENU, ch, alt);
@@ -5212,7 +5226,7 @@ _TexuManualFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                 /* the new active window */
-                wnd->activechild = nextwnd;
+                texu_wnd_set_activechild(wnd, nextwnd);
                 return 1;
             }
             else
@@ -5251,7 +5265,7 @@ _TexuManualFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg((nextwnd ? nextwnd : wnd), TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                     /* the new active window */
-                    wnd->activechild = nextwnd;
+                    texu_wnd_set_activechild(wnd, nextwnd);
 
                     /* send notification to the window*/
                     _TexuFrameWndProc_Notify(wnd, nextwnd, code);
