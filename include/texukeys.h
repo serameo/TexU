@@ -14,7 +14,16 @@
 #if defined WIN32 /*see winuser.h*/
 #define TVK_TAB            VK_TAB
 #define TVK_ENTER          VK_RETURN
-#define TVK_SPACE          VK_SPACE
+#define TVK_SPACE          
+
+#define TVK_OEM_1          VK_OEM_1
+#define TVK_OEM_PLUS       VK_OEM_PLUS
+#define TVK_OEM_COMMA      VK_OEM_COMMA
+#define TVK_OEM_MINUS      VK_OEM_MINUS
+#define TVK_OEM_PERIOD     VK_OEM_PERIOD
+#define TVK_OEM_2          VK_OEM_2 
+#define TVK_OEM_3          VK_OEM_3
+
 
 #define TVK_BACK           VK_BACK
 #define TVK_PRIOR          VK_PRIOR 

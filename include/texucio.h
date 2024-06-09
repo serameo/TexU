@@ -170,7 +170,10 @@ texu_i32            texu_cio_getyx(texu_cio*, texu_i32* y, texu_i32* x);
 /* get/put */
 texu_i32            texu_cio_getch(texu_cio*);
 texu_i32            texu_cio_getstr(texu_cio*, texu_char*);
-
+#if defined WIN32 && defined _CONSOLE
+texu_i32
+texu_cio_win32_getch(texu_cio* cio, texu_char* ascii, texu_i32* alt, texu_i32* ctrl, texu_i32* shift);
+#endif
 texu_i32            texu_cio_putch(texu_cio*, texu_i32, texu_i32, texu_i32);
 texu_i32            texu_cio_putch_erase(texu_cio*, texu_i32, texu_i32, texu_i32, texu_bool);
 texu_i32            texu_cio_putch_attr(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
