@@ -14,6 +14,7 @@
 #include "texutypes.h"
 #include "texulib.h"
 #include "texutils.h"
+#include "texukeys.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -68,7 +69,40 @@ texu_strchr(const texu_char *str, texu_char ch)
     return strchr(str, ch);
 #endif
 }
-
+#if defined WIN32
+texu_char texu_win32_to_ascii(texu_i32 keycode)
+{
+    UINT scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
+    WORD chars[2];
+    int rc = ToAscii(keycode, scancode << 16, 0, chars, 0);
+    if (rc > 0)
+    {
+        return (texu_char)chars[0];
+    }
+    return 0;
+}
+texu_char texu_win32_oem_chars(texu_i32 ch)
+{
+    switch (ch)
+    {
+    case TVK_OEM_1:
+        return '1';
+    case TVK_OEM_PLUS:
+        return '+';
+    case TVK_OEM_COMMA:
+        return ',';
+    case TVK_OEM_MINUS:
+        return '-';
+    case TVK_OEM_PERIOD:
+        return '.';
+    case TVK_OEM_2:
+        return '2';
+    case TVK_OEM_3:
+        return '3';
+    }
+    return -1;
+}
+#endif
 
 texu_char*
 texu_strrchr(const texu_char *str, texu_char ch)

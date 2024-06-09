@@ -2629,6 +2629,7 @@ texu_env_run(texu_env *env)
     texu_i32        altpressed  = 0;
     texu_i32        ctlpressed  = 0;
     texu_char       *keypressed = 0;
+    texu_i32        shftpressed = 0;
 #if (defined VMS || defined __VMS__)
     texu_char       key_name[32];
     $DESCRIPTOR(keyname, key_name);
@@ -2668,11 +2669,16 @@ texu_env_run(texu_env *env)
 #else /*not USE_TCL_AUTOMATION*/
         altpressed = 0;
         ctlpressed = 0;
+        shftpressed = 0;
 #if (defined VMS || defined __VMS__)
         /*get cursor to the position*/
         texu_cio_getyx(env->cio, &y, &x);
 #endif
+#if defined WIN32 && defined _CONSOLE
+        ch = texu_cio_win32_getch(env->cio, &ch2, &altpressed, &ctlpressed, &shftpressed);
+#else
         ch = texu_cio_getch(env->cio);
+#endif
         if (-1 == ch && env->frames)
         {
             /*no key pressed*/
@@ -2754,10 +2760,17 @@ texu_env_run(texu_env *env)
                 /*no more windows active*/
                 break;
             }
+#if defined WIN32
+            texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_lparam)ch, /*virtual key*/
+                (texu_lparam)(altpressed | ctlpressed));
+            texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch2, /*ascii*/
+                (texu_lparam)(altpressed | ctlpressed));
+#else
             texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_lparam)ch,
-                              (texu_lparam)(altpressed | ctlpressed));
+                (texu_lparam)(altpressed | ctlpressed));
             texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch,
                               (texu_lparam)(altpressed | ctlpressed));
+#endif
         }
 #endif /*#else NOT USE_TCL_AUTOMATION*/
     }

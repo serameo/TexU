@@ -245,7 +245,7 @@ SetMyThemeColor(texu_i32 sysidx)
     return -1;
 }
 
-#if defined _WIN32
+#if (defined _WIN32 && defined _WINDOWS)
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, PSTR pszCmdLine, INT iCmdShow)
 {
     texu_wnd *wnd = 0;

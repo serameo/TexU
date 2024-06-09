@@ -1262,7 +1262,7 @@ texu_cio_getch(texu_cio *cio)
 }
 #elif (defined WIN32 && defined _CONSOLE)
 texu_i32
-texu_cio_getch(texu_cio* cio)
+texu_cio_win32_getch(texu_cio* cio, texu_char* ascii, texu_i32* alt, texu_i32* ctrl, texu_i32* shift)
 {
     DWORD cNumRead, i;
     INPUT_RECORD irInBuf[128];
@@ -1281,12 +1281,48 @@ texu_cio_getch(texu_cio* cio)
             {
                 if (irInBuf[i].Event.KeyEvent.bKeyDown)
                 {
+                    //return (texu_i32)irInBuf[i].Event.KeyEvent.wVirtualKeyCode;
+                    DWORD dwState = irInBuf[i].Event.KeyEvent.dwControlKeyState;
+                    if (dwState & (RIGHT_ALT_PRESSED |LEFT_ALT_PRESSED))
+                    {
+                        if (alt)
+                        {
+                            *alt = 1;
+                        }
+                    }
+                    if (dwState & (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED))
+                    {
+                        if (ctrl)
+                        {
+                            *ctrl = 2;
+                        }
+                    }
+                    if (dwState & (SHIFT_PRESSED))
+                    {
+                        if (ctrl)
+                        {
+                            *shift = 4;
+                        }
+                    }
+                    if (ascii)
+                    {
+                        *ascii = irInBuf[i].Event.KeyEvent.uChar.AsciiChar;
+                    }
                     return (texu_i32)irInBuf[i].Event.KeyEvent.wVirtualKeyCode;
                 }
             }
         }
     }
     return -1;
+}
+texu_i32
+texu_cio_getch(texu_cio* cio)
+{
+    texu_i32 alt   = 0;
+    texu_i32 ctrl  = 0;
+    texu_i32 shift = 0;
+    texu_char ch   = 0;
+    return texu_cio_win32_getch(cio, &ch, &alt, &ctrl, &shift);
 }
 #elif (defined VMS || defined __VMS__)
 texu_i32
@@ -1985,6 +2021,41 @@ texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str
 
 #endif
 
+#if defined WIN32
+#include <strsafe.h>
+
+void GetLastErrorMsg(LPCTSTR lpszFunction, DWORD dwError)
+{
+    // Retrieve the system error message for the last-error code
+
+    LPVOID lpMsgBuf;
+    LPVOID lpDisplayBuf;
+ 
+    FormatMessage(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+        FORMAT_MESSAGE_FROM_SYSTEM |
+        FORMAT_MESSAGE_IGNORE_INSERTS,
+        NULL,
+        dwError,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        (LPTSTR)&lpMsgBuf,
+        0, NULL );
+
+    // Display the error message and exit the process
+
+    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+        (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
+    StringCchPrintf((LPTSTR)lpDisplayBuf,
+        LocalSize(lpDisplayBuf) / sizeof(TCHAR),
+        TEXT("%s failed with error %d: %s"),
+        lpszFunction, dwError, lpMsgBuf);
+    MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
+
+    LocalFree(lpMsgBuf);
+    LocalFree(lpDisplayBuf);
+
+}
+#endif
 texu_i32 texu_cio_get_keyname(texu_cio* cio, texu_i32 keycode, texu_char* outname, texu_i32 len)
 {
     texu_i32 rc = -1;
@@ -2000,6 +2071,12 @@ texu_i32 texu_cio_get_keyname(texu_cio* cio, texu_i32 keycode, texu_char* outnam
 #elif (defined __USE_TTY__)
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
+    UINT scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
+    rc = GetKeyNameText(scancode << 16, outname, len);
+    if (0 == rc)
+    {
+        GetLastErrorMsg("texu_cio_keyname", GetLastError());
+    }
 #else
     texu_char* keypressed = keyname(keycode);
     texu_strncpy(outname, keypressed, len);

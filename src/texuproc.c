@@ -2138,7 +2138,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
     texu_i32 cx = texu_env_screen_width(env);
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined WIN32)// && defined _WINDOWS)
     static texu_char printable_chars[] = TEXUTEXT(" ~!@#$%^&*_-+=,?/|.\\\'\"()[]{}<>abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 #endif
     texu_char textcommas[TEXU_MAX_WNDTEXT + 1];
@@ -2196,7 +2196,12 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             return;
         }
     }
-#if (defined WIN32 && defined _WINDOWS)
+#if (defined WIN32)// && defined _WINDOWS)
+    texu_char ch2 = texu_win32_oem_chars(ch);
+    if (ch2 > 0)
+    {
+        ch = ch2;
+    }
     if (texu_strchr(printable_chars, ch))
     {
 #else

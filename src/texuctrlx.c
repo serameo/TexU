@@ -408,6 +408,13 @@ _TexuIPAddressProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     ipctl = (texu_ipaddr *)texu_wnd_get_userdata(wnd);
     editwnd = texu_wnd_get_activechild(wnd);
+#if defined WIN32
+    texu_char ch2 = texu_win32_oem_chars(ch);
+    if (ch2 > 0)
+    {
+        ch = ch2;
+    }
+#endif
     switch (ch)
     {
         case TEXU_KEY_UP:
