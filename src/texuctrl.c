@@ -4782,7 +4782,7 @@ _TexuTreeCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam 
         {
             return _TexuTreeCtrlProc_OnKillFocus(wnd, (texu_wnd *)param1);
         }
-#ifdef WINDOWS
+#ifdef WIN32
         case TEXU_WM_KEYDOWN:
         {
             _TexuTreeCtrlProc_OnKeyDown(wnd, (texu_i32)param1, (texu_i32)param2);

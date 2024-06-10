@@ -3240,7 +3240,7 @@ _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
 
     for (line = 0; line < height; ++line)
     {
-#if defined __VMS__
+#if 1 //defined __VMS__
         texu_strcpy(zblank, water_mark);
 /*
         memset(zblank, 0, sizeof(zblank));

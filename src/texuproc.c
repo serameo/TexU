@@ -835,16 +835,9 @@ texu_wnd*   _TexuPanelProc_OnGetTitle(texu_wnd* wnd)
 void
 _TexuPanelProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 {
-    texu_i32 style = texu_wnd_get_style(wnd);
-
-    if (style & TEXU_PNS_TITLE)
+    texu_wnd* title = _TexuPanelProc_OnGetTitle(wnd);
+    if (title)
     {
-/*        texu_env* env = texu_wnd_get_env(wnd);
-        texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_PANEL_TITLE);
-        texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_PANEL_TITLE);
-*/
-        texu_wnd* title = texu_wnd_find_child(wnd, -1); /*the top of label*/
-/*        texu_wnd_set_color(title, color, bgcolor);*/
         texu_wnd_set_text(title, text);
     }
 }
@@ -1338,7 +1331,6 @@ _TexuPanelProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam par
 
         case TEXU_WM_CHAR:/*printable chars*/
             return _TexuPanelProc_OnChar(wnd, (texu_i32)param1, (texu_i32)param2);
-
 
         case TEXU_WM_QUERYNEXTWND:
             return (texu_lparam)_TexuPanelProc_OnQueryNextWnd(wnd);
@@ -2150,6 +2142,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 
     edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
     texu_wnd_get_text(wnd, textcommas, TEXU_MAX_WNDTEXT);
+    texu_strcpy(text, textcommas);
     texu_wnd_get_color(wnd, &normcolor, &discolor);
 
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
@@ -4525,6 +4518,7 @@ _TexuComboBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam 
 struct texu_sbwnd_part
 {
     texu_i32 id;
+    texu_rect rect; /*extended to inform its area*/
     texu_i32 width;
     texu_ui32 color;
 
@@ -4550,6 +4544,7 @@ texu_status _TexuStatusBarProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
 void _TexuStatusBarProc_OnDestroy(texu_wnd *);
 texu_i32 _TexuStatusBarProc_OnGetPartCount(texu_wnd *wnd);
 texu_i32 _TexuStatusBarProc_OnAddPart(texu_wnd *, const texu_char *, texu_i32);
+texu_i32 _TexuStatusBarProc_OnAddPartRect(texu_wnd *, const texu_char *, const texu_rect* rect);
 void _TexuStatusBarProc_OnSetText(texu_wnd *, texu_i32, const texu_char *);
 const texu_char *_TexuStatusBarProc_OnGetText(texu_wnd *wnd, texu_i32 id);
 void _TexuStatusBarProc_OnSetWidth(texu_wnd *, texu_i32, texu_i32);
@@ -4560,6 +4555,7 @@ texu_ui32 _TexuStatusBarProc_OnGetColor(texu_wnd *wnd, texu_i32 id);
 texu_ui32 _TexuStatusBarProc_OnGetBgColor(texu_wnd *wnd, texu_i32 id);
 void _TexuStatusBarProc_OnSetAlign(texu_wnd *, texu_i32, texu_i32);
 texu_i32 _TexuStatusBarProc_OnGetAlign(texu_wnd *wnd, texu_i32 id);
+texu_i32 _TexuStatusBarProc_OnGetPartRect(texu_wnd *wnd, texu_i32 id, texu_rect* rect);
 
 texu_sbwnd_part *_texu_sbwnd_part_new(const texu_char *, texu_i32, texu_ui32, texu_ui32, texu_ui32);
 void _texu_sbwnd_part_del(texu_sbwnd_part *);
@@ -4674,6 +4670,21 @@ _TexuStatusBarProc_OnGetWidth(texu_wnd *wnd, texu_i32 id)
     return 0;
 }
 
+texu_i32 _TexuStatusBarProc_OnGetPartRect(texu_wnd *wnd, texu_i32 id, texu_rect* rect)
+{
+    texu_sbwnd *sb = (texu_sbwnd *)texu_wnd_get_userdata(wnd);
+    texu_sbwnd_part *part = _texu_sbwnd_part_find(sb->parts, id);
+    if (part && rect)
+    {
+        *rect = part->rect;
+    }
+    else
+    {
+        return -1;
+    }
+    return 0;
+}
+
 void
 _TexuStatusBarProc_OnSetColor(texu_wnd *wnd, texu_i32 id, texu_ui32 color)
 {
@@ -4772,6 +4783,7 @@ _TexuStatusBarProc_OnAddPart(texu_wnd *wnd, const texu_char *text, texu_i32 widt
     texu_list_item *item = 0;
     texu_sbwnd *sb = (texu_sbwnd *)texu_wnd_get_userdata(wnd);
     texu_i32 nparts = texu_list_count(sb->parts);
+    /*texu_sbwnd_part *lastpart = (texu_sbwnd_part *)texu_list_last(sb->parts);*/
     texu_sbwnd_part *part = _texu_sbwnd_part_new(text, width,
                                                  texu_env_get_syscolor(env, TEXU_COLOR_STATUSBAR),
                                                  texu_env_get_sysbgcolor(env, TEXU_COLOR_STATUSBAR),
@@ -4787,6 +4799,38 @@ _TexuStatusBarProc_OnAddPart(texu_wnd *wnd, const texu_char *text, texu_i32 widt
     {
         part->width = 0;
     }
+    part->rect.cols = part->width;
+
+    return nparts;
+}
+
+texu_i32
+_TexuStatusBarProc_OnAddPartRect(texu_wnd *wnd, const texu_char *text, const texu_rect* rect)
+{
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_list_item *item = 0;
+    texu_sbwnd *sb = (texu_sbwnd *)texu_wnd_get_userdata(wnd);
+    texu_i32 nparts = texu_list_count(sb->parts);
+    texu_sbwnd_part *firstpart = 0;
+    texu_sbwnd_part *part = _texu_sbwnd_part_new(text, rect->cols,
+                                                 texu_env_get_syscolor(env, TEXU_COLOR_STATUSBAR),
+                                                 texu_env_get_sysbgcolor(env, TEXU_COLOR_STATUSBAR),
+                                                 TEXU_ALIGN_LEFT);
+
+    part->id = nparts;
+    part->rect = *rect;
+    texu_list_add(sb->parts, (texu_lparam)part);
+
+    item = texu_list_first(sb->parts);
+    firstpart = (texu_sbwnd_part *)item->data;
+    firstpart->width -= rect->cols;
+    if (firstpart->width < 0)
+    {
+        firstpart->width = 0;
+    }
+    firstpart->rect.cols = firstpart->width;
+    /*update the new part some fields*/
+    part->rect.y = firstpart->rect.y;
 
     return nparts;
 }
@@ -4874,6 +4918,10 @@ _TexuStatusBarProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         color,
         bgcolor,
         TEXU_ALIGN_LEFT);
+    sb->firstpart->rect.x = attrs->x;
+    sb->firstpart->rect.y = attrs->y;
+    sb->firstpart->rect.cols = attrs->width;
+    sb->firstpart->rect.lines = attrs->height;
 
     texu_list_add(sb->parts, (texu_lparam)sb->firstpart);
 
@@ -4916,6 +4964,9 @@ _TexuStatusBarProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam
     case TEXU_SBM_ADDPART:
         return _TexuStatusBarProc_OnAddPart(wnd, (const texu_char *)param1, (texu_i32)param2);
 
+    case TEXU_SBM_ADDPARTRECT:
+        return _TexuStatusBarProc_OnAddPartRect(wnd, (const texu_char *)param1, (const texu_rect*)param2);
+
     case TEXU_SBM_SETTEXT:
         _TexuStatusBarProc_OnSetText(wnd, (texu_i32)param1, (const texu_char *)param2);
         return 0;
@@ -4950,6 +5001,9 @@ _TexuStatusBarProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam
 
     case TEXU_SBM_GETBGCOLOR:
         return (texu_lparam)_TexuStatusBarProc_OnGetBgColor(wnd, (texu_i32)param1);
+
+    case TEXU_SBM_GETPARTRECT:
+        return _TexuStatusBarProc_OnGetPartRect(wnd, (texu_i32)param1, (texu_rect*)param2);
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
