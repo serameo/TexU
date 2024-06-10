@@ -405,4 +405,3 @@ texu_safedb_bool     texu_safedb_is_existing(texu_safedb_ptr db, texu_safedb_cst
 
 
 #endif /* _TEXUTILS_H_ */
-
