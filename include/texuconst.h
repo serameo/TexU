@@ -474,6 +474,8 @@ enum
 #define TEXU_SBM_SETBGCOLOR             (TEXU_SBM_FIRST + 10)
 #define TEXU_SBM_GETBGCOLOR             (TEXU_SBM_FIRST + 11)
 #define TEXU_SBM_GETPARTCOUNT           (TEXU_SBM_FIRST + 12)
+#define TEXU_SBM_ADDPARTRECT            (TEXU_SBM_FIRST + 13)
+#define TEXU_SBM_GETPARTRECT            (TEXU_SBM_FIRST + 14)
 
 #define TEXU_SBN_FIRST                  TEXU_SBM_FIRST
 
