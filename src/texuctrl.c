@@ -15,6 +15,7 @@
 #include "texucio.h"
 #include "texust.h"
 #include "texuconst.h"
+#include "texukeys.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -143,7 +144,7 @@ texu_i32 _TexuListCtrlProc_GetColIdx(texu_lcwnd *lctl, texu_lcwnd_header *header
 
 texu_i32 _TexuListCtrlProc_GetVisibleWidth(texu_lcwnd *lctl);
 void _TexuListCtrlProc_NotifyItem(texu_wnd *wnd, texu_ui32 code, texu_i32 row, texu_i32 col);
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
 void _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lc,
                                texu_cio *dc, texu_i32 row,
                                texu_ui32 color, texu_ui32 bgcolor);
@@ -749,7 +750,7 @@ _TexuListCtrlProc_OnAddItems(texu_wnd *wnd, texu_char *text, texu_i32 nitems)
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_lcwnd_cell *newcell = 0;
     texu_env *env = texu_wnd_get_env(wnd);
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
 
     texu_char *pszContext;
 #endif
@@ -838,7 +839,7 @@ _TexuListCtrlProc_GetVisibleWidth(texu_lcwnd *lctl)
     return width;
 }
 
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
 void
 _TexuListCtrlProc_FillCell(texu_wnd *wnd, texu_lcwnd *lctl,
     texu_cio *dc, texu_i32 row, texu_i32 col,
@@ -869,7 +870,7 @@ _TexuListCtrlProc_FillCell(texu_wnd *wnd, texu_lcwnd *lctl,
         buf,
         texu_cio_get_reverse(dc, color));
 #else
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
     texu_cio_draw_text(dc, rccell.y, rccell.x, buf, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
@@ -884,7 +885,7 @@ _TexuListCtrlProc_FillCell(texu_wnd *wnd, texu_lcwnd *lctl,
 
 #endif
 }
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
 void
 _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lctl,
                           texu_cio *dc, texu_i32 row,
@@ -917,7 +918,7 @@ _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lctl,
         buf,
         texu_cio_get_reverse(dc, color));
 #else
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
     texu_cio_draw_text(dc, rccell.y, rccell.x, buf, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
@@ -932,7 +933,7 @@ _TexuListCtrlProc_FillRow(texu_wnd *wnd, texu_lcwnd *lctl,
 #endif
 }
 
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
 void
 _TexuListCtrlProc_DrawItem(texu_wnd *wnd,
     texu_cio *dc, texu_rect *rccell, const texu_char *caption,
@@ -956,7 +957,7 @@ texu_ui32 color, texu_i32 align, texu_i32 isheader)
 }
 #endif
 
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
 void
 _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     texu_cio *dc, texu_rect *rccell, const texu_char *caption,
@@ -1041,7 +1042,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
             buf,
             texu_cio_get_reverse(dc, color));
 #else
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
         texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
@@ -1057,7 +1058,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     }
     else
     {
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
         texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
@@ -1098,7 +1099,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     texu_bool fDrewLastCol = TEXU_FALSE;
     texu_i32 itemwidth = 0;
     texu_i32 x, y;
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_ITEM_SELECTED);
     texu_ui32 normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_ITEM);
 #endif
@@ -1179,7 +1180,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 
         normcolor = header->normcolor;
         selcolor = header->selcolor;
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
         normbg = header->normbg;
         selbg = header->selbg;
 #endif
@@ -1193,7 +1194,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
             }
             if (itemwidth == header->cols)
             {
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor, normbg,
@@ -1210,17 +1211,17 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
             else
             {
                 border = 2; /*column with extra 1 space*/
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor, normbg,
-                                           TEXU_ALIGN_LEFT,
+                                           TEXU_ALIGN_CENTER,
                                            border); /* 0=no border, 1=border */
 #else
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor,
-                                           TEXU_ALIGN_LEFT,
+                                           TEXU_ALIGN_CENTER,
                                            border); /* 0=no border, 1=border */
 #endif
             }
@@ -1243,7 +1244,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
             {
                 normcolor = visiblecell->normcolor;
                 selcolor = visiblecell->selcolor;
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
                 normbg = visiblecell->normbg;
                 selbg = visiblecell->selbg;
 #endif
@@ -1252,7 +1253,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
                 {
                     normcolor = selcolor;
                     /* draw the item that it can be seen */
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
                     normbg = selbg;
                     _TexuListCtrlProc_DrawItem2(wnd, dc, &rccell,
                                                 visiblecell->caption,
@@ -1270,7 +1271,7 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
                 else
                 {
                     /* draw the item that it can be seen */
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
                     _TexuListCtrlProc_DrawItem(wnd, dc, &rccell,
                                                visiblecell->caption,
                                                normcolor, normbg,
@@ -1315,14 +1316,15 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     if (visiblecell)
     {
         normcolor = visiblecell->normcolor;
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
         normbg = visiblecell->normbg;
 #endif
     }
     else
     {
         normcolor = 0;
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
+        normcolor = TEXU_CIO_COLOR_BLACK_WHITE;
         normbg = TEXU_CIO_COLOR_WHITE_BLACK;
 #endif
     }
@@ -1363,8 +1365,8 @@ _TexuListCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
             texu_env_draw_char_ex(env, y, x, TEXUTEXT('>'), normcolor, normbg,
                                   texu_wnd_get_clsname(wnd),
                                   texu_wnd_get_id(wnd));
-#elif defined __VMS__
-        texu_cio_draw_char(dc, y, x, TEXUTEXT('>'), normcolor, normbg,
+#elif defined __VMS__ || (defined WIN32 && defined _CONSOLE)
+        texu_cio_draw_char(dc, y, x - 1, TEXUTEXT('>'), normcolor, normbg,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
 
@@ -1448,7 +1450,7 @@ void _TexuListCtrlProc_OnBeginMoving(texu_wnd *wnd)
     header = _TexuListCtrlProc_FindHeaderByIndex(lctl, lctl->curselcol);
     cell = _TexuListCtrlProc_FindCellByHeader(lctl, header, lctl->curselrow);
     _TexuListCtrlProc_GetCellRect(cell, &rccell);
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
     _TexuListCtrlProc_DrawItem2(wnd, dc, &rccell,
                                 cell->caption,
                                 cell->normcolor, cell->normbg,
@@ -1570,7 +1572,7 @@ void _TexuListCtrlProc_OnMovingCursor(texu_wnd *wnd, texu_i32 ch)
         header = _TexuListCtrlProc_FindHeaderByIndex(lctl, lctl->curselcol);
         cell = _TexuListCtrlProc_FindCellByHeader(lctl, header, lctl->curselrow);
         _TexuListCtrlProc_GetCellRect(cell, &rccell);
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))//  && defined _WINDOWS))
         _TexuListCtrlProc_DrawItem(
             wnd,
             texu_wnd_get_cio(wnd),
@@ -1594,7 +1596,7 @@ void _TexuListCtrlProc_OnMovingCursor(texu_wnd *wnd, texu_i32 ch)
         header = _TexuListCtrlProc_FindHeaderByIndex(lctl, newcol);
         cell = _TexuListCtrlProc_FindCellByHeader(lctl, header, newrow);
         _TexuListCtrlProc_GetCellRect(cell, &rccell);
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))//  && defined _WINDOWS))
         _TexuListCtrlProc_DrawItem(wnd, texu_wnd_get_cio(wnd),
                                    &rccell,
                                    cell->caption,
@@ -1648,7 +1650,7 @@ void _TexuListCtrlProc_OnEndMoving(texu_wnd *wnd)
     cell = _TexuListCtrlProc_FindCellByHeader(lctl, header, lctl->curselrow);
     _TexuListCtrlProc_GetCellRect(cell, &rccell);
 
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))//  && defined _WINDOWS))
     _TexuListCtrlProc_DrawItem2(
         wnd,
         dc,
@@ -1962,9 +1964,9 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     /*find the first column*/
 /*    curcol = lctl->curselcol;*/
 
-#if ((defined WIN32 && defined _WINDOWS))
+#if ((defined WIN32))//  && defined _WINDOWS))
 
-    if (lctl->nitems > 0 && (VK_RETURN == ch || VK_F2 == ch || ch == lctl->editkey) && (style & TEXU_LCS_EDITABLE))
+    if (lctl->nitems > 0 && (TVK_ENTER == ch || TVK_F2 == ch || ch == lctl->editkey) && (style & TEXU_LCS_EDITABLE))
 #else
     if (lctl->nitems > 0 && ch == lctl->editkey && (style & TEXU_LCS_EDITABLE))
 #endif
@@ -2786,7 +2788,7 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
     texu_rect rcwnd;
     texu_rect rccell;
     texu_i32 color = 0;
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
 
     texu_i32 bgcolor = 0;
     texu_env *env = texu_wnd_get_env(wnd);
@@ -2809,7 +2811,7 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
 
                 color = cell->normcolor;
 
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
 
                 bgcolor = cell->normbg;
 #endif
@@ -2818,7 +2820,7 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
                     color = cell->selcolor;
 
                     /* draw th item that it can be seen */
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
                     bgcolor = cell->selbg;
                     _TexuListCtrlProc_DrawItem2(wnd, dc, &rccell,
                                                 cell->caption, color, bgcolor, header->align, 0, 1);
@@ -2830,7 +2832,7 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
                 else
                 {
                     /* draw th item that it can be seen */
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
                     _TexuListCtrlProc_DrawItem(wnd, texu_wnd_get_cio(wnd), &rccell,
                                                cell->caption, color, bgcolor, header->align, 0);
 #else
@@ -5287,7 +5289,7 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
-#if (defined __VMS__ || (defined WIN32 && defined _WINDOWS))
+#if (defined __VMS__ || (defined WIN32))// && defined _WINDOWS))
     texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
 #endif
 
@@ -5316,9 +5318,8 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
         texu_env_draw_char_ex(env, y, x + width - 1, TEXU_ACS_PLUS, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
-
 #else
-#if defined __VMS__
+#if defined __VMS__ || (defined WIN32 && defined _CONSOLE)
         texu_cio_draw_char(dc, y, x, TEXU_ACS_MINUS, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));

@@ -245,7 +245,7 @@ SetMyThemeColor(texu_i32 sysidx)
     return -1;
 }
 
-#if (defined _WIN32 && defined _WINDOWS)
+#if defined _WIN32
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, PSTR pszCmdLine, INT iCmdShow)
 {
     texu_wnd *wnd = 0;
@@ -384,10 +384,11 @@ void _MyWndProc_OnNotify(texu_wnd *wnd, texu_wnd_notify *notify)
 {
     texu_lbwnd_notify *lbntf = (texu_lbwnd_notify *)notify;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
-    texu_wnd *status = TexuGetWindowItem(wnd, IDC_STATUSBAR);
-    texu_wnd *lb = TexuGetWindowItem(wnd, IDC_LIST1);
-    texu_wnd *udctl = TexuGetWindowItem(wnd, IDC_UPDOWN);
-    texu_wnd *pgb = TexuGetWindowItem(wnd, IDC_PROGRESSBAR1);
+    texu_wnd* panel = TexuGetWindowItem(wnd, IDC_PANEL1);
+    texu_wnd *status = TexuGetWindowItem(panel, IDC_STATUSBAR);
+    texu_wnd *lb = TexuGetWindowItem(panel, IDC_LIST1);
+    texu_wnd *udctl = TexuGetWindowItem(panel, IDC_UPDOWN);
+    texu_wnd *pgb = TexuGetWindowItem(panel, IDC_PROGRESSBAR1);
     texu_i32 val = 0;
     texu_msgbox_notify *msg = 0;
     texu_menuitem_notify *menuitem = 0;

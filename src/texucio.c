@@ -2399,7 +2399,7 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
     /* draw upper right*/
     texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols - 1, '+', attrs);
     /* draw lower right*/
-    texu_cio_putch_attr(cio, rect->y + rect->lines - 1, rect->x + rect->cols - 2, '+', attrs);
+    texu_cio_putch_attr(cio, rect->y + rect->lines - 1, rect->x + rect->cols - 1, '+', attrs);
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
     /* draw upper left*/
@@ -2409,7 +2409,7 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
     /* draw upper right*/
     texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols - 1, '+', attrs);
     /* draw lower right*/
-    texu_cio_putch_attr(cio, rect->y + rect->lines - 1, rect->x + rect->cols - 2, '+', attrs);
+    texu_cio_putch_attr(cio, rect->y + rect->lines - 1, rect->x + rect->cols - 1, '+', attrs);
 #else
     /* draw upper left*/
     texu_cio_putch_attr(cio, rect->y, rect->x, ACS_ULCORNER, attrs);
@@ -2497,7 +2497,7 @@ texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 
         texu_cio_putch_attr(cio, rc.y, rc.x, ACS_TTEE, attrs);
         texu_cio_putch_attr(cio, rc.y + rc.lines - 1, rc.x, ACS_BTEE, attrs);
 #endif
-        rc.x += widths[i];
+        rc.x += widths[i] - 1;
     }
 #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
@@ -2535,7 +2535,7 @@ texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32
         texu_cio_putch_attr(cio, rc.y, rc.x, ACS_LTEE, attrs);
         texu_cio_putch_attr(cio, rc.y, rc.x + rc.cols - 1, ACS_RTEE, attrs);
 #endif
-        rc.y += heights[i];
+        rc.y += heights[i] - 1;
     }
 #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
