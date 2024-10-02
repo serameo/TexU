@@ -53,7 +53,7 @@ struct texu_wnd_attrs
     void* validate_data;
 };
 typedef struct texu_wnd_attrs texu_wnd_attrs;
-typedef texu_i32 (*texu_validate_proc)(texu_wnd*, texu_char*);
+typedef texu_i32 (*texu_validate_proc)(texu_wnd*, texu_char*, void*);
 
 struct texu_pos
 {
