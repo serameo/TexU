@@ -107,6 +107,8 @@ typedef struct cJSON
     struct cJSON *prev;
     /* An array or object item will have a child pointer pointing to a chain of the items in the array/object. */
     struct cJSON *child;
+    /*MEO:2024-08-08*/
+    struct cJSON *parent;
 
     /* The type of the item, as above. */
     int type;
@@ -170,7 +172,11 @@ CJSON_PUBLIC(int) cJSON_GetArraySize(const cJSON *array);
 CJSON_PUBLIC(cJSON *) cJSON_GetArrayItem(const cJSON *array, int index);
 /* Get item "string" from object. Case insensitive. */
 CJSON_PUBLIC(cJSON *) cJSON_GetObjectItem(const cJSON * const object, const char * const string);
+#ifdef __UNIX__
 CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const object, const char * const string);
+#else
+CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCS(const cJSON * const object, const char * const string);
+#endif
 CJSON_PUBLIC(cJSON_bool) cJSON_HasObjectItem(const cJSON *object, const char *string);
 /* For analysing failed parses. This returns a pointer to the parse error. You'll probably need to look a few chars back to make sense of it. Defined when cJSON_Parse() returns 0. 0 when cJSON_Parse() succeeds. */
 CJSON_PUBLIC(const char *) cJSON_GetErrorPtr(void);
@@ -234,16 +240,28 @@ CJSON_PUBLIC(cJSON *) cJSON_DetachItemViaPointer(cJSON *parent, cJSON * const it
 CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromArray(cJSON *array, int which);
 CJSON_PUBLIC(void) cJSON_DeleteItemFromArray(cJSON *array, int which);
 CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObject(cJSON *object, const char *string);
+#ifdef __UNIX__
 CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObjectCaseSensitive(cJSON *object, const char *string);
+#else
+CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObjectCS(cJSON *object, const char *string);
+#endif
 CJSON_PUBLIC(void) cJSON_DeleteItemFromObject(cJSON *object, const char *string);
+#ifdef __UNIX__
 CJSON_PUBLIC(void) cJSON_DeleteItemFromObjectCaseSensitive(cJSON *object, const char *string);
+#else
+CJSON_PUBLIC(void) cJSON_DeleteItemFromObjectCS(cJSON *object, const char *string);
+#endif
 
 /* Update array items. */
 CJSON_PUBLIC(cJSON_bool) cJSON_InsertItemInArray(cJSON *array, int which, cJSON *newitem); /* Shifts pre-existing items to the right. */
 CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemViaPointer(cJSON * const parent, cJSON * const item, cJSON * replacement);
 CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemInArray(cJSON *array, int which, cJSON *newitem);
 CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemInObject(cJSON *object,const char *string,cJSON *newitem);
+#ifdef __UNIX__
 CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemInObjectCaseSensitive(cJSON *object,const char *string,cJSON *newitem);
+#else
+CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemInObjectCS(cJSON *object,const char *string,cJSON *newitem);
+#endif
 
 /* Duplicate a cJSON item */
 CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse);

@@ -299,6 +299,7 @@ enum
 #define TEXU_EM_INVALIDATE              (TEXU_EM_FIRST +  7)
 #define TEXU_EM_GETINT                  (TEXU_EM_FIRST +  8)
 #define TEXU_EM_GETFLOAT                (TEXU_EM_FIRST +  9)
+#define TEXU_EM_SETVALIDATION           (TEXU_EM_FIRST + 10)
 
 /* edit notification */
 #define TEXU_EN_FIRST                   TEXU_EM_FIRST
@@ -369,7 +370,7 @@ enum
 #define TEXU_LCM_DELETECOLUMN           (TEXU_LCM_FIRST + 19)
 #define TEXU_LCM_ADDCOLUMN              (TEXU_LCM_FIRST + 20)
 #define TEXU_LCM_ADDITEMS               (TEXU_LCM_FIRST + 21)
-
+#define TEXU_LCM_ADDITEMATFIRST         (TEXU_LCM_FIRST + 22)
 
 
 #define TEXU_LCN_FIRST                  TEXU_LCM_FIRST
@@ -388,7 +389,7 @@ enum
 #define TEXU_LCN_BEGINEDIT              (TEXU_LCN_FIRST + 13)
 #define TEXU_LCN_ENDEDITOK              (TEXU_LCN_FIRST + 14)
 #define TEXU_LCN_ENDEDITCANCEL          (TEXU_LCN_FIRST + 15)
-
+#define TEXU_LCN_PRESSEDENTER           (TEXU_LCN_FIRST + 16)
 
 
 
@@ -547,6 +548,7 @@ enum
 #define TEXU_RBM_ADDBAND                (TEXU_RBM_FIRST +   1)
 #define TEXU_RBM_REMOVEBAND             (TEXU_RBM_FIRST +   2)
 #define TEXU_RBM_SETINFOWIDTH           (TEXU_RBM_FIRST +   3)
+#define TEXU_RBM_SETUNITWIDTH           (TEXU_RBM_FIRST +   4)
 
 #define TEXU_RBN_FIRST                  TEXU_RBM_FIRST
 
@@ -593,13 +595,14 @@ enum
 #define TEXU_EPSM_LOADSPREADS           (TEXU_EPSM_FIRST +  7)
 #define TEXU_EPSM_ALLOWOVERCEILINGFLOOR (TEXU_EPSM_FIRST +  8)
 #define TEXU_EPSM_CORRECTCEILINGFLOOR   (TEXU_EPSM_FIRST +  9)
+#define TEXU_EPSM_GETPRICEASINT         (TEXU_EPSM_FIRST + 10)
 
-#define TEXU_EPSN_FIRST                 TEXU_EMM_FIRST
+#define TEXU_EPSN_FIRST                 TEXU_EPSM_FIRST
 #define TEXU_EPSN_SETFOCUS              (TEXU_EPSN_FIRST +  1)
 #define TEXU_EPSN_KILLFOCUS             (TEXU_EPSN_FIRST +  2)
-#define TEXU_EPSN_INVALIDSPREAD         (TEXU_EPSM_FIRST +  3)
-#define TEXU_EPSN_INVALIDCEILING        (TEXU_EPSM_FIRST +  4)
-#define TEXU_EPSN_INVALIDFLOOR          (TEXU_EPSM_FIRST +  5)
+#define TEXU_EPSN_INVALIDSPREAD         (TEXU_EPSN_FIRST +  3)
+#define TEXU_EPSN_INVALIDCEILING        (TEXU_EPSN_FIRST +  4)
+#define TEXU_EPSN_INVALIDFLOOR          (TEXU_EPSN_FIRST +  5)
 
 /*CLOCK CTRL*/
 #define TEXU_CLKM_FIRST                 (TEXU_WM_FIRST + 1700)
@@ -621,6 +624,20 @@ enum
 
 
 #define TEXU_TMN_FIRST                  TEXU_TMM_FIRST
+
+
+/*Edit Volume*/
+#define TEXU_EVM_FIRST                  (TEXU_WM_FIRST + 2000)
+#define TEXU_EVM_SETLOT                 (TEXU_EVM_FIRST +  1)
+#define TEXU_EVM_GETLOT                 (TEXU_EVM_FIRST +  2)
+#define TEXU_EVM_ALLOWODDLOT            (TEXU_EVM_FIRST +  3)
+#define TEXU_EVM_SETVOLUME              (TEXU_EVM_FIRST +  4)
+#define TEXU_EVM_GETVOLUME              (TEXU_EVM_FIRST +  5)
+
+#define TEXU_EVN_FIRST                  TEXU_EVM_FIRST
+#define TEXU_EVN_SETFOCUS               (TEXU_EVN_FIRST +  1)
+#define TEXU_EVN_KILLFOCUS              (TEXU_EVN_FIRST +  2)
+#define TEXU_EVN_INVALIDLOT             (TEXU_EVM_FIRST +  3)
 
 /*MENU */
 #define TEXU_MNM_FIRST                  (TEXU_WM_FIRST + 10000)
@@ -654,7 +671,8 @@ enum
 #elif (defined __VMS__)
 #define TEXU_KEY_SELMENU                10
 #define TEXU_KEY_NEXTWND                13
-#define TEXU_KEY_ENTER                  10
+#define TEXU_KEY_ENTER                  13
+#define TEXU_KEY_NUMENTER               270
 #define TEXU_KEY_TAB                    9
 #define TEXU_KEY_PREVWND                511
 #define TEXU_KEY_BACKSPACE              127
@@ -728,6 +746,7 @@ enum
 #define TEXU_CLOCKCTRL_CLASS            L"TexuClockCtrlClassW"
 #define TEXU_DATECTRL_CLASS             L"TexuDateCtrlClassW"
 #define TEXU_TIMECTRL_CLASS             L"TexuTimeCtrlClassW"
+#define TEXU_EDITVOLUMECTRL_CLASS       L"TexuEditVolumeCtrlClassW"
 /*menu*/
 #define TEXU_MENU_CLASS                 L"TexuMenuClassW"
 #define TEXU_MENUWND_CLASS              L"TexuMenuWndClassW"
@@ -754,6 +773,7 @@ enum
 #define TEXU_CLOCKCTRL_CLASS            "TexuClockCtrlClassA"
 #define TEXU_DATECTRL_CLASS             "TexuDateCtrlClassA"
 #define TEXU_TIMECTRL_CLASS             "TexuTimeCtrlClassA"
+#define TEXU_EDITVOLUMECTRL_CLASS       "TexuEditVolumeCtrlClassA"
 /*menu*/
 #define TEXU_MENU_CLASS                 "TexuMenuClassA"
 #define TEXU_MENUWND_CLASS              "TexuMenuWndClassA"
@@ -829,6 +849,7 @@ enum
 #define TEXU_LCS_NOBORDER               0x00040000
 #define TEXU_LCS_NOSELECTION            0x00080000
 #define TEXU_LCS_LINEEDIT               0x00100000
+#define TEXU_LCS_SIMPLEHEADER           0x00200000
 /*enum*/
 #define TEXU_LC_ENDEDITOK               0x00000000
 #define TEXU_LC_ENDEDITCANCEL           0x00000001
@@ -871,11 +892,16 @@ enum
 
 /*REBAR STYLES*/
 #define TEXU_RBS_NOCAPTION              0x00010000
+#define TEXU_RBS_HASUNIT                0x00020000
 
-/*EDIT PRICE SPREAD CTROL*/
+/*EDIT PRICE SPREAD CTRL*/
 #define TEXU_EPSS_SHOWCHANGE            0x00010000
 #define TEXU_EPSS_SHOWCHANGEPRICE       0x00020000
 #define TEXU_EPSS_AUTOCOMMAS            0x00040000
+#define TEXU_EPSS_ATOATC                0x00080000
+
+/*EDIT VOLUME CONTROL*/
+#define TEXU_EVS_AUTOCOMMAS             0x00010000
 
 /*UP-DOWN CTRL*/
 #define TEXU_UDS_SHOWPLUSMINUS          0x00010000

@@ -49,9 +49,11 @@ struct texu_wnd_attrs
     texu_ui32 id;
     const texu_char *clsname;
     void *userdata;
-    texu_i32 (*on_validate)(texu_wnd*, texu_char*);
+    texu_i32 (*on_validate)(texu_wnd*, texu_char*, void*);
+    void* validate_data;
 };
 typedef struct texu_wnd_attrs texu_wnd_attrs;
+typedef texu_i32 (*texu_validate_proc)(texu_wnd*, texu_char*);
 
 struct texu_pos
 {
@@ -245,9 +247,27 @@ struct texu_wnd_template2
     texu_i32 h;
     texu_i32 w;
     texu_i32 id;
-    texu_i32 (*on_validate)(texu_wnd*, texu_char*);
+    void* userdata;
+    texu_i32 (*on_validate)(texu_wnd*, texu_char*, void*);
 };
 typedef struct texu_wnd_template2 texu_wnd_template2;
+
+struct texu_wnd_template3
+{
+    const texu_char *text;
+    const texu_char *clsname;
+    texu_ui32 style;
+    texu_ui32 exstyle;
+    texu_i32 y;
+    texu_i32 x;
+    texu_i32 h;
+    texu_i32 w;
+    texu_i32 id;
+    void* userdata;
+    void* validate_data;
+    texu_i32 (*on_validate)(texu_wnd*, texu_char*, void*);
+};
+typedef struct texu_wnd_template3 texu_wnd_template3;
 
 struct texu_menuitem_template
 {
@@ -286,6 +306,7 @@ struct texu_rbwnd_band
                             /* it could be editbox/listbox/combobox etc*/
     texu_i32    width;
     texu_i32    height;
+    texu_char   unit[TEXU_MAX_WNDTEXT + 1];
 };
 typedef struct texu_rbwnd_band texu_rbwnd_band;
 

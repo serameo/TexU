@@ -119,7 +119,23 @@ texu_wnd*           TexuCreateWindow2(
                         texu_wnd*  parent,
                         texu_i32   id,
                         void*      userdata,
-                        texu_i32   (*on_validate)(texu_wnd*, texu_char*)
+                        texu_i32   (*on_validate)(texu_wnd*, texu_char*, void*)
+                    );
+
+texu_wnd*           TexuCreateWindow3(
+                        const texu_char* text,
+                        const texu_char* clsname,
+                        texu_ui32  style,
+                        texu_ui32  exstyle,
+                        texu_i32   y,
+                        texu_i32   x,
+                        texu_i32   h,
+                        texu_i32   w,
+                        texu_wnd*  parent,
+                        texu_i32   id,
+                        void*      userdata,
+                        void*      validate_data,
+                        texu_i32   (*on_validate)(texu_wnd*, texu_char*, void*)
                     );
 void                TexuDestroyWindow(
                         texu_wnd*  wnd
@@ -145,6 +161,10 @@ void                TexuInvalidateWindow(
 texu_bool           TexuIsExecutableCommand(
                         texu_wnd*   wnd,
                         texu_ui32   id);
+
+void TexuMoveWindow(texu_wnd *wnd, texu_i32 y, texu_i32 x, texu_i32 h, texu_i32 w, texu_bool redraw);
+void TexuLockUpdateWindow(texu_wnd* wnd, texu_i32 locked);
+
 texu_wnd*
 TexuMessageBox(
     texu_char* caption,
@@ -222,7 +242,8 @@ TexuAddHotKey(
 );
 
 void            TexuEnableWindow(texu_wnd* wnd, texu_bool enable);
-texu_longptr        TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
+texu_longptr    TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
+void*           TexuGetWindowUserData(texu_wnd* wnd);
 
 void
 TexuSaveCursorPosition(texu_wnd* wnd);

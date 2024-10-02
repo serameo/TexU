@@ -85,7 +85,11 @@
 #else
 
 #define TVK_TAB            0x09
+#if (defined __USE_VMS__ || defined __VMS__)
+#define TVK_ENTER          0x0D
+#else
 #define TVK_ENTER          0x0A
+#endif
 
 #define TVK_SPACE          0x20
 #ifdef __USE_CURSES__
