@@ -213,7 +213,6 @@ struct texu_cio
 void _texu_cio_init_colors(texu_cio *cio);
 void _texu_cio_init_colors_mono(texu_cio *cio);
 
-
 #if (defined VMS || defined __VMS__)
 long texu__cio_get_on_display(texu_cio* cio)
 {
@@ -236,13 +235,13 @@ void  texu_cio_flip_display(texu_cio* cio)
 
 void texu_cio_begin_update(texu_cio* cio)
 {
-/*    smg$begin_display_update(&cio->smg_display_id);*/
-    smg$begin_pasteboard_update(&cio->smg_pastebd_id);
+    smg$begin_display_update(&cio->smg_display_id);
+    /*smg$begin_pasteboard_update(&cio->smg_pastebd_id);*/
 }
 void texu_cio_end_update(texu_cio* cio)
 {
-/*    smg$end_display_update(&cio->smg_display_id);*/
-    smg$end_pasteboard_update(&cio->smg_pastebd_id);
+    smg$end_display_update(&cio->smg_display_id);
+/*    smg$end_pasteboard_update(&cio->smg_pastebd_id);*/
 }
 #endif
 
@@ -1070,7 +1069,8 @@ texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
         fprintf(stderr, "Error creating display: %ld\n", status);
         return status;
     }
-    status = smg$copy_virtual_display(&smg_display_id, &smg_display_id2);
+    /*status = smg$copy_virtual_display(&smg_display_id, &smg_display_id2);*/
+    status = smg$create_virtual_display(&rows, &columns, &smg_display_id2);
     if (!(status & 1))
     {
         fprintf(stderr, "Error creating display: %ld\n", status);
@@ -1669,23 +1669,16 @@ texu_cio_putch_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_bo
     texu_i32 status = 0;
     long smg_display_id = texu__cio_get_on_display(cio);
     
-    /*texu_tty_attron(attrs);*/
-    /*status = texu_cio_gotoyx(cio, y+1, x+1);*/
-#if 0
-    texu_cio_gotoyx(cio, y, x);
-    texu_cio_get_color(cio, WHITE_BLACK);
-    printf(sz);
-#else
     y++;    /*curses start (0, 0)*/
     x++;    /*vms start (1, 1)*/
-    status = smg$put_chars(&cio->smg_display_id, &text, &y, &x,/*&x, &y,*/
+    status = smg$put_chars(&cio->smg_display_id, &text, &y, &x,
                 &erase,     /*0 - Does not erase line (the default), 1 - Erase */
                 &0, &0);    /*Set   Complement  Action*/
                             /*0     0           Attribute set to default*/
                             /*1     0           Attribute on*/
                             /*0     1           Attribute set to complement of default setting*/
                             /*1     1           Attribute off*/
-#endif
+
     texu_cio_get_color(cio, WHITE_BLACK);
     return status;
 }
@@ -1782,7 +1775,7 @@ texu_i32
 texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs, texu_bool erase)
 {
     texu_cio_attron(cio, attrs);
-    mvwaddch(cio->wndscr, y, x, ch);
+    mvwaddch(cio->wndscr, y, x, (char)ch);
     return texu_cio_attroff(cio, attrs);
 }
 texu_i32
@@ -2347,19 +2340,19 @@ texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_
                              rect->x + (rect->cols - len) / 2, text, 
                              texu_cio_get_color(cio, cio__reverse_color_pair(attrs)));
 #else
-#if defined __LINUX__
+#if 0//defined __LINUX__
         texu_cio_putstr_attr(cio, rect->y,
                              rect->x + (rect->cols - len) / 2, text, attrs | A_REVERSE);
 #else
 #if defined TEXU_CIO_COLOR_MONO
         sprintf(caption, "[ %s ]", text);
         len = texu_strlen(caption);
-        texu_strcpy(text, caption);
+        //texu_strcpy(text, caption);
 
 //        texu_cio_attron(cio, A_REVERSE);
         texu_cio_putstr_attr(cio, rect->y,
-                             rect->x + (rect->cols - len) / 2, text, 
-                             attrs | A_REVERSE);
+                             rect->x + (rect->cols - len) / 2, caption, 
+                             /*attrs | */A_REVERSE);
                              //texu_cio_get_color(cio, cio__reverse_color_pair(attrs)));
 //        texu_cio_attroff(cio, A_REVERSE);
 #else
@@ -2383,13 +2376,13 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
 #else
     texu_cio_attron(cio, attrs);
     /*draw top line*/
-    texu_cio_draw_line(cio, rect->y, rect->x, rect->cols - 1, attrs);
+    texu_cio_draw_line(cio, rect->y, rect->x, rect->cols, attrs);
     /*draw bottom line*/
-    texu_cio_draw_line(cio, rect->y + rect->lines - 1, rect->x, rect->cols - 1, attrs);
+    texu_cio_draw_line(cio, rect->y + rect->lines - 1, rect->x, rect->cols, attrs);
     /* draw left vertical line */
-    texu_cio_draw_vline(cio, rect->y, rect->x, rect->lines - 1, attrs);
+    texu_cio_draw_vline(cio, rect->y, rect->x, rect->lines, attrs);
     /* draw right vertical line */
-    texu_cio_draw_vline(cio, rect->y, rect->x + rect->cols - 1, rect->lines - 1, attrs);
+    texu_cio_draw_vline(cio, rect->y, rect->x + rect->cols - 1, rect->lines, attrs);
 
 #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
     /* draw upper left*/
@@ -2579,7 +2572,7 @@ texu_i32
 texu_cio_get_color(texu_cio *cio, texu_i32 clridx)
 {
     /*return texu_tty_get_color(clridx);*/
-    texu_char color[16];
+    texu_char color[32];
     sprintf(color, TTY_FMT_COLOR_LL, gcolors[clridx].fg, gcolors[clridx].bg);
     printf(color);
 /*//core dump

@@ -331,7 +331,78 @@ TexuCreateControls2(texu_wnd *wnd, const texu_wnd_template2 *templ, texu_i32 nit
             templ[i].w,
             wnd,
             templ[i].id,
-            0,
+            templ[i].userdata,
+            templ[i].on_validate);
+#if USE_TCL_AUTOMATION
+        /*print to file*/
+        child = cJSON_CreateObject();
+        
+        cJSON_AddStringToObject(child, "text", templ[i].text);
+        cJSON_AddStringToObject(child, "clsname", templ[i].clsname);
+
+        cJSON_AddNumberToObject(child, "y", templ[i].y);
+        cJSON_AddNumberToObject(child, "x", templ[i].x);
+        cJSON_AddNumberToObject(child, "h", templ[i].h);
+        cJSON_AddNumberToObject(child, "w", templ[i].w);
+        cJSON_AddNumberToObject(child, "id", templ[i].id);
+        
+        sprintf(name, "%s_%d", templ[i].clsname, templ[i].id);
+        
+        cJSON_AddItemToObject(wndname, name, child);
+#endif
+    }
+#if USE_TCL_AUTOMATION
+    cJSON_AddItemToObject(root, templname, wndname);
+    outjson = cJSON_Print(root);
+    fprintf(fstdout, "%s\n", outjson);
+    fflush(fstdout);
+    
+    free(outjson);
+    cJSON_Delete(root);
+#endif
+    return rc;
+}
+
+
+#if USE_TCL_AUTOMATION
+texu_status
+TexuCreateControls3(texu_wnd *wnd, const texu_wnd_template3 *templ, texu_i32 nitems, const texu_char *templname)
+#else
+texu_status
+TexuCreateControls3(texu_wnd *wnd, const texu_wnd_template3 *templ, texu_i32 nitems)
+#endif
+{
+    texu_status rc = TEXU_OK;
+    texu_i32    i  = 0;
+#if USE_TCL_AUTOMATION
+    texu_env    *env    = genv;
+    cJSON   *root       = cJSON_CreateObject();
+    cJSON   *wndname    = cJSON_CreateObject();
+    FILE    *fstdout    = texu_env_get_stdout(env);
+    cJSON   *child      = 0;
+    texu_char name[64];
+    char    *outjson;
+#endif
+
+    for (i = 0; i < nitems; ++i)
+    {
+        if (!(templ[i].clsname) || texu_strlen(templ[i].clsname) == 0)
+        {
+            break;
+        }
+        TexuCreateWindow3(
+            templ[i].text,
+            templ[i].clsname,
+            templ[i].style,
+            templ[i].exstyle,
+            templ[i].y,
+            templ[i].x,
+            templ[i].h,
+            templ[i].w,
+            wnd,
+            templ[i].id,
+            templ[i].userdata,
+            templ[i].validate_data,
             templ[i].on_validate);
 #if USE_TCL_AUTOMATION
         /*print to file*/
@@ -408,7 +479,107 @@ TexuCreateWindow2(
     texu_wnd            *parent,
     texu_i32            id,
     void                *userdata,
-    texu_i32 (*on_validate)(texu_wnd*, texu_char*))
+    texu_i32            (*on_validate)(texu_wnd*, texu_char*, void*))
+{
+#if 1
+    texu_wnd *wnd = TexuCreateWindow3(
+                        text,
+                        clsname,
+                        style,
+                        exstyle,
+                        y,
+                        x,
+                        h,
+                        w,
+                        parent,
+                        id,
+                        userdata,
+                        0,  /*validate data*/
+                        on_validate);
+
+    return wnd;
+#else
+    texu_wnd *wnd = 0;
+    texu_wnd_attrs attrs;
+    texu_status rc = TEXU_OK;
+    texu_env *env = genv;
+    texu_wnd *desktop = texu_env_get_desktop(env);
+    texu_wnd *childwnd = 0;
+
+    if (!genv)
+    {
+        return 0;
+    }
+    wnd = texu_wnd_new(genv);
+    if (!wnd)
+    {
+        return 0;
+    }
+    memset(&attrs, 0, sizeof(attrs));
+    attrs.y             = y;
+    attrs.x             = x;
+    attrs.height        = h;
+    attrs.width         = w;
+    attrs.enable        = (TEXU_WS_DISABLED & style ? TEXU_FALSE : TEXU_TRUE);
+    attrs.visible       = (TEXU_WS_HIDE     & style ? TEXU_FALSE : TEXU_TRUE);
+    attrs.text          = text;
+    attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+    attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+    attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+
+    attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+    attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+    attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+
+    attrs.id = id;
+    attrs.clsname       = clsname;
+    attrs.userdata      = userdata;
+    attrs.style         = style;
+    attrs.exstyle       = exstyle;
+    attrs.on_validate   = on_validate;
+
+    if (!(parent))
+    {
+        parent = desktop;
+    }
+    rc = texu_wnd_create(wnd, parent, &attrs);
+
+    if (rc != TEXU_OK)
+    {
+        texu_wnd_del(wnd);
+        return 0;
+    }
+
+    if (parent == desktop)
+    {
+        _TexuPushWindow(wnd);
+
+        childwnd = texu_wnd_get_activechild(wnd);
+        if (childwnd)
+        {
+            texu_wnd_send_msg(childwnd, TEXU_WM_SETFOCUS, 0, 0);
+        }
+    }
+
+    return wnd;
+#endif
+}
+
+texu_wnd *
+TexuCreateWindow3(
+    const texu_char     *text,
+    const texu_char     *clsname,
+    texu_ui32           style,
+    texu_ui32           exstyle,
+    texu_i32            y,
+    texu_i32            x,
+    texu_i32            h,
+    texu_i32            w,
+    texu_wnd            *parent,
+    texu_i32            id,
+    void                *userdata,
+    void                *validate_data,
+    texu_i32 (*on_validate)(texu_wnd*, texu_char*, void*))
 {
     texu_wnd *wnd = 0;
     texu_wnd_attrs attrs;
@@ -448,6 +619,7 @@ TexuCreateWindow2(
     attrs.style         = style;
     attrs.exstyle       = exstyle;
     attrs.on_validate   = on_validate;
+    attrs.validate_data = validate_data;
 
     if (!(parent))
     {
@@ -659,8 +831,6 @@ TexuGetSysBgColor(texu_i32 color)
     return texu_env_get_sysbgcolor(genv, color);
 }
 
-
-
 texu_longptr
 TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
@@ -670,6 +840,12 @@ TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
         return rc;
     }
     return TexuSendMessage(wnd, TEXU_WM_SETFOCUS, (texu_lparam)prevwnd, 0);
+}
+
+void*
+TexuGetWindowUserData(texu_wnd* wnd)
+{
+    return texu_wnd_get_userdata(wnd);
 }
 
 void
@@ -928,6 +1104,16 @@ TexuFormatText(texu_char* text, const texu_char* buf, texu_i32 x, texu_i32 limit
         x,                          /*x: x-position*/ 
         cx                          /*max width (screen width)*/
     );
+}
+
+void TexuMoveWindow(texu_wnd *wnd, texu_i32 y, texu_i32 x, texu_i32 h, texu_i32 w, texu_bool redraw)
+{
+    texu_wnd_move(wnd, y, x, h, w, redraw);
+}
+
+void TexuLockUpdateWindow(texu_wnd* wnd, texu_i32 locked)
+{
+    texu_wnd_lock_update(wnd, locked);
 }
 
 #ifdef __cplusplus

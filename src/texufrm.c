@@ -10,18 +10,15 @@
 # 24-NOV-2022       MEO             Create a frame window to handle TEXU_WM_CHAR
 #
 */
-#if defined __UNIX__
+
 #include <unistd.h>
-#include <sys/time.h>
-#include <sys/ipc.h>
-#endif
-#if defined __LINUX__
-#include <sys/msg.h>
-#endif
 #include <signal.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -60,8 +57,7 @@ extern "C"
         texu_wnd *activewnd = texu_wnd_get_activechild(wnd);
         texu_wnd *nextwnd = 0;
         texu_wnd *parent = texu_wnd_get_parent(wnd);
-        texu_env *env = texu_wnd_get_env(wnd);
-        texu_wnd *desktop = texu_env_get_desktop(env);
+        texu_wnd *desktop = (wnd ? texu_env_get_desktop(wnd->env) : 0);
         texu_i32 y = 0;
         texu_i32 x = 0;
         texu_i32 width = 0;
@@ -79,7 +75,7 @@ extern "C"
         {
             if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
             {
-                menu = texu_wnd_get_menu(wnd);
+                menu = wnd->menu;
                 if (menu)
                 {
                     rc = texu_wnd_send_msg(wnd, TEXU_WM_ENTERMENU, ch, alt);
@@ -108,7 +104,7 @@ extern "C"
                     rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                     /* the new active window */
-                    texu_wnd_set_activechild(wnd, nextwnd);
+                    wnd->activechild = nextwnd;
                     return 1;
                 }
                 else
@@ -138,7 +134,7 @@ extern "C"
                         rc = texu_wnd_send_msg((nextwnd ? nextwnd : wnd), TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                         /* the new active window */
-                        texu_wnd_set_activechild(wnd, nextwnd);
+                        wnd->activechild = nextwnd;
                         return 1;
                     }
 #endif

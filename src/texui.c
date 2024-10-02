@@ -251,6 +251,7 @@ texu_longptr _TexuEditPriceSpreadProc(texu_wnd *, texu_ui32, texu_lparam, texu_l
 texu_longptr _TexuClockCtrlProc(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
 texu_longptr _TexuDateCtrlProc(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
 texu_longptr _TexuTimeCtrlProc(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
+texu_longptr _TexuEditVolumeProc(texu_wnd *, texu_ui32, texu_lparam, texu_lparam);
 
 
 /* menu texumenu.c */
@@ -951,6 +952,10 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_PANEL_DISABLED]                 = TEXU_CIO_COLOR_CYAN_BLACK;
     env->sysbgcolors[TEXU_COLOR_PANEL_BORDER]                   = TEXU_CIO_COLOR_CYAN_BLACK;
     env->sysbgcolors[TEXU_COLOR_PANEL_TITLE]                    = TEXU_CIO_COLOR_WHITE_RED;
+    env->sysbgcolors[TEXU_COLOR_EDITVOLUMECTRL]            = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDITVOLUMECTRL_DISABLED]   = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->sysbgcolors[TEXU_COLOR_EDITVOLUMECTRL_SELECTED]   = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->sysbgcolors[TEXU_COLOR_EDITVOLUMECTRL_FOCUSED]    = TEXU_CIO_COLOR_CYAN_BLACK;
     /*default*/
     env->sysbgcolors[TEXU_COLOR_DEFAULT] = TEXU_CIO_COLOR_BLACK_WHITE;
 }
@@ -981,6 +986,7 @@ _texu_env_init_cls(texu_env *env)
     texu_env_register_cls(env, TEXU_CLOCKCTRL_CLASS,            _TexuClockCtrlProc);        /*texuctrlx.c*/
     texu_env_register_cls(env, TEXU_DATECTRL_CLASS,             _TexuDateCtrlProc);        /*texuctrlx.c*/
     texu_env_register_cls(env, TEXU_TIMECTRL_CLASS,             _TexuTimeCtrlProc);        /*texuctrlx.c*/
+    texu_env_register_cls(env, TEXU_EDITVOLUMECTRL_CLASS,  _TexuEditVolumeProc);  /*texuctrlx.c*/
     /*menu*/
     texu_env_register_cls(env, TEXU_MENU_CLASS,     _TexuMenuProc);
     texu_env_register_cls(env, TEXU_MENUWND_CLASS,  _TexuMenuWndProc);
@@ -1546,6 +1552,7 @@ _texu_clsname_mapping a_texu_clsname_mapping[] =
     { TEXUTEXT("texu_ipaddressctrl_class"), TEXUTEXT("TEXU_IPADDRESSCTRL_CLASS"),   TEXU_IPADDRESSCTRL_CLASS },
     { TEXUTEXT("texu_editmaskctrl_class"),  TEXUTEXT("TEXU_EDITMASKCTRL_CLASS"),    TEXU_EDITMASKCTRL_CLASS },
     { TEXUTEXT("texu_editpricespreadctrl_class"), TEXUTEXT("TEXU_EDITPRICESPREADCTRL_CLASS"), TEXU_EDITPRICESPREADCTRL_CLASS },
+    { TEXUTEXT("texu_editvolumectrl_class"), TEXUTEXT("TEXU_EDITVOLUMECTRL_CLASS"), TEXU_EDITVOLUMECTRL_CLASS },
     { TEXUTEXT("texu_menu_class"),          TEXUTEXT("TEXU_MENU_CLASS"),            TEXU_MENU_CLASS },
     { TEXUTEXT("texu_menuwnd_class"),       TEXUTEXT("TEXU_MENUWND_CLASS"),         TEXU_MENUWND_CLASS }
 };
@@ -2432,10 +2439,6 @@ texu_env_new(texu_i32 lines, texu_i32 cols)
         /*texu_env_createwnd(env, hWndParent, nID);*/
         env->has_cursor = TEXU_FALSE;
         texu_env_register_envcls(env, hinst, lines, cols);
-#elif (defined WIN32 && defined _CONSOLE)
-        texu_cio_init(env->cio, env, lines, cols);
-        env->cols = cols;
-        env->lines = lines;
 #else
         texu_cio_init(env->cio, lines, cols);
         env->cols  = cols;
@@ -2629,7 +2632,6 @@ texu_env_run(texu_env *env)
     texu_i32        altpressed  = 0;
     texu_i32        ctlpressed  = 0;
     texu_char       *keypressed = 0;
-    texu_i32        shftpressed = 0;
 #if (defined VMS || defined __VMS__)
     texu_char       key_name[32];
     $DESCRIPTOR(keyname, key_name);
@@ -2669,16 +2671,11 @@ texu_env_run(texu_env *env)
 #else /*not USE_TCL_AUTOMATION*/
         altpressed = 0;
         ctlpressed = 0;
-        shftpressed = 0;
 #if (defined VMS || defined __VMS__)
         /*get cursor to the position*/
         texu_cio_getyx(env->cio, &y, &x);
 #endif
-#if defined WIN32 && defined _CONSOLE
-        ch = texu_cio_win32_getch(env->cio, &ch2, &altpressed, &ctlpressed, &shftpressed);
-#else
         ch = texu_cio_getch(env->cio);
-#endif
         if (-1 == ch && env->frames)
         {
             /*no key pressed*/
@@ -2693,7 +2690,6 @@ texu_env_run(texu_env *env)
             continue;
         }
 #if (defined WIN32 && (defined UNICODE || defined _UNICODE))
-#elif (defined WIN32 && defined _CONSOLE)
 #elif (defined VMS || defined __VMS__)
         /*set cursor to the position*/
         /*texu_cio_gotoyx(env->cio, y, x);*/
@@ -2760,17 +2756,10 @@ texu_env_run(texu_env *env)
                 /*no more windows active*/
                 break;
             }
-#if defined WIN32
-            texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_lparam)ch, /*virtual key*/
-                (texu_lparam)(altpressed | ctlpressed));
-            texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch2, /*ascii*/
-                (texu_lparam)(altpressed | ctlpressed));
-#else
             texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_lparam)ch,
-                (texu_lparam)(altpressed | ctlpressed));
+                              (texu_lparam)(altpressed | ctlpressed));
             texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch,
                               (texu_lparam)(altpressed | ctlpressed));
-#endif
         }
 #endif /*#else NOT USE_TCL_AUTOMATION*/
     }
@@ -2935,6 +2924,8 @@ struct texu_wnd
     texu_i32 id;
     const texu_char *clsname;
     void *userdata;
+    texu_i32 (*on_validate)(texu_wnd*, texu_char*, void*);
+    void* validate_data;
 #if 1/*(defined __VMS__)*/
     /*blank lines*/
     texu_i32 nblanklines;
@@ -3174,7 +3165,8 @@ _TexuDefWndProc_OnEnable(texu_wnd *wnd, texu_bool enable)
     texu_bool oldenable = wnd->enable;
     wnd->enable = enable;
 
-    texu_wnd_send_msg(wnd, TEXU_WM_PAINT, (texu_lparam)wnd->env->cio, 0);
+    /*texu_wnd_send_msg(wnd, TEXU_WM_PAINT, (texu_lparam)wnd->env->cio, 0);*/
+    texu_wnd_invalidate(wnd);
     return oldenable;
 }
 
@@ -3214,8 +3206,6 @@ _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     texu_i32 maxwidth = texu_env_screen_width(env);
     texu_i32 x = 0;
     texu_i32 y = 0;
-    
-    texu_char water_mark[TEXU_MAX_WNDTEXT + 1];
 
     if (rect)
     {
@@ -3232,38 +3222,19 @@ _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
         height = wnd->height;
     }
 
+#if defined __VMS__
+    /*this is required because OpenVMS will incorrectly paint on screen if
+    the background is empty (space)
+    */
+    memset(zblank, 0, sizeof(zblank));
+    texu_memset(zblank, TEXUTEXT('_'), width);
+#else
     memset(zblank, 0, sizeof(zblank));
     texu_memset(zblank, TEXUTEXT(' '), width);
-    memset(water_mark, 0, sizeof(zblank));
-    /*texu_memset(water_mark, TEXUTEXT(L'\u2591'), width);*/
-    texu_memset(water_mark, TEXUTEXT('.'), width);
+#endif
 
     for (line = 0; line < height; ++line)
     {
-#if defined __VMS__
-        texu_strcpy(zblank, water_mark);
-/*
-        memset(zblank, 0, sizeof(zblank));
-        texu_memset(zblank, TEXUTEXT(' '), width);
-        sprintf(water_mark, "y:%d,x:%d,id:%d,w:%d,h:%d",
-            line + wnd->y, wnd->x,
-            wnd->id,
-            width, height);
-        texu_printf_alignment3(zblank, water_mark, 
-            width, TEXU_ALIGN_RIGHT, TEXU_FALSE, x, width);
-            
-        texu_cio_erase_chars(cio, width, line + wnd->y, wnd->x);*/
-/*
-        texu_cio_draw_text_erase(
-            cio,
-            line + wnd->y, wnd->x,
-            zblank,
-            wnd->normalcolor,
-            wnd->normalbg,
-            texu_wnd_get_clsname(wnd),
-            texu_wnd_get_id(wnd),
-            TEXU_FALSE);*/
-#endif
         texu_cio_draw_text(
             cio,
             line + y, x,
@@ -3713,12 +3684,6 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
     texu_status rc = TEXU_OK;
     texu_wndproc wndproc = 0;
     texu_env *env = wnd->env;
-/*    texu_i32 cx = texu_env_screen_width(env);
-    texu_i32 cy = texu_env_screen_height(env);
-    texu_i32 width = 0;
-    texu_i32 height = 0;
-    texu_i32 ypos = 0;
-    texu_i32 xpos = 0;*/
 
     /* find the window procedure */
     wndproc = _texu_env_find_wndproc(wnd->env, attrs->clsname);
@@ -3837,6 +3802,9 @@ texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
     wnd->userdata       = attrs->userdata;
     wnd->wndproc        = wndproc;
     wnd->parent         = parent;
+
+    wnd->on_validate    = attrs->on_validate;
+    wnd->validate_data  = attrs->validate_data;
     if (parent)
     {
         texu_wnd_add_child(parent, wnd);
@@ -4169,27 +4137,25 @@ texu_wnd_invalidate(texu_wnd *wnd)
     {
         return 1;
     }
-#if (defined VMS || defined __VMS__)
+    if (texu_wnd_is_update_locked(wnd))
+    {
+        return 2;
+    }
+#if 0//(defined VMS || defined __VMS__)
     /*performance is good, but color is gone*/
-/*    texu_cio_begin_update(texu_wnd_get_cio(wnd));*/
+    texu_cio_begin_update(texu_wnd_get_cio(wnd));
 #endif
     _texu_wnd_invalidate(wnd);
+#if 0//(defined VMS || defined __VMS__)
+    /*performance is good, but color is gone*/
+    texu_cio_end_update(texu_wnd_get_cio(wnd));
+#endif
 #if (defined WIN32 && defined _WINDOWS)
     /*Double buffering technique to prevent freaking screen*/
     texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 cx = env->cxScreen;
     texu_i32 cy = env->cyScreen;
     BitBlt(env->hdc, 0, 0, cx, cy, env->hmemdc, 0, 0, SRCCOPY);
-#endif
-#if 0
-    firstchild = texu_wnd_get_first_activechild(wnd);
-    if (firstchild)
-    {
-        _texu_wnd_invalidate(firstchild);
-    }
-#endif
-#if (defined VMS || defined __VMS__)
-/*    texu_cio_end_update(texu_wnd_get_cio(wnd));*/
 #endif
     return 0;
 }
@@ -4789,11 +4755,11 @@ texu_wnd_lock_update(texu_wnd *wnd, texu_bool locked)
 {
     if (wnd && wnd->lockedupdate != locked)
     {
+        wnd->lockedupdate = locked;
         if (!locked)
         {
             texu_wnd_invalidate(wnd);
         }
-        wnd->lockedupdate = locked;
     }
 }
 
@@ -4899,7 +4865,7 @@ texu_i32 texu__wnd_create_blank_lines(texu_env *env, texu_wnd* parent)
         attrs.width         = w;
         attrs.enable        = TEXU_FALSE;
         attrs.visible       = TEXU_TRUE;
-#if 1//(defined __VMS__)
+#if (defined __VMS__)
         attrs.text          = TEXUTEXT(">");
 #else
         attrs.text          = TEXUTEXT("");
@@ -4916,6 +4882,7 @@ texu_i32 texu__wnd_create_blank_lines(texu_env *env, texu_wnd* parent)
         attrs.style         = TEXU_WS_RIGHT;
         attrs.exstyle       = 0;
         attrs.on_validate   = 0;
+        attrs.validate_data = 0;
 
         if (!parent)
         {
@@ -5145,7 +5112,7 @@ _TexuFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 
                     /* the new active window */
                     texu_wnd_set_activechild(wnd, nextwnd);
-
+                    
                     /* send notification to the window*/
                     _TexuFrameWndProc_Notify(wnd, nextwnd, code);
                     return 1;

@@ -19,6 +19,11 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
+/*
+Date        Modified by       Description
+16-MAR-23   MEO               To support VMS compilation
+08-AUG-24   MEO               To support the linking between child and its parent
+*/
 
 /* cJSON */
 /* JSON parser in C. */
@@ -79,6 +84,8 @@
 
 #ifndef NAN
 #ifdef _WIN32
+#define NAN sqrt(-1.0)
+#elif (defined __VMS__)
 #define NAN sqrt(-1.0)
 #else
 #define NAN 0.0/0.0
@@ -1495,6 +1502,8 @@ static cJSON_bool parse_array(cJSON * const item, parse_buffer * const input_buf
             new_item->prev = current_item;
             current_item = new_item;
         }
+        /*MEO:2024-08-09*/
+        current_item->parent = item;
 
         /* parse next value */
         input_buffer->offset++;
@@ -1653,6 +1662,8 @@ static cJSON_bool parse_object(cJSON * const item, parse_buffer * const input_bu
             new_item->prev = current_item;
             current_item = new_item;
         }
+        /*MEO:2024-08-09*/
+        current_item->parent = item;
 
         /* parse the name of the child */
         input_buffer->offset++;
@@ -1914,7 +1925,11 @@ CJSON_PUBLIC(cJSON *) cJSON_GetObjectItem(const cJSON * const object, const char
     return get_object_item(object, string, false);
 }
 
+#ifdef __VMS__
+CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCS(const cJSON * const object, const char * const string)
+#else
 CJSON_PUBLIC(cJSON *) cJSON_GetObjectItemCaseSensitive(const cJSON * const object, const char * const string)
+#endif
 {
     return get_object_item(object, string, true);
 }
@@ -2242,10 +2257,17 @@ CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObject(cJSON *object, const char *stri
     return cJSON_DetachItemViaPointer(object, to_detach);
 }
 
+#ifdef __VMS__
+CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObjectCS(cJSON *object, const char *string)
+#else
 CJSON_PUBLIC(cJSON *) cJSON_DetachItemFromObjectCaseSensitive(cJSON *object, const char *string)
+#endif
 {
+#ifdef __VMS__
+    cJSON *to_detach = cJSON_GetObjectItemCS(object, string);
+#else
     cJSON *to_detach = cJSON_GetObjectItemCaseSensitive(object, string);
-
+#endif
     return cJSON_DetachItemViaPointer(object, to_detach);
 }
 
@@ -2254,9 +2276,17 @@ CJSON_PUBLIC(void) cJSON_DeleteItemFromObject(cJSON *object, const char *string)
     cJSON_Delete(cJSON_DetachItemFromObject(object, string));
 }
 
+#ifdef __VMS__
+CJSON_PUBLIC(void) cJSON_DeleteItemFromObjectCS(cJSON *object, const char *string)
+#else
 CJSON_PUBLIC(void) cJSON_DeleteItemFromObjectCaseSensitive(cJSON *object, const char *string)
+#endif
 {
+#ifdef __VMS__
+    cJSON_Delete(cJSON_DetachItemFromObjectCS(object, string));
+#else
     cJSON_Delete(cJSON_DetachItemFromObjectCaseSensitive(object, string));
+#endif
 }
 
 /* Replace array/object items with new ones. */
@@ -2376,7 +2406,11 @@ CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemInObject(cJSON *object, const char *st
     return replace_item_in_object(object, string, newitem, false);
 }
 
+#ifdef __VMS__
+CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemInObjectCS(cJSON *object, const char *string, cJSON *newitem)
+#else
 CJSON_PUBLIC(cJSON_bool) cJSON_ReplaceItemInObjectCaseSensitive(cJSON *object, const char *string, cJSON *newitem)
+#endif
 {
     return replace_item_in_object(object, string, newitem, true);
 }
@@ -2487,6 +2521,11 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateObjectReference(const cJSON *child)
     if (item != NULL) {
         item->type = cJSON_Object | cJSON_IsReference;
         item->child = (cJSON*)cast_away_const(child);
+        /*MEO:2024-08-08*/
+        {
+            cJSON* mychild = (cJSON*)cast_away_const(child);
+            mychild->parent = item;
+        }
     }
 
     return item;
@@ -2497,6 +2536,11 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateArrayReference(const cJSON *child) {
     if (item != NULL) {
         item->type = cJSON_Array | cJSON_IsReference;
         item->child = (cJSON*)cast_away_const(child);
+        /*MEO:2024-08-08*/
+        {
+            cJSON* mychild = (cJSON*)cast_away_const(child);
+            mychild->parent = item;
+        }
     }
 
     return item;
@@ -2564,6 +2608,10 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateIntArray(const int *numbers, int count)
             cJSON_Delete(a);
             return NULL;
         }
+        /*MEO:2024-08-08*/
+        {
+            n->parent = a;
+        }
         if(!i)
         {
             a->child = n;
@@ -2603,6 +2651,10 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateFloatArray(const float *numbers, int count)
         {
             cJSON_Delete(a);
             return NULL;
+        }
+        /*MEO:2024-08-08*/
+        {
+            n->parent = a;
         }
         if(!i)
         {
@@ -2644,6 +2696,10 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateDoubleArray(const double *numbers, int count)
             cJSON_Delete(a);
             return NULL;
         }
+        /*MEO:2024-08-08*/
+        {
+            n->parent = a;
+        }
         if(!i)
         {
             a->child = n;
@@ -2683,6 +2739,10 @@ CJSON_PUBLIC(cJSON *) cJSON_CreateStringArray(const char *const *strings, int co
         {
             cJSON_Delete(a);
             return NULL;
+        }
+        /*MEO:2024-08-08*/
+        {
+            n->parent = a;
         }
         if(!i)
         {
@@ -2766,6 +2826,10 @@ CJSON_PUBLIC(cJSON *) cJSON_Duplicate(const cJSON *item, cJSON_bool recurse)
         {
             /* Set newitem->child and move to it */
             newitem->child = newchild;
+            /*MEO:2024-08-08*/
+            {
+                newchild->parent = newitem;
+            }
             next = newchild;
         }
         child = child->next;

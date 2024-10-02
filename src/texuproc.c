@@ -809,6 +809,7 @@ void        _TexuPanelProc_OnSize(texu_wnd *wnd, texu_rect *newsz, texu_rect *ol
 texu_wnd*   _TexuPanelProc_OnGetStatusBar(texu_wnd* wnd);
 texu_wnd*   _TexuPanelProc_OnGetTitle(texu_wnd* wnd);
 void        _TexuPanelProc_OnPaint(texu_wnd* wnd, texu_cio* cio, texu_rect* rect);
+void        _TexuPanelProc_OnNotify(texu_wnd* wnd, texu_wnd_notify* notify);
 
 texu_wnd*   _TexuPanelProc_OnGetStatusBar(texu_wnd* wnd)
 {
@@ -979,6 +980,7 @@ _TexuPanelProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         attrs2.style = TEXU_WS_LEFT;
         attrs2.exstyle = 0;
         attrs2.on_validate = 0;
+        attrs2.validate_data = 0;
 
         texu_i32 rc = texu_wnd_create(status, wnd, &attrs2);
         if (rc != TEXU_OK)
@@ -1179,7 +1181,7 @@ _TexuPanelProc_OnPaint(texu_wnd* wnd, texu_cio* cio, texu_rect* rect)
     if (style & TEXU_PNS_TITLE)
     {
         /*there are title and border*/
-        texu_cio_draw_frame(cio, text, &rcwnd, color);
+        texu_cio_draw_frame(cio, text, &rcwnd, 0);
     }
     else if (style & TEXU_PNS_BORDER)
     {
@@ -1569,7 +1571,8 @@ struct texu_editwnd
     void *exparam;
     texu_char validstr[TEXU_MAX_WNDTEXT + 1];
     texu_char editbuf[TEXU_MAX_WNDTEXT + 1];
-    texu_i32  (*on_validate)(texu_wnd*, texu_char*);
+    texu_i32  (*on_validate)(texu_wnd*, texu_char*, void* validate_data);
+    void* on_validate_data;
 };
 typedef struct texu_editwnd texu_editwnd;
 
@@ -1698,10 +1701,12 @@ void _TexuEditProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
 
+#if 0
     if (!texu_wnd_is_enable(wnd))
     {
-        return;
+        return 0;
     }
+#endif
     if (!text)
     {
         return;
@@ -1748,6 +1753,13 @@ _TexuEditProc_SelMinMax(texu_i32 min, texu_i32 max, texu_i32 val)
         val = max;
     }
     return val;
+}
+
+void _TexuEditProc_OnSetValidation(texu_wnd* wnd, texu_validate_proc validproc, void* userdata)
+{
+    texu_editwnd *edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
+    edit->on_validate = validproc;
+    edit->on_validate_data = userdata;
 }
 
 void _TexuEditProc_OnInvalidate(texu_wnd *wnd)
@@ -1916,7 +1928,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd)
 
     if (edit->on_validate)
     {
-        rc = edit->on_validate(wnd, edit->editbuf);
+        rc = edit->on_validate(wnd, edit->editbuf, edit->on_validate_data);
         if (rc != TEXU_OK)
         {
             _TexuWndProc_Notify(wnd, TEXU_EN_INVALIDATE);
@@ -2540,6 +2552,7 @@ _TexuEditProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_set_userdata(wnd, edit);
 
     edit->on_validate = attrs->on_validate;
+    edit->on_validate_data = attrs->validate_data;
 
     return TEXU_OK;
 }
@@ -2691,7 +2704,7 @@ texu_status _TexuEditProc_OnGetInt(texu_wnd *wnd, texu_i32 *out)
     texu_i32 value = 0;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
 
-    if (!(texu_wnd_is_enable(wnd)) || !out)
+    if (/*!(texu_wnd_is_enable(wnd)) || */!out)
     {
         return TEXU_ERROR;
     }
@@ -2712,7 +2725,7 @@ texu_status _TexuEditProc_OnGetFloat(texu_wnd *wnd, texu_f64 *out)
     texu_f64 value = 0;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
 
-    if (!(texu_wnd_is_enable(wnd)) || !out)
+    if (/*!(texu_wnd_is_enable(wnd)) || */!out)
     {
         return TEXU_ERROR;
     }
@@ -2817,6 +2830,10 @@ _TexuEditProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam para
 
         case TEXU_WM_SETTEXT:
             _TexuEditProc_OnSetText(wnd, (const texu_char *)param1);
+            return 0;
+
+        case TEXU_EM_SETVALIDATION:
+            _TexuEditProc_OnSetValidation(wnd, (texu_validate_proc)param1, (void*)param2);
             return 0;
 
         case TEXU_EM_INVALIDATE:
@@ -3842,10 +3859,12 @@ _TexuListBoxProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 {
     texu_lbwnd *lb = texu_wnd_get_userdata(wnd);
     texu_i32 sel = TEXU_MAX(lb->cursel, 0);
+#if 0
     if (!texu_wnd_is_enable(wnd))
     {
-        return;
+        return 0;
     }
+#endif
     _TexuListBoxProc_OnSetItemText(wnd, sel, text);
 }
 
@@ -4123,10 +4142,12 @@ void
 _TexuComboBoxProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 {
     texu_cbwnd *cb = (texu_cbwnd *)texu_wnd_get_userdata(wnd);
+#if 0
     if (!texu_wnd_is_enable(wnd))
     {
-        return;
+        return 0;
     }
+#endif
     texu_wnd_send_msg(cb->lb, TEXU_WM_SETTEXT, (texu_lparam)text, (texu_lparam)-1);
 }
 
