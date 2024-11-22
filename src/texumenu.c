@@ -851,7 +851,9 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     texu_ui32 selcolor = menu->selcolor;
 
     texu_ui32 normbg = menu->normbg;
+#if !(defined TEXU_CIO_COLOR_MONO) || (defined WIN32 && defined _WINDOWS)
     texu_ui32 disbg = menu->disbg;
+#endif
     texu_ui32 selbg = menu->selbg;
     texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM);
 

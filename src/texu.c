@@ -163,67 +163,31 @@ TexuMessageBox(
     texu_ui32 buttons,
     void *userdata)
 {
-    texu_wnd_attrs attrs;
-    texu_wnd    *wnd    = 0;
-    texu_status rc      = TEXU_OK;
-    texu_wnd    *desktop    = texu_env_get_desktop(genv);
-    texu_wnd    *childwnd   = 0;
-    texu_env    *env        = genv;
+    return texu_wnd_msgbox(
+                caption,
+                text,
+                owner,
+                id,
+                buttons,
+                userdata);
+}
 
-    if (!genv)
-    {
-        return 0;
-    }
-    wnd = texu_wnd_new(genv);
-    if (!wnd)
-    {
-        return 0;
-    }
-    memset(&attrs, 0, sizeof(attrs));
-    attrs.y             = 0;
-    attrs.x             = 0;
-    attrs.height        = 0;
-    attrs.width         = 0;
-    attrs.enable        = TEXU_TRUE;
-    attrs.visible       = TEXU_TRUE;
-    attrs.text          = text;
-    attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
-    attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
-    attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
-
-    attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
-    attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
-    attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
-
-    attrs.id = id;
-    attrs.clsname       = TEXU_MSGBOX_CLASS;
-    attrs.userdata      = userdata;
-    attrs.style         = buttons;
-    attrs.exstyle       = 0;
-
-    rc = texu_wnd_create(wnd, desktop, &attrs);
-
-    if (rc != TEXU_OK)
-    {
-        texu_wnd_del(wnd);
-        return 0;
-    }
-
-    texu_wnd_send_msg(wnd, TEXU_MBM_SETOWNER,   (texu_lparam)owner, 0);
-    texu_wnd_send_msg(wnd, TEXU_MBM_SETCAPTION, (texu_lparam)caption, 0);
-
-    _TexuPushWindow(wnd);
-
-    childwnd = texu_wnd_get_activechild(wnd);
-    if (childwnd)
-    {
-        texu_wnd_send_msg(childwnd, TEXU_WM_SETFOCUS, 0, 0);
-    }
-
-    TexuShowWindow(wnd, TEXU_SW_SHOW);
-    TexuInvalidateWindow(wnd);
-
-    return wnd;
+texu_wnd *
+TexuMessageBox2(
+    texu_char *caption,
+    texu_char *text,
+    texu_wnd *owner,
+    texu_ui32 id,
+    texu_ui32 buttons,
+    texu_msgbox_attrs *mbxattrs)
+{
+    return texu_wnd_msgbox2(
+                caption,
+                text,
+                owner,
+                id,
+                buttons,
+                mbxattrs);
 }
 
 #if USE_TCL_AUTOMATION
@@ -481,7 +445,6 @@ TexuCreateWindow2(
     void                *userdata,
     texu_i32            (*on_validate)(texu_wnd*, texu_char*, void*))
 {
-#if 1
     texu_wnd *wnd = TexuCreateWindow3(
                         text,
                         clsname,
@@ -498,71 +461,6 @@ TexuCreateWindow2(
                         on_validate);
 
     return wnd;
-#else
-    texu_wnd *wnd = 0;
-    texu_wnd_attrs attrs;
-    texu_status rc = TEXU_OK;
-    texu_env *env = genv;
-    texu_wnd *desktop = texu_env_get_desktop(env);
-    texu_wnd *childwnd = 0;
-
-    if (!genv)
-    {
-        return 0;
-    }
-    wnd = texu_wnd_new(genv);
-    if (!wnd)
-    {
-        return 0;
-    }
-    memset(&attrs, 0, sizeof(attrs));
-    attrs.y             = y;
-    attrs.x             = x;
-    attrs.height        = h;
-    attrs.width         = w;
-    attrs.enable        = (TEXU_WS_DISABLED & style ? TEXU_FALSE : TEXU_TRUE);
-    attrs.visible       = (TEXU_WS_HIDE     & style ? TEXU_FALSE : TEXU_TRUE);
-    attrs.text          = text;
-    attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
-    attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
-    attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
-
-    attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
-    attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
-    attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
-
-    attrs.id = id;
-    attrs.clsname       = clsname;
-    attrs.userdata      = userdata;
-    attrs.style         = style;
-    attrs.exstyle       = exstyle;
-    attrs.on_validate   = on_validate;
-
-    if (!(parent))
-    {
-        parent = desktop;
-    }
-    rc = texu_wnd_create(wnd, parent, &attrs);
-
-    if (rc != TEXU_OK)
-    {
-        texu_wnd_del(wnd);
-        return 0;
-    }
-
-    if (parent == desktop)
-    {
-        _TexuPushWindow(wnd);
-
-        childwnd = texu_wnd_get_activechild(wnd);
-        if (childwnd)
-        {
-            texu_wnd_send_msg(childwnd, TEXU_WM_SETFOCUS, 0, 0);
-        }
-    }
-
-    return wnd;
-#endif
 }
 
 texu_wnd *
@@ -832,9 +730,9 @@ TexuGetSysBgColor(texu_i32 color)
 }
 
 texu_longptr
-TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
+TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state)
 {
-    texu_longptr rc = TexuSendMessage(prevwnd, TEXU_WM_KILLFOCUS, 0, 0);
+    texu_longptr rc = TexuSendMessage(prevwnd, TEXU_WM_KILLFOCUS, 0, state);
     if (rc != TEXU_OK)            
     {
         return rc;
@@ -1116,6 +1014,15 @@ void TexuLockUpdateWindow(texu_wnd* wnd, texu_i32 locked)
     texu_wnd_lock_update(wnd, locked);
 }
 
+void* TexuGetUserDataWindow(texu_wnd *wnd)
+{
+    return texu_wnd_get_userdata(wnd);
+}
+
+texu_wnd *TexuGetActiveChild(texu_wnd *wnd)
+{
+    return texu_wnd_get_activechild(wnd);
+}
 #ifdef __cplusplus
 }
 #endif

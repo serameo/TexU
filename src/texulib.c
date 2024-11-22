@@ -362,7 +362,11 @@ texu_list_find_next(
     if (!curitem)
     {
         curitem = list->first;
-        if (curitem && curitem->data == data)
+        if (!curitem)
+        {
+            return 0;
+        }
+        else if (curitem && curitem->data == data)
         {
             return curitem;
         }

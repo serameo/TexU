@@ -163,6 +163,7 @@ texu_i32 cio__reverse_color_pair(texu_i32 idx)
 #include <starlet.h>
 #include <lib$routines.h>
 #include <libdtdef.h>
+#include <iodef.h>
 
 struct _smg$r_attribute_info_block 
 {
@@ -186,6 +187,8 @@ typedef struct _smg$r_attribute_info_block smg$r_attribute_info_block;
 
 long texu__cio_get_on_display(texu_cio* cio);
 long texu__cio_get_off_display(texu_cio* cio);
+
+
 #endif
 
 struct texu_cio
@@ -205,6 +208,8 @@ struct texu_cio
     long smg_offscreens[2];
     long smg_flipflop;  /*only 0 or 1 of sgm_offscreens[]*/
     void(*on_timeout)(texu_cio* cio);
+    unsigned long sysin_chan;
+    iosb_t iosb;
 #else
     WINDOW  *wndscr;
 #endif
@@ -214,6 +219,53 @@ void _texu_cio_init_colors(texu_cio *cio);
 void _texu_cio_init_colors_mono(texu_cio *cio);
 
 #if (defined VMS || defined __VMS__)
+
+int
+vms_getint(unsigned long* kbid)
+{
+  unsigned short key;                        /* key var */
+
+  smg$read_keystroke(kbid, &key);
+  return(key);
+}
+
+int
+vms_getch(unsigned long* kbid)
+{
+  int c;
+
+  do
+  {
+    c = vms_getint(kbid);
+  } while (c == SS$_NORMAL);
+
+  return c;
+}
+
+unsigned long vms_writeio(unsigned long wchannel, iosb_t* iosb, const char* text, unsigned long len)
+{
+  return sys$qiow(0,
+                wchannel,
+                (IO$_WRITEVBLK | IO$M_NOFORMAT),
+                iosb,
+                0, 0,
+                text, len,
+                0, 0, 0, 0);
+}
+
+long vms_get_sysio(unsigned long*  iochan, char* sysio)
+{
+    long status = SS$_NORMAL;
+    
+    struct dsc$descriptor_s sys_input;
+    memset(&sys_input, 0, sizeof(sys_input));
+    sys_input.dsc$a_pointer = sysio;
+    sys_input.dsc$w_length  = strlen(sysio);
+    
+    status = sys$assign(&sys_input, iochan, 0, 0);
+    return status;
+}
+
 long texu__cio_get_on_display(texu_cio* cio)
 {
     return cio->smg_offscreens[cio->smg_flipflop];
@@ -1076,13 +1128,14 @@ texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
         fprintf(stderr, "Error creating display: %ld\n", status);
         return status;
     }
-    
+#if 0
     status = smg$paste_virtual_display(&smg_display_id, &smg_pastebd_id);
     if (!(status & 1))
     {
         fprintf(stderr, "Error creating paste display: %ld\n", status);
         return status;
     }
+#endif
     /*status = smg$set_display_scroll_region(&smg_display_id, &start_row, &start_column);
     if (!(status & 1))
     {
@@ -1103,6 +1156,14 @@ texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
     cio->smg_flipflop   = 0;
     cio->smg_offscreens[0] = smg_display_id;
     cio->smg_offscreens[1] = smg_display_id2;
+
+    status = vms_get_sysio(&cio->sysin_chan, "sys$input");
+    if (status != SS$_NORMAL)
+    {
+        //free(genvptr);
+        return TEXU_ERROR;
+    }
+
 
     texu_cio_echo(cio, TEXU_FALSE);
     
@@ -1406,7 +1467,7 @@ texu_cio_gotoyx(texu_cio* cio, texu_i32 y, texu_i32 x)
 }
 #elif (defined VMS || defined __VMS__)
 texu_i32
-texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
+texu_cio_gotoyxXX(texu_cio *cio, texu_i32 y, texu_i32 x)
 {
     long smg_display_id = texu__cio_get_on_display(cio);
     long x_coord = x + 1;
@@ -1414,6 +1475,13 @@ texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
 /*    long status = smg$set_cursor_abs(&cio->smg_display_id, &y_coord, &x_coord);*/
     long status = smg$set_cursor_abs(&smg_display_id, &y_coord, &x_coord);
     return status;
+}
+texu_i32
+texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
+{
+    long x_coord = x + 1;
+    long y_coord = y + 1;
+    return texu_tty_gotoyx(y_coord, x_coord);
 }
 #else
 texu_i32
@@ -1738,7 +1806,7 @@ texu_cio_putch_attr(texu_cio* cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32
 }
 #elif (defined VMS || defined __VMS__)
 texu_i32
-texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs, texu_bool erase)
+texu_cio_putch_attr_eraseXX(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs, texu_bool erase)
 {
     char sz[2] = { ch, 0 };
     $DESCRIPTOR(text, sz);
@@ -1764,6 +1832,15 @@ texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, te
     /*texu_tty_attroff(cio, attrs);*/
     texu_cio_get_color(cio, WHITE_BLACK);
     return status;
+}
+texu_i32
+texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs, texu_bool erase)
+{
+    char text[2] = { ch, 0 };
+    texu_cio_gotoyx(cio, y, x);
+    texu_cio_attron(cio, attrs);
+    vms_writeio(cio->sysin_chan, &cio->iosb, text, 1);
+    return texu_cio_attroff(cio, attrs);
 }
 texu_i32
 texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32 attrs)
@@ -1848,7 +1925,7 @@ texu_cio_putstr(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* str)
 }
 #elif (defined VMS || defined __VMS__)
 texu_i32
-texu_cio_putstr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_bool erase)
+texu_cio_putstr_eraseXX(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_bool erase)
 {
     /*char* psz = (char*)str;*/
     texu_char sz[TEXU_MAX_WNDTEXT + 1];
@@ -1895,6 +1972,14 @@ texu_cio_putstr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *st
     texu_cio_get_color(cio, WHITE_BLACK);
     return status;
 }
+
+texu_i32
+texu_cio_putstr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_bool erase)
+{
+    texu_cio_gotoyx(cio, y, x);
+    return vms_writeio(cio->sysin_chan, &cio->iosb, str, strlen(str));
+}
+
 texu_i32
 texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
 {
@@ -1943,7 +2028,7 @@ texu_cio_putstr_attr(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* str
 }
 #elif (defined VMS || defined __VMS__)
 texu_i32
-texu_cio_putstr_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs, texu_bool erase)
+texu_cio_putstr_attr_eraseXX(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs, texu_bool erase)
 {
 //    texu_char* psz = (char*)malloc(strlen(str)+1);
     texu_char sz[TEXU_MAX_WNDTEXT + 1];
@@ -1992,6 +2077,16 @@ texu_cio_putstr_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_cha
     texu_cio_get_color(cio, WHITE_BLACK);
     return status;
 }
+
+texu_i32
+texu_cio_putstr_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs, texu_bool erase)
+{
+    texu_cio_gotoyx(cio, y, x);
+    //texu_cio_attron(cio, attrs);
+    vms_writeio(cio->sysin_chan, &cio->iosb, str, strlen(str));
+    return texu_cio_get_color(cio, WHITE_BLACK);
+}
+
 texu_i32
 texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_i32 attrs)
 {
@@ -2323,7 +2418,9 @@ texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_
 
     if (text)
     {
+#if defined TEXU_CIO_COLOR_MONO
         texu_char caption[TEXU_MAX_WNDTEXT + 1];
+#endif
         len = texu_strlen(text);
 
 #if (defined __USE_TTY__)
@@ -2383,7 +2480,6 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
     texu_cio_draw_vline(cio, rect->y, rect->x, rect->lines, attrs);
     /* draw right vertical line */
     texu_cio_draw_vline(cio, rect->y, rect->x + rect->cols - 1, rect->lines, attrs);
-
 #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
     /* draw upper left*/
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
@@ -2422,26 +2518,19 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
 texu_i32
 texu_cio_draw_line(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 width, texu_i32 attrs)
 {
-    texu_i32 i = 0;
-    texu_cio_attron(cio, attrs);
-#if 0//(defined __VMS__)
-    texu_cio_get_color(cio, cio__color_pair(attrs));
-    smg$draw_line(&cio->smg_display_id, &y, &x, &y, &width, &0, &0);
-    texu_cio_get_color(cio, WHITE_BLACK);
-#else
-    for (i = 0; i < width; ++i)
-    {
+    texu_char line[TEXU_MAX_WNDTEXT + 1];
+    memset(line, 0, sizeof(line));
 #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
-        texu_cio_putch_attr(cio, y, x + i, '-', attrs);
+    memset(line, '-', width);
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
-        texu_cio_putch_attr(cio, y, x + i, '-', attrs);
+    memset(line, '-', width);
 #else
-        texu_cio_putch_attr(cio, y, x + i, ACS_HLINE, attrs);
+    memset(line, ACS_HLINE, width);
 #endif
-    }
-#endif
-    return texu_cio_attroff(cio, attrs);
+    texu_cio_putstr_attr(cio, y, x, line, attrs);
+
+    return TEXU_OK;//texu_cio_attroff(cio, attrs);
 }
 
 texu_i32
@@ -2449,11 +2538,6 @@ texu_cio_draw_vline(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu
 {
     texu_i32 i = 0;
     texu_cio_attron(cio, attrs);
-#if 0//(defined __VMS__)
-    texu_cio_get_color(cio, cio__color_pair(attrs));
-    smg$draw_line(&cio->smg_display_id, &y, &x, &height, &x, &0, &0);
-    texu_cio_get_color(cio, WHITE_BLACK);
-#else
     for (i = 0; i < height; ++i)
     {
 #if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__)
@@ -2465,7 +2549,6 @@ texu_cio_draw_vline(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu
         texu_cio_putch_attr(cio, y + i, x, ACS_VLINE, attrs);
 #endif
     }
-#endif
     return texu_cio_attroff(cio, attrs);
 }
 
