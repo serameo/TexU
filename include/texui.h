@@ -335,7 +335,9 @@ texu_i32            texu_wnd_children(texu_wnd*);
 void                texu_wnd_set_focus(texu_wnd *wnd);
 texu_status         texu_wnd_visible(texu_wnd*, texu_bool);
 texu_status         texu_wnd_enable(texu_wnd*, texu_bool);
+texu_bool           texu_wnd_is_parent_enable(texu_wnd *wnd);
 texu_bool           texu_wnd_is_visible(texu_wnd*);
+texu_bool           texu_wnd_is_parent_visible(texu_wnd *wnd);
 texu_bool           texu_wnd_is_enable(texu_wnd*);
 texu_bool           texu_wnd_is_active(texu_wnd *wnd);
 void                texu_wnd_set_text(texu_wnd*, const texu_char*);
@@ -383,17 +385,29 @@ texu_menu*          texu_wnd_get_menu(texu_wnd*);
 
 texu_bool texu_wnd_inbound(texu_wnd* parent, texu_wnd* child);
 texu_bool texu_wnd_clip_bound(texu_wnd* parent, texu_wnd* child);
-#if 1 /*defined __VMS__*/
+
 void        texu__wnd_set_blank_lines_color(texu_wnd* parent, texu_i32 color, texu_i32 bgcolor);
 void        texu__wnd_set_blank_line_color(texu_wnd* parent, texu_i32 id, texu_i32 color, texu_i32 bgcolor);
 texu_i32    texu__wnd_create_blank_lines(texu_env *env, texu_wnd* parent);
 texu_i32    texu_wnd_can_paint(texu_wnd* wnd);
 
-#endif
+texu_wnd *
+texu_wnd_msgbox(
+    texu_char *caption,
+    texu_char *text,
+    texu_wnd *owner,
+    texu_ui32 id,
+    texu_ui32 buttons,
+    void *userdata);
 
-
-
-
+texu_wnd *
+texu_wnd_msgbox2(
+    texu_char *caption,
+    texu_char *text,
+    texu_wnd *owner,
+    texu_ui32 id,
+    texu_ui32 buttons,
+    texu_msgbox_attrs *mbxattrs);
 
 /*tree window*/
 /*typedef texu_i32  (*texu_tree_find_proc)(const void*, const void*);*/

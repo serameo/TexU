@@ -51,6 +51,7 @@ struct texu_wnd_attrs
     void *userdata;
     texu_i32 (*on_validate)(texu_wnd*, texu_char*, void*);
     void* validate_data;
+    void *userdata2;    /*extended more user data*/
 };
 typedef struct texu_wnd_attrs texu_wnd_attrs;
 typedef texu_i32 (*texu_validate_proc)(texu_wnd*, texu_char*, void*);
@@ -79,7 +80,6 @@ struct texu_env_msg
 };
 typedef struct texu_env_msg texu_env_msg;
 
-
 struct texu_wnd_notify
 {
     texu_wnd *wnd;
@@ -87,6 +87,15 @@ struct texu_wnd_notify
     texu_ui32 code;
 };
 typedef struct texu_wnd_notify texu_wnd_notify;
+
+struct texu_edit_notify
+{
+    struct texu_wnd_notify hdr;
+    texu_char*  text;
+    texu_i32    excode;
+    void*       data;
+};
+typedef struct texu_edit_notify texu_edit_notify;
 
 struct texu_wnd_keycmd
 {
@@ -191,6 +200,31 @@ struct texu_msgbox_notify
     texu_ui32 id;
 };
 typedef struct texu_msgbox_notify texu_msgbox_notify;
+
+struct texu_msgbox_attrs
+{
+    texu_ui32 titlecolor;
+    texu_ui32 labelcolor;
+    texu_ui32 okcolor;
+    texu_ui32 cancelcolor;
+    texu_ui32 yescolor;
+    texu_ui32 nocolor;
+    texu_ui32 color;
+
+    texu_ui32 titlebg;
+    texu_ui32 labelbg;
+    texu_ui32 okbg;
+    texu_ui32 cancelbg;
+    texu_ui32 yesbg;
+    texu_ui32 nobg;
+    texu_ui32 bgcolor;
+
+    void *userdata;
+    texu_char *text;
+    texu_char *caption;
+};
+typedef struct texu_msgbox_attrs texu_msgbox_attrs;
+
 
 /*MENU*/
 
@@ -347,6 +381,32 @@ struct texu_page
     texu_char   *caption;
 };
 typedef struct texu_page texu_page;
+
+
+struct texu_date
+{
+    texu_i32    day;
+    texu_i32    month;
+    texu_i32    year;
+};
+typedef struct texu_date texu_date;
+
+struct texu_time
+{
+    texu_i32    hour;
+    texu_i32    minute;
+    texu_i32    second;
+    texu_i32    millisec;
+    texu_i32    nanosec;
+};
+typedef struct texu_time texu_time;
+
+struct texu_datetime
+{
+    struct texu_date date;
+    struct texu_time time;
+};
+typedef struct texu_datetime texu_datetime;
 
 #ifdef __cplusplus
 }

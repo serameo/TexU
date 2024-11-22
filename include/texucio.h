@@ -15,6 +15,44 @@
 #include <curses.h>
 #endif
 
+#ifdef __VMS__
+#include <ssdef.h>
+#include <starlet.h>
+#include <stddef.h>
+#include <iodef.h>
+#include <descrip.h>
+#include <stsdef.h>
+#include <lib$routines.h>
+#include <smgdef.h>
+#include <smg$routines.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define VMS_ROWS                25
+#define VMS_COLUMNS             80
+
+struct _iosb_term
+{
+  unsigned  short   status;    /* Return status */
+  unsigned  short   offset;    /* Return */
+  unsigned  short   terminator;/* Return terminate key ascii code */
+  unsigned  short   size;      /* No use */
+};
+typedef struct _iosb_term iosb_t;
+
+long vms_get_sysio(unsigned long*  iochan, char* sysio);
+int vms_getint (unsigned long* kbid);
+int vms_getch  (unsigned long* kbid);
+unsigned long vms_writeio(unsigned long  wchannel, iosb_t* iosb, const char* text, unsigned long len);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* __VMS__ */
+
 #include "texumacros.h"
 #include "texutypes.h"
 #include "texuconst.h"

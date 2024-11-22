@@ -164,6 +164,8 @@ texu_bool           TexuIsExecutableCommand(
 
 void TexuMoveWindow(texu_wnd *wnd, texu_i32 y, texu_i32 x, texu_i32 h, texu_i32 w, texu_bool redraw);
 void TexuLockUpdateWindow(texu_wnd* wnd, texu_i32 locked);
+void* TexuGetUserDataWindow(texu_wnd *wnd);
+texu_wnd *TexuGetActiveChild(texu_wnd *wnd);
 
 texu_wnd*
 TexuMessageBox(
@@ -174,6 +176,15 @@ TexuMessageBox(
     texu_ui32  buttons,
     void*      userdata
 );
+
+texu_wnd *
+TexuMessageBox2(
+    texu_char* caption,
+    texu_char* text,
+    texu_wnd *owner,
+    texu_ui32 id,
+    texu_ui32 buttons,
+    texu_msgbox_attrs *mbxattrs);
 
 texu_longptr
 TexuSendMessage(
@@ -242,7 +253,7 @@ TexuAddHotKey(
 );
 
 void            TexuEnableWindow(texu_wnd* wnd, texu_bool enable);
-texu_longptr    TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd);
+texu_longptr    TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state);
 void*           TexuGetWindowUserData(texu_wnd* wnd);
 
 void

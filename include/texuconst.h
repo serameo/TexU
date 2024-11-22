@@ -233,7 +233,7 @@ enum
 #define TEXU_DUPLICATED_ID              (texu_i32)(3)
 
 /* state */
-#define TEXU_CONTINUE                   (texu_i32)(0)
+#define TEXU_CONTINUE                   (texu_i32)(1)
 #define TEXU_BREAK                      (texu_i32)(-1)
 
 #define TEXU_ENV_STATE_STARTING     100
@@ -371,6 +371,10 @@ enum
 #define TEXU_LCM_ADDCOLUMN              (TEXU_LCM_FIRST + 20)
 #define TEXU_LCM_ADDITEMS               (TEXU_LCM_FIRST + 21)
 #define TEXU_LCM_ADDITEMATFIRST         (TEXU_LCM_FIRST + 22)
+#define TEXU_LCM_SETITEMTEXT            (TEXU_LCM_FIRST + 23)
+#define TEXU_LCM_SETITEMDATA            (TEXU_LCM_FIRST + 24)
+#define TEXU_LCM_GETITEMTEXT            (TEXU_LCM_FIRST + 25)
+#define TEXU_LCM_GETITEMDATA            (TEXU_LCM_FIRST + 26)
 
 
 #define TEXU_LCN_FIRST                  TEXU_LCM_FIRST
@@ -390,8 +394,6 @@ enum
 #define TEXU_LCN_ENDEDITOK              (TEXU_LCN_FIRST + 14)
 #define TEXU_LCN_ENDEDITCANCEL          (TEXU_LCN_FIRST + 15)
 #define TEXU_LCN_PRESSEDENTER           (TEXU_LCN_FIRST + 16)
-
-
 
 /*TREE CTRL*/
 #define TEXU_TCM_FIRST                  (TEXU_WM_FIRST + 500)
@@ -484,6 +486,7 @@ enum
 #define TEXU_MBM_FIRST                  (TEXU_WM_FIRST + 900)
 #define TEXU_MBM_SETOWNER               (TEXU_MBM_FIRST +  1)
 #define TEXU_MBM_SETCAPTION             (TEXU_MBM_FIRST +  2)
+#define TEXU_MBM_SETTITLECOLOR          (TEXU_MBM_FIRST +  3)
 
 #define TEXU_MBN_FIRST                  TEXU_MBM_FIRST
 #define TEXU_MBN_ENDDIALOG              (TEXU_MBN_FIRST +  1)
@@ -614,8 +617,15 @@ enum
 #define TEXU_DTM_FIRST                  (TEXU_WM_FIRST + 1800)
 #define TEXU_DTM_GETDATE                (TEXU_DTM_FIRST +  1)
 #define TEXU_DTM_SETDATE                (TEXU_DTM_FIRST +  2)
+#define TEXU_DTM_SETFORMAT              (TEXU_DTM_FIRST +  3)
 
 #define TEXU_DTN_FIRST                  TEXU_DTM_FIRST
+#define TEXU_DTN_SETFOCUS               (TEXU_DTN_FIRST +  1)
+#define TEXU_DTN_KILLFOCUS              (TEXU_DTN_FIRST +  2)
+#define TEXU_DTN_INVALIDDAY             (TEXU_DTN_FIRST +  3)
+#define TEXU_DTN_INVALIDMONTH           (TEXU_DTN_FIRST +  4)
+#define TEXU_DTN_INVALIDYEAR            (TEXU_DTN_FIRST +  5)
+#define TEXU_DTN_INVALIDDATE            (TEXU_DTN_FIRST +  6)
 
 /*TIME CTRL*/
 #define TEXU_TMM_FIRST                  (TEXU_WM_FIRST + 1900)
@@ -917,9 +927,6 @@ enum
 /*DATE CTRL*/
 #define TEXU_DTFMT_YYYYMMDD             0
 #define TEXU_DTFMT_DDMMYYYY             1
-#define TEXU_DTFMT_YYYYMONDD            2
-#define TEXU_DTFMT_DDMONYYYY            3
-
 
 /* PANEL */
 #define TEXU_PNS_TITLE                  0x00010000
