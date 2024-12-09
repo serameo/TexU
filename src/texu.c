@@ -154,14 +154,14 @@ TexuRegisterClass(
     return (genv ? texu_env_register_cls(genv, clsname, wndproc) : TEXU_ERROR);
 }
 
-texu_wnd *
+texu_wnd*
 TexuMessageBox(
-    texu_char *caption,
-    texu_char *text,
-    texu_wnd *owner,
-    texu_ui32 id,
-    texu_ui32 buttons,
-    void *userdata)
+    const texu_char* caption,
+    const texu_char* text,
+    texu_wnd*  owner,
+    texu_ui32  id,
+    texu_ui32  buttons,
+    void*      userdata)
 {
     return texu_wnd_msgbox(
                 caption,
@@ -174,11 +174,12 @@ TexuMessageBox(
 
 texu_wnd *
 TexuMessageBox2(
-    texu_char *caption,
-    texu_char *text,
+    const texu_char* caption,
+    const texu_char* text,
     texu_wnd *owner,
     texu_ui32 id,
     texu_ui32 buttons,
+    void*      userdata,
     texu_msgbox_attrs *mbxattrs)
 {
     return texu_wnd_msgbox2(
@@ -187,6 +188,7 @@ TexuMessageBox2(
                 owner,
                 id,
                 buttons,
+                userdata,
                 mbxattrs);
 }
 
@@ -560,6 +562,7 @@ TexuDestroyWindow(
         topwnd = _TexuTopWindow();
         if (topwnd)
         {
+            TexuSendMessage(topwnd, TEXU_WM_ACTIVATED, 0, 0);
             TexuShowWindow(topwnd, TEXU_SW_SHOW);
             TexuInvalidateWindow(topwnd);
         }
@@ -1009,6 +1012,20 @@ void TexuMoveWindow(texu_wnd *wnd, texu_i32 y, texu_i32 x, texu_i32 h, texu_i32 
     texu_wnd_move(wnd, y, x, h, w, redraw);
 }
 
+void TexuMoveCenterWindow(texu_wnd *wnd, texu_bool redraw)
+{
+    texu_wnd_move_center(wnd, redraw);
+}
+
+void TexuAlignCenterWindow(texu_wnd *wnd, texu_bool redraw)
+{
+    texu_wnd_align_center(wnd, redraw);
+}
+void TexuAlignVCenterWindow(texu_wnd *wnd, texu_bool redraw)
+{
+    texu_wnd_align_vcenter(wnd, redraw);
+}
+
 void TexuLockUpdateWindow(texu_wnd* wnd, texu_i32 locked)
 {
     texu_wnd_lock_update(wnd, locked);
@@ -1022,6 +1039,12 @@ void* TexuGetUserDataWindow(texu_wnd *wnd)
 texu_wnd *TexuGetActiveChild(texu_wnd *wnd)
 {
     return texu_wnd_get_activechild(wnd);
+}
+
+texu_wnd *
+TexuGetFrameWindow(texu_wnd *wnd)
+{
+    return texu_wnd_get_frame(wnd);
 }
 #ifdef __cplusplus
 }

@@ -49,18 +49,19 @@ struct texu_msgbox
     texu_ui32 bgcolor; /*background*/
 
     void *userdata;
-    texu_char text[TEXU_MAX_WNDTEXT + 1];
+    texu_char text[TEXU_1024_WNDTEXT + 1];
     texu_char caption[TEXU_MAX_WNDTEXT + 1];
 };
 typedef struct texu_msgbox texu_msgbox;
 
 texu_wnd *
 texu_wnd_msgbox2(
-    texu_char *caption,
-    texu_char *text,
+    const texu_char *caption,
+    const texu_char *text,
     texu_wnd *owner,
     texu_ui32 id,
     texu_ui32 buttons,
+    void *userdata,
     texu_msgbox_attrs *mbxattrs)
 {
     texu_wnd_attrs attrs;
@@ -93,7 +94,7 @@ texu_wnd_msgbox2(
     attrs.width         = 0;
     attrs.enable        = TEXU_TRUE;
     attrs.visible       = TEXU_TRUE;
-    attrs.text          = mbxattrs->text;
+    attrs.text          = caption;
     attrs.normalcolor   = color;
     attrs.disabledcolor = color;
     attrs.focusedcolor  = color;
@@ -104,7 +105,7 @@ texu_wnd_msgbox2(
 
     attrs.id = id;
     attrs.clsname       = TEXU_MSGBOX_CLASS;
-    attrs.userdata      = mbxattrs->userdata;
+    attrs.userdata      = userdata;
     attrs.style         = buttons;
     attrs.exstyle       = 0;
 
@@ -152,8 +153,8 @@ texu_wnd_msgbox2(
 
 texu_wnd *
 texu_wnd_msgbox(
-    texu_char *caption,
-    texu_char *text,
+    const texu_char *caption,
+    const texu_char *text,
     texu_wnd *owner,
     texu_ui32 id,
     texu_ui32 buttons,
@@ -161,9 +162,9 @@ texu_wnd_msgbox(
 {
     texu_msgbox_attrs attrs;
     memset(&attrs, 0, sizeof(attrs));
-    attrs.userdata = userdata;
+    /*attrs.userdata = userdata;*/
 
-    return texu_wnd_msgbox2(caption, text, owner, id, buttons, &attrs);
+    return texu_wnd_msgbox2(caption, text, owner, id, buttons, userdata, 0);
 }
 
 
@@ -297,20 +298,25 @@ _TexuDefWndProc_CountLines(const texu_char *text, texu_i32 *maxlen)
     texu_i32 lines = 0;
     texu_char *tok;
     texu_i32 len = 0;
-    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_char buf[TEXU_1024_WNDTEXT + 1];
+    texu_i32 max_len  = 0;
 #if (defined WIN32 && defined UNICODE)
     texu_char *pszContext;
 #endif
-    *maxlen = 0;
-    if (text && texu_strlen(text) > 0)
+    /* *maxlen = 0;*/
+    len = texu_strlen(text);
+    if (text &&  len > 0)
     {
         ++lines;
     }
     else
     {
+        *maxlen = 0;
         return lines;
     }
-    texu_strcpy(buf, text);
+    memset(buf, 0, sizeof(buf));
+    len = (len > TEXU_1024_WNDTEXT ? TEXU_1024_WNDTEXT : len);
+    texu_memcpy(buf, text, len);
 
 #if (defined WIN32 && defined UNICODE)
     tok = wcstok_s(buf, TEXUTEXT("\n"), &pszContext);
@@ -321,9 +327,9 @@ _TexuDefWndProc_CountLines(const texu_char *text, texu_i32 *maxlen)
     {
         ++lines;
         len = texu_strlen(tok);
-        if (len > *maxlen)
+        if (len > max_len)
         {
-            *maxlen = len;
+            max_len = len;
         }
 #if (defined WIN32 && defined UNICODE)
         tok = wcstok_s(NULL, TEXUTEXT("\n"), &pszContext);
@@ -331,6 +337,7 @@ _TexuDefWndProc_CountLines(const texu_char *text, texu_i32 *maxlen)
         tok = strtok(0, "\n");
 #endif
     }
+    *maxlen = max_len;
     return lines;
 }
 
@@ -420,7 +427,7 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
     texu_wnd *child = 0;
     texu_char *tok;
     texu_wnd_attrs childattrs;
-    texu_i32 id = 1000;
+    texu_i32 id = 10000;
     texu_i32 y = 2;
     texu_i32 x = 0;
     texu_bool idok = 0;
@@ -429,12 +436,13 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
     texu_bool idno = 0;
     texu_char *caption = 0;
     texu_status rc = TEXU_OK;
-    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_char buf[TEXU_1024_WNDTEXT + 1];
     texu_i32 width = 0;
     texu_i32 wndwidth = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_DIALOG);
     texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG);
+    texu_msgbox_attrs *mbxattrs = (texu_msgbox_attrs*)attrs->userdata2;
 #if (defined WIN32 && defined UNICODE)
     texu_char *pszContext;
 #endif
@@ -446,7 +454,8 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
     }
 
     /* create labels*/
-    texu_strcpy(buf, attrs->text);
+    memset(buf, 0, sizeof(buf));
+    texu_strcpy(buf, mbxattrs->text);
 #if (defined WIN32 && defined UNICODE)
     tok = wcstok_s(buf, TEXUTEXT("\n"), &pszContext);
 #else
@@ -557,15 +566,17 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         texu_wnd_add_keycmd(wnd, 'o', TEXU_IDOK, 0);
         x += texu_strlen(caption) + 1;
     }
-    if (idyes)
+    if (idyes && !idok)
     {
         caption = buttons[F2_YES];
+        #if 0
         /* re-color if available*/
         if (!(idok))
         {
             msgbox->yescolor = msgbox->okcolor;//texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_OK);
             msgbox->yesbg = msgbox->okbg;//texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_OK);
         }
+        #endif
         rc = _TexuMsgBoxProc_CreateButtons(
             wnd,
             y,
@@ -615,6 +626,7 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
     if (idcancel)
     {
         caption = buttons[F4_CANCEL];
+        #if 0
         /*if there is no cancel button, then assign escape to no button*/
         if (!(idno))
         {
@@ -622,7 +634,6 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
             msgbox->cancelbg = msgbox->nobg;//texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_NO);
         }
         #endif
-        }
         rc = _TexuMsgBoxProc_CreateButtons(
             wnd,
             y,
@@ -708,7 +719,7 @@ _TexuMsgBoxProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_set_userdata(wnd, msgbox); /*save info*/
 
     /* adjust window rect */
-    lines = _TexuDefWndProc_CountLines(attrs->text, &maxlen);
+    lines = _TexuDefWndProc_CountLines(mbxattrs->text, &maxlen);
     maxlen += 4;
 
     if (attrs->style & TEXU_MBS_OK)
@@ -731,8 +742,8 @@ _TexuMsgBoxProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     maxbtns = TEXU_MIN(maxbtns, width);
     rect.cols = TEXU_MAX(maxbtns, maxlen) + 2;
     rect.lines = reserved + lines;
-    rect.y = (LINES - rect.lines) / 2;
-    rect.x = (COLS - rect.cols) / 2;
+    rect.y = (texu_env_screen_height(env) - rect.lines) / 2;
+    rect.x = (texu_env_screen_width(env) - rect.cols) / 2;
 
     texu_wnd_move(wnd, rect.y, rect.x, rect.lines, rect.cols, TEXU_FALSE);
 
@@ -814,7 +825,8 @@ _TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam pa
             break;
         }*/
         _TexuMsgBoxProc_Notify(wnd, TEXU_MBN_ENDDIALOG, param1);
-        texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);
+        /*texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);*/
+        texu_wnd_destroy(wnd);
         return 0;
     }
 
@@ -824,7 +836,7 @@ _TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam pa
 
     case TEXU_WM_DESTROY:
         _TexuMsgBoxProc_OnDestroy(wnd);
-        return 0;
+        break;
 
     case TEXU_WM_CREATE:
         return _TexuMsgBoxProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
@@ -896,13 +908,13 @@ _TexuDesktopProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam p
 void _TexuLabelProc_OnPaint(texu_wnd *, texu_cio *, texu_rect* rect);
 void _TexuLabelProc_OnEraseBg(texu_wnd *, texu_cio *, texu_rect* rect);
 texu_status _TexuLabelProc_OnCreate(texu_wnd *, texu_wnd_attrs *);
-
+/*
 void
 _TexuLabelProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
 {
     TexuDefWndProc(wnd, TEXU_WM_ERASEBG, (texu_lparam)cio, (texu_lparam)rect);
 }
-
+*/
 void
 _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
 {
@@ -984,11 +996,11 @@ _TexuLabelProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam par
         case TEXU_WM_PAINT:
             _TexuLabelProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
             return 0;
-
+/*
         case TEXU_WM_ERASEBG:
             _TexuLabelProc_OnEraseBg(wnd, (texu_cio *)param1, (texu_rect*)param2);
             return 0;
-
+*/
         case TEXU_WM_ENABLE:
             return TexuDefWndProc(wnd, msg, 0, 0);
     }
@@ -1084,8 +1096,8 @@ _TexuPanelProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     if (attrs->style & TEXU_PNS_TITLE)
     {
         texu_wnd_attrs attrs2;/* = *attrs;*/
-        texu_wnd* status = texu_wnd_new(env);
-        if (!status)
+        title = texu_wnd_new(env);
+        if (!title)
         {
             return -1;
         }
@@ -1124,10 +1136,10 @@ _TexuPanelProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         attrs2.on_validate = 0;
         attrs2.validate_data = 0;
 
-        texu_i32 rc = texu_wnd_create(status, wnd, &attrs2);
+        texu_i32 rc = texu_wnd_create(title, wnd, &attrs2);
         if (rc != TEXU_OK)
         {
-            texu_wnd_del(status);
+            texu_wnd_del(title);
             return TEXU_ERROR;
         }
     }
@@ -1157,8 +1169,8 @@ _TexuPanelProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
             return -1;
         }
         memset(&attrs2, 0, sizeof(attrs2));
-        attrs2.y = attrs->y + attrs->height - 1;
-        attrs2.x = attrs->x;
+        attrs2.y = /*attrs->y + */attrs->height - 1;
+        attrs2.x = 0;//attrs->x;
         attrs2.height = 1;
         attrs2.width = attrs->width;
 #if defined TEXU_CIO_COLOR_MONO
@@ -1431,6 +1443,16 @@ void _TexuPanelProc_OnSetTitleColor(texu_wnd* wnd, texu_i32 color, texu_i32 bgco
     }
 }
 
+void _TexuPanelProc_OnSetTitleBgColor(texu_wnd* wnd, texu_i32 color, texu_i32 bgcolor)
+{
+    texu_ui32 style = texu_wnd_get_style(wnd);
+    if (style & TEXU_PNS_TITLE)
+    {
+        texu_wnd* title = texu_wnd_find_child(wnd, PANEL_TITLE_ID); /*the top of label*/
+        texu_wnd_set_bgcolor(title, color, bgcolor);
+    }
+}
+
 void _TexuPanelProc_OnSetTitleAlign(texu_wnd *wnd, texu_i32 alignment)
 {
     texu_i32 style = texu_wnd_get_style(wnd);
@@ -1515,6 +1537,10 @@ _TexuPanelProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam par
 
         case TEXU_PNM_SETTITLECOLOR:
             _TexuPanelProc_OnSetTitleColor(wnd, (texu_i32)param1, (texu_i32)param2);
+            break;
+
+        case TEXU_PNM_SETTITLEBGCOLOR:
+            _TexuPanelProc_OnSetTitleBgColor(wnd, (texu_i32)param1, (texu_i32)param2);
             break;
 
         case TEXU_WM_SETTEXT:
@@ -2351,9 +2377,33 @@ _TexuEditProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
         case TEXU_KEY_LEFT:
         case TEXU_KEY_RIGHT:
-        case TEXU_KEY_UP:
-        case TEXU_KEY_DOWN:
+        /*case TEXU_KEY_UP:
+        case TEXU_KEY_DOWN:*/
             texu_wnd_invalidate(wnd);
+            break;
+        case TEXU_KEY_UP:
+            /*texu_wnd_invalidate(wnd);*/
+            /*move previous*/
+            {
+                texu_wnd *parent = texu_wnd_get_parent(wnd);
+                texu_wnd *prevwnd = texu_wnd_get_prev_activechild(parent, wnd);
+                if (prevwnd)
+                {
+                    texu_wnd_post_msg(prevwnd, TEXU_WM_SETFOCUS, wnd, 0);
+                }
+            }
+            break;
+        case TEXU_KEY_DOWN:
+            /*texu_wnd_invalidate(wnd);*/
+            /*move next*/
+            {
+                texu_wnd *parent = texu_wnd_get_parent(wnd);
+                texu_wnd *nextwnd = texu_wnd_get_next_activechild(parent, wnd);
+                if (nextwnd)
+                {
+                    texu_wnd_post_msg(nextwnd, TEXU_WM_SETFOCUS, wnd, 0);
+                }
+            }
             break;
     }
     return 0;
@@ -2760,6 +2810,44 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         /* editing */
         edit->editing = 1;
     } /*end delete char*/
+    else if (TEXU_KEY_UP == ch || TEXU_KEY_DOWN == ch)
+    {
+        switch (ch)
+        {
+        case TEXU_KEY_UP:
+            /*texu_wnd_invalidate(wnd);*/
+            /*move previous*/
+            {
+                texu_wnd *parent = texu_wnd_get_parent(wnd);
+                texu_wnd *prevwnd = texu_wnd_get_prev_activechild(parent, wnd);
+                if (prevwnd)
+                {
+                    texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, 0, texu_env_get_moveprev(env));
+                    if (rc >= TEXU_OK)
+                    {
+                        texu_wnd_post_msg(prevwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
+                    }
+                }
+            }
+            break;
+        case TEXU_KEY_DOWN:
+            /*texu_wnd_invalidate(wnd);*/
+            /*move next*/
+            {
+                texu_wnd *parent = texu_wnd_get_parent(wnd);
+                texu_wnd *nextwnd = texu_wnd_get_next_activechild(parent, wnd);
+                if (nextwnd)
+                {
+                    texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, 0, texu_env_get_movenext(env));
+                    if (rc >= TEXU_OK)
+                    {
+                        texu_wnd_post_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
+                    }
+                }
+            }
+            break;
+        }
+    }
 }
 
 texu_status
@@ -3893,8 +3981,8 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
                     }
 
 #ifdef TEXU_CIO_COLOR_MONO
-                texu_cio_putstr_attr(cio, y + (i - lb->firstvisible), x, text,
-                                     texu_cio_get_reverse(cio, color));
+                    texu_cio_putstr_attr(cio, y + (i - lb->firstvisible), x, text,
+                                        texu_cio_get_reverse(cio, color));
 #else
 
                     texu_cio_draw_text(cio, y + (i - lb->firstvisible), x, text, color, bgcolor,

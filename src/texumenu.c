@@ -670,14 +670,16 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 
     if (TEXU_KEY_SELMENU == ch) /*pressed enter*/
     {
-        texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);
+        /*texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);*/
         texu_wnd_send_msg(menu->owner, TEXU_WM_COMMAND,
                           (menuitem ? (texu_lparam)menuitem->id : -1), 0);
+        texu_wnd_destroy(wnd);
         return;
     }
     else if (TEXU_KEY_ESCAPE == ch) /*pressed escape*/
     {
-        texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);
+        /*texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);*/
+        texu_wnd_destroy(wnd);
         return;
     }
 
@@ -992,7 +994,7 @@ _TexuMenuWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam p
 
         case TEXU_WM_DESTROY:
             _TexuMenuWndProc_OnDestroy(wnd);
-            return 0;
+            break;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }

@@ -777,9 +777,9 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_TITLE_WINDOW]             = TEXU_CIO_COLOR_WHITE_BLUE;
     env->syscolors[TEXU_COLOR_BORDER]                   = TEXU_CIO_COLOR_WHITE_BLUE;
     env->syscolors[TEXU_COLOR_BUTTON_OK]                = TEXU_CIO_COLOR_BLACK_GREEN;
-    env->syscolors[TEXU_COLOR_BUTTON_YES]               = TEXU_CIO_COLOR_WHITE_BLUE;
-    env->syscolors[TEXU_COLOR_BUTTON_NO]                = TEXU_CIO_COLOR_BLACK_RED;
-    env->syscolors[TEXU_COLOR_BUTTON_CANCEL]            = TEXU_CIO_COLOR_BLACK_YELLOW;
+    env->syscolors[TEXU_COLOR_BUTTON_YES]               = TEXU_CIO_COLOR_BLACK_GREEN;
+    env->syscolors[TEXU_COLOR_BUTTON_NO]                = TEXU_CIO_COLOR_BLACK_GREEN;
+    env->syscolors[TEXU_COLOR_BUTTON_CANCEL]            = TEXU_CIO_COLOR_BLACK_GREEN;
     env->syscolors[TEXU_COLOR_MENU]                     = TEXU_CIO_COLOR_BLUE_CYAN;
     env->syscolors[TEXU_COLOR_MENU_DISABLED]            = TEXU_CIO_COLOR_BLACK_WHITE;
     env->syscolors[TEXU_COLOR_MENU_SELECTED]            = TEXU_CIO_COLOR_CYAN_BLUE;
@@ -806,12 +806,13 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_COMBOBOX_FOCUSED]         = TEXU_CIO_COLOR_BLACK_BLUE;
     env->syscolors[TEXU_COLOR_LISTCTRL]                 = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
-    env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED]        = TEXU_CIO_COLOR_CYAN_BLUE;
-    env->syscolors[TEXU_COLOR_LISTCTRL_FOCUSED]         = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED]        = TEXU_CIO_COLOR_BLACK_WHITE;
+    env->syscolors[TEXU_COLOR_LISTCTRL_FOCUSED]         = TEXU_CIO_COLOR_WHITE_CYAN;
     env->syscolors[TEXU_COLOR_LISTCTRL_ITEM]            = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_DISABLED]   = TEXU_CIO_COLOR_WHITE_BLACK;
-    env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELECTED]   = TEXU_CIO_COLOR_CYAN_BLUE;
-    env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_FOCUSED]    = TEXU_CIO_COLOR_WHITE_BLACK;
+    env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELECTED]   = TEXU_CIO_COLOR_BLACK_WHITE;
+    env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_FOCUSED]    = TEXU_CIO_COLOR_WHITE_CYAN;
+    env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELFOCUSED] = TEXU_CIO_COLOR_CYAN_BLUE;
     env->syscolors[TEXU_COLOR_TREECTRL]                 = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_TREECTRL_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_TREECTRL_SELECTED]        = TEXU_CIO_COLOR_WHITE_BLACK;
@@ -878,9 +879,9 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_TITLE_WINDOW]               = TEXU_CIO_COLOR_BLUE_WHITE;
     env->sysbgcolors[TEXU_COLOR_BORDER]                     = TEXU_CIO_COLOR_BLUE_WHITE;
     env->sysbgcolors[TEXU_COLOR_BUTTON_OK]                  = TEXU_CIO_COLOR_GREEN_BLACK;
-    env->sysbgcolors[TEXU_COLOR_BUTTON_YES]                 = TEXU_CIO_COLOR_BLUE_WHITE;
-    env->sysbgcolors[TEXU_COLOR_BUTTON_NO]                  = TEXU_CIO_COLOR_RED_BLACK;
-    env->sysbgcolors[TEXU_COLOR_BUTTON_CANCEL]              = TEXU_CIO_COLOR_YELLOW_BLACK;
+    env->sysbgcolors[TEXU_COLOR_BUTTON_YES]                 = TEXU_CIO_COLOR_GREEN_BLACK;
+    env->sysbgcolors[TEXU_COLOR_BUTTON_NO]                  = TEXU_CIO_COLOR_GREEN_BLACK;
+    env->sysbgcolors[TEXU_COLOR_BUTTON_CANCEL]              = TEXU_CIO_COLOR_GREEN_BLACK;
     env->sysbgcolors[TEXU_COLOR_MENU]                       = TEXU_CIO_COLOR_WHITE_BLUE;
     env->sysbgcolors[TEXU_COLOR_MENU_DISABLED]              = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_MENU_SELECTED]              = TEXU_CIO_COLOR_CYAN_BLUE;
@@ -2680,6 +2681,8 @@ texu_env_run(texu_env *env)
         texu_cio_getyx(env->cio, &y, &x);
 #endif
         ch = texu_cio_getch(env->cio);
+#if 0 /*(defined __USE_TERMIOS__)*/
+#else
         if (-1 == ch && env->frames)
         {
             /*no key pressed*/
@@ -2693,6 +2696,7 @@ texu_env_run(texu_env *env)
             texu_wnd_send_msg(activewnd, TEXU_WM_IDLE, 0, 0);
             continue;
         }
+#endif
 #if (defined WIN32 && (defined UNICODE || defined _UNICODE))
 #elif (defined VMS || defined __VMS__)
         /*set cursor to the position*/
@@ -2715,6 +2719,7 @@ texu_env_run(texu_env *env)
                 continue;
             }
         }
+#elif (defined __USE_TERMIOS__)
 #else
         /*retrieve a special key such as CTRL and ALT key*/
         keypressed = keyname(ch);
@@ -2799,12 +2804,12 @@ texu_env_get_desktop(texu_env *env)
 texu_i32
 texu_env_screen_height(texu_env* env)
 {
-    return env->lines;
+    return (env && env->lines >= 24 ? env->lines : LINES);
 }
 texu_i32
 texu_env_screen_width(texu_env* env)
 {
-    return env->cols;
+    return (env && env->cols >= 80 ? env->cols : COLS);
 }
 
 texu_status
@@ -2974,6 +2979,8 @@ texu_wnd*   _TexuDefWndProc_OnQueryNextWnd(texu_wnd* wnd);
 texu_wnd*   _TexuDefWndProc_OnQueryPrevWnd(texu_wnd* wnd);
 texu_longptr    _TexuDefWndProc_OnQueryClose(texu_wnd *wnd);
 texu_longptr    _TexuDefWndProc_OnClose(texu_wnd *wnd);
+void _TexuDefWndProc_OnActivated(texu_wnd *wnd, texu_i32 flags);
+
 
 texu_wnd *
 _TexuDefWndProc_OpenMenuWnd(
@@ -3187,6 +3194,10 @@ _TexuDefWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     }*/
 }
 
+void _TexuDefWndProc_OnActivated(texu_wnd *wnd, texu_i32 flags)
+{
+}
+
 void
 _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
 {
@@ -3214,6 +3225,14 @@ _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
         width = (wnd->width > maxwidth ? maxwidth : wnd->width);
         height = wnd->height;
     }
+    if (y > 40)
+    {
+        y = 40;
+    }
+    if (x > 132)
+    {
+        x = 132;
+    }
 
 #if 0// defined __VMS__
     /*this is required because OpenVMS will incorrectly paint on screen if
@@ -3239,7 +3258,6 @@ _TexuDefWndProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     }
 
 }
-
 
 texu_status
 _TexuDefWndProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
@@ -3323,10 +3341,16 @@ _TexuDefWndProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_wnd *parent = texu_wnd_get_parent(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
+    texu_wnd *activechild = 0;
 
     if (parent && texu_wnd_is_active(wnd))
     {
-        parent->activechild = wnd;
+        activechild = parent->activechild;
+        if (activechild != wnd)
+        {
+            /*texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, 0, 0);*/
+            parent->activechild = wnd;
+        }
     }
     texu_env_set_focus(env, wnd);
 }
@@ -3455,7 +3479,11 @@ _TexuDefWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
 
                 /* the new active window */
-                wnd->activechild = nextwnd;
+                /*wnd->activechild = nextwnd;*/
+                texu_wnd_set_activechild(wnd, nextwnd);
+
+                /*to update the previous active child*/
+                texu_wnd_invalidate(activechild);
                 return 1;
             }
             else
@@ -3500,6 +3528,61 @@ texu_longptr
 _TexuDefWndProc_OnQueryClose(texu_wnd *wnd)
 {
     return TEXU_OK;
+}
+
+texu_wnd *_TexuDefWndProc_OnGetFirstActiveChild(texu_wnd *wnd)
+{
+    return texu_wnd_get_first_activechild(wnd);
+}
+
+texu_wnd *_TexuDefWndProc_OnGetLastActiveChild(texu_wnd *wnd)
+{
+    return texu_wnd_get_last_activechild(wnd);
+}
+
+texu_wnd *_TexuDefWndProc_OnGetNextActiveChild(texu_wnd *wnd, texu_wnd *child)
+{
+    return texu_wnd_get_next_activechild(wnd, child);
+}
+
+texu_wnd *_TexuDefWndProc_OnGetPrevActiveChild(texu_wnd *wnd, texu_wnd *child)
+{
+    return texu_wnd_get_prev_activechild(wnd, child);
+}
+
+texu_wnd *_TexuDefWndProc_OnSetActiveChild(texu_wnd *wnd, texu_wnd *child)
+{
+    return texu_wnd_set_activechild(wnd, child);
+}
+
+texu_wnd *_TexuDefWndProc_OnGetActiveChild(texu_wnd *wnd)
+{
+    return texu_wnd_get_activechild(wnd);
+}
+
+texu_wnd *_TexuDefWndProc_OnGetFirstChild(texu_wnd *wnd)
+{
+    return texu_wnd_firstchild(wnd);
+}
+
+texu_wnd *_TexuDefWndProc_OnGetLastChild(texu_wnd *wnd)
+{
+    return texu_wnd_lastchild(wnd);
+}
+
+texu_wnd *_TexuDefWndProc_OnGetNextWnd(texu_wnd *wnd)
+{
+    return texu_wnd_nextwnd(wnd);
+}
+
+texu_wnd *_TexuDefWndProc_OnGetPrevWnd(texu_wnd *wnd)
+{
+    return texu_wnd_prevwnd(wnd);
+}
+
+void _TexuDefWndProc_OnInvalidate(texu_wnd *wnd)
+{
+    texu_wnd_invalidate(wnd);
 }
 
 texu_longptr
@@ -3579,6 +3662,10 @@ TexuDefWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam par
             _TexuDefWndProc_OnEraseBg(wnd, (texu_cio *)param1, (texu_rect*)param2);
             break;
 
+        case TEXU_WM_ACTIVATED:
+            _TexuDefWndProc_OnActivated(wnd, (texu_i32)param1);
+            break;
+
         case TEXU_WM_CREATE:
             return _TexuDefWndProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
@@ -3594,6 +3681,40 @@ TexuDefWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam par
             
         case TEXU_WM_IDLE:
             return 0;
+
+        case TEXU_WM_GETFIRSTACTIVECHILD:
+            return (texu_longptr)_TexuDefWndProc_OnGetFirstActiveChild(wnd);
+
+        case TEXU_WM_GETLASTACTIVECHILD:
+            return (texu_longptr)_TexuDefWndProc_OnGetLastActiveChild(wnd);
+
+        case TEXU_WM_GETNEXTACTIVECHILD:
+            return (texu_longptr)_TexuDefWndProc_OnGetNextActiveChild(wnd, (texu_wnd*)param1);
+
+        case TEXU_WM_GETPREVACTIVECHILD:
+            return (texu_longptr)_TexuDefWndProc_OnGetPrevActiveChild(wnd, (texu_wnd*)param1);
+
+        case TEXU_WM_SETACTIVECHILD:
+            return (texu_longptr)_TexuDefWndProc_OnSetActiveChild(wnd, (texu_wnd*)param1);
+
+        case TEXU_WM_GETACTIVECHILD:
+            return (texu_longptr)_TexuDefWndProc_OnGetActiveChild(wnd);
+
+        case TEXU_WM_GETFIRSTCHILD:
+            return (texu_longptr)_TexuDefWndProc_OnGetFirstChild(wnd);
+
+        case TEXU_WM_GETLASTCHILD:
+            return (texu_longptr)_TexuDefWndProc_OnGetLastChild(wnd);
+
+        case TEXU_WM_GETNEXTWND:
+            return (texu_longptr)_TexuDefWndProc_OnGetNextWnd(wnd);
+
+        case TEXU_WM_GETPREVWND:
+            return (texu_longptr)_TexuDefWndProc_OnGetPrevWnd(wnd);
+
+        case TEXU_WM_INVALIDATE:
+            _TexuDefWndProc_OnInvalidate(wnd);
+            break;
     }
     return 0;
 }
@@ -3863,10 +3984,13 @@ texu__wnd_get_clipped(texu_wnd* wnd)
     texu_wnd* parent = texu_wnd_get_parent(wnd);
 /*    texu_i32 style = texu_wnd_get_style(parent);*/
     texu_rect rcwnd, rcchild;
+    texu_rect rcwnd2, rcchild2;
     texu_rect rcempty = { 0, 0, 0, 0 };
     
     texu_wnd_get_rect(parent, &rcwnd);
     texu_wnd_get_rect(wnd, &rcchild);
+    rcwnd2 = rcwnd;
+    rcchild2 = rcchild;
     do
     {
 /*        if (style & TEXU_WS_CLIPWINDOW)*/
@@ -3929,12 +4053,36 @@ texu__wnd_get_clipped(texu_wnd* wnd)
             if ((rcchild.lines <= 0) || (rcchild.cols <= 0))
             {
                 /*skip if the child is out-of-bound*/
-                    return rcempty;
+                return rcempty;
             }
         }
     } while (0);
+    if (rcchild.lines > 40)
+    {
+        rcchild.lines = 40;
+    }
+    if (rcchild.cols > 132)
+    {
+        rcchild.cols = 132;
+    }
+    if (rcchild.x > 132)
+    {
+        rcchild.x = 132;
+    }
+    if (rcchild.y > 40)
+    {
+        rcchild.y = 40;
+    }
     return rcchild;
 }
+/*exposed texu__wnd_get_clipped()*/
+texu_rect
+texu_wnd_get_clipped(texu_wnd* wnd)
+{
+    return texu__wnd_get_clipped(wnd);
+}
+
+
 
 texu_bool
 texu_rect_is_empty(const texu_rect* rect)
@@ -4099,6 +4247,9 @@ texu_wnd_invalidate(texu_wnd *wnd)
     texu_i32 cx = env->cxScreen;
     texu_i32 cy = env->cyScreen;
     BitBlt(env->hdc, 0, 0, cx, cy, env->hmemdc, 0, 0, SRCCOPY);
+#endif
+#if defined __USE_TERMIOS__
+    texu_cio_refresh(texu_wnd_get_cio(wnd));
 #endif
     return 0;
 }
@@ -4421,6 +4572,39 @@ texu_wnd_move(texu_wnd *wnd, texu_i32 y, texu_i32 x, texu_i32 h, texu_i32 w, tex
 }
 
 void
+texu_wnd_move_center(texu_wnd *wnd, texu_bool redraw)
+{
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_rect rect = {0, 0, 0, 0};
+    texu_wnd_get_rect(wnd, &rect);
+    rect.y = (texu_env_screen_height(env) - rect.lines) / 2;
+    rect.x = (texu_env_screen_width(env) - rect.cols) / 2;
+    texu_wnd_send_msg(wnd, TEXU_WM_MOVE, (texu_lparam)&rect, redraw);
+}
+
+void
+texu_wnd_align_center(texu_wnd *wnd, texu_bool redraw)
+{
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_rect rect = {0, 0, 0, 0};
+    texu_wnd_get_rect(wnd, &rect);
+    //rect.y = (texu_env_screen_height(env) - rect.lines) / 2;
+    rect.x = (texu_env_screen_width(env) - rect.cols) / 2;
+    texu_wnd_send_msg(wnd, TEXU_WM_MOVE, (texu_lparam)&rect, redraw);
+}
+
+void
+texu_wnd_align_vcenter(texu_wnd *wnd, texu_bool redraw)
+{
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_rect rect = {0, 0, 0, 0};
+    texu_wnd_get_rect(wnd, &rect);
+    rect.y = (texu_env_screen_height(env) - rect.lines) / 2;
+    //rect.x = (texu_env_screen_width(env) - rect.cols) / 2;
+    texu_wnd_send_msg(wnd, TEXU_WM_MOVE, (texu_lparam)&rect, redraw);
+}
+
+void
 texu_wnd_set_style(texu_wnd *wnd, texu_ui32 style)
 {
     if (wnd)
@@ -4718,6 +4902,31 @@ texu_wnd_get_rect(texu_wnd *wnd, texu_rect *rect)
         rect->lines = wnd->height;
         rect->cols = wnd->width;
     }
+    else if (!wnd && rect)
+    {
+        texu_env *env = texu_wnd_get_env(wnd);
+        rect->x = 0;
+        rect->y = 0;
+        rect->cols = texu_env_screen_width(env);
+        rect->lines = texu_env_screen_height(env);
+    }
+}
+
+texu_wndproc
+texu_wnd_get_wndproc(texu_wnd *wnd)
+{
+    return (wnd ? wnd->wndproc : 0);
+}
+
+texu_wndproc
+texu_wnd_subclass(texu_wnd *wnd, texu_wndproc new_wndproc)
+{
+    texu_wndproc old_wndproc = wnd->wndproc;
+    if (old_wndproc != new_wndproc)
+    {
+        wnd->wndproc = new_wndproc;
+    }
+    return old_wndproc;
 }
 
 texu_cio *
