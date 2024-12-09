@@ -38,11 +38,28 @@ extern "C" {
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
+#if defined SIZE_100X25
+#ifndef COLS
+#define COLS    (100)
+#endif
+#ifndef LINES
+#if defined __USE_TERMIOS__
+#define LINES   (24)
+#else
+#define LINES   (25)
+#endif
+#endif
+#else
 #ifndef COLS
 #define COLS    (80)
 #endif
 #ifndef LINES
+#if defined __USE_TERMIOS__
+#define LINES   (24)
+#else
 #define LINES   (25)
+#endif
+#endif
 #endif
 enum
 {
@@ -87,6 +104,7 @@ enum
     TEXU_COLOR_LISTCTRL_ITEM_DISABLED,
     TEXU_COLOR_LISTCTRL_ITEM_SELECTED,
     TEXU_COLOR_LISTCTRL_ITEM_FOCUSED,
+    TEXU_COLOR_LISTCTRL_ITEM_SELFOCUSED,
     TEXU_COLOR_TREECTRL,
     TEXU_COLOR_TREECTRL_DISABLED,
     TEXU_COLOR_TREECTRL_SELECTED,
@@ -370,12 +388,18 @@ void                texu_wnd_set_exstyle(texu_wnd*, texu_ui32);
 void*               texu_wnd_get_userdata(texu_wnd*);
 void                texu_wnd_set_userdata(texu_wnd*, void*);
 void                texu_wnd_move(texu_wnd*, texu_i32, texu_i32, texu_i32, texu_i32, texu_bool);
+void                texu_wnd_move_center(texu_wnd *wnd, texu_bool redraw);
+void                texu_wnd_align_center(texu_wnd *wnd, texu_bool redraw);
+void                texu_wnd_align_vcenter(texu_wnd *wnd, texu_bool redraw);
 
 texu_cio*           texu_wnd_get_cio(texu_wnd*);
 void                texu_wnd_lock_update(texu_wnd*, texu_bool);
 texu_bool           texu_wnd_is_update_locked(texu_wnd* wnd);
 texu_env*           texu_wnd_get_env(texu_wnd*);
 void                texu_wnd_get_rect(texu_wnd*, texu_rect*);
+texu_wndproc        texu_wnd_get_wndproc(texu_wnd *wnd);
+texu_wndproc        texu_wnd_subclass(texu_wnd *wnd, texu_wndproc new_wndproc);
+texu_rect           texu_wnd_get_clipped(texu_wnd* wnd);
 
 texu_status         texu_wnd_save_curpos(texu_wnd*);
 texu_status         texu_wnd_restore_curpos(texu_wnd*);
@@ -393,8 +417,8 @@ texu_i32    texu_wnd_can_paint(texu_wnd* wnd);
 
 texu_wnd *
 texu_wnd_msgbox(
-    texu_char *caption,
-    texu_char *text,
+    const texu_char *caption,
+    const texu_char *text,
     texu_wnd *owner,
     texu_ui32 id,
     texu_ui32 buttons,
@@ -402,12 +426,15 @@ texu_wnd_msgbox(
 
 texu_wnd *
 texu_wnd_msgbox2(
-    texu_char *caption,
-    texu_char *text,
+    const texu_char *caption,
+    const texu_char *text,
     texu_wnd *owner,
     texu_ui32 id,
     texu_ui32 buttons,
+    void *userdata,
     texu_msgbox_attrs *mbxattrs);
+
+
 
 /*tree window*/
 /*typedef texu_i32  (*texu_tree_find_proc)(const void*, const void*);*/

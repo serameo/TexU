@@ -15,6 +15,9 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
+#ifdef __USE_TERMIOS__
+#include "termbox.h"
+#endif
 
 #if (defined WIN32 && defined _WINDOWS)
 enum
@@ -189,19 +192,19 @@ enum
 #ifdef _USE_CURSES_
 enum
 {
-  TEXU_CIO_COLOR_BLACK   = COLOR_BLACK,
-  TEXU_CIO_COLOR_RED     = COLOR_RED,
-  TEXU_CIO_COLOR_GREEN   = COLOR_GREEN,
-  TEXU_CIO_COLOR_YELLOW  = COLOR_YELLOW,
-  TEXU_CIO_COLOR_BLUE    = COLOR_BLUE,
-  TEXU_CIO_COLOR_MAGENTA = COLOR_MAGENTA,
-  TEXU_CIO_COLOR_CYAN    = COLOR_CYAN,
-  TEXU_CIO_COLOR_WHITE   = COLOR_WHITE,
-#ifdef XTERM_256COLOR
-  TEXU_CIO_BRIGHT_WHITE  = 15
-#else
-  TEXU_CIO_BRIGHT_WHITE  = COLOR_WHITE
-#endif
+    TEXU_CIO_COLOR_BLACK   = COLOR_BLACK,
+    TEXU_CIO_COLOR_RED     = COLOR_RED,
+    TEXU_CIO_COLOR_GREEN   = COLOR_GREEN,
+    TEXU_CIO_COLOR_YELLOW  = COLOR_YELLOW,
+    TEXU_CIO_COLOR_BLUE    = COLOR_BLUE,
+    TEXU_CIO_COLOR_MAGENTA = COLOR_MAGENTA,
+    TEXU_CIO_COLOR_CYAN    = COLOR_CYAN,
+    TEXU_CIO_COLOR_WHITE   = COLOR_WHITE,
+    #ifdef XTERM_256COLOR
+    TEXU_CIO_BRIGHT_WHITE  = 15
+    #else
+    TEXU_CIO_BRIGHT_WHITE  = COLOR_WHITE
+    #endif
 };
 #endif
 /*
@@ -236,9 +239,9 @@ enum
 #define TEXU_CONTINUE                   (texu_i32)(1)
 #define TEXU_BREAK                      (texu_i32)(-1)
 
-#define TEXU_ENV_STATE_STARTING     100
-#define TEXU_ENV_STATE_RUNNING      200
-#define TEXU_ENV_STATE_ENDING       0
+#define TEXU_ENV_STATE_STARTING         100
+#define TEXU_ENV_STATE_RUNNING          200
+#define TEXU_ENV_STATE_ENDING           0
 
 
 /* boolean */
@@ -252,9 +255,15 @@ enum
 
 #define TEXU_MAX_WNDTEXT                256
 #define TEXU_MAX_BUFFER                 (TEXU_MAX_WNDTEXT * 2)
+#define TEXU_1024_WNDTEXT               1024
+#define TEXU_2048_WNDTEXT               2048
 
+#define TEXU_SW_HIDE                    0
+#define TEXU_SW_SHOW                    1
+
+/*user message begin*/
 #define TEXU_WM_USER                    10000
-
+/*reserved messages*/
 #define TEXU_WM_FIRST                   0
 #define TEXU_WM_CHAR                    (TEXU_WM_FIRST +  1)
 #define TEXU_WM_SETFOCUS                (TEXU_WM_FIRST +  2)
@@ -282,6 +291,18 @@ enum
 #define TEXU_WM_KEYDOWN                 (TEXU_WM_FIRST + 24)
 #define TEXU_WM_SIZE                    (TEXU_WM_FIRST + 25)
 #define TEXU_WM_SETTEXTCOLOR            (TEXU_WM_FIRST + 26)
+#define TEXU_WM_GETFIRSTACTIVECHILD     (TEXU_WM_FIRST + 27)
+#define TEXU_WM_GETLASTACTIVECHILD      (TEXU_WM_FIRST + 28)
+#define TEXU_WM_GETNEXTACTIVECHILD      (TEXU_WM_FIRST + 29)
+#define TEXU_WM_GETPREVACTIVECHILD      (TEXU_WM_FIRST + 30)
+#define TEXU_WM_SETACTIVECHILD          (TEXU_WM_FIRST + 31)
+#define TEXU_WM_GETACTIVECHILD          (TEXU_WM_FIRST + 32)
+#define TEXU_WM_GETFIRSTCHILD           (TEXU_WM_FIRST + 33)
+#define TEXU_WM_GETLASTCHILD            (TEXU_WM_FIRST + 34)
+#define TEXU_WM_GETNEXTWND              (TEXU_WM_FIRST + 35)
+#define TEXU_WM_GETPREVWND              (TEXU_WM_FIRST + 36)
+#define TEXU_WM_INVALIDATE              (TEXU_WM_FIRST + 37)
+#define TEXU_WM_ACTIVATED               (TEXU_WM_FIRST + 38)
 
 /* notify */
 #define TEXU_WN_FIRST                   0
@@ -348,6 +369,10 @@ enum
 
 
 /* listctrl notification */
+#define LISTCTRL_STATE_NORMAL       0x0000
+#define LISTCTRL_STATE_DISABLED     0x0001
+#define LISTCTRL_STATE_FOCUSED      0x0002
+
 #define TEXU_LCM_FIRST                  (TEXU_WM_FIRST + 400)
 #define TEXU_LCM_SETEDITABLECOLS        (TEXU_LCM_FIRST +  1)
 #define TEXU_LCM_GETITEMSPERPAGE        (TEXU_LCM_FIRST +  2)
@@ -375,7 +400,7 @@ enum
 #define TEXU_LCM_SETITEMDATA            (TEXU_LCM_FIRST + 24)
 #define TEXU_LCM_GETITEMTEXT            (TEXU_LCM_FIRST + 25)
 #define TEXU_LCM_GETITEMDATA            (TEXU_LCM_FIRST + 26)
-
+#define TEXU_LCM_REFRESH                (TEXU_LCM_FIRST + 27)
 
 #define TEXU_LCN_FIRST                  TEXU_LCM_FIRST
 #define TEXU_LCN_SETFOCUS               (TEXU_LCN_FIRST +  1)
@@ -661,6 +686,7 @@ enum
 #define TEXU_PNM_SETTITLEALIGNMENT      (TEXU_PNM_FIRST +    2)
 #define TEXU_PNM_GETSTATUSBAR           (TEXU_PNM_FIRST +    3)
 #define TEXU_PNM_GETTITLE               (TEXU_PNM_FIRST +    4)
+#define TEXU_PNM_SETTITLEBGCOLOR        (TEXU_PNM_FIRST +    5)
 
 #ifdef __USE_CURSES__
 #define TEXU_KEY_SELMENU                10
@@ -678,7 +704,24 @@ enum
 #define TEXU_KEY_PPAGE                  KEY_PPAGE
 #define TEXU_KEY_NPAGE                  KEY_NPAGE
 #define TEXU_KEY_ESCAPE                 27
-#elif (defined __VMS__)
+#elif (defined __USE_TERMIOS__)
+#define TEXU_KEY_SELMENU                10
+#define TEXU_KEY_NEXTWND                TB_KEY_ENTER
+#define TEXU_KEY_ENTER                  TB_KEY_ENTER
+#define TEXU_KEY_NUMENTER               270
+#define TEXU_KEY_TAB                    TB_KEY_TAB
+#define TEXU_KEY_PREVWND                511
+#define TEXU_KEY_BACKSPACE              TB_KEY_BACKSPACE
+#define TEXU_KEY_IC                     TB_KEY_INSERT
+#define TEXU_KEY_DC                     TB_KEY_DELETE
+#define TEXU_KEY_LEFT                   TB_KEY_ARROW_LEFT
+#define TEXU_KEY_RIGHT                  TB_KEY_ARROW_RIGHT
+#define TEXU_KEY_DOWN                   TB_KEY_ARROW_DOWN
+#define TEXU_KEY_UP                     TB_KEY_ARROW_UP
+#define TEXU_KEY_PPAGE                  TB_KEY_PGUP
+#define TEXU_KEY_NPAGE                  TB_KEY_PGDN
+#define TEXU_KEY_ESCAPE                 TB_KEY_ESC
+#elif (defined __VMS__) || (defined __USE_TTY__)
 #define TEXU_KEY_SELMENU                10
 #define TEXU_KEY_NEXTWND                13
 #define TEXU_KEY_ENTER                  13
@@ -695,7 +738,7 @@ enum
 #define TEXU_KEY_PPAGE                  315
 #define TEXU_KEY_NPAGE                  316
 #define TEXU_KEY_ESCAPE                 27
-#else
+#elif defined WIN32
 #define TEXU_KEY_ENTER                  VK_RETURN
 #define TEXU_KEY_SELMENU                VK_RETURN
 #define TEXU_KEY_NEXTWND                VK_RETURN
@@ -711,6 +754,22 @@ enum
 #define TEXU_KEY_PPAGE                  VK_PRIOR
 #define TEXU_KEY_NPAGE                  VK_NEXT
 #define TEXU_KEY_ESCAPE                 VK_ESCAPE
+#else
+#define TEXU_KEY_ENTER                  0
+#define TEXU_KEY_SELMENU                0
+#define TEXU_KEY_NEXTWND                0
+#define TEXU_KEY_TAB                    0
+#define TEXU_KEY_PREVWND                0
+#define TEXU_KEY_BACKSPACE              0
+#define TEXU_KEY_IC                     0
+#define TEXU_KEY_DC                     0
+#define TEXU_KEY_LEFT                   0
+#define TEXU_KEY_RIGHT                  0
+#define TEXU_KEY_DOWN                   0
+#define TEXU_KEY_UP                     0
+#define TEXU_KEY_PPAGE                  0
+#define TEXU_KEY_NPAGE                  0
+#define TEXU_KEY_ESCAPE                 0
 #endif
 
 #define TEXU_KEYPRESSED_ALT             1

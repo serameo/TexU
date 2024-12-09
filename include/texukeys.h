@@ -9,6 +9,9 @@
 #ifndef __TEXUKEYS_H__
 #define __TEXUKEYS_H__
 
+#if (defined __USE_TERMIOS__)
+#include "termbox.h"
+#endif
 
 /* miscellaneous */
 #if defined WIN32 /*see winuser.h*/
@@ -87,6 +90,8 @@
 #define TVK_TAB            0x09
 #if (defined __USE_VMS__ || defined __VMS__)
 #define TVK_ENTER          0x0D
+#elif (defined __USE_TERMIOS__)
+#define TVK_ENTER          TB_KEY_ENTER
 #else
 #define TVK_ENTER          0x0A
 #endif
@@ -122,6 +127,19 @@
 #define TVK_CTRLM           13
 #define TVK_CTRLI           9
 #define TVK_SHIFT_TAB       511
+#elif (defined __USE_TERMIOS__)
+#define TVK_BACK           TB_KEY_BACKSPACE
+#define TVK_PRIOR          TB_KEY_PGUP
+#define TVK_NEXT           TB_KEY_PGDN
+#define TVK_END            TB_KEY_END
+#define TVK_HOME           TB_KEY_HOME
+#define TVK_LEFT           TB_KEY_ARROW_LEFT
+#define TVK_UP             TB_KEY_ARROW_UP
+#define TVK_RIGHT          TB_KEY_ARROW_RIGHT
+#define TVK_DOWN           TB_KEY_ARROW_DOWN
+#define TVK_INSERT         TB_KEY_INSERT
+#define TVK_DELETE         TB_KEY_DELETE
+#define TVK_HELP           0x2F
 #else
 #define TVK_BACK           0x08
 #define TVK_PRIOR          0x21
@@ -214,6 +232,31 @@
 #define TVK_F10            0x122
 #define TVK_F11            0x123
 #define TVK_F12            0x124
+#define TVK_F13            0x125
+#define TVK_F14            0x126
+#define TVK_F15            0x127
+#define TVK_F16            0x128
+#define TVK_F17            0x129
+#define TVK_F18            0x12a
+#define TVK_F19            0x12b
+#define TVK_F20            0x12c
+#define TVK_F21            0x123
+#define TVK_F22            0x124
+#define TVK_F23            0x125
+#define TVK_F24            0x126
+#elif (defined __USE_TERMIOS__)
+#define TVK_F1             TB_KEY_F1
+#define TVK_F2             TB_KEY_F2
+#define TVK_F3             TB_KEY_F3
+#define TVK_F4             TB_KEY_F4
+#define TVK_F5             TB_KEY_F5
+#define TVK_F6             TB_KEY_F6
+#define TVK_F7             TB_KEY_F7
+#define TVK_F8             TB_KEY_F8
+#define TVK_F9             TB_KEY_F9
+#define TVK_F10            TB_KEY_F10
+#define TVK_F11            TB_KEY_F11
+#define TVK_F12            TB_KEY_F12
 #define TVK_F13            0x125
 #define TVK_F14            0x126
 #define TVK_F15            0x127

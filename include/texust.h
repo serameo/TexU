@@ -220,8 +220,8 @@ struct texu_msgbox_attrs
     texu_ui32 bgcolor;
 
     void *userdata;
-    texu_char *text;
-    texu_char *caption;
+    const texu_char *text;
+    const texu_char *caption;
 };
 typedef struct texu_msgbox_attrs texu_msgbox_attrs;
 

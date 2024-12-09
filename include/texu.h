@@ -149,8 +149,6 @@ texu_status         TexuCreateControls2(texu_wnd* wnd, const texu_wnd_template2*
 #endif
 texu_longptr            TexuCloseWindow(texu_wnd *wnd);
 
-#define TEXU_SW_HIDE            0
-#define TEXU_SW_SHOW            1
 void                TexuShowWindow(
                         texu_wnd*  wnd,
                         texu_i32   show
@@ -163,14 +161,19 @@ texu_bool           TexuIsExecutableCommand(
                         texu_ui32   id);
 
 void TexuMoveWindow(texu_wnd *wnd, texu_i32 y, texu_i32 x, texu_i32 h, texu_i32 w, texu_bool redraw);
+void TexuMoveCenterWindow(texu_wnd *wnd, texu_bool redraw);
+void TexuAlignCenterWindow(texu_wnd *wnd, texu_bool redraw);
+void TexuAlignVCenterWindow(texu_wnd *wnd, texu_bool redraw);
+
 void TexuLockUpdateWindow(texu_wnd* wnd, texu_i32 locked);
 void* TexuGetUserDataWindow(texu_wnd *wnd);
 texu_wnd *TexuGetActiveChild(texu_wnd *wnd);
+texu_wnd *TexuGetFrameWindow(texu_wnd *wnd);
 
 texu_wnd*
 TexuMessageBox(
-    texu_char* caption,
-    texu_char* text,
+    const texu_char* caption,
+    const texu_char* text,
     texu_wnd*  owner,
     texu_ui32  id,
     texu_ui32  buttons,
@@ -179,11 +182,12 @@ TexuMessageBox(
 
 texu_wnd *
 TexuMessageBox2(
-    texu_char* caption,
-    texu_char* text,
+    const texu_char* caption,
+    const texu_char* text,
     texu_wnd *owner,
     texu_ui32 id,
     texu_ui32 buttons,
+    void*      userdata,
     texu_msgbox_attrs *mbxattrs);
 
 texu_longptr
