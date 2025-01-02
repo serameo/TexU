@@ -1356,22 +1356,22 @@ _TexuEPSProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.height = attrs->height;
     attrs2.width = attrs->width;
     attrs2.enable = TEXU_TRUE;
-    attrs2.visible = TEXU_TRUE;
+    attrs2.visible = TEXU_FALSE;
     attrs2.text = attrs->text;
-    attrs2.normalcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL);
-    attrs2.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_DISABLED);
-    attrs2.selectedcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_SELECTED);
-    attrs2.focusedcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_FOCUSED);
+    attrs2.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_FOCUSED);
 
-    attrs2.normalbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL);
-    attrs2.disabledbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_DISABLED);
-    attrs2.selectedcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_SELECTED);
-    attrs2.focusedbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_FOCUSED);
+    attrs2.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_FOCUSED);
 
     attrs2.id = 1;
     attrs2.clsname = TEXU_EDIT_CLASS;
     attrs2.userdata = 0;
-    attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_LEFT | TEXU_ES_DECIMAL;
+    attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_LEFT | TEXU_ES_DECIMAL | TEXU_WS_HIDE;
     attrs2.exstyle = 0;
 
     rc = texu_wnd_create(editwnd, wnd, &attrs2);
@@ -1384,7 +1384,7 @@ _TexuEPSProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
 
     /*ATO ATC MP MO ML supported*/
     attrs2.id = 2;
-    attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_LEFT | TEXU_ES_UPPERCASE;
+    attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_LEFT | TEXU_ES_UPPERCASE | TEXU_WS_HIDE;
 
     editwnd2 = texu_wnd_new(texu_wnd_get_env(wnd));
     if (!editwnd2)
@@ -1398,7 +1398,7 @@ _TexuEPSProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         texu_wnd_del(editwnd2);
         return TEXU_ERROR;
     }
-    if (TEXU_EPSS_ATOATC & attrs->style)
+    /*if (TEXU_EPSS_ATOATC & attrs->style)
     {
         texu_wnd_visible(editwnd, TEXU_FALSE);
         texu_wnd_visible(editwnd2, TEXU_TRUE);
@@ -1407,7 +1407,7 @@ _TexuEPSProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     {
         texu_wnd_visible(editwnd, TEXU_TRUE);
         texu_wnd_visible(editwnd2, TEXU_FALSE);
-    }
+    }*/
 
     eps = (texu_edit_pricespread *)malloc(sizeof(texu_edit_pricespread));
     if (!eps)
@@ -1451,21 +1451,21 @@ _TexuEPSProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
     texu_ui32 style = texu_wnd_get_style(wnd);
-    if (!texu_wnd_is_enable(wnd))
+    if (!texu_wnd_is_enable(wnd) || !texu_wnd_is_visible(wnd))
     {
         return;
     }
     /*set focus to the first edit window*/
     if (TEXU_EPSS_ATOATC & style)
     {
-        //texu_wnd_visible(eps->editwnd, TEXU_FALSE);
-        //texu_wnd_visible(eps->editwnd2, TEXU_TRUE);
+        texu_wnd_visible(eps->editwnd, TEXU_FALSE);
+        texu_wnd_visible(eps->editwnd2, TEXU_TRUE);
         texu_wnd_send_msg(eps->editwnd2, TEXU_WM_SETFOCUS, 0, 0);
     }
     else
     {
-        //texu_wnd_visible(eps->editwnd2, TEXU_FALSE);
-        //texu_wnd_visible(eps->editwnd, TEXU_TRUE);
+        texu_wnd_visible(eps->editwnd2, TEXU_FALSE);
+        texu_wnd_visible(eps->editwnd, TEXU_TRUE);
         texu_wnd_send_msg(eps->editwnd, TEXU_WM_SETFOCUS, 0, 0);
     }
     _TexuWndProc_Notify(wnd, TEXU_EPSN_SETFOCUS);
@@ -1538,10 +1538,10 @@ _TexuEPSProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state)
     _TexuWndProc_Notify(wnd, TEXU_EPSN_KILLFOCUS);
     texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
 
-    //texu_wnd_visible(editwnd, TEXU_FALSE);
-    //texu_wnd_visible(eps->editwnd2, TEXU_FALSE);
-    //texu_wnd_visible(eps->editwnd, TEXU_FALSE);
-    //texu_wnd_invalidate(wnd);
+    /*texu_wnd_visible(editwnd, TEXU_FALSE);*/
+    texu_wnd_visible(eps->editwnd2, TEXU_FALSE);
+    texu_wnd_visible(eps->editwnd, TEXU_FALSE);
+    texu_wnd_invalidate(wnd);
     return TEXU_CONTINUE;
 }
 
@@ -1618,6 +1618,9 @@ void _TexuEPSProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
 
     texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL);
     texu_ui32 discolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_DISABLED);
+    texu_ui32 ltcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_LOWER);
+    texu_ui32 eqcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_EQUAL);
+    texu_ui32 gtcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_GREATER);
 
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_i32  y = texu_wnd_get_y(wnd);
@@ -1629,8 +1632,20 @@ void _TexuEPSProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     texu_ui32 disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_DISABLED);
 #if !(defined TEXU_CIO_COLOR_MONO)
     texu_ui32 bgcolor = normbg;
+    texu_ui32 ltbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_LOWER);
+    texu_ui32 eqbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_EQUAL);
+    texu_ui32 gtbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITPRICESPREADCTRL_GREATER);
 #endif
     texu_i32 cx = texu_env_screen_width(env);
+    texu_i32  val = 0;
+    texu_i32  price = 0;
+    texu_char longval[TEXU_MAX_WNDTEXT + 1];
+    texu_i32  change = 0;
+    texu_char pct[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
+
+    texu_i32  decwidth = eps->decwidth;
+    texu_char format[TEXU_MAX_WNDTEXT + 1];
+    texu_char pctcommas[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
 
     if (!texu_wnd_can_paint(wnd))
     {
@@ -1661,21 +1676,36 @@ void _TexuEPSProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     {
         texu_strcpy(textcommas, text);
     }
+
+    texu_fs2ls(text, texu_strlen(text), decwidth, longval);
+    val = texu_atol(longval); /*current price*/
+    price = _TexuEPSProc_TranslatePriceString(text, decwidth);
+
+    change = (val - eps->baseprice.price);
+    color = eqcolor;
+    if (price > 0 && change > 0)
+    {
+        color = gtcolor;
+    }
+    else if (price > 0 && change < 0)
+    {
+        color = ltcolor;
+    }
+#if !(defined TEXU_CIO_COLOR_MONO)
+    bgcolor = eqbg;
+    if (price > 0 && change > 0)
+    {
+        bgcolor = gtbg;
+    }
+    else if (price > 0 && change < 0)
+    {
+        bgcolor = ltbg;
+    }
+#endif
     /*show change price overrides show change percent if it is available*/
     if (TEXU_EPSS_SHOWCHANGEPRICE & style)
     {
-        texu_i32  val = 0;
-        texu_char longval[TEXU_MAX_WNDTEXT + 1];
-        texu_i32  change = 0;
-        texu_char pct[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
-
-        texu_i32  decwidth = eps->decwidth;
-        texu_char format[TEXU_MAX_WNDTEXT + 1];
-        texu_char pctcommas[TEXU_MAX_WNDTEXT + 1] = TEXUTEXT("");
-
-        texu_fs2ls(text, texu_strlen(text), decwidth, longval);
-        val = texu_atol(longval); /*current price*/
-        change = (val - eps->baseprice.price);
+        /*change = (val - eps->baseprice.price);*/
         if (change > 0)
         {
             texu_sprintf(format, TEXU_MAX_WNDTEXT, TEXUTEXT("+%%.0%df"), decwidth);
@@ -2126,7 +2156,6 @@ _TexuEPSProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             texu_fs2ls(buf, texu_strlen(buf), decwidth, prclong);
             value = texu_atol(prclong);
 
-
             texu_sprintf(format, TEXU_MAX_WNDTEXT, TEXUTEXT("%%.0%df"), decwidth);
             texu_sprintf(buf, TEXU_MAX_WNDTEXT, 
                          format,
@@ -2135,7 +2164,8 @@ _TexuEPSProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             value = _TexuEPSProc_GetNearestPrice(wnd, nearest, TEXU_MAX_WNDTEXT, buf, updown);
             if (value > 0)
             {
-                if (!(eps->allowed_invalid_ceiling_floor))
+                /*if (!(eps->allowed_invalid_ceiling_floor))*/
+                if (value >= eps->baseprice.floor && value <= eps->baseprice.ceiling)
                 {
                     /*not allowed to over/under ceiling/floor*/
                     if (eps->correct_floor_ceiling)
@@ -2159,6 +2189,10 @@ _TexuEPSProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                             return;
                         }
                     }
+                }
+                else if (!(eps->allowed_invalid_ceiling_floor))
+                {
+                    return; /*not allowed out-of-bound*/
                 }
                 texu_wnd_set_text(wnd, buf);
                 /*simulate CTRL+A (select all)*/
@@ -2591,7 +2625,7 @@ texu_bool   _TexuEVProc_OnAllowOddLot(texu_wnd* wnd, texu_bool odd)
     texu_edit_volume *ev = (texu_edit_volume *)texu_wnd_get_userdata(wnd);
     texu_bool old_odd_lot = ev->odd_lot;
     ev->odd_lot = odd;
-    if (ev->odd_lot)
+    /*if (ev->odd_lot)
     {
         texu_wnd_visible(ev->volwnd, TEXU_FALSE);
         texu_wnd_visible(ev->editwnd, TEXU_TRUE);
@@ -2602,7 +2636,7 @@ texu_bool   _TexuEVProc_OnAllowOddLot(texu_wnd* wnd, texu_bool odd)
         texu_wnd_visible(ev->editwnd, TEXU_FALSE);
         texu_wnd_visible(ev->volwnd, TEXU_TRUE);
         texu_wnd_send_msg(ev->volwnd, TEXU_WM_SETFOCUS, 0, 0);
-    }
+    }*/
     return old_odd_lot;
 }
 
@@ -2611,7 +2645,7 @@ void _TexuEVProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     texu_env *env = texu_wnd_get_env(wnd);
     /*texu_edit_volume *ev = (texu_edit_volume *)texu_wnd_get_userdata(wnd);*/
     texu_char text[TEXU_MAX_WNDTEXT + 1];
-    texu_char textcommas[TEXU_MAX_WNDTEXT + 1];
+    /*texu_char textcommas[TEXU_MAX_WNDTEXT + 1];*/
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
 
     texu_ui32 normcolor = texu_env_get_syscolor(env, TEXU_COLOR_EDITVOLUMECTRL);
@@ -2653,7 +2687,7 @@ void _TexuEVProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
 
     texu_wnd_get_text(wnd, text, TEXU_MAX_WNDTEXT);
 
-    texu_printf_alignment3(buf, textcommas, width, style, TEXU_TRUE, x, cx);
+    texu_printf_alignment3(buf, text, width, style, TEXU_TRUE, x, cx);
 #ifdef TEXU_CIO_COLOR_MONO
     texu_cio_putstr_attr(cio, y, x, buf,
                          texu_cio_get_color(cio, color));
@@ -2662,7 +2696,6 @@ void _TexuEVProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     texu_cio_draw_text(cio, y, x, buf, color, bgcolor,
                           texu_wnd_get_clsname(wnd),
                           texu_wnd_get_id(wnd));
-
 #endif
 }
 
@@ -2696,22 +2729,22 @@ _TexuEVProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.height = attrs->height;
     attrs2.width = attrs->width;
     attrs2.enable = TEXU_TRUE;
-    attrs2.visible = TEXU_TRUE;
+    attrs2.visible = TEXU_FALSE;
     attrs2.text = attrs->text;
-    attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_EDITVOLUMECTRL);
-    attrs2.disabledcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDITVOLUMECTRL_DISABLED);
-    attrs2.selectedcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDITVOLUMECTRL_SELECTED);
-    attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_EDITVOLUMECTRL_FOCUSED);
+    attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_FOCUSED);
 
-    attrs2.normalbg         = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITVOLUMECTRL);
-    attrs2.disabledbg       = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITVOLUMECTRL_DISABLED);
-    attrs2.selectedcolor    = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITVOLUMECTRL_SELECTED);
-    attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDITVOLUMECTRL_FOCUSED);
+    attrs2.normalbg         = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledbg       = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor    = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_FOCUSED);
 
     attrs2.id = EDITVOL_EDIT_ID;
     attrs2.clsname = TEXU_EDIT_CLASS;
     attrs2.userdata = 0;
-    attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_LEFT | TEXU_ES_NUMBER;
+    attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_LEFT | TEXU_ES_NUMBER | TEXU_WS_HIDE;
     attrs2.exstyle = 0;
     attrs2.on_validate = attrs->on_validate;
     attrs2.validate_data = attrs->validate_data;
@@ -2731,10 +2764,10 @@ _TexuEVProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         return TEXU_NOMEM;
     }
     attrs2.id = EDITVOL_UPDOWN_ID;
-    attrs2.visible = TEXU_FALSE;/*will be activated if it was set odd lot to "FALSE"*/
+    /*attrs2.visible = TEXU_FALSE;*//*will be activated if it was set odd lot to "FALSE"*/
     attrs2.clsname = TEXU_UPDOWNCTRL_CLASS;
     attrs2.userdata = 0;
-    attrs2.style = TEXU_UDS_SHOWPLUSMINUS;
+    attrs2.style = TEXU_UDS_SHOWPLUSMINUS | TEXU_WS_HIDE;
     rc = texu_wnd_create(volwnd, wnd, &attrs2);
     if (rc != TEXU_OK)
     {
@@ -2753,8 +2786,9 @@ _TexuEVProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     }
     memset(ev, 0, sizeof(texu_edit_volume));
     ev->editwnd = editwnd; /* no parameter */
-    texu_wnd_visible(editwnd, TEXU_FALSE);
     ev->volwnd = volwnd;
+    texu_wnd_visible(ev->editwnd, TEXU_FALSE);
+    texu_wnd_visible(ev->volwnd, TEXU_FALSE);
 
     ev->lot = 100;
     ev->odd_lot = TEXU_TRUE;
@@ -2781,7 +2815,7 @@ void
 _TexuEVProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_edit_volume *ev = (texu_edit_volume *)texu_wnd_get_userdata(wnd);
-    if (!texu_wnd_is_enable(wnd))
+    if (!texu_wnd_is_enable(wnd) || !texu_wnd_is_visible(wnd))
     {
         return;
     }
@@ -2807,12 +2841,12 @@ _TexuEVProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state)
     /*update value to window text */
     texu_edit_volume *ev = (texu_edit_volume *)texu_wnd_get_userdata(wnd);
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
-    texu_wnd *editwnd = texu_wnd_get_activechild(wnd);
+    texu_wnd *child = texu_wnd_get_activechild(wnd);
     texu_ui32 vol = ev->lot;
 
-    texu_wnd_get_text(wnd, ev->editbuf, TEXU_MAX_WNDTEXT);
-    texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, 0, state);
-    texu_wnd_get_text(editwnd, buf, TEXU_MAX_WNDTEXT);
+    /*texu_wnd_get_text(wnd, ev->editbuf, TEXU_MAX_WNDTEXT);*/
+    texu_wnd_send_msg(child, TEXU_WM_KILLFOCUS, 0, state);
+    texu_wnd_get_text(child, buf, TEXU_MAX_WNDTEXT);
 
     if (TEXU_FALSE == ev->odd_lot)
     {
@@ -2828,8 +2862,9 @@ _TexuEVProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state)
     _TexuWndProc_Notify(wnd, TEXU_EVN_KILLFOCUS);
     texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
 
-    /*texu_wnd_visible(ev->editwnd, TEXU_FALSE);
-    texu_wnd_invalidate(wnd);*/
+    texu_wnd_visible(ev->volwnd, TEXU_FALSE);
+    texu_wnd_visible(ev->editwnd, TEXU_FALSE);
+    texu_wnd_invalidate(wnd);
     return TEXU_CONTINUE;
 }
 
@@ -2910,14 +2945,14 @@ _TexuEVProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 {
     /*texu_edit_volume *ev = (texu_edit_volume *)texu_wnd_get_userdata(wnd);*/
     texu_wnd *child = texu_wnd_get_activechild(wnd);
-    texu_char buf[BUFSIZ + 1];
+    /*texu_char buf[BUFSIZ + 1];*/
 
     if (TEXU_FALSE == _TexuEVProc_IsVolumeValid(wnd, text))
     {
         return;
     }
     texu_wnd_set_text(child, text);
-    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)buf, 0);
+    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)text, 0);
 }
 
 texu_longptr

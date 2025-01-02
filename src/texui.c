@@ -858,14 +858,13 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_PANEL_DISABLED]               = TEXU_CIO_COLOR_CYAN_BLACK;
     env->syscolors[TEXU_COLOR_PANEL_BORDER]                 = TEXU_CIO_COLOR_CYAN_BLACK;
     env->syscolors[TEXU_COLOR_PANEL_TITLE]                  = TEXU_CIO_COLOR_CYAN_BLACK;
-    env->syscolors[TEXU_COLOR_EDITVOLUMECTRL]               = TEXU_CIO_COLOR_BLACK_CYAN;
+    env->syscolors[TEXU_COLOR_EDITVOLUMECTRL]               = TEXU_CIO_COLOR_CYAN_BLACK;
     env->syscolors[TEXU_COLOR_EDITVOLUMECTRL_DISABLED]      = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_EDITVOLUMECTRL_SELECTED]      = TEXU_CIO_COLOR_BLACK_CYAN;
     env->syscolors[TEXU_COLOR_EDITVOLUMECTRL_FOCUSED]       = TEXU_CIO_COLOR_CYAN_BLACK;
     /*default*/
     env->syscolors[TEXU_COLOR_DEFAULT]                  = TEXU_CIO_COLOR_WHITE_BLACK;
 }
-
 
 void _texu_env_init_sysbgcolors(texu_env *env)
 {

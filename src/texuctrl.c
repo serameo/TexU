@@ -5527,15 +5527,15 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.enable   = TEXU_TRUE;
     attrs2.visible  = TEXU_TRUE;
     attrs2.text     = TEXUTEXT("0");
-    attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
-    attrs2.disabledcolor    = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED);
-    attrs2.selectedcolor    = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_SELECTED);
-    attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED);
+    attrs2.normalcolor      = texu_env_get_syscolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor    = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedcolor     = texu_env_get_syscolor(env, TEXU_COLOR_EDIT_FOCUSED);
 
-    attrs2.normalbg         = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
-    attrs2.disabledbg       = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_DISABLED);
-    attrs2.selectedcolor    = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_SELECTED);
-    attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_FOCUSED);
+    attrs2.normalbg         = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT);
+    attrs2.disabledbg       = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_DISABLED);
+    attrs2.selectedcolor    = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
+    attrs2.focusedbg        = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_FOCUSED);
 
     attrs2.id = 1;
     attrs2.clsname = TEXU_EDIT_CLASS;
