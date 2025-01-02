@@ -808,6 +808,21 @@ void _TexuMsgBoxProc_OnSetOwner(texu_wnd *wnd, texu_wnd *owner)
     msgbox->owner = owner;
 }
 
+texu_bool
+_TexuMsgBoxProc_OnShow(texu_wnd *wnd, texu_bool visible)
+{
+    texu_msgbox *msgbox = 0;
+    texu_bool oldvisible = TEXU_FALSE;
+
+    msgbox = (texu_msgbox *)texu_wnd_get_userdata(wnd);
+
+    if (visible)
+    {
+        texu_wnd_invalidate(msgbox->owner);
+    }
+    return oldvisible;
+}
+
 texu_longptr
 _TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
@@ -829,6 +844,8 @@ _TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam pa
         texu_wnd_destroy(wnd);
         return 0;
     }
+    case TEXU_WM_SHOW:
+        return _TexuMsgBoxProc_OnShow(wnd, (texu_bool)param1);
 
     case TEXU_WM_PAINT:
         _TexuMsgBoxProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
@@ -939,7 +956,7 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     {
         return;
     }
-    if (!texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -1384,7 +1401,7 @@ _TexuPanelProc_OnPaint(texu_wnd* wnd, texu_cio* cio, texu_rect* rect)
     {
         return;
     }
-    if (!texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -1632,7 +1649,7 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     {
         return;
     }
-    if (!texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -2143,11 +2160,11 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd, texu_i32 state)
         edit->editing = 0;
         edit->selected = 0;
 
+        _TexuEditProc_Notify(wnd, TEXU_EN_KILLFOCUS, buf, state);
+
         texu_wnd_get_text(wnd, buf, TEXU_MAX_WNDTEXT);
         texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
         texu_wnd_invalidate(wnd);
-
-        _TexuEditProc_Notify(wnd, TEXU_EN_KILLFOCUS, buf, state);
         return TEXU_OK;
     }
     /* check if style is TEXU_ES_DECIMAL */
@@ -2174,7 +2191,11 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd, texu_i32 state)
     {
         texu_strcpy(buf, edit->editbuf);
     }
-
+    if (TEXU_ES_NUMBER & style)
+    {
+        number = texu_atol(edit->editbuf);
+        sprintf(edit->editbuf, "%d", number);
+    }
     if ((TEXU_ES_NUMBER & style) && (TEXU_TRUE == edit->onminmax))
     {
         number = texu_atol(edit->editbuf);
@@ -2284,7 +2305,7 @@ texu_status _TexuEditProc_ValidateNumberStyle(texu_wnd *wnd, texu_editwnd *edit,
     {
         return TEXU_ERROR;
     }
-    if (edit->onminmax)
+    if (0)/*(edit->onminmax)*//*validate min/max should be at OnKillFocus()*/
     {
         texu_i32 len = texu_strlen(edit->editbuf);
         texu_i32 val = 0;
@@ -2348,7 +2369,7 @@ texu_status _TexuEditProc_ValidateDecimalStyle(texu_wnd *wnd, texu_editwnd *edit
             rc = TEXU_OK;
         }
     }
-    if (TEXU_OK == rc && edit->onminmax)
+    if (0)/*TEXU_OK == rc && edit->onminmax)*//*validate min/max should be at OnKillFocus()*/
     {
         texu_i32 len = texu_strlen(edit->editbuf);
         texu_f64 val = 0;
@@ -2647,7 +2668,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 edit->editbuf[len + 1] = 0;
                 edit->selected = 0;
 
-                if ((TEXU_ES_NUMBER & style) && edit->onminmax)
+                if (0)/*((TEXU_ES_NUMBER & style) && edit->onminmax)*/
                 {
                     texu_i32 val = 0;
                     val = texu_atol(edit->editbuf);
@@ -2810,6 +2831,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         /* editing */
         edit->editing = 1;
     } /*end delete char*/
+#if 1
     else if (TEXU_KEY_UP == ch || TEXU_KEY_DOWN == ch)
     {
         switch (ch)
@@ -2822,6 +2844,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 texu_wnd *prevwnd = texu_wnd_get_prev_activechild(parent, wnd);
                 if (prevwnd)
                 {
+                    /*move previous means do nothing if there are any changes*/
                     texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, 0, texu_env_get_moveprev(env));
                     if (rc >= TEXU_OK)
                     {
@@ -2838,7 +2861,8 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 texu_wnd *nextwnd = texu_wnd_get_next_activechild(parent, wnd);
                 if (nextwnd)
                 {
-                    texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, 0, texu_env_get_movenext(env));
+                    /*move previous means do nothing if there are any changes*/
+                    texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, 0, texu_env_get_moveprev(env));
                     if (rc >= TEXU_OK)
                     {
                         texu_wnd_post_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
@@ -2848,6 +2872,7 @@ _TexuEditProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             break;
         }
     }
+#endif
 }
 
 texu_status
@@ -2932,7 +2957,7 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     {
         return;
     }
-    if (!texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -3889,7 +3914,7 @@ _TexuListBoxProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     {
         return;
     }
-    if (!(texu_wnd_is_visible(wnd)))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -4678,7 +4703,7 @@ _TexuComboBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     {
         return;
     }
-    if (!(texu_wnd_is_visible(wnd)))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -5249,7 +5274,7 @@ _TexuStatusBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     {
         return;
     }
-    if (!texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }

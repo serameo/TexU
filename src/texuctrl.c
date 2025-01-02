@@ -1290,7 +1290,7 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
     {
         return;
     }
-    if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -2185,6 +2185,10 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
         row = 0;
     }
+    else if (row > lctl->nitems - 1)
+    {
+        row = lctl->nitems - 1;
+    }
     
     /*find the first column*/
 /*    curcol = lctl->curselcol;*/
@@ -2532,6 +2536,52 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         _TexuListCtrlProc_OnSelChanged(wnd);
 
         texu_wnd_invalidate(wnd);
+    }
+    else
+    {
+
+        /*to check if move to the first or the last items*/
+        /*if (0 != triggered_move)*/
+        {
+            texu_env *env = texu_wnd_get_env(wnd);
+            switch (ch)
+            {
+            case TEXU_KEY_UP:
+                /*texu_wnd_invalidate(wnd);*/
+                /*move previous*/
+                {
+                    texu_wnd *parent = texu_wnd_get_parent(wnd);
+                    texu_wnd *prevwnd = texu_wnd_get_prev_activechild(parent, wnd);
+                    if (prevwnd)
+                    {
+                        /*move previous means do nothing if there are any changes*/
+                        texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, 0, texu_env_get_moveprev(env));
+                        if (rc >= TEXU_OK)
+                        {
+                            texu_wnd_post_msg(prevwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
+                        }
+                    }
+                }
+                break;
+            case TEXU_KEY_DOWN:
+                /*texu_wnd_invalidate(wnd);*/
+                /*move next*/
+                {
+                    texu_wnd *parent = texu_wnd_get_parent(wnd);
+                    texu_wnd *nextwnd = texu_wnd_get_next_activechild(parent, wnd);
+                    if (nextwnd)
+                    {
+                        /*move previous means do nothing if there are any changes*/
+                        texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, 0, texu_env_get_moveprev(env));
+                        if (rc >= TEXU_OK)
+                        {
+                            texu_wnd_post_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
+                        }
+                    }
+                }
+                break;
+            }
+        }
     }
 }
 
@@ -4933,7 +4983,7 @@ void _TexuTreeCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     {
         return;
     }
-    if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -5218,6 +5268,7 @@ struct texu_udwnd
     texu_i32 min;
     texu_i32 max;
     texu_i32 cur;
+    texu_char buffer[TEXU_MAX_WNDTEXT + 1];
     void *exparam;
 };
 typedef struct texu_udwnd texu_udwnd;
@@ -5240,6 +5291,7 @@ void _TexuUpDownCtrlProc_OnEraseBg(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 void _TexuUpDownCtrlProc_OnSetPage(texu_wnd *wnd, texu_i32);
 texu_i32 _TexuUpDownCtrlProc_OnGetPage(texu_wnd *wnd);
 void _TexuUpDownCtrlProc_OnPage(texu_wnd *wnd, texu_i32);
+texu_i32 _TexuUpDownCtrlProc_OnGetInt(texu_wnd *wnd);
 
 void
 _TexuUpDownCtrlProc_OnSetMinMax(texu_wnd *wnd, texu_i32 min, texu_i32 max)
@@ -5258,25 +5310,117 @@ _TexuUpDownCtrlProc_OnSetMinMax(texu_wnd *wnd, texu_i32 min, texu_i32 max)
 
 void _TexuUpDownCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
-/*
     texu_udwnd *udctl = 0;
-    udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);*/
+    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_i32 val = 0;
+    texu_bool updown = TEXU_FALSE;
+    texu_i32 step = 0;
+    texu_env *env = texu_wnd_get_env(wnd);
+
+    if (!texu_wnd_is_enable(wnd))
+    {
+        return;
+    }
+    udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
+
     switch (ch)
     {
-        case TEXU_KEY_UP:
         case TEXU_KEY_RIGHT:
-            _TexuUpDownCtrlProc_OnStep(wnd, 1);
+        /*case TEXU_KEY_UP:*/
+        {
+            if (udctl->cur < udctl->max)
+            {
+                step += udctl->step;
+                updown = TEXU_TRUE;
+            }
             break;
-        case TEXU_KEY_DOWN:
+        }
         case TEXU_KEY_LEFT:
-            _TexuUpDownCtrlProc_OnStep(wnd, -1);
+        /*case TEXU_KEY_DOWN:*/
+        {
+            if (udctl->cur > udctl->min)
+            {
+                step -= udctl->step;
+                updown = TEXU_TRUE;
+            }
             break;
+        }
         case TEXU_KEY_NPAGE:
-            _TexuUpDownCtrlProc_OnPage(wnd, 1);
+        {
+            if (udctl->cur > udctl->min)
+            {
+                step -= udctl->page;
+                updown = TEXU_TRUE;
+            }
             break;
+        }
         case TEXU_KEY_PPAGE:
-            _TexuUpDownCtrlProc_OnPage(wnd, -1);
+        {
+            if (udctl->cur < udctl->max)
+            {
+                step += udctl->page;
+                updown = TEXU_TRUE;
+            }
             break;
+        }
+        case TEXU_KEY_UP:
+        /*texu_wnd_invalidate(wnd);*/
+        /*move previous*/
+        {
+            texu_wnd *parent = texu_wnd_get_parent(wnd);
+            texu_wnd *prevwnd = texu_wnd_get_prev_activechild(parent, wnd);
+            if (prevwnd)
+            {
+                /*move previous means do nothing if there are any changes*/
+                texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, wnd, texu_env_get_moveprev(env));
+                if (rc >= TEXU_OK)
+                {
+                    texu_wnd_post_msg(prevwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
+                }
+            }
+            break;
+        }
+        case TEXU_KEY_DOWN:
+        /*texu_wnd_invalidate(wnd);*/
+        /*move next*/
+        {
+            texu_wnd *parent = texu_wnd_get_parent(wnd);
+            texu_wnd *nextwnd = texu_wnd_get_next_activechild(parent, wnd);
+            if (nextwnd)
+            {
+                /*move previous means do nothing if there are any changes*/
+                texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, wnd, texu_env_get_moveprev(env));
+                if (rc >= TEXU_OK)
+                {
+                    texu_wnd_post_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
+                }
+            }
+            break;
+        }
+    }
+
+    if (updown)
+    {
+        /*to ensure the edit buffer of edit control is available*/
+        texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, 0);
+        /*to refresh the current value*/
+        val = _TexuUpDownCtrlProc_OnGetInt(wnd);
+
+        val += step;
+        if (val < udctl->min)
+        {
+            val = udctl->min;
+        }
+        if (val > udctl->max)
+        {
+            val = udctl->max;
+        }
+
+        texu_sprintf(buf, sizeof(buf), TEXUTEXT("%d"), val);
+        texu_wnd_set_text(wnd, buf);
+
+        _TexuWndProc_Notify(wnd, TEXU_UDCN_STEP);
+        texu_wnd_send_msg(udctl->editwnd, TEXU_WM_SETFOCUS, 0, 0);
     }
 }
 
@@ -5313,11 +5457,11 @@ _TexuUpDownCtrlProc_OnStep(texu_wnd *wnd, texu_i32 updown)
 {
     if (updown > 0)
     {
-        _TexuUpDownCtrlProc_OnChar(wnd, TEXU_KEY_UP, 0);
+        _TexuUpDownCtrlProc_OnKeyDown(wnd, TEXU_KEY_UP, 0);
     }
     else
     {
-        _TexuUpDownCtrlProc_OnChar(wnd, TEXU_KEY_DOWN, 0);
+        _TexuUpDownCtrlProc_OnKeyDown(wnd, TEXU_KEY_DOWN, 0);
     }
 }
 
@@ -5369,11 +5513,7 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     }
 
     memset(&attrs2, 0, sizeof(attrs2));
-#if 1//defined _WIN32
     attrs2.y = 0;
-#else
-    attrs2.y = attrs->y;
-#endif
     if (TEXU_UDS_SHOWPLUSMINUS & attrs->style)
     {
         attrs2.x = 1;
@@ -5402,7 +5542,13 @@ _TexuUpDownCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.clsname = TEXU_EDIT_CLASS;
     attrs2.userdata = 0;
     attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_NUMBER | TEXU_ES_CENTER;
+    if (TEXU_UDS_SHOWSHOWCOMMAS & attrs->style)
+    {
+        attrs2.style |= TEXU_ES_AUTOCOMMAS;
+    }
     attrs2.exstyle = 0;
+    attrs2.on_validate = attrs->on_validate;
+    attrs2.validate_data = attrs->validate_data;
 
     rc = texu_wnd_create(editwnd, wnd, &attrs2);
 
@@ -5457,6 +5603,7 @@ _TexuUpDownCtrlProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     {
         return;
     }
+    texu_wnd_get_text(wnd, udctl->buffer, TEXU_MAX_WNDTEXT);
     texu_wnd_send_msg(udctl->editwnd, TEXU_WM_SETFOCUS, 0, 0);
     _TexuWndProc_Notify(wnd, TEXU_UDCN_SETFOCUS);
 }
@@ -5467,10 +5614,36 @@ _TexuUpDownCtrlProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state
     /*update value to window text */
     texu_udwnd *udctl = 0;
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 chPrevKey = texu_env_get_moveprev(env);
+    texu_i32 rc = TEXU_CONTINUE;
 
     udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
+    /*if (chPrevKey == state) //restore without doing anything
+    {
+        texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, state);
 
-    texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, state);
+        _TexuWndProc_Notify(wnd, TEXU_UDCN_KILLFOCUS);
+        texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
+        texu_wnd_invalidate(wnd);
+        return TEXU_CONTINUE;
+    }*/
+    if (prevwnd == wnd && (chPrevKey == state))
+    {
+        /*ok to move, but restore*/
+        texu_wnd_set_text(udctl->editwnd, udctl->buffer);
+        texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, state);
+        texu_wnd_set_text(wnd, udctl->buffer);
+        return TEXU_CONTINUE;
+    }
+    rc = texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, state);
+    if (rc < TEXU_OK)
+    {
+        _TexuWndProc_Notify(wnd, TEXU_UDCN_INVALIDATE);
+        texu_wnd_set_text(udctl->editwnd, udctl->buffer);
+        texu_wnd_set_text(wnd, udctl->buffer);
+        return rc;
+    }
 
     texu_wnd_get_text(udctl->editwnd, buf, TEXU_MAX_WNDTEXT);
     texu_wnd_set_text(wnd, buf);
@@ -5508,85 +5681,15 @@ void
 _TexuUpDownCtrlProc_OnChar(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
     texu_udwnd *udctl = 0;
-    texu_char buf[TEXU_MAX_WNDTEXT + 1];
-    texu_i32 val = 0;
-    texu_bool updown = TEXU_FALSE;
-    texu_i32 added = 0;
 
     if (!texu_wnd_is_enable(wnd))
     {
         return;
     }
     udctl = (texu_udwnd *)texu_wnd_get_userdata(wnd);
-
-    switch (ch)
+    if (ch != TEXU_KEY_ENTER)
     {
-        case TEXU_KEY_RIGHT:
-        case TEXU_KEY_UP:
-        {
-            if (udctl->cur < udctl->max)
-            {
-                added += udctl->step;
-                updown = TEXU_TRUE;
-            }
-            break;
-        }
-        case TEXU_KEY_LEFT:
-        case TEXU_KEY_DOWN:
-        {
-            if (udctl->cur > udctl->min)
-            {
-                added -= udctl->step;
-                updown = TEXU_TRUE;
-            }
-            break;
-        }
-        case TEXU_KEY_NPAGE:
-        {
-            if (udctl->cur > udctl->min)
-            {
-                added -= udctl->page;
-                updown = TEXU_TRUE;
-            }
-            break;
-        }
-        case TEXU_KEY_PPAGE:
-        {
-            if (udctl->cur < udctl->max)
-            {
-                added += udctl->page;
-                updown = TEXU_TRUE;
-            }
-            break;
-        }
-    }
-
-    if (updown)
-    {
-        /*to ensure the edit buffer of edit control is available*/
-        texu_wnd_send_msg(udctl->editwnd, TEXU_WM_KILLFOCUS, 0, 0);
-        /*to refresh the current value*/
-        val = _TexuUpDownCtrlProc_OnGetInt(wnd);
-
-        val += added;
-        if (val < udctl->min)
-        {
-            val = udctl->min;
-        }
-        if (val > udctl->max)
-        {
-            val = udctl->max;
-        }
-
-        texu_sprintf(buf, sizeof(buf), TEXUTEXT("%d"), val);
-        texu_wnd_set_text(wnd, buf);
-
-        _TexuWndProc_Notify(wnd, TEXU_UDCN_STEP);
-        texu_wnd_send_msg(udctl->editwnd, TEXU_WM_SETFOCUS, 0, 0);
-    }
-    else
-    {
-        texu_wnd_send_msg(udctl->editwnd, TEXU_WM_CHAR, (texu_lparam)ch, 0);
+        texu_wnd_send_msg(udctl->editwnd, TEXU_WM_CHAR, (texu_lparam)ch, alt);
     }
 }
 
@@ -5608,13 +5711,15 @@ _TexuUpDownCtrlProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 
     texu_sprintf(buf, sizeof(buf), TEXUTEXT("%d"), val);
     texu_wnd_set_text(udctl->editwnd, buf);
+
+    /*texu_strcpy(udctl->buffer, buf);*/
     TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)buf, 0);
 }
 
-void _TexuUpDownCtrlProc_OnEraseBg(texu_wnd* wnd, texu_cio* dc, texu_rect* rect)
+/*void _TexuUpDownCtrlProc_OnEraseBg(texu_wnd* wnd, texu_cio* dc, texu_rect* rect)
 {
     TexuDefWndProc(wnd, TEXU_WM_ERASEBG, (texu_lparam)dc, (texu_lparam)rect);
-}
+}*/
 
 void
 _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
@@ -5625,15 +5730,19 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
+    texu_i32 minuscolor = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_MINUS);
+    texu_i32 pluscolor = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_PLUS);
 #if (defined __VMS__ || (defined WIN32) || defined __USE_TERMIOS__)// && defined _WINDOWS))
     texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
+    texu_i32 minusbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_MINUS);
+    texu_i32 plusbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_PLUS);
 #endif
 
     if (!texu_wnd_can_paint(wnd))
     {
         return;
     }
-    if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
@@ -5641,9 +5750,9 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     {
 #ifdef TEXU_CIO_COLOR_MONO
         texu_cio_putch_attr(dc, y, x, TEXU_ACS_MINUS,
-                            texu_cio_get_color(dc, color));
+                            texu_cio_get_color(dc, minuscolor));
         texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLUS,
-                            texu_cio_get_color(dc, color));
+                            texu_cio_get_color(dc, pluscolor));
 #else
 #if ((defined WIN32 && defined _WINDOWS))
 
@@ -5655,18 +5764,18 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
 #else
-#if defined __VMS__ || (defined WIN32 && defined _CONSOLE)
-        texu_cio_draw_char(dc, y, x, TEXU_ACS_MINUS, color, bgcolor,
+#if defined __VMS__ || (defined WIN32 && defined _CONSOLE) || (defined __USE_TERMIOS__)
+        texu_cio_draw_char(dc, y, x, TEXU_ACS_MINUS, minuscolor, minusbg,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
-        texu_cio_draw_char(dc, y, x + width - 1, TEXU_ACS_PLUS, color, bgcolor,
+        texu_cio_draw_char(dc, y, x + width - 1, TEXU_ACS_PLUS, pluscolor, plusbg,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
 #else
         texu_cio_putch_attr(dc, y, x, TEXU_ACS_MINUS,
-                            texu_cio_get_color(dc, color));
+                            texu_cio_get_color(dc, minuscolor));
         texu_cio_putch_attr(dc, y, x + width - 1, TEXU_ACS_PLUS,
-                            texu_cio_get_color(dc, color));
+                            texu_cio_get_color(dc, pluscolor));
 #endif
 #endif
 #endif
@@ -5689,9 +5798,9 @@ _TexuUpDownCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lpara
         case TEXU_WM_CREATE:
             return _TexuUpDownCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 
-        case TEXU_WM_ERASEBG:
+        /*case TEXU_WM_ERASEBG:
             _TexuUpDownCtrlProc_OnEraseBg(wnd, (texu_cio *)param1, (texu_rect*)param2);
-            return 0;
+            return 0;*/
 
         case TEXU_WM_PAINT:
             _TexuUpDownCtrlProc_OnPaint(wnd, (texu_cio *)param1, (texu_rect*)param2);
@@ -5988,7 +6097,7 @@ _TexuProgressBarProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     texu_i32 pgwidth = 0;
     texu_i32 cx = texu_env_screen_width(env);
 
-    if (TEXU_FALSE == texu_wnd_is_visible(wnd))
+    if (TEXU_FALSE == texu_wnd_is_visible(wnd) || TEXU_FALSE == texu_wnd_is_parent_visible(wnd))
     {
         return;
     }
