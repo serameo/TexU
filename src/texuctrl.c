@@ -801,8 +801,7 @@ _TexuListCtrlProc_OnAddItems(texu_wnd *wnd, texu_char *text, texu_i32 nitems)
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_lcwnd_cell *newcell = 0;
     texu_env *env = texu_wnd_get_env(wnd);
-#if (defined __VMS__ || (defined WIN32) || defined __USE_TERMIOS__)// && defined _WINDOWS))
-
+#if (defined WIN32)// && defined _WINDOWS))
     texu_char *pszContext;
 #endif
 #if 0
@@ -889,7 +888,7 @@ _TexuListCtrlProc_OnAddItemAtFirst(texu_wnd *wnd, texu_char *text, texu_i32 nite
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
     texu_lcwnd_cell *newcell = 0;
     texu_env *env = texu_wnd_get_env(wnd);
-#if (defined __VMS__ || (defined WIN32) || defined __USE_TERMIOS__)// && defined _WINDOWS))
+#if (defined WIN32)// && defined _WINDOWS))
 
     texu_char *pszContext;
 #endif
@@ -1275,8 +1274,8 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
     texu_bool fDrewLastCol = TEXU_FALSE;
     texu_i32 itemwidth = 0;
     texu_i32 x, y;
-    texu_wnd *parent = texu_wnd_get_parent(wnd);
-    texu_wnd *activewnd = texu_wnd_get_activechild(parent);
+    /*texu_wnd *parent = texu_wnd_get_parent(wnd);*/
+    /*texu_wnd *activewnd = texu_wnd_get_activechild(parent);*/
     texu_bool focusing = (LISTCTRL_STATE_FOCUSED == flags);/*(wnd == activewnd);*/
 
 #if (defined __VMS__ || (defined WIN32) || defined __USE_TERMIOS__)// && defined _WINDOWS))
@@ -3122,7 +3121,7 @@ void _TexuListCtrlProc_OnInvalidateItem(texu_wnd *wnd, texu_i32 row, texu_i32 co
 #if (defined __VMS__ || (defined WIN32) || defined __USE_TERMIOS__)// && defined _WINDOWS))
 
     texu_i32 bgcolor = 0;
-    texu_env *env = texu_wnd_get_env(wnd);
+    /*texu_env *env = texu_wnd_get_env(wnd);*/
 #endif
 
     lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
@@ -5372,7 +5371,7 @@ void _TexuUpDownCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             if (prevwnd)
             {
                 /*move previous means do nothing if there are any changes*/
-                texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, wnd, texu_env_get_moveprev(env));
+                texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, (texu_lparam)wnd, (texu_lparam)texu_env_get_moveprev(env));
                 if (rc >= TEXU_OK)
                 {
                     texu_wnd_post_msg(prevwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
@@ -5389,7 +5388,7 @@ void _TexuUpDownCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             if (nextwnd)
             {
                 /*move previous means do nothing if there are any changes*/
-                texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, wnd, texu_env_get_moveprev(env));
+                texu_i32 rc = texu_wnd_send_msg(wnd, TEXU_WM_KILLFOCUS, (texu_lparam)wnd, (texu_lparam)texu_env_get_moveprev(env));
                 if (rc >= TEXU_OK)
                 {
                     texu_wnd_post_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
@@ -5729,13 +5728,15 @@ _TexuUpDownCtrlProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_i32 width = texu_wnd_get_width(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
-    texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
     texu_i32 minuscolor = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_MINUS);
     texu_i32 pluscolor = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL_PLUS);
 #if (defined __VMS__ || (defined WIN32) || defined __USE_TERMIOS__)// && defined _WINDOWS))
-    texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
     texu_i32 minusbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_MINUS);
     texu_i32 plusbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL_PLUS);
+#endif
+#if (defined WIN32)// && defined _WINDOWS))
+    texu_i32 color = texu_env_get_syscolor(env, TEXU_COLOR_UPDOWNCTRL);
+    texu_i32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_UPDOWNCTRL);
 #endif
 
     if (!texu_wnd_can_paint(wnd))

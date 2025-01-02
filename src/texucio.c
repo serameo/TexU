@@ -39,72 +39,72 @@ extern "C"
 */
 enum
 {
-  BLACK_BLACK = TEXU_CIO_COLOR_BLACK_BLACK,      /*0*/
-  BLACK_RED,
-  BLACK_GREEN,
-  BLACK_YELLOW,
-  BLACK_BLUE,
-  BLACK_MAGENTA,
-  BLACK_CYAN,
-  BLACK_WHITE,
-  RED_BLACK,        /*8*/
-  RED_RED,
-  RED_GREEN,
-  RED_YELLOW,
-  RED_BLUE,
-  RED_MAGENTA,
-  RED_CYAN,
-  RED_WHITE,
-  GREEN_BLACK,      /*16*/
-  GREEN_RED,
-  GREEN_GREEN,
-  GREEN_YELLOW,
-  GREEN_BLUE,
-  GREEN_MAGENTA,
-  GREEN_CYAN,
-  GREEN_WHITE,
-  YELLOW_BLACK,     /*24*/
-  YELLOW_RED,
-  YELLOW_GREEN,
-  YELLOW_YELLOW,
-  YELLOW_BLUE,
-  YELLOW_MAGENTA,
-  YELLOW_CYAN,
-  YELLOW_WHITE,
-  BLUE_BLACK,       /*32*/
-  BLUE_RED,
-  BLUE_GREEN,
-  BLUE_YELLOW,
-  BLUE_BLUE,
-  BLUE_MAGENTA,
-  BLUE_CYAN,
-  BLUE_WHITE,
-  MAGENTA_BLACK,    /*40*/
-  MAGENTA_RED,
-  MAGENTA_GREEN,
-  MAGENTA_YELLOW,
-  MAGENTA_BLUE,
-  MAGENTA_MAGENTA,
-  MAGENTA_CYAN,
-  MAGENTA_WHITE,
-  CYAN_BLACK,       /*56*/
-  CYAN_RED,
-  CYAN_GREEN,
-  CYAN_YELLOW,
-  CYAN_BLUE,
-  CYAN_MAGENTA,
-  CYAN_CYAN,
-  CYAN_WHITE,
-  WHITE_BLACK,
-  WHITE_RED,
-  WHITE_GREEN,
-  WHITE_YELLOW,
-  WHITE_BLUE,
-  WHITE_MAGENTA,
-  WHITE_CYAN,
-  WHITE_WHITE,
-  /* no color */
-  COLOR_MAX
+    BLACK_BLACK = TEXU_CIO_COLOR_BLACK_BLACK,      /*0*/
+    BLACK_RED,
+    BLACK_GREEN,
+    BLACK_YELLOW,
+    BLACK_BLUE,
+    BLACK_MAGENTA,
+    BLACK_CYAN,
+    BLACK_WHITE,
+    RED_BLACK,        /*8*/
+    RED_RED,
+    RED_GREEN,
+    RED_YELLOW,
+    RED_BLUE,
+    RED_MAGENTA,
+    RED_CYAN,
+    RED_WHITE,
+    GREEN_BLACK,      /*16*/
+    GREEN_RED,
+    GREEN_GREEN,
+    GREEN_YELLOW,
+    GREEN_BLUE,
+    GREEN_MAGENTA,
+    GREEN_CYAN,
+    GREEN_WHITE,
+    YELLOW_BLACK,     /*24*/
+    YELLOW_RED,
+    YELLOW_GREEN,
+    YELLOW_YELLOW,
+    YELLOW_BLUE,
+    YELLOW_MAGENTA,
+    YELLOW_CYAN,
+    YELLOW_WHITE,
+    BLUE_BLACK,       /*32*/
+    BLUE_RED,
+    BLUE_GREEN,
+    BLUE_YELLOW,
+    BLUE_BLUE,
+    BLUE_MAGENTA,
+    BLUE_CYAN,
+    BLUE_WHITE,
+    MAGENTA_BLACK,    /*40*/
+    MAGENTA_RED,
+    MAGENTA_GREEN,
+    MAGENTA_YELLOW,
+    MAGENTA_BLUE,
+    MAGENTA_MAGENTA,
+    MAGENTA_CYAN,
+    MAGENTA_WHITE,
+    CYAN_BLACK,       /*56*/
+    CYAN_RED,
+    CYAN_GREEN,
+    CYAN_YELLOW,
+    CYAN_BLUE,
+    CYAN_MAGENTA,
+    CYAN_CYAN,
+    CYAN_WHITE,
+    WHITE_BLACK,
+    WHITE_RED,
+    WHITE_GREEN,
+    WHITE_YELLOW,
+    WHITE_BLUE,
+    WHITE_MAGENTA,
+    WHITE_CYAN,
+    WHITE_WHITE,
+    /* no color */
+    COLOR_MAX
 };
 
 struct _cio_color_s
@@ -219,12 +219,13 @@ long texu__cio_get_off_display(texu_cio* cio);
 
 struct texu_cio
 {
+    texu_env    *env;
 #ifdef __USE_TTY__
     FILE    *wndscr;
 #elif (defined WIN32 && defined _WINDOWS)
-    texu_env    *env;
+    /*texu_env    *env;*/
 #elif (defined WIN32 && defined _CONSOLE)
-    texu_env* env;
+    /*texu_env* env;*/
     HANDLE win;
     HANDLE wout;
 #elif (defined VMS || defined __VMS__)
@@ -238,6 +239,9 @@ struct texu_cio
     iosb_t iosb;
 #elif defined __USE_TERMIOS__
     struct tb_event ev;
+    /*texu_env* env;*/
+    fn_sigint_callback sigint_handler;
+    void *sig_userdata;
 #else
     WINDOW  *wndscr;
 #endif
@@ -1359,15 +1363,47 @@ texu_cio_init(texu_cio* cio, texu_i32 lines, texu_i32 cols)
     return 0;
 }
 #elif defined __USE_TERMIOS__
-texu_i32
-texu_cio_init(texu_cio *cio, texu_i32 lines, texu_i32 cols)
+void texu_cio_sigint(texu_cio *cio)
 {
+    if (cio->sigint_handler)
+    {
+        cio->sigint_handler(cio->sig_userdata);
+    }
+}
+void texu_cio_set_cbreak(texu_cio *cio, int cbreak, fn_sigint_callback sigint_handler, void *userdata)
+{
+    if (cbreak)
+    {
+        cio->sigint_handler = sigint_handler;
+        cio->sig_userdata = userdata;
+    }
+    else
+    {
+        cio->sigint_handler = 0;
+        cio->sig_userdata = 0;
+    }
+}
+
+void cio__sigint_handler(void *userdata)
+{
+    texu_cio *cio = (texu_cio*)userdata;
+    texu_env *env = cio->env;
+    texu_env_del(env);
+}
+texu_i32
+texu_cio_init(texu_cio *cio, texu_env* env, texu_i32 lines, texu_i32 cols)
+{
+    texu_i32 rc = 0;
+    cio->env = env;
 #ifdef TEXU_CIO_COLOR_MONO
     _texu_cio_init_colors_mono(cio);
 #else
     _texu_cio_init_colors(cio);
 #endif
-    return texu_termios_init(lines, cols);
+    rc = texu_termios_init(lines, cols);
+    texu_termios_cbreak(cio, 1);/*, cio__sigint_handler, cio->env);*/
+    texu_cio_set_cbreak(cio, 1, cio__sigint_handler, cio);
+    return rc;
 }
 #else
 texu_i32
@@ -1523,7 +1559,7 @@ texu_cio_getch(texu_cio *cio)
 texu_i32
 texu_cio_getch(texu_cio *cio)
 {
-    return texu_termios_getch(&cio->ev, 500);
+    return texu_termios_getch(cio, &cio->ev, 500);
 }
 #elif (defined WIN32 && defined _WINDOWS)
 texu_i32
@@ -1660,12 +1696,14 @@ texu_cio_getstr(texu_cio *cio, texu_char *str)
 texu_i32
 texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
 {
+    texu_env_save_curpos(cio->env, y, x);
     return texu_tty_gotoyx(y, x);
 }
 #elif (defined __USE_TERMIOS__)
 texu_i32
 texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
 {
+    texu_env_save_curpos(cio->env, y, x);
     texu_termios_gotoyx(y, x);
     return 0;
 }
@@ -1675,6 +1713,7 @@ texu_status     texu_env_gotoyx(texu_env *env, texu_i32 y, texu_i32 x);
 texu_i32
 texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
 {
+    texu_env_save_curpos(cio->env, y, x);
     return texu_env_gotoyx(cio->env, y, x);
 }
 #elif (defined WIN32 && defined _CONSOLE)
@@ -1685,6 +1724,7 @@ texu_cio_gotoyx(texu_cio* cio, texu_i32 y, texu_i32 x)
     coord.X = (SHORT)x;
     coord.Y = (SHORT)y;
 
+    texu_env_save_curpos(cio->env, y, x);
     SetConsoleCursorPosition(cio->wout, coord);
     return 0;
 }
@@ -1697,6 +1737,7 @@ texu_cio_gotoyxXX(texu_cio *cio, texu_i32 y, texu_i32 x)
     long y_coord = y + 1;
 /*    long status = smg$set_cursor_abs(&cio->smg_display_id, &y_coord, &x_coord);*/
     long status = smg$set_cursor_abs(&smg_display_id, &y_coord, &x_coord);
+    texu_env_save_curpos(cio->env, y, x);
     return status;
 }
 texu_i32
@@ -1704,12 +1745,14 @@ texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
 {
     long x_coord = x + 1;
     long y_coord = y + 1;
+    texu_env_save_curpos(cio->env, y, x);
     return texu_tty_gotoyx(y_coord, x_coord);
 }
 #else
 texu_i32
 texu_cio_gotoyx(texu_cio *cio, texu_i32 y, texu_i32 x)
 {
+    texu_env_save_curpos(cio->env, y, x);
     return wmove(cio->wndscr, y, x);
 }
 #endif /*__USE_TTY__*/
@@ -1725,6 +1768,7 @@ texu_cio_getyx(texu_cio *cio, texu_i32* y, texu_i32* x)
 texu_i32
 texu_cio_getyx(texu_cio *cio, texu_i32* y, texu_i32* x)
 {
+    texu_termios_getyx((int*)y, (int*)x);
     return 0;
 }
 #elif (defined WIN32 && defined _WINDOWS)

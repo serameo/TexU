@@ -1088,7 +1088,7 @@ _TexuPanelProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     texu_wnd* activechild = texu_wnd_get_activechild(wnd);
     /*texu_wnd_invalidate(activechild);*/
     /*simulate key down to the first active child*/
-    texu_wnd_send_msg(activechild, TEXU_WM_KEYDOWN, (texu_lparam)TEXU_KEY_LEFT, 0);
+    texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, 0, 0);
 }
 
 texu_status
@@ -2194,7 +2194,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd, texu_i32 state)
     if (TEXU_ES_NUMBER & style)
     {
         number = texu_atol(edit->editbuf);
-        sprintf(edit->editbuf, "%d", number);
+        sprintf(edit->editbuf, "%d", (int)number);
     }
     if ((TEXU_ES_NUMBER & style) && (TEXU_TRUE == edit->onminmax))
     {
@@ -2410,7 +2410,7 @@ _TexuEditProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 texu_wnd *prevwnd = texu_wnd_get_prev_activechild(parent, wnd);
                 if (prevwnd)
                 {
-                    texu_wnd_post_msg(prevwnd, TEXU_WM_SETFOCUS, wnd, 0);
+                    texu_wnd_post_msg(prevwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
                 }
             }
             break;
@@ -2422,7 +2422,7 @@ _TexuEditProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 texu_wnd *nextwnd = texu_wnd_get_next_activechild(parent, wnd);
                 if (nextwnd)
                 {
-                    texu_wnd_post_msg(nextwnd, TEXU_WM_SETFOCUS, wnd, 0);
+                    texu_wnd_post_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)wnd, 0);
                 }
             }
             break;
