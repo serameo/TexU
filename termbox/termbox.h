@@ -1,7 +1,8 @@
-#pragma once
-
+#ifndef __TERMBOX_H__
+#define __TERMBOX_H__
+#ifdef __LINUX__
 #include <stdint.h>
-
+#endif
 /* for shared objects */
 #if __GNUC__ >= 4
  #define SO_IMPORT __attribute__((visibility("default")))
@@ -135,9 +136,9 @@ extern "C" {
  *  - 'bg' background color and attributes
  */
 struct tb_cell {
-	uint32_t ch;
-	uint16_t fg;
-	uint16_t bg;
+	unsigned int ch;
+	unsigned short fg;
+	unsigned short bg;
 };
 
 #define TB_EVENT_KEY    1
@@ -152,14 +153,14 @@ struct tb_cell {
  * one of them can be non-zero at a time.
  */
 struct tb_event {
-	uint8_t type;
-	uint8_t mod; /* modifiers to either 'key' or 'ch' below */
-	uint16_t key; /* one of the TB_KEY_* constants */
-	uint32_t ch; /* unicode character */
-	int32_t w;
-	int32_t h;
-	int32_t x;
-	int32_t y;
+	unsigned char type;
+	unsigned char mod; /* modifiers to either 'key' or 'ch' below */
+	unsigned short key; /* one of the TB_KEY_* constants */
+	unsigned int ch; /* unicode character */
+	int w;
+	int h;
+	int x;
+	int y;
 };
 
 /* Error codes returned by tb_init(). All of them are self-explanatory, except
@@ -192,12 +193,13 @@ SO_IMPORT int tb_height(void);
 /*MEO: 04-DEC-2024*/
 SO_IMPORT void tb_get_term_size(int *w, int *h);
 SO_IMPORT void tb_set_term_size(int w, int h);
+SO_IMPORT int  tb_get_term_fd();
 
 /* Clears the internal back buffer using TB_DEFAULT color or the
  * color/attributes set by tb_set_clear_attributes() function.
  */
 SO_IMPORT void tb_clear(void);
-SO_IMPORT void tb_set_clear_attributes(uint16_t fg, uint16_t bg);
+SO_IMPORT void tb_set_clear_attributes(unsigned short fg, unsigned short bg);
 
 /* Synchronizes the internal back buffer with the terminal. */
 SO_IMPORT void tb_present(void);
@@ -209,12 +211,14 @@ SO_IMPORT void tb_present(void);
  * is hidden by default.
  */
 SO_IMPORT void tb_set_cursor(int cx, int cy);
+/*MEO: 02-JAN-2025*/
+SO_IMPORT void tb_get_cursor(int *cx, int *cy);
 
 /* Changes cell's parameters in the internal back buffer at the specified
  * position.
  */
 SO_IMPORT void tb_put_cell(int x, int y, const struct tb_cell *cell);
-SO_IMPORT void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg);
+SO_IMPORT void tb_change_cell(int x, int y, unsigned int ch, unsigned short fg, unsigned short bg);
 /*MEO: 04-DEC-2024*/
 SO_IMPORT void tb_get_cell(int x, int y, struct tb_cell *cell);
 
@@ -317,9 +321,10 @@ SO_IMPORT int tb_poll_event(struct tb_event *event);
 /* Utility utf8 functions. */
 #define TB_EOF -1
 SO_IMPORT int tb_utf8_char_length(char c);
-SO_IMPORT int tb_utf8_char_to_unicode(uint32_t *out, const char *c);
-SO_IMPORT int tb_utf8_unicode_to_char(char *out, uint32_t c);
+SO_IMPORT int tb_utf8_char_to_unicode(unsigned int *out, const char *c);
+SO_IMPORT int tb_utf8_unicode_to_char(char *out, unsigned int c);
 
 #ifdef __cplusplus
 }
 #endif
+#endif /*__TERMBOX_H__*/

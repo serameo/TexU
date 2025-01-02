@@ -1,4 +1,3 @@
-#define _XOPEN_SOURCE
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,11 +52,11 @@ static int lasty = LAST_COORD_INIT;
 static int cursor_x = -1;
 static int cursor_y = -1;
 
-static uint16_t background = TB_DEFAULT;
-static uint16_t foreground = TB_DEFAULT;
+static unsigned short background = TB_DEFAULT;
+static unsigned short foreground = TB_DEFAULT;
 
 static void write_cursor(int x, int y);
-static void write_sgr(uint16_t fg, uint16_t bg);
+static void write_sgr(unsigned short fg, unsigned short bg);
 
 static void cellbuf_init(struct cellbuf *buf, int width, int height);
 static void cellbuf_resize(struct cellbuf *buf, int width, int height);
@@ -66,8 +65,8 @@ static void cellbuf_free(struct cellbuf *buf);
 
 static void update_size(void);
 static void update_term_size(void);
-static void send_attr(uint16_t fg, uint16_t bg);
-static void send_char(int x, int y, uint32_t c);
+static void send_attr(unsigned short fg, unsigned short bg);
+static void send_char(int x, int y, unsigned int c);
 static void send_clear(void);
 static void sigwinch_handler(int xxx);
 static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
@@ -75,6 +74,10 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
 /* may happen in a different thread */
 static volatile int buffer_size_change_request;
 
+#if defined __UNIX__ && !(defined __LINUX)
+#define TERMBOX_UNIX_MAX_WIDTH      132
+#define TERMBOX_UNIX_MAX_HEIGHT     25
+#endif
 /* -------------------------------------------------------- */
 
 int tb_init_fd(int inout_)
@@ -124,8 +127,13 @@ int tb_init_fd(int inout_)
 	send_clear();
 
 	update_term_size();
+#if defined __UNIX__ && !(defined __LINUX)
+	cellbuf_init(&back_buffer, TERMBOX_UNIX_MAX_WIDTH, TERMBOX_UNIX_MAX_HEIGHT);
+	cellbuf_init(&front_buffer, TERMBOX_UNIX_MAX_WIDTH, TERMBOX_UNIX_MAX_HEIGHT);
+#else
 	cellbuf_init(&back_buffer, termw, termh);
 	cellbuf_init(&front_buffer, termw, termh);
+#endif
 	cellbuf_clear(&back_buffer);
 	cellbuf_clear(&front_buffer);
 
@@ -230,6 +238,12 @@ void tb_set_cursor(int cx, int cy)
 	if (!IS_CURSOR_HIDDEN(cursor_x, cursor_y))
 		write_cursor(cursor_x, cursor_y);
 }
+/*MEO: 02-JAN-2025*/
+void tb_get_cursor(int *cx, int *cy)
+{
+	*cx = cursor_x;
+	*cy = cursor_y;
+}
 
 void tb_put_cell(int x, int y, const struct tb_cell *cell)
 {
@@ -240,7 +254,7 @@ void tb_put_cell(int x, int y, const struct tb_cell *cell)
 	CELL(&back_buffer, x, y) = *cell;
 }
 
-void tb_change_cell(int x, int y, uint32_t ch, uint16_t fg, uint16_t bg)
+void tb_change_cell(int x, int y, unsigned int ch, unsigned short fg, unsigned short bg)
 {
 	struct tb_cell c = {ch, fg, bg};
 	tb_put_cell(x, y, &c);
@@ -356,7 +370,7 @@ int tb_select_output_mode(int mode)
 	return outputmode;
 }
 
-void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
+void tb_set_clear_attributes(unsigned short fg, unsigned short bg)
 {
 	foreground = fg;
 	background = bg;
@@ -364,7 +378,7 @@ void tb_set_clear_attributes(uint16_t fg, uint16_t bg)
 
 /* -------------------------------------------------------- */
 
-static int convertnum(uint32_t num, char* buf) {
+static int convertnum(unsigned int num, char* buf) {
 	int i, l = 0;
 	int ch;
 	do {
@@ -391,7 +405,7 @@ static void write_cursor(int x, int y) {
 	WRITE_LITERAL("H");
 }
 
-static void write_sgr(uint16_t fg, uint16_t bg) {
+static void write_sgr(unsigned short fg, unsigned short bg) {
 	char buf[32];
 
 	if (fg == TB_DEFAULT && bg == TB_DEFAULT)
@@ -486,6 +500,7 @@ static void cellbuf_free(struct cellbuf *buf)
 
 static void get_term_size(int *w, int *h)
 {
+#ifdef __LINUX__
 	struct winsize sz;
 	memset(&sz, 0, sizeof(sz));
 
@@ -493,10 +508,12 @@ static void get_term_size(int *w, int *h)
 
 	if (w) *w = sz.ws_col;
 	if (h) *h = sz.ws_row;
+#endif
 }
 
 static void update_term_size(void)
 {
+#ifdef __LINUX__
 	struct winsize sz;
 	memset(&sz, 0, sizeof(sz));
 
@@ -504,33 +521,48 @@ static void update_term_size(void)
 
 	termw = sz.ws_col;
 	termh = sz.ws_row;
+#else
+	termw = TERMBOX_UNIX_MAX_WIDTH;
+	termh = TERMBOX_UNIX_MAX_HEIGHT;
+#endif
 }
 /*MEO: 04-DEC-2024*/
 void tb_get_term_size(int *w, int *h)
 {
     get_term_size(w, h);
 }
+
 void tb_set_term_size(int w, int h)
 {
+#ifdef __LINUX__
 	struct winsize sz;
 	memset(&sz, 0, sizeof(sz));
 	sz.ws_col = w;
 	sz.ws_row = h;
 
 	ioctl(inout, TIOCSWINSZ, &sz);
+#elif defined __UNIX__
+	termw = w;
+	termh = h;
+#endif
 
 	update_size();
 }
 
-static void send_attr(uint16_t fg, uint16_t bg)
+int  tb_get_term_fd()
+{
+	return inout;
+}
+
+static void send_attr(unsigned short fg, unsigned short bg)
 {
 #define LAST_ATTR_INIT 0xFFFF
-	static uint16_t lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
+	static unsigned short lastfg = LAST_ATTR_INIT, lastbg = LAST_ATTR_INIT;
 	if (fg != lastfg || bg != lastbg) {
 		bytebuffer_puts(&output_buffer, funcs[T_SGR0]);
 
-		uint16_t fgcol;
-		uint16_t bgcol;
+		unsigned short fgcol;
+		unsigned short bgcol;
 
 		switch (outputmode) {
 		case TB_OUTPUT_256:
@@ -574,7 +606,7 @@ static void send_attr(uint16_t fg, uint16_t bg)
 	}
 }
 
-static void send_char(int x, int y, uint32_t c)
+static void send_char(int x, int y, unsigned int c)
 {
 	char buf[7];
 	int bw = tb_utf8_unicode_to_char(buf, c);
