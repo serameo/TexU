@@ -1,0 +1,47 @@
+SRC_DIR=$(BOS_SRC)
+
+SRCS=$(SRC_DIR)/test_keyboard.c
+
+OBJS=$(notdir $(SRCS:.c=.o))
+TARGET=test_keyboard
+
+LIBTEXU_DIR=$(BOS_LIB)/libtexu
+LIBTEXU_INC=$(LIBTEXU_DIR)/include
+TERMBOX_INC=$(LIBTEXU_DIR)/termbox
+LIBTEXU_LDFLAGS=-ltexu32
+
+DFLAGS= -I$(BOS_INC_UNIX) -I$(BOS_INC_UNIX_INC) -I$(BOS_INC) -I$(BOS_LINUX_BUILD_INC_DIR) \
+        -I$(BOS_INC_LINUX)  \
+        -I$(LIBTEXU_INC) -I$(TERMBOX_INC)
+
+CFLAGS=-m32 -g
+OPTIONS = 
+LDFLAGS = -L$(BOS_LINUX_LIB_BIN)  -Wl,-rpath,../lib:$(BOS_LINUX_LIB_BIN):$(BOS_LIB_BIN) -L/usr/lib -lm -lrlib -lmlib -lunixlib -lcl -lz -lrt $(LIBTEXU_LDFLAGS) -lsqlite3
+
+CC=gcc
+BIN=Linux_3.10.0-1062.el7.x86_64
+INSTALL_DIR=../lib
+SOURCE_DIR=.
+DEPENDFLAGS=-D__UNIX__ -D__LINUX__ -D__USE_TERMIOS__ -D__DST_SERVER__ -D__EXTREME_TERM__ -DSIZE_132X25
+
+
+DEFINES  = $(CFLAGS) $(OPTIONS) $(DFLAGS) $(LDFLAGS) $(DEPENDFLAGS)
+
+
+all: $(TARGET)
+
+
+%.o: $(SRC_DIR)/%.c
+	$(CC) $(INCLUDES) $(DEFINES) -c $< -o $@
+
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ $(DEFINES)
+	cp $(TARGET) $(BOS_EXE)
+
+clean:
+	rm -f *.o  $(TARGET) core a.out $(OBJS)
+
+depend:
+	makedepend -- $(DEPENDFLAGS) $(CFLAGS) -- $(SRCS) 
+# DO NOT DELETE
+
