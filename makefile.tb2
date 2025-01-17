@@ -1,0 +1,107 @@
+
+# File Name: makefile
+# Author: Seree Rakwong
+# Date: 06-MAY-2020
+#
+
+TESTUI  = test_texu
+TESTLIB = test_texulib
+LIBTEXU32 = libtexu32_tb2.a
+LIBTEXU64 = libtexu64_tb2.a
+LIBTEXU = $(LIBTEXU32)
+CC     = gcc
+CFLAGS = -Wall -m32 -g
+LFLAGS32 = -lm -lcurses -lpthread -lsqlite3 -ltexu32
+LFLAGS64 = -lm -lcurses -lpthread -lsqlite3 -ltexu64
+LFLAGS = $(LFLAGS32)
+
+.PHONY: default all clean
+
+default: $(LIBTEXU)
+testui: $(TESTUI)
+testlib: $(TESTLIB)
+libtexu: $(LIBTEXU)
+all: default
+
+CJSON_SRC_DIR= $(BOS_LIB)
+CJSON_INC_DIR= $(BOS_INC)
+CJSON_SOURCES= $(CJSON_SRC_DIR)/cjson.c
+CJSON_OBJECTS= $(notdir $(CJSON_SOURCES:.c=.o))
+
+SLRE_SRC_DIR= $(BOS_LIB)
+SLRE_INC_DIR= $(BOS_INC)
+SLRE_SOURCES= $(SLRE_SRC_DIR)/slre.c
+SLRE_OBJECTS= $(notdir $(SLRE_SOURCES:.c=.o))
+
+TERMBOX_DIR = $(TEXU_DIR)/termbox
+TERMBOX_SRC_DIR = $(TERMBOX_DIR)
+TERMBOX_INC_DIR = $(TERMBOX_DIR)
+TERMBOX_SOURCES = $(TERMBOX_SRC_DIR)/utf8.c \
+                  $(TERMBOX_SRC_DIR)/termbox.c
+
+TERMBOX2_SOURCES = $(TERMBOX_SRC_DIR)/termbox2.c
+
+TERMBOX_OBJECTS  = $(notdir $(TERMBOX_SOURCES:.c=.o))
+TERMBOX2_OBJECTS  = $(notdir $(TERMBOX2_SOURCES:.c=.o))
+
+
+TEXU_DIR     = $(BOS_LIB)/libtexu
+TEXU_LINUX_DIR     = $(TEXU_DIR)
+TEXU_SRC_DIR = $(TEXU_DIR)/src
+TEXU_INC_DIR = $(TEXU_DIR)/include
+TEXU_LIB_DIR = $(BOS_LINUX_LIB_BIN)
+TEXU_SOURCES = $(TEXU_SRC_DIR)/texulib.c \
+               $(TEXU_SRC_DIR)/texutils.c \
+               $(TEXU_SRC_DIR)/texucio.c \
+               $(TEXU_SRC_DIR)/texui.c \
+               $(TEXU_SRC_DIR)/texuproc.c \
+               $(TEXU_SRC_DIR)/texuctrl.c \
+               $(TEXU_SRC_DIR)/texuctrlx.c \
+               $(TEXU_SRC_DIR)/texumenu.c \
+               $(TEXU_SRC_DIR)/texutermios.c \
+               $(TEXU_SRC_DIR)/texu.c
+
+TEXU_OBJECTS  = $(notdir $(TEXU_SOURCES:.c=.o))
+TEXU_INCLUDES = -I$(CJSON_INC_DIR) -I$(TEXU_INC_DIR) -I$(TERMBOX_INC_DIR)
+TEXU_LIBS     = -L$(TEXU_LIB_DIR) $(TEXU_LIB_DIR)/$(LIBTEXU)
+
+
+TEST_SRC_DIR = ./src
+TEST_INC_DIR = ./include
+TEST_SOURCES = $(TEST_SRC_DIR)/test_texu.c
+TEST_OBJECTS = $(notdir $(TEST_SOURCES:.c=.o))
+
+TESTLIB_SOURCES = $(TEST_SRC_DIR)/test_texulib.c
+TESTLIB_OBJECTS = $(notdir $(TESTLIB_SOURCES:.c=.o))
+
+DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__UNIX__ -D__LINUX__ -DTEXU_THREAD_SAFE -D__USE_TERMBOX2__ -DSLRE
+
+%.o: $(TERMBOX_SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
+
+%.o: $(TEST_SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
+
+%.o: $(TEXU_SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
+
+%.o: $(CJSON_SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
+
+%.o: $(SLRE_SRC_DIR)/%.c
+	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
+
+$(LIBTEXU): $(TEXU_OBJECTS) $(CJSON_OBJECTS) $(TERMBOX2_OBJECTS) $(SLRE_OBJECTS)
+	ar -rus $@ $^
+	cp $@ $(BOS_LINUX_LIB_BIN)
+
+$(TESTUI): $(TEST_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
+
+$(TESTLIB): $(TESTLIB_OBJECTS)
+	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
+
+clean:
+	rm -f *.o *.a $(TEXU_SRC_DIR)/*.o $(TESTUI)* $(TEXU_LIB_DIR)/$(LIBTEXU)
+
+

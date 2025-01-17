@@ -1,72 +1,19 @@
-
-# File Name: makefile
-# Author: Seree Rakwong
-# Date: 06-MAY-2020
 #
+##  "@(#)Makefile	
+#
+MAKES=mono color tb2
 
-TESTUI  = test_texu
-TESTLIB = test_texulib
-LIBTEXU = libtexu.a
-CC     = gcc
-CFLAGS = -g -Wall -m32
-LFLAGS = -lm -lcurses -lpthread -lsqlite3 -ltexu
-
-.PHONY: default all clean
-
-default: $(LIBTEXU)
-testui: $(TESTUI)
-testlib: $(TESTLIB)
-libtexu: $(LIBTEXU)
-all: default
-
-CJSON_SRC_DIR= ./src
-CJSON_INC_DIR= ./include
-CJSON_SOURCES= $(CJSON_SRC_DIR)/cJSON.c
-CJSON_OBJECTS= $(CJSON_SOURCES:.c=.o)
-
-TEXU_SRC_DIR = ./src
-TEXU_INC_DIR = ./include
-TEXU_LIB_DIR = ./lib
-TEXU_SOURCES = $(TEXU_SRC_DIR)/texulib.c \
-               $(TEXU_SRC_DIR)/texutils.c \
-               $(TEXU_SRC_DIR)/texucio.c \
-               $(TEXU_SRC_DIR)/texui.c \
-               $(TEXU_SRC_DIR)/texuproc.c \
-               $(TEXU_SRC_DIR)/texuctrl.c \
-               $(TEXU_SRC_DIR)/texumenu.c \
-               $(TEXU_SRC_DIR)/texufrm.c \
-               $(TEXU_SRC_DIR)/texu.c
-
-
-TEXU_OBJECTS  = $(TEXU_SOURCES:.c=.o)
-TEXU_INCLUDES = -I$(TEXU_INC_DIR)
-TEXU_LIBS     = -L$(TEXU_LIB_DIR) $(TEXU_LIB_DIR)/$(LIBTEXU)
-
-TEST_SRC_DIR = ./src
-TEST_INC_DIR = ./include
-TEST_SOURCES = $(TEST_SRC_DIR)/test_texu.c
-TEST_OBJECTS = $(TEST_SOURCES:.c=.o)
-
-TESTLIB_SOURCES = $(TEST_SRC_DIR)/test_texulib.c
-TESTLIB_OBJECTS = $(TESTLIB_SOURCES:.c=.o)
-
-DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__LINUX__ -DUSE_TCL_AUTOMATION
-#DEFINES = -DXTERM_256COLOR -DDECLARE_SQLITE3 -D__LINUX__ 
-
-%.o: %.c
-	$(CC) $(CFLAGS) $(TEXU_INCLUDES) $(DEFINES) -c $< -o $@
-
-
-$(LIBTEXU): $(TEXU_OBJECTS) $(CJSON_OBJECTS)
-	ar -rus $(TEXU_LIB_DIR)/$@ $^
-
-$(TESTUI): $(TEST_OBJECTS)
-	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
-
-$(TESTLIB): $(TESTLIB_OBJECTS)
-	$(CC) $(CFLAGS) $(LFLAGS) -o $@ $^ $(TEXU_LIBS)
+all:
+	for name in $(MAKES) ;\
+	do\
+		echo makeing $$name ;\
+		make -f makefile.$$name clean all; \
+	done
 
 clean:
-	rm -f $(TEXU_SRC_DIR)/*.o $(TESTUI)* $(TEXU_LIB_DIR)/$(LIBTEXU)
-
+	for name in $(MAKES) ;\
+	do\
+		echo makeing clean $$name ;\
+		make -f makefile.$$name clean ; \
+	done
 

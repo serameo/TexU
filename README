@@ -1,0 +1,8 @@
+HOW TO USE libtexu ON Sun Solaris 8 (5.8)
+-----------------------------------------
+1 Copy folder ./terminfo into the home directory and rename its from terminfo to .terminfo
+    e.g. $> cp -R from/to/path/terminfo ~/.terminfo
+2 Use TERM=xterm-sun
+    e.g. $> TERM=xterm-sun; export TERM
+
+NB. xterm-sun copy from Linux 7
