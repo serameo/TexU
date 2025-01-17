@@ -37,7 +37,7 @@ struct texu_wnd_attrs
     texu_ui32 exstyle;
     texu_bool enable;
     texu_bool visible;
-    const texu_char *text;
+    /*const*/ texu_char *text;
     texu_ui32 normalcolor;
     texu_ui32 disabledcolor;
     texu_ui32 selectedcolor;
@@ -47,7 +47,7 @@ struct texu_wnd_attrs
     texu_ui32 selectedbg;
     texu_ui32 focusedbg;
     texu_ui32 id;
-    const texu_char *clsname;
+    /*const*/ texu_char *clsname;
     void *userdata;
     texu_i32 (*on_validate)(texu_wnd*, texu_char*, void*);
     void* validate_data;
@@ -70,6 +70,29 @@ struct texu_rect
     texu_i32 cols;
 };
 typedef struct texu_rect texu_rect;
+struct texu_rect2 /*rename lines and cols to height and width respectively*/
+{
+    texu_i32 y;
+    texu_i32 x;
+    texu_i32 height; /*lines*/
+    texu_i32 width; /*cols*/
+};
+typedef struct texu_rect2 texu_rect2;
+enum
+{
+    RECT_Y_OFFSET = 0,
+    RECT_X_OFFSET,
+    RECT_H_OFFSET,
+    RECT_W_OFFSET,
+    RECT_MAX_OFFSETS
+};
+union texu_urect /*make a compatible rectangle name*/
+{
+    texu_i32    rect[RECT_MAX_OFFSETS]; /*y, x, lines/height, cols/width*/
+    texu_rect   r1;
+    texu_rect2  r2;
+};
+typedef union texu_urect texu_urect;
     
 #define TEXU_ENV_MSGTYPE_REQUEST    1
 #define TEXU_ENV_MSGTYPE_RESPONSE   2
@@ -97,10 +120,19 @@ struct texu_edit_notify
 };
 typedef struct texu_edit_notify texu_edit_notify;
 
+struct texu_rebar_notify
+{
+    struct texu_wnd_notify hdr;
+    texu_wnd    *curwnd;
+    texu_wnd    *nextwnd;
+    void*       data;
+};
+typedef struct texu_rebar_notify texu_rebar_notify;
+
 struct texu_wnd_keycmd
 {
     texu_i32 key;
-    texu_i32 alt;
+    texu_i32 alt; /*ALT=1, CTRL=2, SHIFT=4, see also termbox2.h*/
     texu_ui32 cmd;
 };
 typedef struct texu_wnd_keycmd texu_wnd_keycmd;
@@ -186,11 +218,11 @@ struct texu_treewnd_item
     texu_ui32 selbg;
 };
 typedef struct texu_treewnd_item texu_treewnd_item;
-
+struct texu_tree_item;
 struct texu_treewnd_notify
 {
     texu_wnd_notify hdr; /* notification header */
-    texu_tree_item *item;
+    struct texu_tree_item *item;
 };
 typedef struct texu_treewnd_notify texu_treewnd_notify;
 
@@ -255,6 +287,15 @@ struct texu_menuitem_notify
     texu_char info[TEXU_MAX_WNDTEXT + 1];
 };
 typedef struct texu_menuitem_notify texu_menuitem_notify;
+
+
+struct texu_panel_notify
+{
+    texu_wnd_notify hdr; /* notification header */
+    texu_i32 ch;
+    texu_i32 alt;
+};
+typedef struct texu_panel_notify texu_panel_notify;
 
 struct texu_wnd_template
 {
@@ -326,8 +367,11 @@ typedef struct texu_menu_template texu_menu_template;
 /*REBAR*/
 struct texu_rbwnd_band
 {
-    texu_char   caption[TEXU_MAX_WNDTEXT + 1];
+    /*texu_char   caption[TEXU_MAX_WNDTEXT + 1];*/
+    texu_char  *caption;
     texu_i32    align;
+    texu_bool   enable;
+    texu_bool   visible;
     texu_ui32   normcolor;  /* text attributes          */
     texu_ui32   discolor;   /* text attributes          */
     texu_ui32   selcolor;   /* text attributes          */
@@ -340,7 +384,8 @@ struct texu_rbwnd_band
                             /* it could be editbox/listbox/combobox etc*/
     texu_i32    width;
     texu_i32    height;
-    texu_char   unit[TEXU_MAX_WNDTEXT + 1];
+    /*texu_char   unit[TEXU_MAX_WNDTEXT + 1];*/
+    texu_char  *unit;
 };
 typedef struct texu_rbwnd_band texu_rbwnd_band;
 

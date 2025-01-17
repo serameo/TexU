@@ -241,6 +241,12 @@ texu_wnd*     wnd,
 texu_ui32      color,
 texu_ui32      discolor
 );
+void
+TexuSetColor2(
+    texu_wnd*     wnd,
+    texu_ui32      color,
+    texu_ui32      discolor
+);
 
 texu_ui32
 TexuGetSysColor(texu_i32 color);

@@ -69,111 +69,6 @@ extern "C" {
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
 
-#if 0
-
-enum
-{
-  TEXU_CIO_COLOR_BLACK_BLACK,
-  TEXU_CIO_COLOR_BLACK_RED,
-  TEXU_CIO_COLOR_BLACK_GREEN,
-  TEXU_CIO_COLOR_BLACK_YELLOW,
-  TEXU_CIO_COLOR_BLACK_BLUE,
-  TEXU_CIO_COLOR_BLACK_MAGENTA,
-  TEXU_CIO_COLOR_BLACK_CYAN,
-  TEXU_CIO_COLOR_BLACK_WHITE,
-  TEXU_CIO_COLOR_RED_BLACK,
-  TEXU_CIO_COLOR_RED_RED,
-  TEXU_CIO_COLOR_RED_GREEN,
-  TEXU_CIO_COLOR_RED_YELLOW,
-  TEXU_CIO_COLOR_RED_BLUE,
-  TEXU_CIO_COLOR_RED_MAGENTA,
-  TEXU_CIO_COLOR_RED_CYAN,
-  TEXU_CIO_COLOR_RED_WHITE,
-  TEXU_CIO_COLOR_GREEN_BLACK,
-  TEXU_CIO_COLOR_GREEN_RED,
-  TEXU_CIO_COLOR_GREEN_GREEN,
-  TEXU_CIO_COLOR_GREEN_YELLOW,
-  TEXU_CIO_COLOR_GREEN_BLUE,
-  TEXU_CIO_COLOR_GREEN_MAGENTA,
-  TEXU_CIO_COLOR_GREEN_CYAN,
-  TEXU_CIO_COLOR_GREEN_WHITE,
-  TEXU_CIO_COLOR_YELLOW_BLACK,
-  TEXU_CIO_COLOR_YELLOW_RED,
-  TEXU_CIO_COLOR_YELLOW_GREEN,
-  TEXU_CIO_COLOR_YELLOW_YELLOW,
-  TEXU_CIO_COLOR_YELLOW_BLUE,
-  TEXU_CIO_COLOR_YELLOW_MAGENTA,
-  TEXU_CIO_COLOR_YELLOW_CYAN,
-  TEXU_CIO_COLOR_YELLOW_WHITE,
-  TEXU_CIO_COLOR_BLUE_BLACK,
-  TEXU_CIO_COLOR_BLUE_RED,
-  TEXU_CIO_COLOR_BLUE_GREEN,
-  TEXU_CIO_COLOR_BLUE_YELLOW,
-  TEXU_CIO_COLOR_BLUE_BLUE,
-  TEXU_CIO_COLOR_BLUE_MAGENTA,
-  TEXU_CIO_COLOR_BLUE_CYAN,
-  TEXU_CIO_COLOR_BLUE_WHITE,
-  TEXU_CIO_COLOR_MAGENTA_BLACK,
-  TEXU_CIO_COLOR_MAGENTA_RED,
-  TEXU_CIO_COLOR_MAGENTA_GREEN,
-  TEXU_CIO_COLOR_MAGENTA_YELLOW,
-  TEXU_CIO_COLOR_MAGENTA_BLUE,
-  TEXU_CIO_COLOR_MAGENTA_MAGENTA,
-  TEXU_CIO_COLOR_MAGENTA_CYAN,
-  TEXU_CIO_COLOR_MAGENTA_WHITE,
-  TEXU_CIO_COLOR_CYAN_BLACK,
-  TEXU_CIO_COLOR_CYAN_RED,
-  TEXU_CIO_COLOR_CYAN_GREEN,
-  TEXU_CIO_COLOR_CYAN_YELLOW,
-  TEXU_CIO_COLOR_CYAN_BLUE,
-  TEXU_CIO_COLOR_CYAN_MAGENTA,
-  TEXU_CIO_COLOR_CYAN_CYAN,
-  TEXU_CIO_COLOR_CYAN_WHITE,
-  TEXU_CIO_COLOR_WHITE_BLACK,
-  TEXU_CIO_COLOR_WHITE_RED,
-  TEXU_CIO_COLOR_WHITE_GREEN,
-  TEXU_CIO_COLOR_WHITE_YELLOW,
-  TEXU_CIO_COLOR_WHITE_BLUE,
-  TEXU_CIO_COLOR_WHITE_MAGENTA,
-  TEXU_CIO_COLOR_WHITE_CYAN,
-  TEXU_CIO_COLOR_WHITE_WHITE,
-  TEXU_CIO_BRIGHT_WHITE_BLACK,
-  TEXU_CIO_BRIGHT_WHITE_RED,
-  TEXU_CIO_BRIGHT_WHITE_GREEN,
-  TEXU_CIO_BRIGHT_WHITE_YELLOW,
-  TEXU_CIO_BRIGHT_WHITE_BLUE,
-  TEXU_CIO_BRIGHT_WHITE_MAGENTA,
-  TEXU_CIO_BRIGHT_WHITE_CYAN,
-  TEXU_CIO_BRIGHT_WHITE_WHITE,
-  TEXU_CIO_BLACK_BRIGHT_WHITE,
-  TEXU_CIO_RED_BRIGHT_WHITE,
-  TEXU_CIO_GREEN_BRIGHT_WHITE,
-  TEXU_CIO_YELLOW_BRIGHT_WHITE,
-  TEXU_CIO_BLUE_BRIGHT_WHITE,
-  TEXU_CIO_MAGENTA_BRIGHT_WHITE,
-  TEXU_CIO_CYAN_BRIGHT_WHITE,
-  TEXU_CIO_LAST_COLOR
-};
-
-enum
-{
-  TEXU_CIO_COLOR_BLACK   = COLOR_BLACK,
-  TEXU_CIO_COLOR_RED     = COLOR_RED,
-  TEXU_CIO_COLOR_GREEN   = COLOR_GREEN,
-  TEXU_CIO_COLOR_YELLOW  = COLOR_YELLOW,
-  TEXU_CIO_COLOR_BLUE    = COLOR_BLUE,
-  TEXU_CIO_COLOR_MAGENTA = COLOR_MAGENTA,
-  TEXU_CIO_COLOR_CYAN    = COLOR_CYAN,
-  TEXU_CIO_COLOR_WHITE   = COLOR_WHITE,
-#ifdef XTERM_256COLOR
-  TEXU_CIO_BRIGHT_WHITE  = 15
-#else
-  TEXU_CIO_BRIGHT_WHITE  = COLOR_WHITE
-#endif
-};
-
-#endif
-
 texu_env            *texu_cio_get_env(texu_cio* cio);
 
 texu_cio*           texu_cio_new();
@@ -183,10 +78,20 @@ void                texu_cio_del(texu_cio*);
 texu_i32            texu_cio_init(texu_cio*, texu_env *env);
 #elif (defined WIN32 && defined _CONSOLE)
 texu_i32            texu_cio_init(texu_cio*, texu_env* env, texu_i32, texu_i32);
+#elif (defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+texu_i32            texu_cio_init(texu_cio*, texu_env* env, texu_i32, texu_i32);
 #else
 texu_i32            texu_cio_init(texu_cio*, texu_i32, texu_i32);
 #endif
 void                texu_cio_release(texu_cio*);
+
+#if (defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+void texu_cio_set_cbreak(texu_cio *cio, int cbreak, void (*sigint_handler)(void*), void *userdata);
+void texu_cio_sigint(texu_cio *cio);
+texu_i32 texu_cio_dispatch(texu_cio *cio); /*to get to modifier (ALT=1/CTRL=2/SHIFT=4), see also termbox2.h*/
+texu_i32 texu_cio_translate(texu_cio *cio, texu_i32 key);
+texu_i32 texu_cio_translate2(texu_cio *cio, texu_i32 key, texu_i32 *mod);
+#endif
 
 
 #if (defined VMS || defined __VMS__)
@@ -230,6 +135,10 @@ texu_i32            texu_cio_draw_text(texu_cio *cio, texu_i32 y, texu_i32 x, co
                                        texu_ui32 color, texu_ui32 bgcolor,
                                        const texu_char *clsname,
                                        texu_ui32 id);
+texu_i32            texu_cio_draw_text2(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
+                                       texu_ui32 color, texu_ui32 bgcolor, texu_ui32 attrs,
+                                       const texu_char *clsname,
+                                       texu_ui32 id);
 
 texu_i32            texu_cio_draw_text_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *text,
                                        texu_ui32 color, texu_ui32 bgcolor,
@@ -246,6 +155,10 @@ texu_i32            texu_cio_draw_char_erase(texu_cio *cio, texu_i32 y, texu_i32
                                         const texu_char *clsname,
                                         texu_ui32 id,
                                        texu_bool erase);
+texu_i32            texu_cio_draw_char2(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
+                                        texu_ui32 color, texu_ui32 bgcolor, texu_ui32 attrs,
+                                        const texu_char *clsname,
+                                        texu_ui32 id);
 
 texu_i32            texu_cio_refresh(texu_cio*);
 /* text attributes */
@@ -267,6 +180,10 @@ texu_i32            texu_cio_get_underline(texu_cio*, texu_i32);
 texu_i32            texu_cio_get_reverse(texu_cio*, texu_i32);
 texu_i32            texu_cio_get_blink(texu_cio*, texu_i32);
 texu_i32            texu_cio_get_color_attr(texu_cio*, texu_i32, texu_i32);
+#if (defined __USE_TERMIOS__ || defined TEXU_CIO_COLOR_MONO || defined __USE_TERMBOX2__)
+texu_i32            texu_cio_get_bgcolor(texu_cio*, texu_i32);
+texu_i32            texu_cio_get_bgreverse(texu_cio*, texu_i32);
+#endif
 
 texu_i32            texu_cio_save_screen(texu_cio*, FILE*);
 texu_i32            texu_cio_restore_screen(texu_cio*, FILE*);

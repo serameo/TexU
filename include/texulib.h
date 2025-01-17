@@ -72,6 +72,8 @@ texu_list_item *texu_list_rfind_prev(texu_list *, texu_list_item *, texu_longptr
 texu_list_item *texu_list_first(texu_list *);
 texu_list_item *texu_list_last(texu_list *);
 texu_i32 texu_list_count(texu_list *);
+texu_list_item *texu_list_item_next(texu_list *, texu_list_item *);
+texu_list_item *texu_list_item_prev(texu_list *, texu_list_item *);
 
 /*
 # TexU queue

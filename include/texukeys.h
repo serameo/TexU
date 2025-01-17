@@ -11,6 +11,8 @@
 
 #if (defined __USE_TERMIOS__)
 #include "termbox.h"
+#elif (defined __USE_TERMBOX2__)
+#include "termbox2.h"
 #endif
 
 /* miscellaneous */
@@ -90,7 +92,7 @@
 #define TVK_TAB            0x09
 #if (defined __USE_VMS__ || defined __VMS__)
 #define TVK_ENTER          0x0D
-#elif (defined __USE_TERMIOS__)
+#elif (defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
 #define TVK_ENTER          TB_KEY_ENTER
 #else
 #define TVK_ENTER          0x0A
@@ -127,7 +129,7 @@
 #define TVK_CTRLM           13
 #define TVK_CTRLI           9
 #define TVK_SHIFT_TAB       511
-#elif (defined __USE_TERMIOS__)
+#elif (defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
 #define TVK_BACK           TB_KEY_BACKSPACE
 #define TVK_PRIOR          TB_KEY_PGUP
 #define TVK_NEXT           TB_KEY_PGDN

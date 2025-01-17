@@ -15,8 +15,12 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
+
 #ifdef __USE_TERMIOS__
 #include "termbox.h"
+#endif
+#ifdef __USE_TERMBOX2__
+#include "termbox2.h"
 #endif
 
 #if (defined WIN32 && defined _WINDOWS)
@@ -303,11 +307,24 @@ enum
 #define TEXU_WM_GETPREVWND              (TEXU_WM_FIRST + 36)
 #define TEXU_WM_INVALIDATE              (TEXU_WM_FIRST + 37)
 #define TEXU_WM_ACTIVATED               (TEXU_WM_FIRST + 38)
+#define TEXU_WM_GETCLIENTRECT           (TEXU_WM_FIRST + 39)    /*drawable area, it will be applied in the container window, e.g. ReBar/Panel */
+#define TEXU_WM_GETWINDOWRECT           (TEXU_WM_FIRST + 40)
+#define TEXU_WM_GETSCREENRECT           (TEXU_WM_FIRST + 41)
+#define TEXU_WM_QUERYKEYUP              (TEXU_WM_FIRST + 42)
+#define TEXU_WM_QUERYKEYDOWN            (TEXU_WM_FIRST + 43)
+#define TEXU_WM_QUERYKEYLEFT            (TEXU_WM_FIRST + 44)
+#define TEXU_WM_QUERYKEYRIGHT           (TEXU_WM_FIRST + 45)
+#define TEXU_WM_QUERYKEYPGUP            (TEXU_WM_FIRST + 46)
+#define TEXU_WM_QUERYKEYPGDOWN          (TEXU_WM_FIRST + 47)
 
 /* notify */
 #define TEXU_WN_FIRST                   0
 #define TEXU_WN_GOFIRSTCHILD            (TEXU_WN_FIRST +  1)
 #define TEXU_WN_GOLASTCHILD             (TEXU_WN_FIRST +  2)
+
+/* LABEL */
+#define TEXU_LM_FIRST                   (TEXU_WM_FIRST + 100)
+#define TEXU_LM_HIGHLIGHT               (TEXU_LM_FIRST +  1)
 
 /* EDIT */
 #define TEXU_EM_FIRST                   (TEXU_WM_FIRST + 200)
@@ -358,6 +375,7 @@ enum
 #define TEXU_LBM_SETITEMCHECKED         (TEXU_LBM_FIRST + 13)
 #define TEXU_LBM_ENABLEITEM             (TEXU_LBM_FIRST + 14)
 #define TEXU_LBM_SETSELCOLOR            (TEXU_LBM_FIRST + 15)
+#define TEXU_LBM_SETPAGEHEIGHT          (TEXU_LBM_FIRST + 16)
 
 /* listbox notification */
 #define TEXU_LBN_FIRST                  TEXU_LBM_FIRST
@@ -469,7 +487,7 @@ enum
 #define TEXU_UDCN_SETFOCUS              (TEXU_UDCN_FIRST +  1)
 #define TEXU_UDCN_KILLFOCUS             (TEXU_UDCN_FIRST +  2)
 #define TEXU_UDCN_STEP                  (TEXU_UDCN_FIRST +  3)
-
+#define TEXU_UDCN_INVALIDATE            (TEXU_UDCN_FIRST +  4)
 
 
 /*PROGRESS BAR*/
@@ -553,6 +571,8 @@ enum
 #define TEXU_CBN_KILLFOCUS              (TEXU_CBN_FIRST +  2)
 #define TEXU_CBN_DELETEITEM             (TEXU_CBN_FIRST +  3)
 #define TEXU_CBN_SELCHANGED             (TEXU_CBN_FIRST +  4)
+#define TEXU_CBN_ENTER_LISTBOX          (TEXU_CBN_FIRST +  5)
+#define TEXU_CBN_LEAVE_LISTBOX          (TEXU_CBN_FIRST +  6)
 
 /* TEXT CTRL */
 #define TEXU_TXCM_FIRST                 (TEXU_WM_FIRST + 1200)
@@ -572,13 +592,43 @@ enum
 #define TEXU_TXCN_FIRST                 TEXU_TXCM_FIRST
 
 /* REBAR */
+#define TEXU_RBF_COLOR      0x0001
+#define TEXU_RBF_ALIGNMENT  0x0002
+#define TEXU_RBF_CAPTION    0x0004
+#define TEXU_RBF_UNIT       0x0008
+#define TEXU_RBF_ENABLE     0x0010
+#define TEXU_RBF_VISIBLE    0x0020
+#define TEXU_RBF_ALL        (TEXU_RBF_COLOR | TEXU_RBF_ALIGNMENT | TEXU_RBF_CAPTION | TEXU_RBF_UNIT | TEXU_RBF_ENABLE | TEXU_RBF_VISIBLE)
+
+
 #define TEXU_RBM_FIRST                  (TEXU_WM_FIRST + 1300)
 #define TEXU_RBM_ADDBAND                (TEXU_RBM_FIRST +   1)
 #define TEXU_RBM_REMOVEBAND             (TEXU_RBM_FIRST +   2)
 #define TEXU_RBM_SETINFOWIDTH           (TEXU_RBM_FIRST +   3)
 #define TEXU_RBM_SETUNITWIDTH           (TEXU_RBM_FIRST +   4)
+#define TEXU_RBM_SETBANDWIDTH           (TEXU_RBM_FIRST +   5)
+#define TEXU_RBM_GETBAND                (TEXU_RBM_FIRST +   6)
+#define TEXU_RBM_GETNEXTBAND            (TEXU_RBM_FIRST +   7)
+#define TEXU_RBM_GETPREVBAND            (TEXU_RBM_FIRST +   8)
+#define TEXU_RBM_GETFIRSTBAND           (TEXU_RBM_FIRST +   9)
+#define TEXU_RBM_GETLASTBAND            (TEXU_RBM_FIRST +  10)
+#define TEXU_RBM_SETBAND                (TEXU_RBM_FIRST +  11)
+#define TEXU_RBM_GETNEXTACTIVEBAND      (TEXU_RBM_FIRST +  12)
+#define TEXU_RBM_GETPREVACTIVEBAND      (TEXU_RBM_FIRST +  13)
+#define TEXU_RBM_GETFIRSTACTIVEBAND     (TEXU_RBM_FIRST +  14)
+#define TEXU_RBM_GETLASTACTIVEBAND      (TEXU_RBM_FIRST +  15)
+#define TEXU_RBM_GETNEXTVISIBLEBAND     (TEXU_RBM_FIRST +  16)
+#define TEXU_RBM_GETPREVVISIBLEBAND     (TEXU_RBM_FIRST +  17)
+#define TEXU_RBM_GETFIRSTVISIBLEBAND    (TEXU_RBM_FIRST +  18)
+#define TEXU_RBM_GETLASTVISIBLEBAND     (TEXU_RBM_FIRST +  19)
 
 #define TEXU_RBN_FIRST                  TEXU_RBM_FIRST
+#define TEXU_RBN_FIRSTCHILD             (TEXU_RBM_FIRST +  1)
+#define TEXU_RBN_LASTCHILD              (TEXU_RBM_FIRST +  2)
+#define TEXU_RBN_NEXTCHILD              (TEXU_RBM_FIRST +  3)
+#define TEXU_RBN_PREVCHILD              (TEXU_RBM_FIRST +  4)
+#define TEXU_RBN_FIRST_VISIBLE_CHILD    (TEXU_RBM_FIRST +  5)
+
 
 /*IP ADDRESS CTRL*/
 #define TEXU_IPM_FIRST                 (TEXU_WM_FIRST + 1400)
@@ -603,7 +653,7 @@ enum
 #define TEXU_EMM_SETMASK                (TEXU_EMM_FIRST +  1)
 #define TEXU_EMM_GETMASK                (TEXU_EMM_FIRST +  2)
 #define TEXU_EMM_SETINFO                (TEXU_EMM_FIRST +  3)
-
+#define TEXU_EMM_SETEMAILMASK           (TEXU_EMM_FIRST +  4)
 
 #define TEXU_EMN_FIRST                  (TEXU_WM_FIRST + TEXU_EMM_FIRST)
 #define TEXU_EMN_SETFOCUS               (TEXU_EMM_FIRST +  1)
@@ -688,6 +738,10 @@ enum
 #define TEXU_PNM_GETTITLE               (TEXU_PNM_FIRST +    4)
 #define TEXU_PNM_SETTITLEBGCOLOR        (TEXU_PNM_FIRST +    5)
 
+#define TEXU_PNN_FIRST                  TEXU_PNM_FIRST
+#define TEXU_PNN_KEYDOWN                TEXU_PNN_FIRST
+
+
 #ifdef __USE_CURSES__
 #define TEXU_KEY_SELMENU                10
 #define TEXU_KEY_NEXTWND                10
@@ -704,7 +758,7 @@ enum
 #define TEXU_KEY_PPAGE                  KEY_PPAGE
 #define TEXU_KEY_NPAGE                  KEY_NPAGE
 #define TEXU_KEY_ESCAPE                 27
-#elif (defined __USE_TERMIOS__)
+#elif (defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
 #define TEXU_KEY_SELMENU                10
 #define TEXU_KEY_NEXTWND                TB_KEY_ENTER
 #define TEXU_KEY_ENTER                  TB_KEY_ENTER
@@ -770,6 +824,76 @@ enum
 #define TEXU_KEY_PPAGE                  0
 #define TEXU_KEY_NPAGE                  0
 #define TEXU_KEY_ESCAPE                 0
+#endif
+
+/*simply defines*/
+#define TEXU_KEY_PGUP                   TEXU_KEY_PPAGE
+#define TEXU_KEY_PGDOWN                 TEXU_KEY_NPAGE
+
+
+#if defined __USE_TERMBOX2__ // TEXU_KEY_F1 && (mod & TB_MOD_SHIFT)
+#define TEXU_KEY_MOD_ALT                TB_MOD_ALT
+#define TEXU_KEY_MOD_CTRL               TB_MOD_CTRL
+#define TEXU_KEY_MOD_SHIFT              TB_MOD_SHIFT
+#define TEXU_KEY_F1                     TB_KEY_F1 
+#define TEXU_KEY_F2                     TB_KEY_F2 
+#define TEXU_KEY_F3                     TB_KEY_F3 
+#define TEXU_KEY_F4                     TB_KEY_F4 
+#define TEXU_KEY_F5                     TB_KEY_F5 
+#define TEXU_KEY_F6                     TB_KEY_F6 
+#define TEXU_KEY_F7                     TB_KEY_F7 
+#define TEXU_KEY_F8                     TB_KEY_F8 
+#define TEXU_KEY_F9                     TB_KEY_F9 
+#define TEXU_KEY_F10                    TB_KEY_F10
+#define TEXU_KEY_F11                    TB_KEY_F11
+#define TEXU_KEY_F12                    TB_KEY_F12
+/* F13 = F1 + TB_MOD_SHIFT*/
+/* F14 = F2 + TB_MOD_SHIFT*/
+/*...*/
+/* F23 = F11 + TB_MOD_SHIFT*/
+/* F44 = F12 + TB_MOD_SHIFT*/
+#define TEXU_KEY_USER_FIRST             (100)
+
+#define TEXU_KEY_F13                    (0xffff - (TEXU_KEY_USER_FIRST + 0 ))
+#define TEXU_KEY_F14                    (0xffff - (TEXU_KEY_USER_FIRST + 1 ))
+#define TEXU_KEY_F15                    (0xffff - (TEXU_KEY_USER_FIRST + 2 ))
+#define TEXU_KEY_F16                    (0xffff - (TEXU_KEY_USER_FIRST + 3 ))
+#define TEXU_KEY_F17                    (0xffff - (TEXU_KEY_USER_FIRST + 4 ))
+#define TEXU_KEY_F18                    (0xffff - (TEXU_KEY_USER_FIRST + 5 ))
+#define TEXU_KEY_F19                    (0xffff - (TEXU_KEY_USER_FIRST + 6 ))
+#define TEXU_KEY_F20                    (0xffff - (TEXU_KEY_USER_FIRST + 7 ))
+#define TEXU_KEY_F21                    (0xffff - (TEXU_KEY_USER_FIRST + 8 ))
+#define TEXU_KEY_F22                    (0xffff - (TEXU_KEY_USER_FIRST + 9 ))
+#define TEXU_KEY_F23                    (0xffff - (TEXU_KEY_USER_FIRST + 10))
+#define TEXU_KEY_F24                    (0xffff - (TEXU_KEY_USER_FIRST + 11))
+#else
+#define TEXU_KEY_MOD_ALT                1
+#define TEXU_KEY_MOD_CTRL               2
+#define TEXU_KEY_MOD_SHIFT              4
+#define TEXU_KEY_F1                     TVK_F1 
+#define TEXU_KEY_F2                     TVK_F2 
+#define TEXU_KEY_F3                     TVK_F3 
+#define TEXU_KEY_F4                     TVK_F4 
+#define TEXU_KEY_F5                     TVK_F5 
+#define TEXU_KEY_F6                     TVK_F6 
+#define TEXU_KEY_F7                     TVK_F7 
+#define TEXU_KEY_F8                     TVK_F8 
+#define TEXU_KEY_F9                     TVK_F9 
+#define TEXU_KEY_F10                    TVK_F10
+#define TEXU_KEY_F11                    TVK_F11
+#define TEXU_KEY_F12                    TVK_F12
+#define TEXU_KEY_F13                    TVK_F13
+#define TEXU_KEY_F14                    TVK_F14
+#define TEXU_KEY_F15                    TVK_F15
+#define TEXU_KEY_F16                    TVK_F16
+#define TEXU_KEY_F17                    TVK_F17
+#define TEXU_KEY_F18                    TVK_F18
+#define TEXU_KEY_F19                    TVK_F19
+#define TEXU_KEY_F20                    TVK_F20
+#define TEXU_KEY_F21                    TVK_F21
+#define TEXU_KEY_F22                    TVK_F22
+#define TEXU_KEY_F23                    TVK_F23
+#define TEXU_KEY_F24                    TVK_F24
 #endif
 
 #define TEXU_KEYPRESSED_ALT             1
@@ -858,12 +982,16 @@ enum
 #define TEXU_WS_BORDER                  0x00000020          /* draw border */
 #define TEXU_WS_CLIPWINDOW              0x00000040          /* clip window if it is out-of-bound of parent window*/
 #define TEXU_WS_POPUP                   0x00000080          /* allow window to display out area of the parent window*/
+#define TEXU_WS_TOP                     0x00000100          /* shared controls style */
+#define TEXU_WS_VCENTER                 0x00000200
+#define TEXU_WS_BOTTOM                  0x00000400
 
 #define TEXU_ALIGN_LEFT                TEXU_WS_LEFT
 #define TEXU_ALIGN_CENTER              TEXU_WS_CENTER
 #define TEXU_ALIGN_RIGHT               TEXU_WS_RIGHT
-
-
+#define TEXU_ALIGN_TOP                 TEXU_WS_TOP
+#define TEXU_ALIGN_VCENTER             TEXU_WS_VCENTER
+#define TEXU_ALIGN_BOTTOM              TEXU_WS_BOTTOM
 
 #define TEXU_IDOK                      0x00000001
 #define TEXU_IDYES                     0x00000002
@@ -909,8 +1037,6 @@ enum
 
 #define TEXU_LB_OK                      0
 #define TEXU_LB_ERROR                   -1
-
-
 
 /* LIST CTRL */
 #define TEXU_LCS_EDITABLE               0x00010000
@@ -962,6 +1088,7 @@ enum
 /*REBAR STYLES*/
 #define TEXU_RBS_NOCAPTION              0x00010000
 #define TEXU_RBS_HASUNIT                0x00020000
+#define TEXU_RBS_HIGHLIGHT              0x00040000
 
 /*EDIT PRICE SPREAD CTRL*/
 #define TEXU_EPSS_SHOWCHANGE            0x00010000
@@ -974,6 +1101,7 @@ enum
 
 /*UP-DOWN CTRL*/
 #define TEXU_UDS_SHOWPLUSMINUS          0x00010000
+#define TEXU_UDS_SHOWSHOWCOMMAS         0x00020000
 
 /*PAGE CTRL*/
 #define TEXU_PCS_CREATEPAGEWHENACTIVATED    0x00010000
@@ -991,5 +1119,8 @@ enum
 #define TEXU_PNS_TITLE                  0x00010000
 #define TEXU_PNS_BORDER                 0x00020000
 #define TEXU_PNS_STATUS                 0x00040000
+
+/* PROGRESSBAR */
+#define TEXU_PGBS_SHOWPERCENT           0x00010000
 
 #endif /*_TEXUCONST_H_*/

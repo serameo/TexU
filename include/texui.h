@@ -38,7 +38,7 @@ extern "C" {
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-#if defined SIZE_100X25
+#if defined SIZE_132X25
 #ifndef COLS
 #define COLS    (100)
 #endif
@@ -117,6 +117,8 @@ enum
     TEXU_COLOR_UPDOWNCTRL_DISABLED,
     TEXU_COLOR_UPDOWNCTRL_SELECTED,
     TEXU_COLOR_UPDOWNCTRL_FOCUSED,
+    TEXU_COLOR_UPDOWNCTRL_MINUS,
+    TEXU_COLOR_UPDOWNCTRL_PLUS,
     TEXU_COLOR_PROGRESSBAR,
     TEXU_COLOR_PROGRESSBAR_DISABLED,
     TEXU_COLOR_PROGRESSBAR_SELECTED,
@@ -351,6 +353,7 @@ texu_wnd*           texu_wnd_prevwnd(texu_wnd*);
 texu_i32            texu_wnd_children(texu_wnd*);
 
 void                texu_wnd_set_focus(texu_wnd *wnd);
+void                texu_wnd_kill_focus(texu_wnd *wnd);
 texu_status         texu_wnd_visible(texu_wnd*, texu_bool);
 texu_status         texu_wnd_enable(texu_wnd*, texu_bool);
 texu_bool           texu_wnd_is_parent_enable(texu_wnd *wnd);
@@ -397,6 +400,8 @@ void                texu_wnd_lock_update(texu_wnd*, texu_bool);
 texu_bool           texu_wnd_is_update_locked(texu_wnd* wnd);
 texu_env*           texu_wnd_get_env(texu_wnd*);
 void                texu_wnd_get_rect(texu_wnd*, texu_rect*);
+void                texu_wnd_get_screen_rect(texu_wnd *wnd, texu_urect *rect);
+void                texu_wnd_get_window_rect(texu_wnd *wnd, texu_urect *rect);
 texu_wndproc        texu_wnd_get_wndproc(texu_wnd *wnd);
 texu_wndproc        texu_wnd_subclass(texu_wnd *wnd, texu_wndproc new_wndproc);
 texu_rect           texu_wnd_get_clipped(texu_wnd* wnd);
@@ -409,10 +414,11 @@ texu_menu*          texu_wnd_get_menu(texu_wnd*);
 
 texu_bool texu_wnd_inbound(texu_wnd* parent, texu_wnd* child);
 texu_bool texu_wnd_clip_bound(texu_wnd* parent, texu_wnd* child);
-
+#if 0
 void        texu__wnd_set_blank_lines_color(texu_wnd* parent, texu_i32 color, texu_i32 bgcolor);
 void        texu__wnd_set_blank_line_color(texu_wnd* parent, texu_i32 id, texu_i32 color, texu_i32 bgcolor);
 texu_i32    texu__wnd_create_blank_lines(texu_env *env, texu_wnd* parent);
+#endif
 texu_i32    texu_wnd_can_paint(texu_wnd* wnd);
 
 texu_wnd *
