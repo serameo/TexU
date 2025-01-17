@@ -344,6 +344,31 @@ texu_list_count(texu_list *list)
     return nitems;
 }
 
+texu_list_item *texu_list_item_next(texu_list *list, texu_list_item *item)
+{
+    texu_list_item *nextitem = 0;
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_lock(&list->mutex);
+#endif
+    nextitem = item->next;
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_unlock(&list->mutex);
+#endif
+    return nextitem;
+}
+texu_list_item *texu_list_item_prev(texu_list *list, texu_list_item *item)
+{
+    texu_list_item *previtem = 0;
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_lock(&list->mutex);
+#endif
+    previtem = item->prev;
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_unlock(&list->mutex);
+#endif
+    return previtem;
+}
+
 texu_list_item *
 texu_list_find_first(
     texu_list *list,

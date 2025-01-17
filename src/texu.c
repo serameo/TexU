@@ -703,6 +703,16 @@ TexuGetWindowText(
 }
 
 void
+TexuSetColor2(
+    texu_wnd *wnd,
+    texu_ui32 color,
+    texu_ui32 discolor)
+{
+    texu_wnd_set_color(wnd, color, discolor);
+    texu_wnd_set_bgcolor(wnd, color, discolor);
+}
+
+void
 TexuSetColor(
     texu_wnd *wnd,
     texu_ui32 color,

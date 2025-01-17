@@ -5,7 +5,7 @@
 # Date: 08-MAY-2020
 #
 */
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
@@ -41,6 +41,10 @@ texu_alloc_string(texu_ui32 len)
 size_t
 texu_strlen(const texu_char *str)
 {
+    if (!str)
+    {
+        return 0;
+    }
 #if (defined WIN32 && defined UNICODE)
     return wcslen(str);
 #else
@@ -250,7 +254,7 @@ texu_strcat(texu_char* dest, const texu_char* src)
 }
 
 texu_char*
-texu_rtrim(texu_char* in)
+texu_ltrim(texu_char* in)
 {
     texu_char sz[TEXU_MAX_BUFFER + 1];
     texu_char* psz = sz;
@@ -268,12 +272,12 @@ texu_rtrim(texu_char* in)
     return in;
 }
 texu_char*
-texu_ltrim(texu_char* in)
+texu_rtrim(texu_char* in)
 {
     texu_char rsz[TEXU_MAX_BUFFER + 1];
     texu_char* psz;
     texu_strrcpy(rsz, in);  /*reverse*/
-    psz = texu_rtrim(rsz);
+    psz = texu_ltrim(rsz);
     texu_strrcpy(in, psz);  /*reverse back*/
     return in;
 }
@@ -582,8 +586,6 @@ texu_sprintf(texu_char *buf, texu_i32 buflen, const texu_char* format, ...)
     return rc;
 }
 
-
-
 texu_i32 texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *nocommas)
 {
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
@@ -591,12 +593,13 @@ texu_i32 texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *no
     texu_char *pbuf;
     texu_i32 len = texu_strlen(nocommas) - 1;
     texu_char *psz = (texu_char*)&nocommas[len];
-    texu_char* pos = texu_strchr(nocommas, '.');
+    texu_char* posdec = texu_strchr(nocommas, '.');
     texu_char number[TEXU_MAX_WNDTEXT + 1] = "";
     texu_char dec[TEXU_MAX_WNDTEXT + 1] = "";
     texu_char* neg = texu_strchr(nocommas, '-');
     texu_char* plus = texu_strchr(nocommas, '+');
     texu_char rnumber[TEXU_MAX_WNDTEXT + 1] = "";
+    texu_char buffer[TEXU_MAX_WNDTEXT + 1] = "";
 
     if (neg && plus)
     {
@@ -607,27 +610,41 @@ texu_i32 texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *no
     pbuf = buf;
 
     memset(commas, 0, outlen);
-
-    if (pos)
+    if (neg || plus)
     {
-        texu_strncpy(number, nocommas, (texu_longptr)(pos)-(texu_longptr)nocommas);
-        texu_strrcpy(rnumber, number);
-        texu_strcpy(dec, pos);
+        texu_strcpy(buffer, &nocommas[1]);
     }
     else
     {
-        texu_strrcpy(rnumber, nocommas);
+        texu_strcpy(buffer, nocommas);
+    }
+    texu_trim(buffer);
+
+    len = texu_strlen(buffer);
+    /*psz = (texu_char*)&nocommas[len];*/
+    posdec = texu_strchr(buffer, '.');
+
+    if (posdec)
+    {
+        texu_strncpy(number, buffer, (texu_longptr)(posdec)-(texu_longptr)buffer);
+        texu_strrcpy(rnumber, number);
+        texu_strcpy(dec, posdec);
+    }
+    else
+    {
+        texu_strrcpy(rnumber, buffer);
     }
     len = texu_strlen(rnumber);
     psz = rnumber;
 
-    while (len >= 0)
+    /*while (len > 3)*/
+    while (*psz)
     {
-        if (len > 0 && cnt % 4 == 0 && *psz != TEXUTEXT('-'))
+        if (/*len > 3 &&*/ (cnt % 4 == 0)) /*&&) *psz != TEXUTEXT('-'))*/
         {
             *pbuf = TEXUTEXT(',');
             ++pbuf;
-            ++cnt;
+            cnt = 1;/*++cnt;*/
         }
         *pbuf = *psz;
         ++pbuf;
@@ -640,7 +657,15 @@ texu_i32 texu_add_commas(texu_char *commas, texu_i32 outlen, const texu_char *no
     {
         memset(commas, 0, outlen);
         /* reverse copy */
-        texu_strrcpy(commas, buf);
+        if (neg)
+        {
+            commas[0] = '-';
+            texu_strrcpy(&commas[1], buf);
+        }
+        else
+        {
+            texu_strrcpy(commas, buf);
+        }
         if (texu_strlen(dec))
         {
             texu_strcat(commas, dec);
@@ -778,6 +803,10 @@ texu_char *texu_strncpy2(texu_char *dest, const texu_char *src, size_t size)
 {
     texu_char out[TEXU_MAX_WNDTEXT + 1];
 
+    if (size < 1)
+    {
+        return 0;
+    }
     memset(out, 0, sizeof(out));
 #if (defined WIN32 && defined UNICODE)
     wcsncpy_s(out, sizeof(texu_char)*(texu_strlen(src)+1), src, size);
