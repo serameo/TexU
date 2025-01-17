@@ -136,9 +136,9 @@ extern "C" {
  *  - 'bg' background color and attributes
  */
 struct tb_cell {
-	unsigned int ch;
-	unsigned short fg;
-	unsigned short bg;
+    unsigned int ch;
+    unsigned short fg;
+    unsigned short bg;
 };
 
 #define TB_EVENT_KEY    1
@@ -153,14 +153,14 @@ struct tb_cell {
  * one of them can be non-zero at a time.
  */
 struct tb_event {
-	unsigned char type;
-	unsigned char mod; /* modifiers to either 'key' or 'ch' below */
-	unsigned short key; /* one of the TB_KEY_* constants */
-	unsigned int ch; /* unicode character */
-	int w;
-	int h;
-	int x;
-	int y;
+    unsigned char type;
+    unsigned char mod; /* modifiers to either 'key' or 'ch' below */
+    unsigned short key; /* one of the TB_KEY_* constants */
+    unsigned int ch; /* unicode character */
+    int w;
+    int h;
+    int x;
+    int y;
 };
 
 /* Error codes returned by tb_init(). All of them are self-explanatory, except
