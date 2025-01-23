@@ -1,4 +1,5 @@
 #include "texutermios.h"
+#include <stdio.h>
 
 #if defined __USE_TERMIOS__
 #include "../termbox/termbox.h"
@@ -9,6 +10,140 @@
 
 #define TEXU_WIDE_SCREEN        "\\033[?3h"
 #define TEXU_NORMAL_SCREEN      "\\033[?3l"
+
+/*
+dev-[LDV170]#echo -e "\033[10;10H\033(0j\033[10;11H\033(0k\033[10;12H\033(0l\033[10;13H\033(0m\033(B"
+*/
+#define TEXU_TERMBOX_GOTOYX(esc, len, row, col)         snprintf((esc), (len), "\033[%d;%dH", (row), (col))
+#define TEXU_TERMBOX_CHAR(esc, len, row, col, ch)       snprintf((esc), (len), "\033[%d;%dH\033(0%c\033(B", (row), (col), (ch))
+#define TEXU_TERMBOX_LR(esc, len, row, col)             TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'j')
+#define TEXU_TERMBOX_UR(esc, len, row, col)             TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'k')
+#define TEXU_TERMBOX_UL(esc, len, row, col)             TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'l')
+#define TEXU_TERMBOX_LL(esc, len, row, col)             TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'm')
+#define TEXU_TERMBOX_CROSS(esc, len, row, col)          TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'n')
+#define TEXU_TERMBOX_HORZ1(esc, len, row, col)          TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'o')
+#define TEXU_TERMBOX_HORZ2(esc, len, row, col)          TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'p')
+#define TEXU_TERMBOX_HORZ3(esc, len, row, col)          TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'q')
+#define TEXU_TERMBOX_HORZ4(esc, len, row, col)          TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'r')
+#define TEXU_TERMBOX_HORZ5(esc, len, row, col)          TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 's')
+#define TEXU_TERMBOX_LTEE(esc, len, row, col)           TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 't')
+#define TEXU_TERMBOX_RTEE(esc, len, row, col)           TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'u')
+#define TEXU_TERMBOX_BTEE(esc, len, row, col)           TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'v')
+#define TEXU_TERMBOX_TTEE(esc, len, row, col)           TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'w')
+#define TEXU_TERMBOX_VERT(esc, len, row, col)           TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'x')
+#define TEXU_TERMBOX_HORZ(esc, len, row, col)           TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'q')
+#define TEXU_TERMBOX_SHADE(esc, len, row, col)          TEXU_TERMBOX_CHAR((esc), (len), (row), (col), 'a')
+#define TEXU_TERMBOX_HLINE(esc, len, row, col, width)   \
+    do{ \
+        char line[256]; \
+        (width)=((width)>255?255:(width)); \
+        memset(line,'q',(width)); \
+        line[width]=0; \
+        snprintf((esc),(len),"\033[%d;%dH\033(0%s\033(B",(row),(col),line); \
+    }while (0)
+
+#define TEXU_TERMBOX_VLINE(esc, len, row, col, height)  \
+    do{ \
+        char line[256]; \
+        int r=0; \
+        int line_len=0; \
+        strcpy(esc,""); \
+        for(r=(row);r<((row)+(height));++r) { \
+            TEXU_TERMBOX_VERT(line,256,r,(col)); \
+            line_len=strlen(line); \
+            if (line_len+strlen(esc)<(len)) { \
+                strcat(esc,line); \
+            } else {break;} \
+        } \
+    }while (0)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void texu_term_sprint_hline(char *esc, int len, int row, int col, int width)
+{
+    char line[256];
+    width = ((width > 255) || (width < 1) ? 255 : width);
+    memset(line , 'q', width);
+    line[width] = 0;
+    snprintf(esc, len, "\033[%d;%dH\033(0%s\033(B", row, col, line);
+}
+
+void texu_term_sprint_vline(char *esc, int len, int row, int col, int height)
+{
+    char line[256];
+    int  r = 0;
+    int  line_len = 0;
+    strcpy(esc, "");
+    for(r = row; r < ((row)+(height)); ++r) 
+    {
+        TEXU_TERMBOX_VERT(line, 255, r, col);
+        line_len = strlen(line);
+        if (line_len+strlen(esc) < len) 
+        {
+            strcat(esc, line);
+        } 
+        else 
+        {
+            break;
+        }
+    }
+}
+
+void texu_term_sprint_box(char *esc, int len, int row, int col, int height, int width)
+{
+    char top[1025];
+    char bottom[1025];
+    char left[1025];
+    char right[1025];
+    char ul[256];   /*upper left*/
+    char ll[256];   /*lower left*/
+    char ur[256];   /*upper right*/
+    char lr[256];   /*lower right*/
+    texu_term_sprint_hline(top, 1024, row, col, width);
+    texu_term_sprint_hline(bottom, 1024, row+height, col, width);
+    texu_term_sprint_vline(left, 1042, row, col, height);
+    texu_term_sprint_vline(right, 1042, row, col+width, height);
+    TEXU_TERMBOX_UL(ul, 255, row, col);
+    TEXU_TERMBOX_UR(ur, 255, row, col+width);
+    TEXU_TERMBOX_LL(ll, 255, row+height, col);
+    TEXU_TERMBOX_LR(lr, 255, row+height, col+width);
+    snprintf(esc, len, "%s%s%s%s%s%s%s%s", top, bottom, left, right, ul, ur, ll, lr);
+}
+
+void texu_term_sprint_shade_line(char *esc, int len, int row, int col, int width)
+{
+    char line[256];
+    width = ((width > 255) || (width < 1) ? 255 : width);
+    memset(line , 'a', width);
+    line[width] = 0;
+    snprintf(esc, len, "\033[%d;%dH\033(0%s\033(B", row, col, line);
+}
+
+void texu_term_sprint_shadow(char *esc, int len, int row, int col, int height, int width)
+{
+    char line[256];
+    int  r = 0;
+    int  line_len = 0;
+    strcpy(esc, "");
+    for(r = row; r < ((row)+(height)); ++r) 
+    {
+        texu_term_sprint_shade_line(line, 255, r, col, width);
+        line_len = strlen(line);
+        if (line_len+strlen(esc) < len) 
+        {
+            strcat(esc, line);
+        } 
+        else 
+        {
+            break;
+        }
+    }
+}
+#ifdef __cplusplus
+}
+#endif
 
 #if defined __USE_TERMIOS__
 #include <stdio.h>
@@ -276,7 +411,7 @@ int texu_tb2_init(int lines, int cols)
     rc = tb_init();
     if (0 == rc)
     {
-        tb_select_input_mode(TB_INPUT_ALT);
+        tb_set_input_mode(TB_INPUT_ALT);
     }
     else
     {

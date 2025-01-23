@@ -1260,7 +1260,7 @@ _TexuPanelProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
             return -1;
         }
         memset(&attrs2, 0, sizeof(attrs2));
-        attrs2.y = /*attrs->y + */attrs->height - 1;
+        attrs2.y = attrs->height - 1;
         attrs2.x = 0;//attrs->x;
         attrs2.height = 1;
         attrs2.width = attrs->width;

@@ -146,6 +146,15 @@ TexuSetThemeColor(texu_i32 (*setcolor)(texu_i32))
     }
 }
 
+void
+TexuSetThemeBgColor(texu_i32 (*setcolor)(texu_i32))
+{
+    if (genv && setcolor)
+    {
+        texu_env_set_sysbgcolors(genv, setcolor);
+    }
+}
+
 texu_status
 TexuRegisterClass(
     texu_char *clsname,
@@ -815,9 +824,9 @@ TexuAddPopupMenu(
 texu_popup_menu_item *
 TexuAddPopupMenuItem(
     texu_menu *menu,
-    texu_tree_item *popup,
+    texu_popup_menu *popup,
     const texu_char *text,
-    texu_ui32 id,
+    texu_i32 id,
     texu_bool enable,
     const texu_char *info)
 {
@@ -834,8 +843,14 @@ TexuAddPopupMenuItem(
                 info);
 }
 
+texu_menu *
+TexuGetMenu(texu_wnd *wnd)
+{
+    return texu_wnd_get_menu(wnd);
+}
+
 texu_popup_menu *
-TexuGetPopupMenu(texu_menu *menu, texu_ui32 idx)
+TexuGetPopupMenu(texu_menu *menu, texu_i32 idx)
 {
     if (!menu)
     {
@@ -848,7 +863,7 @@ texu_popup_menu_item *
 TexuGetPopupMenuItem(
     texu_menu *menu,
     texu_popup_menu *popup,
-    texu_ui32 id)
+    texu_i32 id)
 {
     if (!menu)
     {
@@ -858,7 +873,7 @@ TexuGetPopupMenuItem(
 }
 
 texu_bool
-TexuEnablePopupMenu(texu_menu *menu, texu_ui32 idx, texu_bool enable)
+TexuEnablePopupMenu(texu_menu *menu, texu_i32 idx, texu_bool enable)
 {
     if (!menu)
     {
@@ -868,7 +883,7 @@ TexuEnablePopupMenu(texu_menu *menu, texu_ui32 idx, texu_bool enable)
 }
 
 texu_bool
-TexuEnablePopupMenuItem(texu_menu *menu, texu_popup_menu *popup, texu_ui32 id, texu_bool enable)
+TexuEnablePopupMenuItem(texu_menu *menu, texu_popup_menu *popup, texu_i32 id, texu_bool enable)
 {
     if (!menu || !popup)
     {
@@ -877,8 +892,13 @@ TexuEnablePopupMenuItem(texu_menu *menu, texu_popup_menu *popup, texu_ui32 id, t
     return texu_menu_enable_menuitem(menu, popup, id, enable);
 }
 
+texu_wnd *TexuTrackMenuPopup(texu_wnd *owner, texu_menu* menu, texu_i32 id, texu_i32 y, texu_i32 x)
+{
+    return texu_menu_track_menu_popup(owner, menu, id, y, x);
+}
+
 texu_menu *
-TexuCreateMenus(texu_wnd *wnd, texu_ui32 id, const texu_menu_template *templ, texu_i32 npopups)
+TexuCreateMenus(texu_wnd *wnd, texu_i32 id, const texu_menu_template *templ, texu_i32 npopups)
 {
     texu_menu *menu = 0;
     texu_popup_menu *popup = 0;

@@ -6627,17 +6627,19 @@ _TexuPageCtrl_CreatePage(
     texu_i32 h = texu_wnd_get_height(wnd);
     texu_i32 w = texu_wnd_get_width(wnd);
     /*texu_pagewnd *pgctl = (texu_pagewnd *)texu_wnd_get_userdata(wnd);*/
+    texu_urect rcwnd;
 
     childwnd = texu_wnd_new(env);
     if (!childwnd)
     {
         return 0;
     }
+    texu_wnd_send_msg(wnd, TEXU_WM_GETCLIENTRECT, (texu_lparam)&rcwnd, 0);
     memset(&attrs, 0, sizeof(attrs));
-    attrs.y     = y;
-    attrs.x     = x;
-    attrs.height    = h;
-    attrs.width     = w;
+    attrs.y         = 0;//rcwnd.r2.y;//y;
+    attrs.x         = 0;//rcwnd.r2.x;
+    attrs.height    = rcwnd.r2.height - rcwnd.r2.y;
+    attrs.width     = rcwnd.r2.width - rcwnd.r2.x;
     attrs.enable    = TEXU_TRUE;
     attrs.visible   = TEXU_TRUE;
     attrs.text      = pg->caption;
@@ -7122,11 +7124,21 @@ _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     return 0;
 }
 
+void
+_TexuPageCtrlProc_OnEraseBg(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
+{
+    TexuDefWndProc(wnd, TEXU_WM_ERASEBG, (texu_lparam)cio, (texu_lparam)rect);
+}
+
 texu_longptr
 _TexuPageCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
     switch (msg)
     {
+        /*case TEXU_WM_ERASEBG:
+            _TexuPageCtrlProc_OnEraseBg(wnd, (texu_cio*)param1, (texu_rect*)param2);
+            return;*/
+
         case TEXU_WM_CREATE:
             return _TexuPageCtrlProc_OnCreate(wnd, (texu_wnd_attrs *)param1);
 

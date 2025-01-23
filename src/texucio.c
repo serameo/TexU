@@ -1604,7 +1604,17 @@ texu_cio_dispatch(texu_cio *cio)
     {
         if (cio->ev.ch == 0 && cio->ev.key < 128)
         {
-            ctrl = 2;
+            switch (cio->ev.key)
+            {
+                case TB_KEY_BACKSPACE:
+                case TB_KEY_TAB:
+                case TB_KEY_ENTER:
+                case TB_KEY_ESC:
+                    break;
+                default:
+                    ctrl = 2;
+                    break;
+            }
         }
     }
 #endif
@@ -1612,6 +1622,7 @@ texu_cio_dispatch(texu_cio *cio)
 }
 /*translate the control key to char*/
 
+#if defined __USE_TERMBOX2__
 texu_i32 texu_cio_translate2(texu_cio *cio, texu_i32 key, texu_i32 *mod)
 {
     texu_i32 ch = key;
@@ -1623,13 +1634,13 @@ texu_i32 texu_cio_translate2(texu_cio *cio, texu_i32 key, texu_i32 *mod)
         case TB_KEY_ENTER:
         case TB_KEY_ESC:
         case TB_KEY_BACKSPACE2:
+            *mod = (~TB_MOD_CTRL) & (*mod);
             return key;
     }
     if (key >= TB_KEY_CTRL_A && key <= TB_KEY_CTRL_Z)
     {
         ch = ('A' + (key - 1));
     }
-#if defined __USE_TERMBOX2__
     else if (key >= TB_KEY_F12 && key <= TB_KEY_F1)
     {
         if (TB_MOD_SHIFT & (*mod))
@@ -1650,7 +1661,6 @@ texu_i32 texu_cio_translate2(texu_cio *cio, texu_i32 key, texu_i32 *mod)
             }
         }
     }
-#endif
     else
     {
         switch (key)
@@ -1669,6 +1679,7 @@ texu_i32 texu_cio_translate2(texu_cio *cio, texu_i32 key, texu_i32 *mod)
     }
     return ch;
 }
+#endif
 
 texu_i32 texu_cio_translate(texu_cio *cio, texu_i32 key)
 {
