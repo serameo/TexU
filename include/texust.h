@@ -46,7 +46,7 @@ struct texu_wnd_attrs
     texu_ui32 disabledbg;
     texu_ui32 selectedbg;
     texu_ui32 focusedbg;
-    texu_ui32 id;
+    texu_i32 id;
     /*const*/ texu_char *clsname;
     void *userdata;
     texu_i32 (*on_validate)(texu_wnd*, texu_char*, void*);
@@ -106,7 +106,7 @@ typedef struct texu_env_msg texu_env_msg;
 struct texu_wnd_notify
 {
     texu_wnd *wnd;
-    texu_ui32 id;
+    texu_i32 id;
     texu_ui32 code;
 };
 typedef struct texu_wnd_notify texu_wnd_notify;
@@ -229,7 +229,7 @@ typedef struct texu_treewnd_notify texu_treewnd_notify;
 struct texu_msgbox_notify
 {
     texu_wnd_notify hdr; /* notification header */
-    texu_ui32 id;
+    texu_i32 id;
 };
 typedef struct texu_msgbox_notify texu_msgbox_notify;
 
@@ -262,7 +262,7 @@ typedef struct texu_msgbox_attrs texu_msgbox_attrs;
 
 struct texu_menu_item
 {
-    texu_ui32 id;
+    texu_i32  id;
     texu_char text[TEXU_MAX_WNDTEXT + 1];
     texu_bool enable;
     texu_ui32 normcolor;
@@ -273,7 +273,10 @@ struct texu_menu_item
     texu_ui32 selbg;
     texu_ui32 style; /*TEXU_MS_TEXT, TEXU_MS_BREAK*/
     texu_char info[TEXU_MAX_WNDTEXT + 1];
-    void *userdata;
+    void     *userdata;
+    /*below to be used in the texu_popup_men*/
+    texu_i32  maxwidth;
+    texu_i32  height;
 };
 typedef struct texu_menu_item texu_menu_item;
 
@@ -283,7 +286,7 @@ typedef struct texu_menu texu_menu;
 struct texu_menuitem_notify
 {
     texu_wnd_notify hdr; /* notification header */
-    texu_ui32 id;
+    texu_i32 id;
     texu_char info[TEXU_MAX_WNDTEXT + 1];
 };
 typedef struct texu_menuitem_notify texu_menuitem_notify;
@@ -347,7 +350,7 @@ typedef struct texu_wnd_template3 texu_wnd_template3;
 struct texu_menuitem_template
 {
     const texu_char *text;
-    texu_ui32 id;
+    texu_i32 id;
     texu_i32 enabled;
     const texu_char *info;
 };

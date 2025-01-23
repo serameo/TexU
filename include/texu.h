@@ -87,6 +87,7 @@ texu_i32            TexuGetMaxX();
 
 void                TexuExit();
 void                TexuSetThemeColor(texu_i32 (*setcolor)(texu_i32));
+void                TexuSetThemeBgColor(texu_i32 (*setcolor)(texu_i32));
 
 texu_status         TexuRegisterClass(
                         texu_char*   clsname,
@@ -284,17 +285,19 @@ texu_popup_menu_item*   TexuAddPopupMenuItem(
                             texu_menu* menu,
                             texu_popup_menu* popup,
                             const texu_char* text,
-                            texu_ui32 itemid,
+                            texu_i32 itemid,
                             texu_bool enable,
                             const texu_char* info);
-texu_popup_menu*        TexuGetPopupMenu(texu_menu* menu, texu_ui32 idx);
+texu_menu               *TexuGetMenu(texu_wnd *wnd);
+texu_popup_menu*        TexuGetPopupMenu(texu_menu* menu, texu_i32 idx);
 texu_popup_menu_item*   TexuGetPopupMenuItem(
                             texu_menu* menu,
                             texu_popup_menu* popup,
-                            texu_ui32 popupid);
-texu_bool               TexuEnablePopupMenu(texu_menu* menu, texu_ui32 idx, texu_bool enable);
-texu_bool               TexuEnablePopupMenuItem(texu_menu* menu, texu_popup_menu* popup, texu_ui32 id, texu_bool enable);
-texu_menu*              TexuCreateMenus(texu_wnd* wnd, texu_ui32 id, const texu_menu_template* templ, texu_i32 npopups);
+                            texu_i32 popupid);
+texu_bool               TexuEnablePopupMenu(texu_menu* menu, texu_i32 idx, texu_bool enable);
+texu_bool               TexuEnablePopupMenuItem(texu_menu* menu, texu_popup_menu* popup, texu_i32 id, texu_bool enable);
+texu_menu*              TexuCreateMenus(texu_wnd* wnd, texu_i32 id, const texu_menu_template* templ, texu_i32 npopups);
+texu_wnd                *TexuTrackMenuPopup(texu_wnd *owner, texu_menu* menu, texu_i32 id, texu_i32 y, texu_i32 x);
 
 /* device context */
 texu_cio*               TexuGetDC();

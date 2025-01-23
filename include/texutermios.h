@@ -1,6 +1,19 @@
 #ifndef __TEXU_TERMIOS_H__
 #define __TEXU_TERMIOS_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+void texu_term_sprint_box(char *esc, int len, int row, int col, int height, int width);
+void texu_term_sprint_vline(char *esc, int len, int row, int col, int height);
+void texu_term_sprint_hline(char *esc, int len, int row, int col, int width);
+void texu_term_sprint_shade_line(char *esc, int len, int row, int col, int width);
+void texu_term_sprint_shadow(char *esc, int len, int row, int col, int height, int width);
+#ifdef __cplusplus
+}
+#endif
+
+
 #if defined __USE_TERMIOS__
 struct texu_cio; /*see texucio.h*/
 struct tb_event; /*see termbox2.h*/

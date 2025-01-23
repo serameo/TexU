@@ -759,7 +759,7 @@ enum
 #define TEXU_KEY_NPAGE                  KEY_NPAGE
 #define TEXU_KEY_ESCAPE                 27
 #elif (defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
-#define TEXU_KEY_SELMENU                10
+#define TEXU_KEY_SELMENU                TB_KEY_ENTER
 #define TEXU_KEY_NEXTWND                TB_KEY_ENTER
 #define TEXU_KEY_ENTER                  TB_KEY_ENTER
 #define TEXU_KEY_NUMENTER               270
@@ -943,6 +943,7 @@ enum
 /*menu*/
 #define TEXU_MENU_CLASS                 L"TexuMenuClassW"
 #define TEXU_MENUWND_CLASS              L"TexuMenuWndClassW"
+#define TEXU_POPUPMENUWND_CLASS         "TexuPopupMenuWndClassW"
 #else
 #define TEXU_MSGBOX_CLASS               "TexuMsgBoxClassA"
 #define TEXU_DESKTOP_CLASS              "TexuDesktopClassA"
@@ -970,6 +971,7 @@ enum
 /*menu*/
 #define TEXU_MENU_CLASS                 "TexuMenuClassA"
 #define TEXU_MENUWND_CLASS              "TexuMenuWndClassA"
+#define TEXU_POPUPMENUWND_CLASS         "TexuPopupMenuWndClassA"
 #endif
 
 
