@@ -9,6 +9,8 @@ void texu_term_sprint_vline(char *esc, int len, int row, int col, int height);
 void texu_term_sprint_hline(char *esc, int len, int row, int col, int width);
 void texu_term_sprint_shade_line(char *esc, int len, int row, int col, int width);
 void texu_term_sprint_shadow(char *esc, int len, int row, int col, int height, int width);
+void texu_term_write_screen(char *esc);
+void texu_term_clear_screen();
 #ifdef __cplusplus
 }
 #endif
@@ -45,6 +47,24 @@ struct texu_cio; /*see texucio.h*/
 struct tb_event; /*see termbox2.h*/
 typedef void (*fn_signal_callback)(int sig, void*);
 typedef void (*fn_sigint_callback)(void*);
+
+/*UNICODE CHAR*/
+#if defined __UTF8__
+#define TEXU_TB2_UPPERLEFT          (0x250C)
+#define TEXU_TB2_UPPERRIGHT         (0x2510)
+#define TEXU_TB2_LOWERLEFT          (0x2514)
+#define TEXU_TB2_LOWERRIGHT         (0x2518)
+#define TEXU_TB2_HORZLINE           (0x2500)
+#define TEXU_TB2_VERTLINE           (0x2502)
+#define TEXU_TB2_LEFTTEE            (0x251C)
+#define TEXU_TB2_RIGHTTEE           (0x2524)
+#define TEXU_TB2_TOPTEE             (0x252C)
+#define TEXU_TB2_BOTTOMTEE          (0x2534)
+#define TEXU_TB2_ALLTEE             (0x253C)
+#define TEXU_TB2_SHADE0             (0x2590)
+#define TEXU_TB2_SHADE1             (0x2591)
+#define TEXU_TB2_SHADE2             (0x2592)
+#endif
 
 #ifdef __cplusplus
 extern "C" {

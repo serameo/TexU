@@ -112,6 +112,7 @@ texu_i32            texu_cio_gotoyx(texu_cio*, texu_i32, texu_i32);
 texu_i32            texu_cio_getyx(texu_cio*, texu_i32* y, texu_i32* x);
 /* get/put */
 texu_i32            texu_cio_getch(texu_cio*);
+texu_i32            texu_cio_getch2(texu_cio*, texu_i32 timeout);
 texu_i32            texu_cio_getstr(texu_cio*, texu_char*);
 #if defined WIN32 && defined _CONSOLE
 texu_i32
@@ -167,6 +168,20 @@ texu_i32            texu_cio_attroff(texu_cio*, texu_i32);
 
 
 /* border */
+#if 1//(defined __USE_TERMBOX2__)
+texu_i32            texu_cio_draw_frame(texu_cio*, const texu_char* caption, texu_rect*, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+texu_i32            texu_cio_draw_rect(texu_cio*, texu_rect*, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+texu_i32            texu_cio_draw_line(texu_cio*, texu_i32 y, texu_i32 x, texu_i32 width, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+texu_i32            texu_cio_draw_vline(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+
+texu_i32            texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 nwidth, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+texu_i32            texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32 nheight, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+#if defined __UTF8__
+texu_i32            texu_cio_draw_line_utf8(texu_cio*, texu_i32 y, texu_i32 x, texu_i32 width, texu_i32 fg, texu_i32 bg, texu_i32 ch);
+texu_i32            texu_cio_draw_vline_utf8(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu_i32 fg, texu_i32 bg, texu_i32 ch);
+texu_i32            texu_cio_draw_box_utf8(texu_cio*, texu_i32 y, texu_i32 x, texu_i32 width, texu_i32 height, texu_i32 fg, texu_i32 bg, texu_i32 ch);
+#endif
+#else
 texu_i32            texu_cio_draw_frame(texu_cio*, const texu_char*, texu_rect*, texu_i32);
 texu_i32            texu_cio_draw_rect(texu_cio*, texu_rect*, texu_i32);
 texu_i32            texu_cio_draw_line(texu_cio*, texu_i32, texu_i32, texu_i32, texu_i32);
@@ -174,7 +189,7 @@ texu_i32            texu_cio_draw_vline(texu_cio*, texu_i32, texu_i32, texu_i32,
 
 texu_i32            texu_cio_draw_hrects(texu_cio*, texu_rect*, texu_i32*, texu_i32, texu_i32);
 texu_i32            texu_cio_draw_vrects(texu_cio*, texu_rect*, texu_i32*, texu_i32, texu_i32);
-
+#endif
 texu_i32            texu_cio_get_color(texu_cio*, texu_i32);
 texu_i32            texu_cio_get_underline(texu_cio*, texu_i32);
 texu_i32            texu_cio_get_reverse(texu_cio*, texu_i32);

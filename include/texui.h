@@ -271,7 +271,17 @@ texu_i32        texu_env_get_state(texu_env* env);
 #if (defined WIN32 && defined _WINDOWS)
 texu_status     texu_env_run(texu_env *env, UINT message, WPARAM wParam, LPARAM lParam);
 #else
-texu_status     texu_env_run(texu_env*);
+/*
+options:
+    0 = PEEK EVENT
+    otherwise = POLL EVENT
+*/
+#define TEXU_ENV_PEEK_EVENT         0
+#define TEXU_ENV_POLL_EVENT         1
+
+texu_status     texu_env_run_base(texu_env*, texu_i32 options);
+texu_status     texu_env_run(texu_env*); /*peek event*/
+texu_status     texu_env_run_poll(texu_env*); /*poll event*/
 #endif
 texu_cio*       texu_env_get_cio(texu_env*);
 texu_status     texu_env_push_wnd(texu_env*, texu_wnd*);

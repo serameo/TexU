@@ -69,6 +69,7 @@ texu_status         TexuStartup(texu_i32 lines, texu_i32 cols);
 
 texu_status         TexuShutdown();
 texu_status         TexuRun();
+texu_status         TexuRunPoll();
 #if (defined WIN32 && defined _WINDOWS)
 texu_status         TexuCreateMainEnvWnd(DWORD dwExStyle, DWORD dwStyle,
                                      int x, int y, int cx, int cy,
@@ -149,6 +150,7 @@ texu_status         TexuCreateControls(texu_wnd* wnd, const texu_wnd_template*, 
 texu_status         TexuCreateControls2(texu_wnd* wnd, const texu_wnd_template2*, texu_i32);
 #endif
 texu_longptr            TexuCloseWindow(texu_wnd *wnd);
+texu_longptr            TexuSendWindowBack(texu_wnd *wnd); /*technic to hide the current top frame window*/
 
 void                TexuShowWindow(
                         texu_wnd*  wnd,
@@ -281,9 +283,24 @@ texu_popup_menu*        TexuAddPopupMenu(
                             const texu_char* text,
                             texu_bool enable,
                             const texu_char* info);
+texu_popup_menu*        TexuAddSubPopupMenu(
+                            texu_menu* menu,
+                            texu_popup_menu *popup,
+                            const texu_char* text,
+                            texu_i32  id,
+                            texu_bool enable,
+                            const texu_char* info);
 texu_popup_menu_item*   TexuAddPopupMenuItem(
                             texu_menu* menu,
                             texu_popup_menu* popup,
+                            const texu_char* text,
+                            texu_i32 itemid,
+                            texu_bool enable,
+                            const texu_char* info);
+texu_popup_menu_item*   TexuAddSubPopupMenuItem(
+                            texu_menu* menu,
+                            texu_popup_menu* popup,
+                            texu_i32 style,
                             const texu_char* text,
                             texu_i32 itemid,
                             texu_bool enable,
@@ -294,15 +311,25 @@ texu_popup_menu_item*   TexuGetPopupMenuItem(
                             texu_menu* menu,
                             texu_popup_menu* popup,
                             texu_i32 popupid);
+texu_popup_menu*        TexuGetSubPopupMenu(
+                            texu_menu* menu,
+                            texu_popup_menu* popup,
+                            texu_i32 popupid);
+
 texu_bool               TexuEnablePopupMenu(texu_menu* menu, texu_i32 idx, texu_bool enable);
 texu_bool               TexuEnablePopupMenuItem(texu_menu* menu, texu_popup_menu* popup, texu_i32 id, texu_bool enable);
 texu_menu*              TexuCreateMenus(texu_wnd* wnd, texu_i32 id, const texu_menu_template* templ, texu_i32 npopups);
+#if 0
 texu_wnd                *TexuTrackMenuPopup(texu_wnd *owner, texu_menu* menu, texu_i32 id, texu_i32 y, texu_i32 x);
-
+#endif
 /* device context */
 texu_cio*               TexuGetDC();
 texu_i32                TexuGetColor(texu_cio* cio, texu_i32 clridx);
-#if (defined WIN32 && defined _WINDOWS)
+#if 1//(defined __USE_TERMBOX2__)
+texu_i32                TexuDrawHRects(texu_cio* cio, texu_rect* rect, texu_i32* widths, texu_i32 nwidth, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+texu_i32                TexuDrawVRects(texu_cio* cio, texu_rect* rect, texu_i32* heights, texu_i32 nheight, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+texu_i32                TexuDrawFrame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_i32 fg, texu_i32 bg, texu_i32 attrs);
+#elif (defined WIN32 && defined _WINDOWS)
 texu_i32                TexuDrawHRects(texu_cio* cio, texu_rect* rect, texu_i32* widths, texu_i32 nwidth, texu_ui32 color, texu_ui32 bgcolor);
 texu_i32                TexuDrawVRects(texu_cio* cio, texu_rect* rect, texu_i32* heights, texu_i32 nheight, texu_ui32 color, texu_ui32 bgcolor);
 texu_i32                TexuDrawFrame(texu_cio* cio, const texu_char* text, texu_rect* rect, texu_ui32 color, texu_ui32 bgcolor);

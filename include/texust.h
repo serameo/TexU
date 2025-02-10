@@ -271,7 +271,7 @@ struct texu_menu_item
     texu_ui32 normbg;
     texu_ui32 disbg;
     texu_ui32 selbg;
-    texu_ui32 style; /*TEXU_MS_TEXT, TEXU_MS_BREAK*/
+    texu_ui32 style; /*TEXU_MS_TEXT, TEXU_MS_BREAK, TEXU_MS_POPUP*/
     texu_char info[TEXU_MAX_WNDTEXT + 1];
     void     *userdata;
     /*below to be used in the texu_popup_men*/

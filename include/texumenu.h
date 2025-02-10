@@ -48,11 +48,21 @@ root (texu_menu*)
      -- About (texu_popup_menu_item*)
 */
 
-#define TEXU_MS_TEXT          1
-#define TEXU_MS_BREAK         0
+#define TEXU_MS_BREAK           0
+#define TEXU_MS_TEXT            1
+#define TEXU_MS_POPUP           2
 
 typedef texu_tree_item    texu_popup_menu;
 typedef texu_tree_item    texu_popup_menu_item;
+
+struct _texu_popup_menu2
+{
+    texu_tree_item      hdr;
+    texu_menu_item      item;
+    void                *userdata;
+};
+typedef struct _texu_popup_menu2 texu_popup_menu2;
+typedef struct _texu_popup_menu2 texu_popup_menu2;
 
 texu_menu*        texu_menu_new(texu_wnd*, texu_i32);
 void              texu_menu_del(texu_menu*);
@@ -73,6 +83,13 @@ texu_popup_menu*    texu_menu_add_menu_info(
                         const texu_char* text,
                         texu_bool enable,
                         const texu_char* info);
+texu_popup_menu*   texu_menu_add_submenu_info(
+                            texu_menu*, /*main menu*/
+                            texu_popup_menu*, /*parent popup*/
+                            const texu_char* text,
+                            texu_i32 id,
+                            texu_bool enable,
+                            const texu_char* info);
 texu_popup_menu_item*   texu_menu_add_item_info(
                             texu_menu*,
                             texu_popup_menu*,
@@ -80,6 +97,14 @@ texu_popup_menu_item*   texu_menu_add_item_info(
                             texu_i32 id,
                             texu_bool enable,
                             const texu_char* info);
+texu_popup_menu_item*   texu_menu_add_subitem_info(
+                            texu_menu           *menu,
+                            texu_popup_menu     *submenu,
+                            texu_i32            style,
+                            const texu_char     * text,
+                            texu_i32            id,
+                            texu_bool           enable,
+                            const texu_char     * info);
 
 texu_popup_menu*   texu_menu_find_item(texu_menu*, texu_i32);
 texu_popup_menu*   texu_menu_get_menu(texu_menu*, texu_i32);
