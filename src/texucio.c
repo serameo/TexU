@@ -1570,6 +1570,11 @@ texu_cio_getch(texu_cio *cio)
 {
     return texu_tty_getch(0, 5000);
 }
+texu_i32
+texu_cio_getch2(texu_cio *cio, texu_i32 timeout)
+{
+    return texu_tty_getch(0, timeout);
+}
 #elif (defined __USE_TERMIOS__ || defined TEXU_CIO_COLOR_MONO || defined __USE_TERMBOX2__)
 texu_i32
 texu_cio_getch(texu_cio *cio)
@@ -1578,6 +1583,15 @@ texu_cio_getch(texu_cio *cio)
     return texu_tb2_getch(cio, &cio->ev, 500);
 #else
     return texu_termios_getch(cio, &cio->ev, 500);
+#endif
+}
+texu_i32
+texu_cio_getch2(texu_cio *cio, texu_i32 timeout)
+{
+#if defined __USE_TERMBOX2__
+    return texu_tb2_getch(cio, &cio->ev, timeout);
+#else
+    return texu_termios_getch(cio, &cio->ev, timeout);
 #endif
 }
 texu_i32
@@ -1722,6 +1736,11 @@ texu_cio_getch(texu_cio *cio)
 {
     return 0;
 }
+texu_i32
+texu_cio_getch2(texu_cio *cio, texu_i32 timeout)
+{
+    return 0;
+}
 #elif (defined WIN32 && defined _CONSOLE)
 texu_i32
 texu_cio_win32_getch(texu_cio* cio, texu_char* ascii, texu_i32* alt, texu_i32* ctrl, texu_i32* shift)
@@ -1786,6 +1805,15 @@ texu_cio_getch(texu_cio* cio)
     texu_char ch   = 0;
     return texu_cio_win32_getch(cio, &ch, &alt, &ctrl, &shift);
 }
+texu_i32
+texu_cio_getch2(texu_cio* cio, texu_i32 timeout)
+{
+    texu_i32 alt   = 0;
+    texu_i32 ctrl  = 0;
+    texu_i32 shift = 0;
+    texu_char ch   = 0;
+    return texu_cio_win32_getch(cio, &ch, &alt, &ctrl, &shift);
+}
 #elif (defined VMS || defined __VMS__)
 texu_i32
 texu_cio_getch(texu_cio *cio)
@@ -1799,10 +1827,32 @@ texu_cio_getch(texu_cio *cio)
     }
     return key;
 }
+texu_i32
+texu_cio_getch2(texu_cio *cio, texu_i32 timeout)
+{
+    unsigned short key;
+    /*int timeout = 1;*/
+    long status = smg$read_keystroke(&cio->smg_keybd_id, &key, 0, &timeout);
+    if (SS$_TIMEOUT == status)
+    {
+        return -1;
+    }
+    return key;
+}
 #else
 texu_i32
 texu_cio_getch(texu_cio *cio)
 {
+    return getch();
+}
+texu_i32
+texu_cio_getch2(texu_cio *cio, texu_i32 timeout)
+{
+    if (timeout < 0)
+    {
+        timeout = 0;
+    }
+    texu_cio_interval(cio, timeout);
     return getch();
 }
 #endif
@@ -2262,7 +2312,7 @@ texu_cio_putch_attr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, te
 #if defined __USE_TERMBOX2__
     texu_tb2_putch(y, x, ch,
         texu_cio_get_color(cio, cio__color_pair(attrs)), 
-        -1);
+        texu_cio_get_color(cio, cio__color_pair(attrs)));
 #else
     texu_termios_putch(y, x, ch,
         texu_cio_get_color(cio, cio__color_pair(attrs)), 
@@ -2276,7 +2326,7 @@ texu_cio_putch_attr(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 ch, texu_i32
 #if defined __USE_TERMBOX2__
     texu_tb2_putch(y, x, ch, 
         texu_cio_get_color(cio, cio__color_pair(attrs)), 
-        -1);
+        texu_cio_get_color(cio, cio__color_pair(attrs)));
 #else
     texu_termios_putch(y, x, ch, 
         texu_cio_get_color(cio, cio__color_pair(attrs)), 
@@ -2424,7 +2474,7 @@ texu_i32
 texu_cio_putstr_erase(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str, texu_bool erase)
 {
 #if defined __USE_TERMBOX2__
-    texu_tb2_putstr(y, x, str, -1, -1);
+    texu_tb2_putstr(y, x, str, 0, 0);
 #else
     texu_termios_putstr(y, x, str, -1, -1);
 #endif
@@ -2434,7 +2484,7 @@ texu_i32
 texu_cio_putstr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str)
 {
 #if defined __USE_TERMBOX2__
-    texu_tb2_putstr(y, x, str, -1, -1);
+    texu_tb2_putstr(y, x, str, 0, 0);
 #else
     texu_termios_putstr(y, x, str, -1, -1);
 #endif
@@ -2552,7 +2602,7 @@ texu_cio_putstr_attr(texu_cio *cio, texu_i32 y, texu_i32 x, const texu_char *str
 #if defined __USE_TERMBOX2__
     texu_tb2_putstr(y, x, str,
         texu_cio_get_color(cio, cio__color_pair(fg)), 
-        -1);
+        texu_cio_get_color(cio, cio__color_pair(fg)));
 #else
     texu_termios_putstr(y, x, str,
         texu_cio_get_color(cio, cio__color_pair(fg)), 
@@ -2836,16 +2886,15 @@ texu_cio_draw_char(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
 #if (defined WIN32 && defined _WINDOWS)
     return texu_env_draw_char_ex(cio->env, y, x, ch, color, bgcolor,
                                  clsname, id);
-#elif (defined __USE_TERMIOS__ || defined TEXU_CIO_COLOR_MONO || defined __USE_TERMBOX2__)
-#if defined __USE_TERMBOX2__
-    texu_tb2_putch(y, x, ch, 
-        cio__color_pair(color), 
-        cio__bgcolor_pair(bgcolor));
-#else
+#elif (defined __USE_TERMIOS__)
     texu_termios_putch(y, x, ch, 
         cio__color_pair(color), 
         cio__bgcolor_pair(bgcolor));
-#endif
+    return 0;
+#elif (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
+    texu_tb2_putch(y, x, ch, 
+        cio__color_pair(color), 
+        cio__bgcolor_pair(bgcolor));
     return 0;
 #elif (defined __USE_TTY__)
     return texu_cio_putch_attr(cio, y, x, ch, 
@@ -2870,18 +2919,17 @@ texu_cio_draw_char2(texu_cio *cio, texu_i32 y, texu_i32 x, texu_char ch,
     const texu_char *clsname,
     texu_ui32 id)
 {
-#if (defined __USE_TERMIOS__ || defined TEXU_CIO_COLOR_MONO || defined __USE_TERMBOX2__)
-#if defined __USE_TERMBOX2__
-    texu_tb2_putch_attrs(y, x, ch, 
-        cio__color_pair(color), 
-        cio__bgcolor_pair(bgcolor),
-        attrs);
-#else
+#if (defined __USE_TERMIOS__)
     texu_termios_putch_attrs(y, x, ch, 
         cio__color_pair(color), 
         cio__bgcolor_pair(bgcolor),
         attrs);
-#endif
+    return 0;
+#elif (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
+    texu_tb2_putch_attrs(y, x, ch, 
+        cio__color_pair(color), 
+        cio__bgcolor_pair(bgcolor),
+        attrs);
     return 0;
 #else
     return texu_cio_draw_char(cio, y, x, ch, color, bgcolor, clsname, id);
@@ -3092,11 +3140,15 @@ texu_cio_refresh(texu_cio *cio)
 #endif
 
 texu_i32
+#if 1//(defined __USE_TERMBOX2__)
+texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+#else
 texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_i32 attrs)
+#endif
 {
     texu_i32 len = 0;
 
-    texu_cio_draw_rect(cio, rect, attrs);
+    texu_cio_draw_rect(cio, rect, fg, bg, attrs);
 
     if (text)
     {
@@ -3114,10 +3166,11 @@ texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_
         sprintf(caption, "[ %s ]", text);
         len = texu_strlen(caption);
 #if defined __USE_TERMBOX2__
-        texu_tb2_putstr(rect->y,
+        texu_tb2_putstr_attrs(rect->y,
             rect->x + (rect->cols - len) / 2, caption, 
-            cio__color_pair(attrs), 
-            cio__bgcolor_pair(attrs));
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
 #else
         texu_termios_putstr(rect->y,
             rect->x + (rect->cols - len) / 2, caption, 
@@ -3126,10 +3179,11 @@ texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_
 #endif
 #else
 #if defined __USE_TERMBOX2__
-        texu_tb2_putstr(rect->y,
+        texu_tb2_putstr_attrs(rect->y,
             rect->x + (rect->cols - len) / 2, text,
-            cio__color_pair(attrs), 
-            cio__bgcolor_pair(attrs));
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
 #else
         texu_termios_putstr(rect->y,
             rect->x + (rect->cols - len) / 2, text,
@@ -3174,7 +3228,11 @@ texu_cio_draw_frame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_
 }
 
 texu_i32
+#if 1//(defined __USE_TERMBOX2__)
+texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+#else
 texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
+#endif
 {
 #if 0//(defined __VMS__)
     texu_cio_get_color(cio, cio__color_pair(attrs));
@@ -3182,15 +3240,15 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
     texu_cio_get_color(cio, WHITE_BLACK);
 #else
     texu_cio_attron(cio, attrs);
+#if (defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
     /*draw top line*/
-    texu_cio_draw_line(cio, rect->y, rect->x, rect->cols, attrs);
+    texu_cio_draw_line(cio, rect->y, rect->x, rect->cols, fg, bg, attrs);
     /*draw bottom line*/
-    texu_cio_draw_line(cio, rect->y + rect->lines - 1, rect->x, rect->cols, attrs);
+    texu_cio_draw_line(cio, rect->y + rect->lines - 1, rect->x, rect->cols, fg, bg, attrs);
     /* draw left vertical line */
-    texu_cio_draw_vline(cio, rect->y, rect->x, rect->lines, attrs);
+    texu_cio_draw_vline(cio, rect->y, rect->x, rect->lines, fg, bg, attrs);
     /* draw right vertical line */
-    texu_cio_draw_vline(cio, rect->y, rect->x + rect->cols - 1, rect->lines, attrs);
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+    texu_cio_draw_vline(cio, rect->y, rect->x + rect->cols - 1, rect->lines, fg, bg, attrs);
     /* draw upper left*/
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
     /* draw lower left*/
@@ -3199,6 +3257,66 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
     texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols - 1, '+', attrs);
     /* draw lower right*/
     texu_cio_putch_attr(cio, rect->y + rect->lines - 1, rect->x + rect->cols - 1, '+', attrs);
+#elif (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
+#if defined __UTF8__
+    /*draw top line*/
+    texu_cio_draw_line_utf8(cio, rect->y, rect->x, rect->cols, fg, bg, TEXU_TB2_HORZLINE);
+    /*draw bottom line*/
+    texu_cio_draw_line_utf8(cio, rect->y + rect->lines - 1, rect->x, rect->cols, fg, bg, TEXU_TB2_HORZLINE);
+    /* draw left vertical line */
+    texu_cio_draw_vline_utf8(cio, rect->y, rect->x, rect->lines, fg, bg, TEXU_TB2_VERTLINE);
+    /* draw right vertical line */
+    texu_cio_draw_vline_utf8(cio, rect->y, rect->x + rect->cols - 1, rect->lines, fg, bg, TEXU_TB2_VERTLINE);
+    /* draw upper left*/
+    tb_set_cell(rect->x, rect->y, TEXU_TB2_UPPERLEFT, 
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg));
+    /* draw lower left*/
+    tb_set_cell(rect->x, rect->y + rect->lines - 1, TEXU_TB2_LOWERLEFT, 
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg));
+    /* draw upper right*/
+    tb_set_cell(rect->x + rect->cols - 1, rect->y, TEXU_TB2_UPPERRIGHT,
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg));
+    /* draw lower right*/
+    tb_set_cell(rect->x + rect->cols - 1, rect->y + rect->lines - 1, TEXU_TB2_LOWERRIGHT,
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg));
+#else
+    /*draw top line*/
+    texu_cio_draw_line(cio, rect->y, rect->x, rect->cols, fg, bg, attrs);
+    /*draw bottom line*/
+    texu_cio_draw_line(cio, rect->y + rect->lines - 1, rect->x, rect->cols, fg, bg, attrs);
+    /* draw left vertical line */
+    texu_cio_draw_vline(cio, rect->y, rect->x, rect->lines, fg, bg, attrs);
+    /* draw right vertical line */
+    texu_cio_draw_vline(cio, rect->y, rect->x + rect->cols - 1, rect->lines, fg, bg, attrs);
+    /* draw upper left*/
+    texu_tb2_putstr_attrs(
+        rect->y, rect->x, "+",
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg),
+        attrs);
+    /* draw lower left*/
+    texu_tb2_putstr_attrs(
+        rect->y + rect->lines - 1, rect->x, "+",
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg),
+        attrs);
+    /* draw upper right*/
+    texu_tb2_putstr_attrs(
+        rect->y, rect->x + rect->cols - 1, "+",
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg),
+        attrs);
+    /* draw lower right*/
+    texu_tb2_putstr_attrs(
+        rect->y + rect->lines - 1, rect->x + rect->cols - 1, "+",
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg),
+        attrs);
+#endif
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
     /* draw upper left*/
@@ -3225,33 +3343,104 @@ texu_cio_draw_rect(texu_cio *cio, texu_rect *rect, texu_i32 attrs)
     return 0;
 }
 
+#if defined __UTF8__
+texu_i32 texu_cio_draw_line_utf8(texu_cio* cio, texu_i32 y, texu_i32 x, texu_i32 width, texu_i32 fg, texu_i32 bg, texu_i32 ch)
+{
+    texu_i32 i = 0;
+    for (i = 0; i < width; ++i)
+    {
+        tb_set_cell(x + i, y, ch, cio__color_pair(fg), cio__bgcolor_pair(bg));
+    }
+    return 0;
+}
+texu_i32 texu_cio_draw_vline_utf8(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu_i32 fg, texu_i32 bg, texu_i32 ch)
+{
+    texu_i32 i = 0;
+    for (i = 0; i < height; ++i)
+    {
+        tb_set_cell(x, y + i, ch, 
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+    }
+    return 0;
+}
+texu_i32 texu_cio_draw_box_utf8(texu_cio* cio, texu_i32 y, texu_i32 x, texu_i32 width, texu_i32 height, texu_i32 fg, texu_i32 bg, texu_i32 ch)
+{
+    texu_i32 i = 0;
+    for (i = 0; i < height; ++i)
+    {
+        texu_cio_draw_line_utf8(cio, y + i, x, width, fg, bg, ch);
+    }
+    return 0;
+}
+
+#endif
+
 texu_i32
+#if 1//(defined __USE_TERMBOX2__)
+texu_cio_draw_line(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 width, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+#else
 texu_cio_draw_line(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 width, texu_i32 attrs)
+#endif
 {
     texu_char line[TEXU_MAX_WNDTEXT + 1];
     memset(line, 0, sizeof(line));
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
     memset(line, '-', width);
+    texu_cio_putstr_attr(cio, y, x, line, attrs);
+#elif (defined __USE_TERMBOX2__)
+#if (defined __UTF8__)
+    texu_i32 i = 0;
+    for (i = 0; i < width; ++i)
+    {
+        tb_set_cell(x + i, y, TEXU_TB2_HORZLINE, 
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+    }
+    return 0;
+#else
+    memset(line, '-', width);
+    texu_tb2_putstr_attrs(y, x, line,
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg),
+        attrs);
+#endif
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
     memset(line, '-', width);
+    texu_cio_putstr_attr(cio, y, x, line, attrs);
 #else
     memset(line, ACS_HLINE, width);
-#endif
     texu_cio_putstr_attr(cio, y, x, line, attrs);
+#endif
 
     return TEXU_OK;//texu_cio_attroff(cio, attrs);
 }
 
 texu_i32
+#if 1//(defined __USE_TERMBOX2__)
+texu_cio_draw_vline(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+#else
 texu_cio_draw_vline(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu_i32 attrs)
+#endif
 {
     texu_i32 i = 0;
     texu_cio_attron(cio, attrs);
     for (i = 0; i < height; ++i)
     {
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
         texu_cio_putch_attr(cio, y + i, x, '|', attrs);
+#elif (defined __USE_TERMBOX2__)
+#if (defined __UTF8__)
+        tb_set_cell(x, y + i, TEXU_TB2_VERTLINE, 
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+#else
+        texu_tb2_putstr_attrs(y + i, x, "|",
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
+#endif
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
         texu_cio_putch_attr(cio, y + i, x, '|', attrs);
@@ -3263,7 +3452,11 @@ texu_cio_draw_vline(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu
 }
 
 texu_i32
+#if 1//(defined __USE_TERMBOX2__)
+texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 nwidth, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+#else
 texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 nwidth, texu_i32 attrs)
+#endif
 {
     texu_i32 i = 0;
     texu_rect rc = *rect;
@@ -3271,10 +3464,28 @@ texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 
     for (i = 0; i < nwidth; ++i)
     {
         rc.cols = widths[i];
-        texu_cio_draw_rect(cio, &rc, attrs);
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+        texu_cio_draw_rect(cio, &rc, fg, bg, attrs);
+#if (defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
         texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
         texu_cio_putch_attr(cio, rc.y + rc.lines - 1, rc.x, '+', attrs);
+#elif (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
+#if (defined __UTF8__)
+        tb_set_cell(rc.x, rc.y, TEXU_TB2_TOPTEE, 
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+        tb_set_cell(rc.x, rc.y + rc.lines - 1, TEXU_TB2_BOTTOMTEE, 
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+#else
+        texu_tb2_putstr_attrs(rc.y, rc.x, "+",
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
+        texu_tb2_putstr_attrs(rc.y + rc.lines - 1, rc.x, "+",
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
+#endif
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
         texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
@@ -3285,9 +3496,27 @@ texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 
 #endif
         rc.x += widths[i] - 1;
     }
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
     texu_cio_putch_attr(cio, rect->y + rect->lines - 1, rect->x, '+', attrs);
+#elif (defined __USE_TERMBOX2__)
+#if (defined __UTF8__)
+    tb_set_cell(rect->x, rect->y, TEXU_TB2_UPPERLEFT, 
+        cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+    tb_set_cell(rect->x, rect->y + rect->lines - 1, TEXU_TB2_LOWERLEFT, 
+        cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+#else
+        texu_tb2_putstr_attrs(rect->y, rect->x, "+",
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
+        texu_tb2_putstr_attrs(rect->y + rect->lines - 1, rect->x, "+",
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
+#endif
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
@@ -3300,7 +3529,11 @@ texu_cio_draw_hrects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 
 }
 
 texu_i32
+#if 1//(defined __USE_TERMBOX2__)
+texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32 nheight, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+#else
 texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32 nheight, texu_i32 attrs)
+#endif
 {
     texu_i32 i = 0;
     texu_rect rc = *rect;
@@ -3308,11 +3541,29 @@ texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32
     for (i = 0; i < nheight; ++i)
     {
         rc.lines = heights[i];
-        texu_cio_draw_rect(cio, &rc, attrs);
+        texu_cio_draw_rect(cio, &rc, fg, bg, attrs);
 
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+#if (defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
         texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
         texu_cio_putch_attr(cio, rc.y + rc.lines - 1, rc.x, '+', attrs);
+#elif (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
+#if (defined __UTF8__)
+        tb_set_cell(rc.x, rc.y, TEXU_TB2_LEFTTEE, 
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+        tb_set_cell(rc.x, rc.y + rc.lines - 1, TEXU_TB2_RIGHTTEE, 
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg));
+#else
+        texu_tb2_putstr_attrs(rc.y, rc.x, "+",
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
+        texu_tb2_putstr_attrs(rc.y + rc.lines - 1, rc.x, "+",
+            cio__color_pair(fg), 
+            cio__bgcolor_pair(bg),
+            attrs);
+#endif
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
         texu_cio_putch_attr(cio, rc.y, rc.x, '+', attrs);
@@ -3323,9 +3574,27 @@ texu_cio_draw_vrects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32
 #endif
         rc.y += heights[i] - 1;
     }
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
+#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);
     texu_cio_putch_attr(cio, rect->y, rect->x + rect->cols - 1, '+', attrs);
+#elif (defined __USE_TERMBOX2__)
+#if (defined __UTF8__)
+    tb_set_cell(rect->x, rect->y, TEXU_TB2_UPPERLEFT, 
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg));
+    tb_set_cell(rect->x + rect->cols - 1, rect->y, TEXU_TB2_UPPERRIGHT, 
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg));
+#else
+    texu_tb2_putstr_attrs(rect->y, rect->x, "+",
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg),
+        attrs);
+    texu_tb2_putstr_attrs(rect->y, rect->x + rect->cols - 1, "+",
+        cio__color_pair(fg), 
+        cio__bgcolor_pair(bg),
+        attrs);
+#endif
 #elif (defined WIN32 && defined _WINDOWS)
 #elif (defined WIN32 && defined _CONSOLE)
     texu_cio_putch_attr(cio, rect->y, rect->x, '+', attrs);

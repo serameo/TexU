@@ -7035,7 +7035,7 @@ _TexuPageCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     else if (curpage)
     {
-        if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
+        if ((ch >= '1' && ch <= '9') && (alt & TEXU_KEYPRESSED_ALT))
         {
             texu_menu *menu = texu_wnd_get_menu(curpage);
             if (menu)

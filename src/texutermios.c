@@ -141,6 +141,7 @@ void texu_term_sprint_shadow(char *esc, int len, int row, int col, int height, i
         }
     }
 }
+
 #ifdef __cplusplus
 }
 #endif
@@ -163,6 +164,17 @@ void texu_term_sprint_shadow(char *esc, int len, int row, int col, int height, i
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void texu_term_write_screen(char *esc)
+{
+    tb_write(esc, strlen(esc));
+}
+
+void texu_term_clear_screen()
+{
+
+}
+
 
 static void print_tb(const char *str, int x, int y, unsigned short fg, unsigned short bg)
 {
@@ -203,12 +215,14 @@ static void printf_tb(int x, int y, unsigned short fg, unsigned short bg, const 
 
 void texu_termios_set_wide_size()
 {
-    system("echo -e \"\\033[?3h\""); /*set terminal window size 132x25*/
+    //system("echo -e \"\\033[?3h\""); /*set terminal window size 132x25*/
+    texu_term_write_screen("\033[?3h");
 }
 
 void texu_termios_set_normal_size()
 {
-    system("echo -e \"\\033[?3l\""); /*set terminal window size 80x25*/
+    //system("echo -e \"\\033[?3l\""); /*set terminal window size 80x25*/
+    texu_term_write_screen("\033[?3l");
 }
 
 int texu_termios_init(int lines, int cols)
@@ -277,7 +291,16 @@ void texu_termios_release()
 int
 texu_termios_getch(struct texu_cio *cio, struct tb_event *ev, int timeout)
 {
-    while (tb_peek_event(ev, timeout))
+    int rv = -1;
+    if (timeout < 1)
+    {
+        rv = tb_poll_event(ev); /*wait until getting event*/
+    }
+    else
+    {
+        rv = tb_peek_event(ev, timeout);
+    }
+    if (0 != rv)
     {
         switch (ev->type)
         {
@@ -391,15 +414,27 @@ void texu_termios_getyx(int *y, int *x)
 extern "C" {
 #endif
 
+void texu_term_write_screen(char *esc)
+{
+    tb_send(esc, strlen(esc));
+}
+
+void texu_term_clear_screen()
+{
+    
+}
+
 void texu_tb2_set_wide_size()
 {
-    system("echo -e \"\\033[?3h\""); /*set terminal window size 132x25*/
+    //system("echo -e \"\\033[?3h\""); /*set terminal window size 132x25*/
+    texu_term_write_screen("\033[?3h");
     //tb_write(TEXU_WIDE_SCREEN, strlen(TEXU_WIDE_SCREEN));
 }
 
 void texu_tb2_set_normal_size()
 {
-    system("echo -e \"\\033[?3l\""); /*set terminal window size 80x25*/
+    //system("echo -e \"\\033[?3l\""); /*set terminal window size 80x25*/
+    texu_term_write_screen("\033[?3l");
     //tb_write(TEXU_NORMAL_SCREEN, strlen(TEXU_NORMAL_SCREEN));
 }
 
@@ -449,7 +484,15 @@ void texu_tb2_release()
 int
 texu_tb2_getch(struct texu_cio *cio, struct tb_event *ev, int timeout)
 {
-    int rv = tb_peek_event(ev, timeout);
+    int rv = -1;
+    if (timeout < 1)
+    {
+        rv = tb_poll_event(ev); /*wait until getting event*/
+    }
+    else
+    {
+        rv = tb_peek_event(ev, timeout);
+    }
     if (0 == rv)
     {
         switch (ev->type)

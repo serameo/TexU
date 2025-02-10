@@ -73,7 +73,7 @@ extern "C"
         }
         if (parent == desktop)
         {
-            if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
+            if ((ch >= '1' && ch <= '9') && (alt & TEXU_KEYPRESSED_ALT))
             {
                 menu = wnd->menu;
                 if (menu)

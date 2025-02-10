@@ -104,11 +104,19 @@ TexuRun()
 
     return msg.wParam;
 }
+texu_status TexuRunPoll()
+{
+    return TexuRun();
+}
 #else
 texu_status
 TexuRun()
 {
     return (genv ? texu_env_run(genv) : TEXU_ERROR);
+}
+texu_status TexuRunPoll()
+{
+    return (genv ? texu_env_run_poll(genv) : TEXU_ERROR);
 }
 #endif
 
@@ -596,6 +604,47 @@ TexuCloseWindow(texu_wnd *wnd)
     return rc;
 }
 
+texu_longptr
+TexuSendWindowBack(texu_wnd *wnd)
+{
+    texu_longptr rc = texu_wnd_close(wnd);
+    if (TEXU_OK == rc)
+    {
+        texu_env    *env    = genv;
+        texu_wnd    *desktop = texu_env_get_desktop(env);
+        texu_wnd    *parent = texu_wnd_get_parent(wnd);
+        texu_wnd    *topwnd = 0;
+        
+        if (parent == desktop)
+        {
+            texu_wnd *curwnd = _TexuPopWindow();
+            topwnd = _TexuTopWindow();
+            if (topwnd)
+            {
+                /*re-location window*/
+                _TexuPopWindow();
+                _TexuPushWindow(curwnd);
+                _TexuPushWindow(topwnd);
+                /*continue usually performing*/
+                TexuSendMessage(topwnd, TEXU_WM_ACTIVATED, 0, 0);
+                TexuShowWindow(topwnd, TEXU_SW_SHOW);
+                TexuInvalidateWindow(topwnd);
+            }
+            else
+            {
+                /*no more frame window*/
+                TexuExit();
+            }
+        }
+        else
+        {
+            TexuDestroyWindow(wnd);
+        }
+    }
+    return rc;
+}
+
+
 texu_bool
 TexuIsExecutableCommand(
     texu_wnd*   wnd,
@@ -821,6 +870,28 @@ TexuAddPopupMenu(
         info);
 }
 
+texu_popup_menu *
+TexuAddSubPopupMenu(
+    texu_menu *menu,
+    texu_popup_menu_item *popup,
+    const texu_char *text,
+    texu_i32 id,
+    texu_bool enable,
+    const texu_char *info)
+{
+    if (!menu)
+    {
+        return 0;
+    }
+    return texu_menu_add_submenu_info(
+        menu,
+        popup,
+        text,
+        id,
+        enable,
+        info);
+}
+
 texu_popup_menu_item *
 TexuAddPopupMenuItem(
     texu_menu *menu,
@@ -837,6 +908,31 @@ TexuAddPopupMenuItem(
     return texu_menu_add_item_info(
                 menu,
                 popup,
+                text,
+                id,
+                enable,
+                info);
+}
+
+
+texu_popup_menu_item *
+TexuAddSubPopupMenuItem(
+    texu_menu *menu,
+    texu_popup_menu *popup,
+    texu_i32 style,
+    const texu_char *text,
+    texu_i32 id,
+    texu_bool enable,
+    const texu_char *info)
+{
+    if (!menu)
+    {
+        return 0;
+    }
+    return texu_menu_add_subitem_info(
+                menu,
+                popup,
+                style,
                 text,
                 id,
                 enable,
@@ -872,6 +968,19 @@ TexuGetPopupMenuItem(
     return texu_menu_get_menuitem(menu, popup, id);
 }
 
+texu_popup_menu*
+TexuGetSubPopupMenu(
+    texu_menu *menu,
+    texu_popup_menu *popup,
+    texu_i32 id)
+{
+    if (!menu)
+    {
+        return 0;
+    }
+    return texu_menu_get_menuitem(menu, popup, id);
+}
+
 texu_bool
 TexuEnablePopupMenu(texu_menu *menu, texu_i32 idx, texu_bool enable)
 {
@@ -891,11 +1000,12 @@ TexuEnablePopupMenuItem(texu_menu *menu, texu_popup_menu *popup, texu_i32 id, te
     }
     return texu_menu_enable_menuitem(menu, popup, id, enable);
 }
-
+#if 0
 texu_wnd *TexuTrackMenuPopup(texu_wnd *owner, texu_menu* menu, texu_i32 id, texu_i32 y, texu_i32 x)
 {
     return texu_menu_track_menu_popup(owner, menu, id, y, x);
 }
+#endif
 
 texu_menu *
 TexuCreateMenus(texu_wnd *wnd, texu_i32 id, const texu_menu_template *templ, texu_i32 npopups)
@@ -941,7 +1051,25 @@ TexuGetColor(texu_cio *cio, texu_i32 clridx)
 #endif
 }
 
-#if (defined WIN32 && defined _WINDOWS)
+#if 1//(defined __USE_TERMBOX2__)
+texu_i32
+TexuDrawHRects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 nwidth, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+{
+    return texu_cio_draw_hrects(cio, rect, widths, nwidth, fg, bg, attrs);
+}
+
+texu_i32
+TexuDrawVRects(texu_cio *cio, texu_rect *rect, texu_i32 *heights, texu_i32 nheight, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+{
+    return texu_cio_draw_vrects(cio, rect, heights, nheight, fg, bg, attrs);
+}
+
+texu_i32
+TexuDrawFrame(texu_cio *cio, const texu_char *text, texu_rect *rect, texu_i32 fg, texu_i32 bg, texu_i32 attrs)
+{
+    return texu_cio_draw_frame(cio, text, rect, fg, bg, attrs);
+}
+#elif (defined WIN32 && defined _WINDOWS)
 texu_i32
 TexuDrawHRects(texu_cio* cio, texu_rect* rect, texu_i32* heights, texu_i32 nheight, texu_ui32 color, texu_ui32 bgcolor)
 {
@@ -989,7 +1117,6 @@ TexuDrawRect(texu_cio* cio, texu_rect* rect, texu_ui32 textcolor, texu_ui32 bgco
 {
     return texu_env_draw_rect(texu_cio_get_env(cio), rect, textcolor, bgcolor);
 }
-
 #else
 texu_i32
 TexuDrawHRects(texu_cio *cio, texu_rect *rect, texu_i32 *widths, texu_i32 nwidth, texu_i32 attrs)

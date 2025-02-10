@@ -985,10 +985,17 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
         color = discolor;
         colorbg = disbg;
     }
+#if defined __USE_TERMBOX2__
     texu_cio_draw_text2(cio, y, x, buf, color, colorbg,
         (label->highlight ? TB_REVERSE : 0),
         texu_wnd_get_clsname(wnd),
         texu_wnd_get_id(wnd));
+#else
+    texu_cio_draw_text2(cio, y, x, buf, color, colorbg,
+        0,
+        texu_wnd_get_clsname(wnd),
+        texu_wnd_get_id(wnd));
+#endif
 
 }
 
@@ -1396,7 +1403,7 @@ texu_i32    _TexuPanelProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     if (parent)
     {
-        if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
+        if ((ch >= '1' && ch <= '9') && (alt & TEXU_KEYPRESSED_ALT))
         {
             menu = texu_wnd_get_menu(wnd);
             if (menu)
@@ -1541,12 +1548,20 @@ _TexuPanelProc_OnPaint(texu_wnd* wnd, texu_cio* cio, texu_rect* rect)
     if (style & TEXU_PNS_TITLE)
     {
         /*there are title and border*/
+#if (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
+        texu_cio_draw_frame(cio, text, &rcwnd, color, bgcolor, 0);
+#else
         texu_cio_draw_frame(cio, text, &rcwnd, 0);
+#endif
     }
     else if (style & TEXU_PNS_BORDER)
     {
         /*there are title and border*/
+#if (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
+        texu_cio_draw_rect(cio, &rcwnd, color, bgcolor, 0);
+#else
         texu_cio_draw_rect(cio, &rcwnd, color);
+#endif
     }
     if (style & TEXU_PNS_STATUS)
     {

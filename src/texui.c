@@ -2577,6 +2577,15 @@ void texu_env_set_state(texu_env* env, texu_i32 newstate)
     }
     env->state = newstate;
 }
+texu_status texu_env_run(texu_env* env)
+{
+    return texu_env_run_base(env, TEXU_ENV_PEEK_EVENT); 
+}
+
+texu_status texu_env_run_poll(texu_env* env)
+{
+    return texu_env_run_base(env, TEXU_ENV_POLL_EVENT);
+}
 
 #if (defined WIN32 && defined _WINDOWS)
 texu_status
@@ -2636,7 +2645,7 @@ texu_env_run(texu_env *env, UINT message, WPARAM wParam, LPARAM lParam)
 }
 #else
 texu_status
-texu_env_run(texu_env *env)
+texu_env_run_base(texu_env* env, texu_i32 options)
 {
 #if USE_TCL_AUTOMATION
     texu_env_msg    envmsg;
@@ -2693,7 +2702,14 @@ texu_env_run(texu_env *env)
         /*get cursor to the position*/
         texu_cio_getyx(env->cio, &y, &x);
 #endif
-        ch = texu_cio_getch(env->cio);
+        if (TEXU_ENV_PEEK_EVENT == options)
+        {
+            ch = texu_cio_getch(env->cio);
+        }
+        else
+        {
+            ch = texu_cio_getch2(env->cio, -1);
+        }
 #if 0 /*(defined __USE_TERMIOS__)*/
 #else
         if (-1 == ch && env->frames)
@@ -3127,6 +3143,8 @@ _TexuDefWndProc_OnLeaveMenu(texu_wnd *wnd)
     /*
     texu_env_restore_screen(wnd->env);
     */
+    texu_menu_set_curmenu(wnd->menu, 0);
+    texu_menu_set_curmenuitem(wnd->menu, 0);
     texu_wnd_send_msg(wnd, TEXU_WM_REDRAWMENU, 0, 0);
 }
 
@@ -3486,7 +3504,7 @@ _TexuDefWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     if (parent == desktop)
     {
-        if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
+        if ((ch >= '1' && ch <= '9') && (alt & TEXU_KEYPRESSED_ALT))
         {
             menu = texu_wnd_get_menu(wnd);
             if (menu)
@@ -4193,6 +4211,11 @@ texu__wnd_get_clipped(texu_wnd* wnd)
     texu_wnd_get_rect(wnd, &rcchild);*/
     texu_wnd_get_screen_rect(parent, &rcwnd);
     texu_wnd_get_screen_rect(wnd, &rcchild);
+
+    if (!parent)
+    {
+        return rcchild.r1;
+    }
     /*texu_wnd_send_msg(parent, TEXU_WM_GETSCREENRECT, (texu_lparam)&rcwnd, 0);
     texu_wnd_send_msg(wnd, TEXU_WM_GETSCREENRECT, (texu_lparam)&rcchild, 0);*/
     /*rcwnd2 = rcwnd;
@@ -5535,7 +5558,7 @@ _TexuFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     if (parent == desktop)
     {
-        if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
+        if ((ch >= '1' && ch <= '9') && (alt & TEXU_KEYPRESSED_ALT))
         {
             menu = wnd->menu;
             if (menu)
@@ -5705,7 +5728,7 @@ _TexuManualFrameWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     if (parent == desktop)
     {
-        if (ch != -1 && (alt & TEXU_KEYPRESSED_ALT))
+        if ((ch >= '1' && ch <= '9') && (alt & TEXU_KEYPRESSED_ALT))
         {
             menu = texu_wnd_get_menu(wnd);
             if (menu)
