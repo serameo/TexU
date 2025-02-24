@@ -441,12 +441,14 @@ void texu_tb2_set_normal_size()
 int texu_tb2_init(int lines, int cols)
 {
     int rc = 0;
-    
+#if 0 //!(defined TERMBOX2_MAX_WIDTH) || (TERMBOX2_MAX_WIDTH <= 80)
     texu_tb2_set_wide_size();
+#endif
     rc = tb_init();
     if (0 == rc)
     {
-        tb_set_input_mode(TB_INPUT_ALT);
+        /*tb_set_input_mode(TB_INPUT_ALT);*/
+        tb_set_input_mode(TB_INPUT_ESC/*| TB_INPUT_MOUSE*/);
     }
     else
     {

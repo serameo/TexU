@@ -35,10 +35,12 @@ struct _texu_popup_menu_stack
     texu_i32 y;
     texu_popup_menu         *popup;
     texu_popup_menu_item    *curitem;
+    texu_popup_menu_item    *firstvisibleitem;
+    texu_popup_menu_item    *lastvisibleitem;
 };
 typedef struct _texu_popup_menu_stack _texu_popup_menu_stack;
 
-#define MAX_POPUP_LEVEL     10
+#define MAX_POPUP_LEVEL     32
 
 struct texu_menu
 {
@@ -56,12 +58,9 @@ struct texu_menu
     texu_ui32 normbg;
     texu_ui32 disbg;
     texu_ui32 selbg;
-    /*level2*/
-    texu_popup_menu *popupitem;
-    texu_popup_menu_item *curpopitem;
-    texu_popup_menu_item *prevpopitem;
     _texu_popup_menu_stack  stack[MAX_POPUP_LEVEL];  /*while showing popup menu holding _texu_popup_menu_stack*/
     texu_i32                idx_stack;
+    texu_i32  max_level;
 };
 
 texu_menu_item *_texu_menu_item_new(texu_env *env, const texu_char *text, texu_i32 id, texu_bool enable, const texu_char *info);
@@ -312,15 +311,17 @@ texu_menu_new(texu_wnd *owner, texu_i32 id)
         }
         menu->tree = texu_tree_new();
         menu->wndbar = wnd;
-        menu->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM);
-        menu->discolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_DISABLED);
-        menu->selcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM_SELECTED);
+        menu->normcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
+        menu->discolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU_DISABLED);
+        menu->selcolor = texu_env_get_syscolor(env, TEXU_COLOR_MENU_SELECTED);
 
-        menu->normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM);
-        menu->disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM_DISABLED);
-        menu->selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM_SELECTED);
+        menu->normbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU);
+        menu->disbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU_DISABLED);
+        menu->selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU_SELECTED);
         /*stack*/
         menu->idx_stack = -1;
+        /*level*/
+        menu->max_level = MAX_POPUP_LEVEL;
     }
     return menu;
 }
@@ -351,6 +352,16 @@ texu_menu_add_menu_info(
     texu_i32 barid = menu->barid;
     ++menu->barid;
     return (texu_popup_menu*)texu_menu_add_item_info(menu, 0, text, barid, enable, info);
+}
+
+texu_popup_menu *
+texu_menu_add_menubar_info(
+    texu_menu *menu,
+    const texu_char *text,
+    texu_bool enable,
+    const texu_char *info)
+{
+    return texu_menu_add_menu_info(menu, text, enable, info);
 }
 
 texu_popup_menu*   texu_menu_add_submenu_info(
@@ -424,6 +435,22 @@ texu_menu_add_item_info(
     return (texu_popup_menu_item*)treeitem;
 }
 
+texu_popup_menu_item*   texu_menu_add_baritem_info(
+                            texu_menu *menu,
+                            texu_popup_menu* baritem,
+                            const texu_char* text,
+                            texu_i32 id,
+                            texu_bool enable,
+                            const texu_char* info)
+{
+    return texu_menu_add_item_info(
+                menu,
+                baritem,
+                text,
+                id,
+                enable,
+                info);
+}
 
 texu_popup_menu_item *
 texu_menu_add_subitem_info(
@@ -437,7 +464,14 @@ texu_menu_add_subitem_info(
 {
     texu_tree_item *treeitem = 0;
     texu_env *env = texu_wnd_get_env(menu->owner);
-    texu_menu_item *item = _texu_menu_item_new2(env, style, text, id, enable, info);
+    texu_menu_item *item = 0;
+    
+    if (submenu->nlevel >= menu->max_level - 1)
+    {
+        /*no more submenu supported*/
+        return 0;
+    }
+    item = _texu_menu_item_new2(env, style, text, id, enable, info);
 
     treeitem = texu_tree_add_item(menu->tree, submenu, (texu_lparam)item);
     if (!(treeitem))
@@ -475,6 +509,42 @@ texu_menu_get_menu(texu_menu *menu, texu_i32 id)
     return (texu_popup_menu*)baritem;
 }
 
+texu_tree_item *
+texu_menu__get_firstactive(texu_popup_menu *baritem)
+{
+    texu_tree_item *item = baritem->firstchild;
+    texu_menu_item *menuitem = 0;
+
+    while (item)
+    {
+        menuitem = (texu_menu_item *)item->data;
+        if (menuitem->enable)
+        {
+            return item;
+        }
+        item = item->next;
+    }
+    return baritem;
+}
+
+texu_tree_item *
+texu_menu__get_lastactive(texu_popup_menu *baritem)
+{
+    texu_tree_item *item = baritem->lastchild;
+    texu_menu_item *menuitem = 0;
+
+    while (item)
+    {
+        menuitem = (texu_menu_item *)item->data;
+        if (menuitem->enable)
+        {
+            return item;
+        }
+        item = item->prev;
+    }
+    return baritem;
+}
+
 texu_popup_menu *
 texu_menu_set_curmenu(texu_menu *menu, texu_popup_menu *baritem)
 {
@@ -484,13 +554,17 @@ texu_menu_set_curmenu(texu_menu *menu, texu_popup_menu *baritem)
     {
         menu->idx_stack = 0;
         menu->stack[0].popup = baritem;
-        menu->stack[0].curitem = baritem->firstchild;
+        menu->stack[0].curitem = texu_menu__get_firstactive(baritem);
+        menu->stack[0].firstvisibleitem = baritem->firstchild;
+        menu->stack[0].lastvisibleitem = baritem->lastchild;
     }
     else
     {
         menu->idx_stack = -1;
         menu->stack[0].popup = 0;
         menu->stack[0].curitem = 0;
+        menu->stack[0].firstvisibleitem = 0;
+        menu->stack[0].lastvisibleitem = 0;
     }
     return olditem;
 }
@@ -528,12 +602,7 @@ texu_menu_set_curmenuitem(texu_menu *menu, texu_popup_menu_item *item)
             menu->stack[0].curitem = item;
         }
     }
-    else
-    {
-        menu->idx_stack = -1;
-        menu->stack[0].popup = 0;
-        menu->stack[0].curitem = 0;
-    }
+
     return olditem;
 }
 
@@ -720,7 +789,7 @@ _TexuMenuWndProc_OnDestroy(texu_wnd *wnd)
     texu_env_pop_wnd(env);
 
     texu_menu_set_curmenu(menu, 0);
-    texu_menu_set_curmenuitem(menu, 0);
+    /*texu_menu_set_curmenuitem(menu, 0);*/
 
     topwnd = texu_env_top_wnd(env);
 
@@ -853,6 +922,15 @@ _TexuMenuWndProc_GetNextMenuItemEnabled(texu_tree_item *parentitem, texu_tree_it
     return item;
 }
 
+texu_bool _TexuMenuWndProc__CanShowAllItems(texu_wnd *wnd, texu_popup_menu *popup)
+{
+    texu_bool fCanShowAllItems = TEXU_FALSE;
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 cy = texu_env_screen_height(env) - 3; /*reserved the bottom menu border*/
+    fCanShowAllItems = (popup->nchildren < cy);
+    return fCanShowAllItems;
+}
+
 void
 _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 {
@@ -866,12 +944,24 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     _texu_popup_menu_stack *popup1 = 0;
     _texu_popup_menu_stack *popup2 = 0;
     texu_i32 idx_stack = menu->idx_stack;
+
+    /*to ensure that the first current menu item is activated*/
+    if (!curitem)
+    {
+        curitem = texu_menu__get_firstactive(baritem);
+        if (curitem)
+        {
+            menu->curitem = curitem;
+        }
+    }
     if (idx_stack < 1)
     {
         menu->idx_stack = 0;
         popup1 = &menu->stack[menu->idx_stack];
         popup1->popup = baritem;
         popup1->curitem = curitem;
+        popup1->firstvisibleitem = texu_menu__get_firstactive(baritem);
+        popup1->lastvisibleitem = texu_menu__get_lastactive(baritem);
         popup1->x = 0;
         popup1->y = 0;
     }
@@ -888,7 +978,6 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
 
     if (TEXU_KEY_SELMENU == ch) /*pressed enter*/
     {
-        /*texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);*/
         texu_wnd_send_msg(menu->owner, TEXU_WM_COMMAND,
                           (menuitem ? (texu_lparam)menuitem->id : -1), 0);
         texu_wnd_destroy(wnd);
@@ -896,7 +985,6 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
     else if (TEXU_KEY_ESCAPE == ch) /*pressed escape*/
     {
-        /*texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);*/
         texu_wnd_destroy(wnd);
         return;
     }
@@ -916,23 +1004,42 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     {
         case TEXU_KEY_UP:
         {
+            texu_popup_menu_item *nextitem = curitem;
             curitem = _TexuMenuWndProc_GetPrevMenuItemEnabled(popup1->popup, popup1->curitem);
             if (menu->idx_stack > -1 && menu->idx_stack < (MAX_POPUP_LEVEL))
             {
-                menuitem = (texu_menu_item *)curitem->data;//popup1->curitem->data;
-                if (0)//(TEXU_MS_POPUP == menuitem->style)
+                texu_bool fCanShowAllItems = _TexuMenuWndProc__CanShowAllItems(wnd, popup1->popup);
+                /*the below scope is available if all menu items are enable*/
+                if (!(fCanShowAllItems))
                 {
-                    /*expand submenu if need*/
-                    ++menu->idx_stack;
-                    popup1 = &menu->stack[menu->idx_stack];
-                    /*set the new popup*/
-                    popup1->popup = curitem;
-                    popup1->curitem = popup1->popup->firstchild;
+                    if (curitem == texu_menu__get_firstactive(popup1->popup))
+                    {
+                        popup1->firstvisibleitem = popup1->popup->firstchild;
+                        popup1->lastvisibleitem = popup1->popup->lastchild;
+                    }
+                    else if (curitem == texu_menu__get_lastactive(popup1->popup))
+                    {
+                        while (popup1->lastvisibleitem != curitem)
+                        {
+                            popup1->lastvisibleitem = popup1->lastvisibleitem->next;
+                            popup1->firstvisibleitem = popup1->firstvisibleitem->next;
+                        }
+                    }
+                    else if (nextitem == popup1->firstvisibleitem)
+                    {
+                        if (popup1->firstvisibleitem->prev)
+                        {
+                            popup1->firstvisibleitem = popup1->firstvisibleitem->prev;
+                        }
+                        popup1->lastvisibleitem = popup1->firstvisibleitem->prev;;
+                    }
                 }
                 else
                 {
-                    popup1->curitem = curitem;
+                    popup1->firstvisibleitem = popup1->popup->firstchild;
+                    popup1->lastvisibleitem = popup1->popup->lastchild;
                 }
+                popup1->curitem = curitem;
             }
             if (0 == idx_stack)
             {
@@ -942,23 +1049,39 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         }
         case TEXU_KEY_DOWN:
         {
+            texu_popup_menu_item *previtem = curitem; 
             curitem = _TexuMenuWndProc_GetNextMenuItemEnabled(baritem, curitem);
             if (menu->idx_stack > -1 && menu->idx_stack < (MAX_POPUP_LEVEL))
             {
-                menuitem = (texu_menu_item *)curitem->data;//popup1->curitem->data;
-                if (0)//(TEXU_MS_POPUP == menuitem->style)
+                texu_bool fCanShowAllItems = _TexuMenuWndProc__CanShowAllItems(wnd, popup1->popup);
+                /*the below scope is available if all menu items are enable*/
+                if (!(fCanShowAllItems))
                 {
-                    /*expand submenu if need*/
-                    ++menu->idx_stack;
-                    popup1 = &menu->stack[menu->idx_stack];
-                    /*set the new popup*/
-                    popup1->popup = curitem;
-                    popup1->curitem = popup1->popup->firstchild;
+                    if (curitem == texu_menu__get_firstactive(popup1->popup))
+                    {
+                        popup1->firstvisibleitem = popup1->popup->firstchild;
+                        popup1->lastvisibleitem = popup1->popup->lastchild;
+                    }
+                    else if (curitem == texu_menu__get_lastactive(popup1->popup))
+                    {
+                        popup1->firstvisibleitem = popup1->firstvisibleitem->next;
+                        popup1->lastvisibleitem = popup1->popup->lastchild;
+                    }
+                    else if (previtem == popup1->lastvisibleitem)
+                    {
+                        popup1->firstvisibleitem = popup1->firstvisibleitem->next;
+                        if (popup1->lastvisibleitem->next)
+                        {
+                            popup1->lastvisibleitem = popup1->lastvisibleitem->next;
+                        }
+                    }
                 }
                 else
                 {
-                    popup1->curitem = curitem;
+                    popup1->firstvisibleitem = popup1->popup->firstchild;
+                    popup1->lastvisibleitem = popup1->popup->lastchild;
                 }
+                popup1->curitem = curitem;
             }
             if (0 == idx_stack)
             {
@@ -968,50 +1091,40 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         }
         case TEXU_KEY_LEFT: /*collapse submenu if need*/
         {
-            if (menu->idx_stack > 0 && menu->idx_stack < (MAX_POPUP_LEVEL))
+            if (menu->idx_stack > 0 && menu->idx_stack < (MAX_POPUP_LEVEL) && popup1->curitem)
             {
                 menuitem = (texu_menu_item *)popup1->curitem->data;
-                if (1)//(TEXU_MS_POPUP == menuitem->style)
-                {
-                    /*collapse submenu if need*/
-                    --menu->idx_stack;
-                    popup1 = &menu->stack[menu->idx_stack];
-                }
+                /*collapse submenu if need*/
+                --menu->idx_stack;
+                popup1 = &menu->stack[menu->idx_stack];
             }
             if (0 == idx_stack)
             {
                 baritem = _TexuMenuWndProc_GetPrevMenuItemEnabled(root, popup1[0].popup);
                 menu->curbaritem = baritem;
-                menu->curitem = baritem->firstchild;
+                menu->curitem = texu_menu__get_firstactive(baritem);
                 popup1[0].popup = baritem;
-                popup1[0].curitem = popup1->popup->firstchild;
+                popup1[0].curitem = menu->curitem;
+                popup1[0].firstvisibleitem = baritem->firstchild;
+                popup1[0].lastvisibleitem = baritem->lastchild;
             }
             break;
         }
         case TEXU_KEY_RIGHT:
         {
-            if (menu->idx_stack > -1 && menu->idx_stack < (MAX_POPUP_LEVEL - 1))
+            if (menu->idx_stack > -1 && menu->idx_stack < (MAX_POPUP_LEVEL - 1) && popup1->curitem)
             {
                 menuitem = (texu_menu_item *)popup1->curitem->data;
                 if (TEXU_MS_POPUP == menuitem->style)
                 {
-                    if (0)//(0 == idx_stack)
-                    {
-                        baritem = _TexuMenuWndProc_GetNextMenuItemEnabled(root, popup1[0].popup);
-                        menu->curbaritem = baritem;
-                        menu->curitem = baritem->firstchild;
-                        popup1[0].popup = baritem;
-                        popup1[0].curitem = popup1->popup->firstchild;
-                    }
-                    else
-                    {
-                        /*expand submenu if need*/
-                        ++menu->idx_stack;
-                        popup2 = &menu->stack[menu->idx_stack];
-                        /*set the new popup*/
-                        popup2->popup = popup1->curitem;
-                        popup2->curitem = popup1->curitem->firstchild;
-                    }
+                    /*expand submenu if need*/
+                    ++menu->idx_stack;
+                    popup2 = &menu->stack[menu->idx_stack];
+                    /*set the new popup*/
+                    popup2->popup = popup1->curitem;
+                    popup2->curitem = texu_menu__get_firstactive(popup1->curitem);
+                    popup2->firstvisibleitem = popup1->curitem->firstchild;
+                    popup2->lastvisibleitem = popup1->curitem->lastchild;
                 }
                 else
                 {
@@ -1019,9 +1132,11 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     {
                         baritem = _TexuMenuWndProc_GetNextMenuItemEnabled(root, popup1[0].popup);
                         menu->curbaritem = baritem;
-                        menu->curitem = baritem->firstchild;
+                        menu->curitem = texu_menu__get_firstactive(baritem);
                         popup1[0].popup = baritem;
-                        popup1[0].curitem = popup1->popup->firstchild;
+                        popup1[0].curitem = menu->curitem;
+                        popup1[0].firstvisibleitem = baritem->firstchild;
+                        popup1[0].lastvisibleitem = baritem->lastchild;
                     }
                 }
             }
@@ -1032,42 +1147,6 @@ _TexuMenuWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     _TexuMenuWndroc_NotifyItem(wnd, TEXU_MNN_ITEMCHANGED,
                             menuitem->id,
                             menuitem->info);
-#if 0
-    if (menu->curpopitem)
-    {
-        menuitem = (texu_menu_item *)menu->curpopitem->data;
-        if (TEXU_MS_POPUP == menuitem->style)
-        {
-            menu->popupitem = menu->curpopitem;
-            menu->curpopitem = menu->curpopitem->firstchild;
-        }
-        /*else
-        {
-            menu->popupitem = 0;
-            menu->curpopitem = 0;
-        }*/
-        _TexuMenuWndroc_NotifyItem(wnd, TEXU_MNN_ITEMCHANGED,
-                                   menuitem->id,
-                                   menuitem->info);
-    }
-    else if (menu->curitem)
-    {
-        menuitem = (texu_menu_item *)menu->curitem->data;
-        if (TEXU_MS_POPUP == menuitem->style)
-        {
-            menu->popupitem = menu->curitem;
-            menu->curpopitem = menu->curitem->firstchild;
-        }
-        else
-        {
-            menu->popupitem = 0;
-            menu->curpopitem = 0;
-        }
-        _TexuMenuWndroc_NotifyItem(wnd, TEXU_MNN_ITEMCHANGED,
-                                   menuitem->id,
-                                   menuitem->info);
-    }
-#endif
     texu_wnd_invalidate(wnd);
 }
 
@@ -1331,13 +1410,12 @@ texu_i32 _TexuMenuWndProc_DrawPopupMenu2(
     texu_i32 width = 0;
     texu_i32 height = 1;
     texu_char blank[TEXU_MAX_WNDTEXT + 1];
-    //texu_popup_menu_item *curitem = menu->curpopitem;
-    texu_popup_menu_item *prevpopitem = menu->prevpopitem;
     _texu_popup_menu_stack *popup1 = &menu->stack[level];
 
-    /*texu_env *env = texu_wnd_get_env(wnd);*/
     menuitem = (texu_menu_item *)popup1->popup->data;
     texu_popup_menu_item *curitem = popup1->curitem;
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_i32 cy = texu_env_screen_height(env) - 3; /*-2 because we need to draw the bottom border*/
     if (menuitem)
     {
         width  = menuitem->maxwidth;
@@ -1382,10 +1460,27 @@ texu_i32 _TexuMenuWndProc_DrawPopupMenu2(
         ++y;
 #endif
     }
+    item = popup1->firstvisibleitem;
     while (item)
     {
+        /*if (item != popup1->firstvisibleitem)
+        {
+            item = item->next;
+            continue;
+        }*/
+        if (y > cy)
+        {
+            if (item->prev)
+            {
+                popup1->lastvisibleitem = item->prev;
+            }
+            else
+            {
+                popup1->lastvisibleitem = popup1->popup->lastchild;
+            }
+            break;
+        }
         menuitem = (texu_menu_item *)item->data;
-
         /*draw left border*/
         {
 #if !(defined __ESCAPE_CODE__)
@@ -1397,7 +1492,7 @@ texu_i32 _TexuMenuWndProc_DrawPopupMenu2(
                             texu_wnd_get_id(wnd));
 #endif
         }
-
+        /*draw the menu text*/
         texu_printf_alignment(buf, menuitem->text, maxlen, TEXU_ALIGN_LEFT);
 
         color = menuitem->normcolor;
@@ -1412,8 +1507,6 @@ texu_i32 _TexuMenuWndProc_DrawPopupMenu2(
             if (TEXU_MS_POPUP == menuitem->style)
             {
                 y_nextpopup = y;
-                /*_TexuMenuWndProc_DrawPopupMenu2(wnd, dc, menu, item, y, x+width+0,//2, 
-                    menuitem->normcolor, menuitem->selcolor, menuitem->discolor, level);*/
             }
         }
         else
@@ -1505,13 +1598,36 @@ texu_i32 _TexuMenuWndProc_DrawPopupMenu2(
     return y_nextpopup;
 }
 
+texu_i32 _TexuMenuWndProc__FindTheBestYPos(texu_i32 ypopup, texu_i32 nitems, texu_i32 height)
+{
+    while (ypopup + nitems + 2 > height)
+    {
+        ypopup -= (nitems);
+    }
+    if (ypopup < 2)
+    {
+        ypopup = 2;
+    }
+    return ypopup;
+}
+
+texu_i32 _TexuMenuWndProc__FindTheBestXPos(texu_i32 xpopup, texu_i32 nlevel, texu_i32 width, texu_i32 cx)
+{
+    while ((xpopup + (nlevel * 2) + width + 2) > cx)
+    {
+        xpopup -= width;
+    }
+    return xpopup;
+}
 void
 _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 {
     texu_i32 y = texu_wnd_get_y(wnd);
     texu_i32 x = texu_wnd_get_x(wnd);
     texu_env *env = texu_wnd_get_env(wnd);
-    texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_MENUITEM);
+    texu_i32 cy = texu_env_screen_height(env) - 3; /*-2 because we need to draw a bottom border*/
+    texu_i32 cx = texu_env_screen_width(env);
+    texu_ui32 color = texu_env_get_syscolor(env, TEXU_COLOR_MENU);
     texu_tree_item *treeitem = 0;
     texu_menu_item *baritem = 0;
     texu_menu *menu = (texu_menu *)texu_wnd_get_userdata(wnd);
@@ -1526,7 +1642,7 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     texu_ui32 disbg = menu->disbg;
 #endif
     texu_ui32 selbg = menu->selbg;
-    texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENUITEM);
+    texu_ui32 bgcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_MENU);
     _texu_popup_menu_stack *popup1 = &menu->stack[0];
     /*draw menu bar*/
     if (!texu_wnd_can_paint(wnd))
@@ -1580,7 +1696,7 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
 
 #endif
             /* draw popup menu */
-            if (treeitem == popup1->popup)//(treeitem == menu->curbaritem)
+            if (treeitem == popup1->popup)
             {
                 /*shall safe the first popup menu*/
                 color = selcolor;
@@ -1624,9 +1740,18 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
                     texu_i32 maxlen = _TexuMenuProc_GetMaxLength(popup1->popup);
                     texu_i32 xpopup = x + maxlen;
                     _texu_popup_menu_stack *popup2 = 0;
+                    texu_menu_item *popupitem = 0;
+                    texu_i32 x_nextpop = xpopup;
+
                     for (idx = 1; idx <= menu->idx_stack; ++idx)
                     {
                         popup2  = &menu->stack[idx];
+                        /*find the best y-position*/
+                        popupitem = (texu_menu_item*)popup2->popup;
+                        ypopup = _TexuMenuWndProc__FindTheBestYPos(ypopup, popup2->popup->nchildren, cy);
+                        /*find the best x-position*/
+                        maxlen = _TexuMenuProc_GetMaxLength(popup2->popup);
+                        xpopup = _TexuMenuWndProc__FindTheBestXPos(x_nextpop, idx, maxlen, cx);
                         y_nextpopup = _TexuMenuWndProc_DrawPopupMenu2(
                             wnd,
                             dc,
@@ -1639,8 +1764,7 @@ _TexuMenuWndProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
                             discolor,
                             idx);
                         /*next popup if need*/
-                        maxlen = _TexuMenuProc_GetMaxLength(popup2->popup);
-                        xpopup += maxlen;
+                        x_nextpop += maxlen;
                         ypopup = y_nextpopup;
                     }
                 }
@@ -1871,9 +1995,6 @@ _TexuPopupMenuWndProc_OnDestroy(texu_wnd *wnd)
 
     env = texu_wnd_get_env(wnd);
     texu_env_pop_wnd(env);
-
-    /*texu_menu_set_curmenu(menu, 0);
-    texu_menu_set_curmenuitem(menu, 0);*/
 
     topwnd = texu_env_top_wnd(env);
 

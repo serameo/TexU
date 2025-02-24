@@ -209,6 +209,28 @@ TexuMessageBox2(
                 mbxattrs);
 }
 
+texu_wnd *
+TexuMessageBox3(
+    const texu_char* caption,
+    const texu_char* text,
+    texu_wnd *owner,
+    texu_ui32 id,
+    texu_ui32 buttons,
+    texu_ui32 defbtn,
+    void*      userdata,
+    texu_msgbox_attrs *mbxattrs)
+{
+    return texu_wnd_msgbox3(
+                caption,
+                text,
+                owner,
+                id,
+                buttons,
+                defbtn,
+                userdata,
+                mbxattrs);
+}
+
 #if USE_TCL_AUTOMATION
 texu_status
 TexuCreateControls(texu_wnd *wnd, const texu_wnd_template *templ, texu_i32 nitems, const texu_char *templname)
@@ -605,6 +627,49 @@ TexuCloseWindow(texu_wnd *wnd)
 }
 
 texu_longptr
+TexuSendWindowTop(texu_wnd *wnd)
+{
+    texu_env    *env    = genv;
+    texu_wnd    *desktop = texu_env_get_desktop(env);
+    texu_wnd    *parent = texu_wnd_get_parent(wnd);
+    texu_wnd    *topwnd = 0;
+    texu_stack  *windows = 0;   /*temporarily stack*/
+    texu_wnd    *topwnd2 = 0;
+    if (parent != desktop)
+    {
+        return TEXU_ERROR;
+    }
+    windows = texu_stack_new(100);
+    topwnd = _TexuTopWindow();
+    while (topwnd && topwnd != wnd)
+    {
+        _TexuPopWindow();
+        texu_stack_push(windows, (texu_longptr)topwnd);
+        topwnd = _TexuTopWindow();
+    }
+    /*restore*/
+    topwnd2 = (texu_wnd*)texu_stack_top(windows);
+    while (topwnd2)
+    {
+        _TexuPushWindow(topwnd2);
+        texu_stack_pop(windows);
+        topwnd2 = (texu_wnd*)texu_stack_top(windows);
+    }
+    texu_stack_del(windows);
+    /*at last, push the specific window to the top frame*/
+    if (topwnd)
+    {
+        /*found the wnd in the stack*/
+        _TexuPushWindow(topwnd);
+        /*continue usually performing*/
+        TexuSendMessage(topwnd, TEXU_WM_ACTIVATED, 0, 0);
+        TexuShowWindow(topwnd, TEXU_SW_SHOW);
+        TexuInvalidateWindow(topwnd);
+    }
+    return TEXU_OK;
+}
+
+texu_longptr
 TexuSendWindowBack(texu_wnd *wnd)
 {
     texu_longptr rc = texu_wnd_close(wnd);
@@ -735,6 +800,86 @@ TexuGetWindowItem(
     return texu_wnd_find_child(wnd, id);
 }
 
+void
+TexuSetWindowItemText(
+    texu_wnd *wnd,
+    texu_ui32 id,
+    const texu_char *text)
+{
+    texu_wnd_set_text(texu_wnd_find_child(wnd, id), (text ? text : TEXUTEXT("")));
+}
+
+texu_i32
+TexuGetWindowItemText(
+    texu_wnd*       wnd,
+    texu_ui32       id,
+    texu_char*      text,
+    texu_i32        len
+)
+{
+    return texu_wnd_get_text(texu_wnd_find_child(wnd, id), text, len);
+}
+
+void
+TexuSetWindowItemInt(
+    texu_wnd *wnd,
+    texu_ui32 id,
+    texu_i32 val)
+{
+    texu_char text[64];
+    sprintf(text, "%d", val);
+    texu_wnd_set_text(texu_wnd_find_child(wnd, id), (text ? text : TEXUTEXT("")));
+}
+
+texu_i32
+TexuGetWindowItemInt(
+    texu_wnd*       wnd,
+    texu_ui32       id,
+    texu_i32        defval
+)
+{
+    texu_char text[64+1];
+    texu_wnd_get_text(texu_wnd_find_child(wnd, id), text, 64);
+    if (text && texu_strlen(text) > 0)
+    {
+        return atoi(text);
+    }
+    return defval;
+}
+
+
+void
+TexuSetWindowItemFloat(
+    texu_wnd *wnd,
+    texu_ui32 id,
+    texu_f64 val,
+    texu_i32 decimal)
+{
+    texu_char text[64];
+    if (decimal < 0 || decimal > 6)
+    {
+        decimal = 2;
+    }
+    sprintf(text, "%.0*f", decimal, val);
+    texu_wnd_set_text(texu_wnd_find_child(wnd, id), (text ? text : TEXUTEXT("")));
+}
+
+texu_f64
+TexuGetWindowItemFloat(
+    texu_wnd*       wnd,
+    texu_ui32       id,
+    texu_f64        defval
+)
+{
+    texu_char text[64+1];
+    texu_wnd_get_text(texu_wnd_find_child(wnd, id), text, 64);
+    if (text && texu_strlen(text) > 0)
+    {
+        return texu_atof(text);
+    }
+    return defval;
+}
+
 texu_wnd *
 TexuGetParent(
     texu_wnd *wnd)
@@ -756,8 +901,7 @@ TexuGetWindowText(
   texu_i32          len
 )
 {
-    TexuSendMessage(wnd, TEXU_WM_GETTEXT, (texu_lparam)text, len);
-    return texu_strlen(text);
+    return texu_wnd_get_text(wnd, text, len);
 }
 
 void
@@ -818,6 +962,12 @@ TexuGetWindowUserData(texu_wnd* wnd)
 }
 
 void
+TexuSetWindowUserData(texu_wnd *wnd, void *userdata)
+{
+    texu_wnd_set_userdata(wnd, userdata);
+}
+
+void
 TexuAddHotKey(
     texu_wnd *wnd,
     texu_i32 key,
@@ -833,6 +983,11 @@ TexuEnableWindow(texu_wnd *wnd, texu_bool enable)
     texu_wnd_enable(wnd, enable);
 }
 
+texu_bool
+TexeIsWindowEnabled(texu_wnd *wnd)
+{
+    return texu_wnd_is_enable(wnd);
+}
 void
 TexuSaveCursorPosition(texu_wnd *wnd)
 {
@@ -863,7 +1018,7 @@ TexuAddPopupMenu(
     {
         return 0;
     }
-    return texu_menu_add_menu_info(
+    return texu_menu_add_menubar_info(
         menu,
         text,
         enable,
@@ -1141,11 +1296,26 @@ void
 TexuDrawText(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* text, texu_i32 color, texu_i32 bgcolor, const texu_char* clsname, texu_i32 id)
 {
     texu_cio_draw_text(cio, 
-        0,  /*y*/ 
-        0,  /*x*/
+        y,  /*y*/ 
+        x,  /*x*/
         text, 
         color,
         bgcolor, 
+        clsname, 
+        id
+        );
+}
+
+void
+TexuDrawText2(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* text, texu_i32 color, texu_i32 bgcolor, texu_i32 attrs, const texu_char* clsname, texu_i32 id)
+{
+    texu_cio_draw_text2(cio, 
+        y,  /*y*/ 
+        x,  /*x*/
+        text, 
+        color,
+        bgcolor, 
+        attrs,
         clsname, 
         id
         );

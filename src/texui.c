@@ -781,9 +781,10 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_BUTTON_YES]               = TEXU_CIO_COLOR_BLACK_GREEN;
     env->syscolors[TEXU_COLOR_BUTTON_NO]                = TEXU_CIO_COLOR_BLACK_GREEN;
     env->syscolors[TEXU_COLOR_BUTTON_CANCEL]            = TEXU_CIO_COLOR_BLACK_GREEN;
-    env->syscolors[TEXU_COLOR_MENU]                     = TEXU_CIO_COLOR_CYAN_BLUE;
+    env->syscolors[TEXU_COLOR_BUTTON_DEFAULT]           = TEXU_CIO_COLOR_WHITE_BLUE;
+    env->syscolors[TEXU_COLOR_MENU]                     = TEXU_CIO_COLOR_BLUE_WHITE;
     env->syscolors[TEXU_COLOR_MENU_DISABLED]            = TEXU_CIO_COLOR_BLACK_BLUE;
-    env->syscolors[TEXU_COLOR_MENU_SELECTED]            = TEXU_CIO_COLOR_BLUE_WHITE;
+    env->syscolors[TEXU_COLOR_MENU_SELECTED]            = TEXU_CIO_COLOR_WHITE_BLUE;
     env->syscolors[TEXU_COLOR_MENU_FOCUSED]             = TEXU_CIO_COLOR_BLUE_WHITE;
     env->syscolors[TEXU_COLOR_MENUITEM]                 = TEXU_CIO_COLOR_CYAN_BLUE;
     env->syscolors[TEXU_COLOR_MENUITEM_DISABLED]        = TEXU_CIO_COLOR_BLACK_BLUE;
@@ -808,11 +809,11 @@ _texu_env_init_syscolors(texu_env *env)
     env->syscolors[TEXU_COLOR_LISTCTRL]                 = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_SELECTED]        = TEXU_CIO_COLOR_BLACK_WHITE;
-    env->syscolors[TEXU_COLOR_LISTCTRL_FOCUSED]         = TEXU_CIO_COLOR_WHITE_CYAN;
+    env->syscolors[TEXU_COLOR_LISTCTRL_FOCUSED]         = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_ITEM]            = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_DISABLED]   = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELECTED]   = TEXU_CIO_COLOR_BLACK_WHITE;
-    env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_FOCUSED]    = TEXU_CIO_COLOR_WHITE_CYAN;
+    env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_FOCUSED]    = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_LISTCTRL_ITEM_SELFOCUSED] = TEXU_CIO_COLOR_CYAN_BLUE;
     env->syscolors[TEXU_COLOR_TREECTRL]                 = TEXU_CIO_COLOR_WHITE_BLACK;
     env->syscolors[TEXU_COLOR_TREECTRL_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
@@ -884,9 +885,10 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_BUTTON_YES]               = TEXU_CIO_COLOR_BLACK_GREEN;
     env->sysbgcolors[TEXU_COLOR_BUTTON_NO]                = TEXU_CIO_COLOR_BLACK_GREEN;
     env->sysbgcolors[TEXU_COLOR_BUTTON_CANCEL]            = TEXU_CIO_COLOR_BLACK_GREEN;
-    env->sysbgcolors[TEXU_COLOR_MENU]                     = TEXU_CIO_COLOR_CYAN_BLUE;
+    env->sysbgcolors[TEXU_COLOR_BUTTON_DEFAULT]           = TEXU_CIO_COLOR_WHITE_BLUE;
+    env->sysbgcolors[TEXU_COLOR_MENU]                     = TEXU_CIO_COLOR_BLUE_WHITE;
     env->sysbgcolors[TEXU_COLOR_MENU_DISABLED]            = TEXU_CIO_COLOR_BLACK_BLUE;
-    env->sysbgcolors[TEXU_COLOR_MENU_SELECTED]            = TEXU_CIO_COLOR_BLUE_WHITE;
+    env->sysbgcolors[TEXU_COLOR_MENU_SELECTED]            = TEXU_CIO_COLOR_WHITE_BLUE;
     env->sysbgcolors[TEXU_COLOR_MENU_FOCUSED]             = TEXU_CIO_COLOR_BLUE_WHITE;
     env->sysbgcolors[TEXU_COLOR_MENUITEM]                 = TEXU_CIO_COLOR_CYAN_BLUE;
     env->sysbgcolors[TEXU_COLOR_MENUITEM_DISABLED]        = TEXU_CIO_COLOR_BLACK_BLUE;
@@ -911,11 +913,11 @@ void _texu_env_init_sysbgcolors(texu_env *env)
     env->sysbgcolors[TEXU_COLOR_LISTCTRL]                 = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL_SELECTED]        = TEXU_CIO_COLOR_BLACK_WHITE;
-    env->sysbgcolors[TEXU_COLOR_LISTCTRL_FOCUSED]         = TEXU_CIO_COLOR_WHITE_CYAN;
+    env->sysbgcolors[TEXU_COLOR_LISTCTRL_FOCUSED]         = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL_ITEM]            = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL_ITEM_DISABLED]   = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL_ITEM_SELECTED]   = TEXU_CIO_COLOR_BLACK_WHITE;
-    env->sysbgcolors[TEXU_COLOR_LISTCTRL_ITEM_FOCUSED]    = TEXU_CIO_COLOR_WHITE_CYAN;
+    env->sysbgcolors[TEXU_COLOR_LISTCTRL_ITEM_FOCUSED]    = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_LISTCTRL_ITEM_SELFOCUSED] = TEXU_CIO_COLOR_CYAN_BLUE;
     env->sysbgcolors[TEXU_COLOR_TREECTRL]                 = TEXU_CIO_COLOR_WHITE_BLACK;
     env->sysbgcolors[TEXU_COLOR_TREECTRL_DISABLED]        = TEXU_CIO_COLOR_WHITE_BLACK;
@@ -2659,6 +2661,10 @@ texu_env_run_base(texu_env* env, texu_i32 options)
     texu_i32        altpressed  = 0;
     texu_i32        ctlpressed  = 0;
     texu_i32        keymod = 0;
+    texu_i32        key;
+    texu_i32 rkey = 0;
+    texu_i32 rch  = 0;
+    texu_i32 rmod = 0;
 #if (defined VMS || defined __VMS__)
     texu_char       key_name[32];
     $DESCRIPTOR(keyname, key_name);
@@ -2749,11 +2755,12 @@ texu_env_run_base(texu_env* env, texu_i32 options)
             }
         }
 #elif (defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)
-    keymod = texu_cio_dispatch(env->cio);
+        keymod = texu_cio_dispatch(env->cio);
+        key = ch;
 #if defined __USE_TERMBOX2__
-    ch = texu_cio_translate2(env->cio, ch, &keymod);
+        ch = texu_cio_translate2(env->cio, key, &keymod);
 #else
-    ch = texu_cio_translate(env->cio, ch);
+        ch = texu_cio_translate(env->cio, key);
 #endif
 #else
         /*retrieve a special key such as CTRL and ALT key*/
@@ -2801,10 +2808,21 @@ texu_env_run_base(texu_env* env, texu_i32 options)
                 /*no more windows active*/
                 break;
             }
+#if defined __USE_TERMBOX2__
+            texu_cio_getraw(env->cio, &rkey, &rch, &rmod);
+            texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_lparam)ch,
+                                (texu_lparam)(keymod));
+            if (rch > 0)
+            {
+                texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch,
+                                (texu_lparam)(keymod));
+            }
+#else
             texu_wnd_send_msg(activewnd, TEXU_WM_KEYDOWN, (texu_lparam)ch,
                               (texu_lparam)(keymod));
             texu_wnd_send_msg(activewnd, TEXU_WM_CHAR, (texu_lparam)ch,
                               (texu_lparam)(keymod));
+#endif
         }
 #endif /*#else NOT USE_TCL_AUTOMATION*/
     }
@@ -3132,19 +3150,15 @@ _TexuDefWndProc_OnEnterMenu(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     }
 
     texu_menu_set_curmenu(wnd->menu, curitem);
-    texu_menu_set_curmenuitem(wnd->menu, curitem->firstchild);
+    /*texu_menu_set_curmenuitem(wnd->menu, curitem->firstchild);*/
     _TexuDefWndProc_OpenMenuWnd(wnd, wnd->menu);
 }
 
 void
 _TexuDefWndProc_OnLeaveMenu(texu_wnd *wnd)
 {
-    /*open the new window to draw menu*/
-    /*
-    texu_env_restore_screen(wnd->env);
-    */
     texu_menu_set_curmenu(wnd->menu, 0);
-    texu_menu_set_curmenuitem(wnd->menu, 0);
+    /*texu_menu_set_curmenuitem(wnd->menu, 0);*/
     texu_wnd_send_msg(wnd, TEXU_WM_REDRAWMENU, 0, 0);
 }
 
@@ -3555,7 +3569,7 @@ _TexuDefWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     rc = texu_wnd_send_msg(activechild, TEXU_WM_KILLFOCUS, (texu_lparam)activewnd, ch);
                     if (rc < 0)
                     {
-                        texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, (texu_lparam)activechild, 0);
+                        /*texu_wnd_send_msg(activechild, TEXU_WM_SETFOCUS, (texu_lparam)activechild, 0);*/
                         return -1;
                     }
                 }
@@ -3563,7 +3577,7 @@ _TexuDefWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_lparam)nextwnd, ch);
                 if (rc < 0)
                 {
-                    texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
+                    /*texu_wnd_send_msg(activewnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);*/
                     return -1;
                 }
                 rc = texu_wnd_send_msg(nextwnd, TEXU_WM_SETFOCUS, (texu_lparam)activewnd, 0);
@@ -3743,6 +3757,98 @@ void _TexuDefWndProc_OnGetScreenRect(texu_wnd *wnd, texu_urect* rect)
     }
 }
 
+
+void _TexuDefWndProc_OnSetFgColor(texu_wnd *wnd, texu_i32 idx, texu_i32 color)
+{
+    if (wnd)
+    {
+        switch (idx)
+        {
+            case TEXU_COLOR_NORMAL:
+                wnd->normalcolor = color;
+                break;
+            case TEXU_COLOR_DISABLED:
+                wnd->disabledcolor = color;
+                break;
+            case TEXU_COLOR_FOCUSED:
+                wnd->focusedcolor = color;
+                break;
+            case TEXU_COLOR_SELECTED:
+                wnd->selectedcolor = color;
+                break;
+        }
+    }
+}
+void _TexuDefWndProc_OnSetBgColor(texu_wnd *wnd, texu_i32 idx, texu_i32 color)
+{
+    if (wnd)
+    {
+        switch (idx)
+        {
+            case TEXU_COLOR_NORMAL:
+                wnd->normalbg = color;
+                break;
+            case TEXU_COLOR_DISABLED:
+                wnd->disabledbg = color;
+                break;
+            case TEXU_COLOR_FOCUSED:
+                wnd->focusedbg = color;
+                break;
+            case TEXU_COLOR_SELECTED:
+                wnd->selectedbg = color;
+                break;
+        }
+    }
+}
+
+
+texu_i32 _TexuDefWndProc_OnGetFgColor(texu_wnd *wnd, texu_i32 idx)
+{
+    texu_i32 color = TEXU_CIO_COLOR_WHITE_BLACK;
+    if (wnd)
+    {
+        switch (idx)
+        {
+            case TEXU_COLOR_NORMAL:
+                color = wnd->normalcolor;
+                break;
+            case TEXU_COLOR_DISABLED:
+                color = wnd->disabledcolor;
+                break;
+            case TEXU_COLOR_FOCUSED:
+                color = wnd->focusedcolor;
+                break;
+            case TEXU_COLOR_SELECTED:
+                color = wnd->selectedcolor;
+                break;
+        }
+    }
+    return color;
+}
+texu_i32 _TexuDefWndProc_OnGetBgColor(texu_wnd *wnd, texu_i32 idx)
+{
+    texu_i32 color = TEXU_CIO_COLOR_WHITE_BLACK;
+    if (wnd)
+    {
+        switch (idx)
+        {
+            case TEXU_COLOR_NORMAL:
+                color = wnd->normalbg;
+                break;
+            case TEXU_COLOR_DISABLED:
+                color = wnd->disabledbg;
+                break;
+            case TEXU_COLOR_FOCUSED:
+                color = wnd->focusedbg;
+                break;
+            case TEXU_COLOR_SELECTED:
+                color = wnd->selectedbg;
+                break;
+        }
+    }
+    return color;
+}
+
 texu_longptr
 TexuDefWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
@@ -3903,6 +4009,20 @@ TexuDefWndProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam par
 
         case TEXU_WM_QUERYKEYPGDOWN:
             return (texu_lparam)_TexuDefWndProc_OnQueryKeyPgDown(wnd);
+
+        case TEXU_WM_SETFGCOLOR:/*param1 = color idx, 0=normal,1=disable,2=focus,3=select*/
+            _TexuDefWndProc_OnSetFgColor(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
+
+        case TEXU_WM_SETBGCOLOR: /*param1 = color idx, 0=normal,1=disable,2=focus,3=select*/
+            _TexuDefWndProc_OnSetBgColor(wnd, (texu_i32)param1, (texu_i32)param2);
+            return 0;
+
+        case TEXU_WM_GETFGCOLOR:/*param1 = color idx, 0=normal,1=disable,2=focus,3=select*/
+            return _TexuDefWndProc_OnGetFgColor(wnd, (texu_i32)param1);
+
+        case TEXU_WM_GETBGCOLOR: /*param1 = color idx, 0=normal,1=disable,2=focus,3=select*/
+            return _TexuDefWndProc_OnGetBgColor(wnd, (texu_i32)param1);
     }
     return 0;
 }
@@ -5281,7 +5401,7 @@ texu_wnd_get_cio(texu_wnd *wnd)
 void
 texu_wnd_lock_update(texu_wnd *wnd, texu_bool locked)
 {
-    if (wnd && wnd->lockedupdate != locked)
+    if (wnd)// && wnd->lockedupdate != locked)
     {
         wnd->lockedupdate = locked;
         if (!locked)

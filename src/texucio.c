@@ -1637,6 +1637,22 @@ texu_cio_dispatch(texu_cio *cio)
 /*translate the control key to char*/
 
 #if defined __USE_TERMBOX2__
+texu_i32 texu_cio_getraw(texu_cio *cio, texu_i32 *pkey, texu_i32 *pch, texu_i32 *pmod)
+{
+    if (pkey)
+    {
+        *pkey = cio->ev.key;
+    }
+    if (pch)
+    {
+        *pch = cio->ev.ch;
+    }
+    if (pmod)
+    {
+        *pmod = cio->ev.mod;
+    }
+    return 0;
+}
 texu_i32 texu_cio_translate2(texu_cio *cio, texu_i32 key, texu_i32 *mod)
 {
     texu_i32 ch = key;

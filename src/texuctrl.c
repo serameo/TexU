@@ -243,6 +243,7 @@ texu_i32 _TexuListCtrlProc_OnGetItemCount(texu_wnd *wnd);
 void _TexuListCtrlProc_DrawRow(texu_wnd* wnd, texu_i32 row, texu_i32 sel);
 void    _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i32 flags);
 void _TexuListCtrlProc_OnRefresh(texu_wnd *wnd, texu_i32 flags);
+void _TexuListCtrlProc_OnSetRowColor(texu_wnd *wnd, texu_i32 row, const texu_item_attrs* attrs);
 
 void _TexuListCtrlProc_OnRefresh(texu_wnd *wnd, texu_i32 flags)
 {
@@ -491,7 +492,7 @@ _TexuListCtrlProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
         return;
     }
     _TexuWndProc_Notify(wnd, TEXU_LCN_SETFOCUS);
-    texu_wnd_post_msg(wnd, TEXU_WM_INVALIDATE, 0, 0);
+    /*texu_wnd_post_msg(wnd, TEXU_WM_INVALIDATE, 0, 0);*/
 }
 
 texu_i32
@@ -1310,6 +1311,11 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
         y = rect->y;
         x = rect->x;
         width = rect->cols;
+        rcwnd = *rect;
+    }
+    else
+    {
+        texu_wnd_get_rect(wnd, &rcwnd);
     }
     lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
 
@@ -1320,7 +1326,7 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
     }
 
     /* draw headers */
-    texu_wnd_get_rect(wnd, &rcwnd);
+    /*texu_wnd_get_rect(wnd, &rcwnd);*/
     rcitem = rcwnd; /* copy some values */
     rcitem.lines = (style & TEXU_LCS_NOHEADER ? 0 : 1);
 
@@ -1636,8 +1642,7 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
         }
     }
 
-    texu_cio_gotoyx(dc, rcitem.y,
-                    rcitem.x);
+    texu_cio_gotoyx(dc, rcitem.y, rcitem.x);
 }
 
 void
@@ -2529,8 +2534,8 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             break;
         }
 
-        //case TEXU_KEY_ENTER:
-        case TVK_ENTER:
+        case TEXU_KEY_ENTER:
+        //case TVK_ENTER:
 #if defined (__VMS__)
         case TEXU_KEY_NUMENTER:
 #endif
@@ -2540,7 +2545,7 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             {
                 _TexuListCtrlProc_NotifyItem(wnd, TEXU_LCN_PRESSEDENTER, lctl->curselrow, 0);
             }
-            break;
+            return;
         }
 
         default:
@@ -3053,17 +3058,53 @@ texu_i32 _TexuListCtrlProc_OnGetItemCount(texu_wnd *wnd)
     return lctl->nitems;
 }
 
+void _TexuListCtrlProc_OnSetRowColor(texu_wnd *wnd, texu_i32 row, const texu_item_attrs* attrs)
+{
+    texu_wnd_subitem subitem;
+    texu_lcwnd *lctl = 0;
+    texu_lcwnd_cell *cell = 0;
+    texu_i32 rc = TEXU_ERROR;
+    lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
+
+    subitem.col = 0;
+    subitem.idx = row;
+    subitem.normcolor = attrs->normalcolor;
+    subitem.discolor = attrs->disabledcolor;
+    subitem.selcolor = attrs->selectedcolor;
+    subitem.focuscolor = attrs->focusedcolor;
+    subitem.selfocuscolor = attrs->selfocuscolor;
+    subitem.normbg = attrs->normalbg;
+    subitem.disbg = attrs->disabledbg;
+    subitem.selbg = attrs->selectedbg;
+    subitem.focusbg = attrs->focusedbg;
+    subitem.selfocusbg = attrs->selfocusbg;
+    cell = _TexuListCtrlProc_FindCellByIndex(lctl, subitem.col, subitem.idx);
+    while (cell)
+    {
+        cell->normcolor = subitem.normcolor;
+        cell->discolor  = subitem.discolor;
+        cell->selcolor  = subitem.selcolor;
+        cell->focuscolor  = subitem.focuscolor;
+        cell->selfocuscolor  = subitem.selfocuscolor;
+        cell->normbg    = subitem.normbg;
+        cell->disbg     = subitem.disbg;
+        cell->selbg     = subitem.selbg;
+        cell->focusbg  = subitem.focusbg;
+        cell->selfocusbg  = subitem.selfocusbg;
+        /*next column*/
+        ++subitem.col;
+        cell = _TexuListCtrlProc_FindCellByIndex(lctl, subitem.col, subitem.idx);
+    }
+    rc = TEXU_OK;
+    texu_wnd_invalidate(wnd);
+    return rc;
+}
+
 texu_i32 _TexuListCtrlProc_OnSetItem(texu_wnd *wnd, texu_ui32 flags, texu_wnd_subitem *subitem)
 {
     texu_lcwnd *lctl = 0;
     texu_lcwnd_cell *cell = 0;
     texu_i32 rc = TEXU_ERROR;
-#if 0
-    if (!texu_wnd_is_enable(wnd))
-    {
-        return 0;
-    }
-#endif
     lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
     cell = _TexuListCtrlProc_FindCellByIndex(lctl, subitem->col, subitem->idx);
     if (cell)
@@ -3152,6 +3193,13 @@ texu_i32 _TexuListCtrlProc_OnGetItem(texu_wnd *wnd, texu_ui32 flags, texu_wnd_su
             subitem->normcolor = cell->normcolor;
             subitem->discolor = cell->discolor;
             subitem->selcolor = cell->selcolor;
+            subitem->focuscolor = cell->focuscolor;
+            subitem->selfocuscolor = cell->selfocuscolor;
+            subitem->normbg = cell->normbg;
+            subitem->disbg = cell->disbg;
+            subitem->selbg = cell->selbg;
+            subitem->focusbg = cell->focusbg;
+            subitem->selfocusbg = cell->selfocusbg;
         }
 
         rc = TEXU_OK;
@@ -3523,6 +3571,11 @@ _TexuListCtrlProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam 
         case TEXU_LCM_DELETEALLITEMS:
         {
             _TexuListCtrlProc_OnDeleteAllItems(wnd);
+            return 0;
+        }
+        case TEXU_LCM_SETROWCOLOR:/*param1=idx,param2=color*/
+        {
+            _TexuListCtrlProc_OnSetRowColor(wnd, (texu_i32)param1, (const texu_item_attrs*)param2);
             return 0;
         }
         case TEXU_LCM_SETITEMTEXT:

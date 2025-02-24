@@ -2081,7 +2081,7 @@ _TexuEPSProc_IsValidSpread(texu_wnd *wnd, const texu_char *str)
     texu_i32  decwidth = eps->decwidth;
     texu_ui32 style = texu_wnd_get_style(wnd);
 
-    if (!str || 0 == texu_strlen(str))
+    if (!str || 0 == texu_strlen(str) || 0 == texu_strcmp("0.00", str))
     {
         return TEXU_TRUE;
     }
@@ -2159,6 +2159,19 @@ _TexuEPSProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         texu_wnd_set_text(editwnd, eps->editbuf);
         /*simulate CTRL+A (select all)*/
         texu_wnd_send_msg(editwnd, TEXU_WM_KEYDOWN, (texu_lparam)TEXUTEXT('A'), TEXU_KEYPRESSED_CTRL);
+    }
+    else
+    {
+        switch (ch)
+        {
+            case 0x7f:
+            case TEXU_KEY_DELETE:
+            case TEXU_KEY_BACKSPACE:
+            {
+                texu_wnd_send_msg(editwnd, TEXU_WM_CHAR, ch, alt);
+                return;
+            }
+        }
     }
     switch (ch)
     {
@@ -2512,9 +2525,7 @@ _TexuEPSProc_OnLoadSpreads(texu_wnd *wnd, const texu_pricespread *prices, texu_i
     /*load all new spreads*/
     for (i = 0; i < max_prices; ++i)
     {
-        _TexuEPSProc_OnInsertSpread(wnd,
-                                                prices[i].spread,
-                                                &prices[i]);
+        _TexuEPSProc_OnInsertSpread(wnd, prices[i].spread, &prices[i]);
     }
 }
 
