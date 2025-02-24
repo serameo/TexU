@@ -18,8 +18,7 @@
 
 #ifdef __USE_TERMIOS__
 #include "termbox.h"
-#endif
-#ifdef __USE_TERMBOX2__
+#elif defined __USE_TERMBOX2__
 #include "termbox2.h"
 #endif
 
@@ -316,6 +315,16 @@ enum
 #define TEXU_WM_QUERYKEYRIGHT           (TEXU_WM_FIRST + 45)
 #define TEXU_WM_QUERYKEYPGUP            (TEXU_WM_FIRST + 46)
 #define TEXU_WM_QUERYKEYPGDOWN          (TEXU_WM_FIRST + 47)
+#define TEXU_WM_SETFGCOLOR              (TEXU_WM_FIRST + 48)
+#define TEXU_WM_SETBGCOLOR              (TEXU_WM_FIRST + 49)
+#define TEXU_WM_GETFGCOLOR              (TEXU_WM_FIRST + 50)
+#define TEXU_WM_GETBGCOLOR              (TEXU_WM_FIRST + 51)
+
+/*color idx*/
+#define TEXU_COLOR_NORMAL     0
+#define TEXU_COLOR_DISABLED   1
+#define TEXU_COLOR_FOCUSED    2
+#define TEXU_COLOR_SELECTED   3
 
 /* notify */
 #define TEXU_WN_FIRST                   0
@@ -325,6 +334,7 @@ enum
 /* LABEL */
 #define TEXU_LM_FIRST                   (TEXU_WM_FIRST + 100)
 #define TEXU_LM_HIGHLIGHT               (TEXU_LM_FIRST +  1)
+#define TEXU_LM_FRAMECOLOR              (TEXU_LM_FIRST +  2)
 
 /* EDIT */
 #define TEXU_EM_FIRST                   (TEXU_WM_FIRST + 200)
@@ -345,7 +355,7 @@ enum
 #define TEXU_EN_KILLFOCUS               (TEXU_EN_FIRST +  2)
 #define TEXU_EN_INVALIDMINMAX           (TEXU_EN_FIRST +  3)
 #define TEXU_EN_INVALIDATE              (TEXU_EN_FIRST +  4)
-
+#define TEXU_EN_PRESSEDENTER            (TEXU_EN_FIRST +  5)
 
 /* BUTTON */
 #define TEXU_BM_FIRST                   (TEXU_WM_FIRST + 250)
@@ -419,6 +429,7 @@ enum
 #define TEXU_LCM_GETITEMTEXT            (TEXU_LCM_FIRST + 25)
 #define TEXU_LCM_GETITEMDATA            (TEXU_LCM_FIRST + 26)
 #define TEXU_LCM_REFRESH                (TEXU_LCM_FIRST + 27)
+#define TEXU_LCM_SETROWCOLOR            (TEXU_LCM_FIRST + 28)
 
 #define TEXU_LCN_FIRST                  TEXU_LCM_FIRST
 #define TEXU_LCN_SETFOCUS               (TEXU_LCN_FIRST +  1)
@@ -829,6 +840,8 @@ enum
 /*simply defines*/
 #define TEXU_KEY_PGUP                   TEXU_KEY_PPAGE
 #define TEXU_KEY_PGDOWN                 TEXU_KEY_NPAGE
+#define TEXU_KEY_INSERT                 TEXU_KEY_IC
+#define TEXU_KEY_DELETE                 TEXU_KEY_DC
 
 
 #if defined __USE_TERMBOX2__ // TEXU_KEY_F1 && (mod & TB_MOD_SHIFT)
@@ -1012,6 +1025,8 @@ enum
 #define TEXU_MBS_YESNO                 (TEXU_MBS_YES | TEXU_MBS_NO)
 #define TEXU_MBS_YESNOCANCEL           (TEXU_MBS_YES | TEXU_MBS_NO | TEXU_MBS_CANCEL)
 
+/*LABEL*/
+#define TEXU_LS_FRAME                  0x00010000
 
 /* EDIT */
 #define TEXU_ES_LEFT                    TEXU_WS_LEFT

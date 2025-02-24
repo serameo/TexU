@@ -150,7 +150,8 @@ texu_status         TexuCreateControls(texu_wnd* wnd, const texu_wnd_template*, 
 texu_status         TexuCreateControls2(texu_wnd* wnd, const texu_wnd_template2*, texu_i32);
 #endif
 texu_longptr            TexuCloseWindow(texu_wnd *wnd);
-texu_longptr            TexuSendWindowBack(texu_wnd *wnd); /*technic to hide the current top frame window*/
+texu_longptr            TexuSendWindowBack(texu_wnd *wnd);  /*technically hide the current top frame window*/
+texu_longptr            TexuSendWindowTop(texu_wnd *wnd);   /*technically show the specific window to the top frame window*/
 
 void                TexuShowWindow(
                         texu_wnd*  wnd,
@@ -193,6 +194,18 @@ TexuMessageBox2(
     void*      userdata,
     texu_msgbox_attrs *mbxattrs);
 
+texu_wnd *
+TexuMessageBox3(
+    const texu_char* caption,
+    const texu_char* text,
+    texu_wnd *owner,
+    texu_ui32 id,
+    texu_ui32 buttons,
+    texu_ui32 defbtn,
+    void*      userdata,
+    texu_msgbox_attrs *mbxattrs);
+
+
 texu_longptr
 TexuSendMessage(
     texu_wnd*     wnd,
@@ -213,6 +226,47 @@ texu_wnd*
 TexuGetWindowItem(
     texu_wnd*     wnd,
     texu_ui32     id
+);
+
+void
+TexuSetWindowItemText(
+    texu_wnd *wnd,
+    texu_ui32 id,
+    const texu_char *text);
+
+texu_i32
+TexuGetWindowItemText(
+    texu_wnd*       wnd,
+    texu_ui32       id,
+    texu_char*      text,
+    texu_i32        len
+);
+
+void
+TexuSetWindowItemInt(
+    texu_wnd *wnd,
+    texu_ui32 id,
+    texu_i32 val);
+
+texu_i32
+TexuGetWindowItemInt(
+    texu_wnd*       wnd,
+    texu_ui32       id,
+    texu_i32        defval
+);
+
+void
+TexuSetWindowItemFloat(
+    texu_wnd *wnd,
+    texu_ui32 id,
+    texu_f64 val,
+    texu_i32 decimal);
+
+texu_f64
+TexuGetWindowItemFloat(
+    texu_wnd*       wnd,
+    texu_ui32       id,
+    texu_f64        defval
 );
 
 texu_wnd *
@@ -266,8 +320,10 @@ TexuAddHotKey(
 );
 
 void            TexuEnableWindow(texu_wnd* wnd, texu_bool enable);
+texu_bool       TexeIsWindowEnabled(texu_wnd *wnd);
 texu_longptr    TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state);
 void*           TexuGetWindowUserData(texu_wnd* wnd);
+void            TexuSetWindowUserData(texu_wnd *wnd, void *userdata);
 
 void
 TexuSaveCursorPosition(texu_wnd* wnd);
@@ -305,7 +361,9 @@ texu_popup_menu_item*   TexuAddSubPopupMenuItem(
                             texu_i32 itemid,
                             texu_bool enable,
                             const texu_char* info);
+/*get main menu*/
 texu_menu               *TexuGetMenu(texu_wnd *wnd);
+/*get submenu from the main menu*/
 texu_popup_menu*        TexuGetPopupMenu(texu_menu* menu, texu_i32 idx);
 texu_popup_menu_item*   TexuGetPopupMenuItem(
                             texu_menu* menu,
@@ -343,9 +401,11 @@ texu_i32                TexuDrawFrame(texu_cio* cio, const texu_char* text, texu
 /*text*/
 void                    TexuDrawText(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* text, 
                             texu_i32 color, texu_i32 bgcolor, const texu_char* clsname, texu_i32 id);
+void                    TexuDrawText2(texu_cio* cio, texu_i32 y, texu_i32 x, const texu_char* text, 
+                            texu_i32 color, texu_i32 bgcolor, texu_i32 attrs, const texu_char* clsname, texu_i32 id);
 void                    TexuFormatText(texu_char* text, const texu_char* buf, texu_i32 x, texu_i32 limit, 
-                            texu_i32 cx, texu_i32 align, texu_bool more)
-;
+                            texu_i32 cx, texu_i32 align, texu_bool more);
+
 
 #ifdef __cplusplus
 }

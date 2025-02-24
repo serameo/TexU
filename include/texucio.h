@@ -91,6 +91,7 @@ void texu_cio_sigint(texu_cio *cio);
 texu_i32 texu_cio_dispatch(texu_cio *cio); /*to get to modifier (ALT=1/CTRL=2/SHIFT=4), see also termbox2.h*/
 texu_i32 texu_cio_translate(texu_cio *cio, texu_i32 key);
 texu_i32 texu_cio_translate2(texu_cio *cio, texu_i32 key, texu_i32 *mod);
+texu_i32 texu_cio_getraw(texu_cio *cio, texu_i32 *pkey, texu_i32 *pch, texu_i32 *pmod);
 #endif
 
 

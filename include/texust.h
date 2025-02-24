@@ -56,6 +56,27 @@ struct texu_wnd_attrs
 typedef struct texu_wnd_attrs texu_wnd_attrs;
 typedef texu_i32 (*texu_validate_proc)(texu_wnd*, texu_char*, void*);
 
+struct texu_item_attrs
+{
+    texu_i32  y;
+    texu_i32  x;
+    texu_i32  height;
+    texu_i32  width;
+    texu_ui32 normalcolor;
+    texu_ui32 disabledcolor;
+    texu_ui32 selectedcolor;
+    texu_ui32 focusedcolor;
+    texu_ui32 selfocuscolor;
+    texu_ui32 normalbg;
+    texu_ui32 disabledbg;
+    texu_ui32 selectedbg;
+    texu_ui32 focusedbg;
+    texu_ui32 selfocusbg;
+    texu_char *text;
+    void      *userdata;
+};
+typedef struct texu_item_attrs texu_item_attrs;
+
 struct texu_pos
 {
     texu_i32 y;
@@ -159,9 +180,13 @@ struct texu_wnd_subitem
     texu_ui32 normcolor; /* text attributes          */
     texu_ui32 discolor;  /* text attributes          */
     texu_ui32 selcolor;  /* text attributes          */
+    texu_ui32 focuscolor;
+    texu_ui32 selfocuscolor;
     texu_ui32 normbg; /* text attributes          */
     texu_ui32 disbg;  /* text attributes          */
     texu_ui32 selbg;  /* text attributes          */
+    texu_ui32 focusbg;
+    texu_ui32 selfocusbg;
     void *data;         /* user data                */
 };
 typedef struct texu_wnd_subitem texu_wnd_subitem;
@@ -242,7 +267,7 @@ struct texu_msgbox_attrs
     texu_ui32 yescolor;
     texu_ui32 nocolor;
     texu_ui32 color;
-
+    texu_ui32 defcolor;
     texu_ui32 titlebg;
     texu_ui32 labelbg;
     texu_ui32 okbg;
@@ -250,10 +275,12 @@ struct texu_msgbox_attrs
     texu_ui32 yesbg;
     texu_ui32 nobg;
     texu_ui32 bgcolor;
+    texu_ui32 defbg;
 
     void *userdata;
     const texu_char *text;
     const texu_char *caption;
+    texu_ui32 defbtn;
 };
 typedef struct texu_msgbox_attrs texu_msgbox_attrs;
 
