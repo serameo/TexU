@@ -324,6 +324,8 @@ texu_bool       TexeIsWindowEnabled(texu_wnd *wnd);
 texu_longptr    TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state);
 void*           TexuGetWindowUserData(texu_wnd* wnd);
 void            TexuSetWindowUserData(texu_wnd *wnd, void *userdata);
+void            TexuVisibleWindow(texu_wnd *wnd, texu_bool enable);
+texu_bool       TexeIsWindowVisible(texu_wnd *wnd);
 
 void
 TexuSaveCursorPosition(texu_wnd* wnd);
