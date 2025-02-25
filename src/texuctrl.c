@@ -1138,12 +1138,15 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     texu_env *env = texu_wnd_get_env(wnd);
     texu_i32 cx = texu_env_screen_width(env);
     texu_ui32 style = texu_wnd_get_style(wnd);
+    texu_char cap3[TEXU_MAX_WNDTEXT + 1];
+
+    texu_strcpy(cap3, texu_trim(caption));
 
     memset(buf, 0, sizeof(buf));
     cols = (isheader ? cols : cols - 0);
     len = texu_printf_alignment3(
             buf,
-            caption,
+            cap3,
             cols,
             align,
             TEXU_TRUE,
@@ -1164,7 +1167,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
         {
             len = texu_printf_alignment3(
                     buf,
-                    caption,
+                    cap3,
                     cols,
                     TEXU_ALIGN_LEFT,
                     TEXU_TRUE,
@@ -1176,7 +1179,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
         if (!(style & TEXU_LCS_SIMPLEHEADER))
         {
             texu_strcpy(cap2, TEXUTEXT(" "));
-            texu_strcat(cap2, caption);
+            texu_strcat(cap2, cap3);
             len = texu_printf_alignment3(
                     buf,
                     cap2,
@@ -1194,7 +1197,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
         {
             len = texu_printf_alignment3(
                     buf,
-                    caption,
+                    cap3,
                     cols,
                     TEXU_ALIGN_LEFT,
                     TEXU_TRUE,
@@ -1206,7 +1209,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
         /*cell*/
         if (align == TEXU_ALIGN_RIGHT)
         {
-            texu_strcpy(cap2, caption);
+            texu_strcpy(cap2, cap3);
             texu_strcat(cap2, TEXUTEXT(" "));
 
             len = texu_printf_alignment3(

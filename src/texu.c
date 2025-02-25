@@ -988,6 +988,19 @@ TexeIsWindowEnabled(texu_wnd *wnd)
 {
     return texu_wnd_is_enable(wnd);
 }
+
+void
+TexuVisibleWindow(texu_wnd *wnd, texu_bool enable)
+{
+    texu_wnd_visible(wnd, enable);
+}
+
+texu_bool
+TexeIsWindowVisible(texu_wnd *wnd)
+{
+    return texu_wnd_is_visible(wnd);
+}
+
 void
 TexuSaveCursorPosition(texu_wnd *wnd)
 {

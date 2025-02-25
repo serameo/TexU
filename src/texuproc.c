@@ -2221,18 +2221,15 @@ void _TexuEditProc_OnSetText(texu_wnd *wnd, const texu_char *text)
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
 
-#if 0
-    if (!texu_wnd_is_enable(wnd))
-    {
-        return 0;
-    }
-#endif
     if (!text)
     {
-        return;
+        texu_strcpy(buf, "");
     }
-    /*copy to buffer to prevent Mac crashed*/
-    texu_strcpy(buf, text);
+    else
+    {
+        /*copy to buffer to prevent Mac crashed*/
+        texu_strcpy(buf, text);
+    }
 
     TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)text, 0);
     edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
@@ -2244,6 +2241,7 @@ void _TexuEditProc_OnSetText(texu_wnd *wnd, const texu_char *text)
         _TexuEditProc_RemoveDecimalFormat(edit);
         _TexuEditProc_AddDecimalFormat(edit);
     }
+    texu_wnd_invalidate(wnd);
 }
 
 void _TexuEditProc_OnSetValidString(texu_wnd *wnd, const texu_char *validstr)
