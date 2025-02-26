@@ -393,8 +393,8 @@ _TexuListCtrlProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     memset(&attrs2, 0, sizeof(attrs2));
     attrs2.y        = 0;
     attrs2.x        = 0;
-    attrs2.height   = 1;
-    attrs2.width    = 1;
+    attrs2.height   = 0;
+    attrs2.width    = 0;
     attrs2.enable   = TEXU_FALSE;
     attrs2.visible  = TEXU_FALSE;
     attrs2.text     = TEXU_EMPTY_STR;

@@ -1437,8 +1437,8 @@ _TexuEPSProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.y = 0;
     attrs2.x = 0;
 
-    attrs2.height = attrs->height;
-    attrs2.width = attrs->width;
+    attrs2.height = 0;//attrs->height;
+    attrs2.width = 0;//attrs->width;
     attrs2.enable = TEXU_TRUE;
     attrs2.visible = TEXU_FALSE;
     attrs2.text = attrs->text;
@@ -1535,6 +1535,8 @@ _TexuEPSProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
 {
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
     texu_ui32 style = texu_wnd_get_style(wnd);
+    texu_urect rect;
+    texu_wnd_send_msg(wnd, TEXU_WM_GETCLIENTRECT, (texu_lparam)&rect, 0);
     if (!texu_wnd_is_enable(wnd) || !texu_wnd_is_visible(wnd))
     {
         return;
@@ -1542,13 +1544,17 @@ _TexuEPSProc_OnSetFocus(texu_wnd *wnd, texu_wnd *prevwnd)
     /*set focus to the first edit window*/
     if (TEXU_EPSS_ATOATC & style)
     {
+        texu_wnd_move(eps->editwnd, 0, 0, 0, 0, TEXU_FALSE);
         texu_wnd_visible(eps->editwnd, TEXU_FALSE);
+        texu_wnd_move(eps->editwnd2, 0, 0, rect.r2.height, rect.r2.width, TEXU_FALSE);
         texu_wnd_visible(eps->editwnd2, TEXU_TRUE);
         texu_wnd_send_msg(eps->editwnd2, TEXU_WM_SETFOCUS, 0, 0);
     }
     else
     {
+        texu_wnd_move(eps->editwnd2, 0, 0, 0, 0, TEXU_FALSE);
         texu_wnd_visible(eps->editwnd2, TEXU_FALSE);
+        texu_wnd_move(eps->editwnd, 0, 0, rect.r2.height, rect.r2.width, TEXU_FALSE);
         texu_wnd_visible(eps->editwnd, TEXU_TRUE);
         texu_wnd_send_msg(eps->editwnd, TEXU_WM_SETFOCUS, 0, 0);
     }
@@ -1622,8 +1628,11 @@ _TexuEPSProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state)
     _TexuWndProc_Notify(wnd, TEXU_EPSN_KILLFOCUS);
     texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
 
+    texu_wnd_move(eps->editwnd2, 0, 0, 0, 0, TEXU_FALSE);
     texu_wnd_visible(eps->editwnd2, TEXU_FALSE);
+    texu_wnd_move(eps->editwnd, 0, 0, 0, 0, TEXU_FALSE);
     texu_wnd_visible(eps->editwnd, TEXU_FALSE);
+
     texu_wnd_invalidate(wnd);
     return TEXU_CONTINUE;
 }

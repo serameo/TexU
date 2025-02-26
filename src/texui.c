@@ -4459,7 +4459,7 @@ _texu_wnd_invalidate_base(texu_wnd *wnd, texu_rect* rect)
     texu_ui32 style = 0;
     texu_urect rcchild, rcwnd;
 
-    if (!wnd || !texu_wnd_is_parent_visible(wnd) || !texu_wnd_is_visible(wnd))
+    if (!wnd || !texu_wnd_is_parent_visible(wnd))
     {
         return 0;
     }
@@ -4479,6 +4479,10 @@ _texu_wnd_invalidate_base(texu_wnd *wnd, texu_rect* rect)
     }
     /* firstly, paint itself */
     texu_wnd_send_msg(wnd, TEXU_WM_ERASEBG, (texu_lparam)(env->cio), (texu_lparam)&rcwnd.r1);
+    if (!texu_wnd_is_visible(wnd))
+    {
+        return 0;
+    }
     texu_wnd_send_msg(wnd, TEXU_WM_PAINT, (texu_lparam)(env->cio), (texu_lparam)&rcwnd.r1);
 
     childwnd = texu_wnd_firstchild(wnd);

@@ -847,7 +847,6 @@ TexuGetWindowItemInt(
     return defval;
 }
 
-
 void
 TexuSetWindowItemFloat(
     texu_wnd *wnd,
@@ -880,6 +879,30 @@ TexuGetWindowItemFloat(
     return defval;
 }
 
+void
+TexuEnableWindowItem(texu_wnd *wnd, texu_ui32 id, texu_bool enable)
+{
+    texu_wnd_enable(texu_wnd_find_child(wnd, id), enable);
+}
+
+texu_bool
+TexuIsWindowItemEnabled(texu_wnd *wnd, texu_ui32 id)
+{
+    return texu_wnd_is_enable(texu_wnd_find_child(wnd, id));
+}
+
+void
+TexuVisibleWindowItem(texu_wnd *wnd, texu_ui32 id, texu_bool enable)
+{
+    texu_wnd_visible(texu_wnd_find_child(wnd, id), enable);
+}
+
+texu_bool
+TexeIsWindowItemVisible(texu_wnd *wnd, texu_ui32 id)
+{
+    return texu_wnd_is_visible(texu_wnd_find_child(wnd, id));
+}
+
 texu_wnd *
 TexuGetParent(
     texu_wnd *wnd)
@@ -894,6 +917,7 @@ TexuSetWindowText(
 {
     texu_wnd_set_text(wnd, (text ? text : TEXUTEXT("")));
 }
+
 texu_i32
 TexuGetWindowText(
   texu_wnd*         wnd,
@@ -984,7 +1008,7 @@ TexuEnableWindow(texu_wnd *wnd, texu_bool enable)
 }
 
 texu_bool
-TexeIsWindowEnabled(texu_wnd *wnd)
+TexuIsWindowEnabled(texu_wnd *wnd)
 {
     return texu_wnd_is_enable(wnd);
 }
@@ -996,7 +1020,7 @@ TexuVisibleWindow(texu_wnd *wnd, texu_bool enable)
 }
 
 texu_bool
-TexeIsWindowVisible(texu_wnd *wnd)
+TexuIsWindowVisible(texu_wnd *wnd)
 {
     return texu_wnd_is_visible(wnd);
 }
