@@ -205,7 +205,6 @@ TexuMessageBox3(
     void*      userdata,
     texu_msgbox_attrs *mbxattrs);
 
-
 texu_longptr
 TexuSendMessage(
     texu_wnd*     wnd,
@@ -320,12 +319,16 @@ TexuAddHotKey(
 );
 
 void            TexuEnableWindow(texu_wnd* wnd, texu_bool enable);
-texu_bool       TexeIsWindowEnabled(texu_wnd *wnd);
+texu_bool       TexuIsWindowEnabled(texu_wnd *wnd);
 texu_longptr    TexuSetFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state);
 void*           TexuGetWindowUserData(texu_wnd* wnd);
 void            TexuSetWindowUserData(texu_wnd *wnd, void *userdata);
 void            TexuVisibleWindow(texu_wnd *wnd, texu_bool enable);
-texu_bool       TexeIsWindowVisible(texu_wnd *wnd);
+texu_bool       TexuIsWindowVisible(texu_wnd *wnd);
+void            TexuEnableWindowItem(texu_wnd *wnd, texu_ui32 id, texu_bool enable);
+texu_bool       TexuIsWindowItemEnabled(texu_wnd *wnd, texu_ui32 id);
+void            TexuVisibleWindowItem(texu_wnd *wnd, texu_ui32 id, texu_bool enable);
+texu_bool       TexuIsWindowItemVisible(texu_wnd *wnd, texu_ui32 id);
 
 void
 TexuSaveCursorPosition(texu_wnd* wnd);
