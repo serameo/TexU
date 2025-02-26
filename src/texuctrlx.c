@@ -1501,6 +1501,9 @@ _TexuEPSProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     memset(eps, 0, sizeof(texu_edit_pricespread));
     eps->editwnd = editwnd; /* no parameter */
     eps->editwnd2 = editwnd2;
+
+    texu_wnd_send_msg(eps->editwnd, TEXU_EM_SETVALIDATION, (texu_lparam)attrs->on_validate, (texu_lparam)attrs->validate_data);
+    texu_wnd_send_msg(eps->editwnd2, TEXU_EM_SETVALIDATION, (texu_lparam)attrs->on_validate, (texu_lparam)attrs->validate_data);
     //texu_wnd_visible(editwnd, TEXU_FALSE);
     //texu_wnd_visible(editwnd2, TEXU_FALSE);
 
@@ -1577,7 +1580,11 @@ _TexuEPSProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state)
 
     texu_wnd_get_text(wnd, eps->editbuf, TEXU_MAX_WNDTEXT);
 
-    texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, 0, state);
+    texu_longptr rc = texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, 0, state);
+    if (rc < TEXU_OK)
+    {
+        return rc;
+    }
     texu_wnd_get_text(editwnd, buf, TEXU_MAX_WNDTEXT);
     valid = _TexuEPSProc_IsValidSpread(wnd, buf);
     if (TEXU_FALSE == valid)
@@ -1621,6 +1628,14 @@ _TexuEPSProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state)
                 return TEXU_ERROR;
             }
         }
+    }
+    else if (0 == val)
+    {
+        _TexuWndProc_Notify(wnd, TEXU_EPSN_INVALIDPRICE);
+        /*change edit color*/
+        texu_wnd_send_msg(editwnd, TEXU_EM_INVALIDATE, 0, 0);
+        texu_wnd_invalidate(editwnd);
+        return TEXU_ERROR;
     }
 
     texu_wnd_set_text(wnd, buf);

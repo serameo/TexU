@@ -228,11 +228,12 @@ _TexuWndProc_Notify(texu_wnd *wnd, texu_ui32 code)
 {
     texu_wnd_notify notify;
     texu_wnd *parent = texu_wnd_get_parent(wnd);
+    texu_wnd *frame = texu_wnd_get_frame(wnd);
 
     notify.wnd = wnd;
     notify.id = texu_wnd_get_id(wnd);
     notify.code = code;
-    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
+    texu_wnd_send_msg(frame, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
 }
 
 void
@@ -240,13 +241,14 @@ _TexuEditProc_Notify(texu_wnd *wnd, texu_ui32 code, texu_char* text, texu_i32 ex
 {
     texu_edit_notify notify;
     texu_wnd *parent = texu_wnd_get_parent(wnd);
+    texu_wnd *frame = texu_wnd_get_frame(wnd);
 
     notify.hdr.wnd = wnd;
     notify.hdr.id = texu_wnd_get_id(wnd);
     notify.hdr.code = code;
     notify.text = text;
     notify.excode = excode;
-    texu_wnd_send_msg(parent, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
+    texu_wnd_send_msg(frame, TEXU_WM_NOTIFY, (texu_lparam)&notify, 0);
 }
 
 void
