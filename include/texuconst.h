@@ -448,6 +448,8 @@ enum
 #define TEXU_LCN_ENDEDITOK              (TEXU_LCN_FIRST + 14)
 #define TEXU_LCN_ENDEDITCANCEL          (TEXU_LCN_FIRST + 15)
 #define TEXU_LCN_PRESSEDENTER           (TEXU_LCN_FIRST + 16)
+#define TEXU_LCN_PRESSEDDELETE          (TEXU_LCN_FIRST + 17)
+#define TEXU_LCN_PRESSEDINSERT          (TEXU_LCN_FIRST + 18)
 
 /*TREE CTRL*/
 #define TEXU_TCM_FIRST                  (TEXU_WM_FIRST + 500)
@@ -685,6 +687,7 @@ enum
 #define TEXU_EPSM_ALLOWOVERCEILINGFLOOR (TEXU_EPSM_FIRST +  8)
 #define TEXU_EPSM_CORRECTCEILINGFLOOR   (TEXU_EPSM_FIRST +  9)
 #define TEXU_EPSM_GETPRICEASINT         (TEXU_EPSM_FIRST + 10)
+#define TEXU_EPSM_LIMITTEXT             (TEXU_EPSM_FIRST + 11)
 
 #define TEXU_EPSN_FIRST                 TEXU_EPSM_FIRST
 #define TEXU_EPSN_SETFOCUS              (TEXU_EPSN_FIRST +  1)
@@ -693,6 +696,10 @@ enum
 #define TEXU_EPSN_INVALIDCEILING        (TEXU_EPSN_FIRST +  4)
 #define TEXU_EPSN_INVALIDFLOOR          (TEXU_EPSN_FIRST +  5)
 #define TEXU_EPSN_INVALIDPRICE          (TEXU_EPSN_FIRST +  6)
+
+/*child*/
+#define TEXU_EPS_EDIT_NUMBER_ID         (1)
+#define TEXU_EPS_EDIT_ALPHA_ID          (2)
 
 /*CLOCK CTRL*/
 #define TEXU_CLKM_FIRST                 (TEXU_WM_FIRST + 1700)
@@ -787,6 +794,8 @@ enum
 #define TEXU_KEY_PPAGE                  TB_KEY_PGUP
 #define TEXU_KEY_NPAGE                  TB_KEY_PGDN
 #define TEXU_KEY_ESCAPE                 TB_KEY_ESC
+#define TEXU_KEY_HOME                   TB_KEY_HOME
+#define TEXU_KEY_END                    TB_KEY_END
 #elif (defined __VMS__) || (defined __USE_TTY__)
 #define TEXU_KEY_SELMENU                10
 #define TEXU_KEY_NEXTWND                13
@@ -1113,6 +1122,7 @@ enum
 #define TEXU_EPSS_SHOWCHANGEPRICE       0x00020000
 #define TEXU_EPSS_AUTOCOMMAS            0x00040000
 #define TEXU_EPSS_ATOATC                0x00080000
+#define TEXU_EPSS_NOSPREAD              0x00100000
 
 /*EDIT VOLUME CONTROL*/
 #define TEXU_EVS_AUTOCOMMAS             0x00010000

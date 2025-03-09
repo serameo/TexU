@@ -12,6 +12,7 @@
 #include "texumacros.h"
 #include "texutypes.h"
 #include "texuconst.h"
+#include "texulib.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -482,6 +483,14 @@ struct texu_datetime
     struct texu_time time;
 };
 typedef struct texu_datetime texu_datetime;
+
+/*simple show/hide/move */
+struct texu_layer
+{
+    texu_urect       area;          /*the area under the parent*/
+    texu_wnd        *parent;        /*the parent window*/
+    texu_list       *children;      /*children windows to be aligned in the window parent*/
+};
 
 #ifdef __cplusplus
 }
