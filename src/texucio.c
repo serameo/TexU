@@ -3401,10 +3401,10 @@ texu_cio_draw_line(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 width, texu_i
 {
     texu_char line[TEXU_MAX_WNDTEXT + 1];
     memset(line, 0, sizeof(line));
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
+#if (defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
     memset(line, '-', width);
     texu_cio_putstr_attr(cio, y, x, line, attrs);
-#elif (defined __USE_TERMBOX2__)
+#elif (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
 #if (defined __UTF8__)
     texu_i32 i = 0;
     for (i = 0; i < width; ++i)
@@ -3444,9 +3444,9 @@ texu_cio_draw_vline(texu_cio *cio, texu_i32 y, texu_i32 x, texu_i32 height, texu
     texu_cio_attron(cio, attrs);
     for (i = 0; i < height; ++i)
     {
-#if (defined TEXU_CIO_COLOR_MONO || defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
+#if (defined __USE_TTY__ || defined __VMS__ || defined __USE_TERMIOS__)
         texu_cio_putch_attr(cio, y + i, x, '|', attrs);
-#elif (defined __USE_TERMBOX2__)
+#elif (defined __USE_TERMBOX2__ || defined TEXU_CIO_COLOR_MONO)
 #if (defined __UTF8__)
         tb_set_cell(x, y + i, TEXU_TB2_VERTLINE, 
             cio__color_pair(fg), 

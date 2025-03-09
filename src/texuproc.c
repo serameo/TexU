@@ -52,6 +52,9 @@ struct texu_msgbox
     void *userdata;
     texu_char text[TEXU_1024_WNDTEXT + 1];
     texu_char caption[TEXU_MAX_WNDTEXT + 1];
+    texu_i32  max_buttons;
+    texu_i32  curbtn;
+    texu_wnd *buttons[4];
 };
 typedef struct texu_msgbox texu_msgbox;
 
@@ -200,6 +203,17 @@ texu_status _TexuMsgBoxProc_CreateButtons(
     texu_i32 cmd,
     texu_ui32 color,
     texu_ui32 bgcolor);
+texu_status _TexuMsgBoxProc_CreateButtons2(
+    texu_wnd *wnd,
+    texu_i32 y,
+    texu_i32 x,
+    texu_char *caption,
+    texu_ui32 id,
+    texu_i32 cmd,
+    texu_ui32 color,
+    texu_ui32 bgcolor,
+    texu_ui32 defcolor,
+    texu_ui32 defbgcolor);
 
 void _TexuMsgBoxProc_Notify(texu_wnd *wnd, texu_ui32, texu_ui32);
 
@@ -271,7 +285,7 @@ _TexuMsgBoxProc_OnDestroy(texu_wnd *wnd)
     /*remove msgbox from topwnd*/
     texu_wnd_remove_child(desktop, wnd);
     /*texu_wnd_del(wnd);*/
-    texu_cio_interval(texu_wnd_get_cio(wnd), 500);
+    /*texu_cio_interval(texu_wnd_get_cio(wnd), 500);*/
 }
 
 void
@@ -293,14 +307,15 @@ _TexuMsgBoxProc_OnPaint(texu_wnd *wnd, texu_cio *dc, texu_rect* rect)
     ++x;
     width -= 2;
     texu_printf_alignment3(buf, msgbox->caption, width, TEXU_ALIGN_CENTER, TEXU_TRUE, x, cx);
-#if 0 //defined TEXU_CIO_COLOR_MONO
+#if defined TEXU_CIO_COLOR_MONO
     {
         texu_rect rcwnd;
         texu_wnd_get_rect(wnd, &rcwnd);
-        texu_cio_draw_rect(dc, &rcwnd, 0);
+        texu_cio_draw_rect(dc, &rcwnd, TEXU_CIO_COLOR_WHITE_BLACK, TEXU_CIO_COLOR_WHITE_BLACK, 0);
     }
-    texu_cio_putstr_attr(dc, y, x, buf,
-                         texu_cio_get_reverse(dc, msgbox->titlecolor));
+    texu_cio_draw_text2(dc, y, x, buf, TEXU_CIO_COLOR_WHITE_BLACK, TEXU_CIO_COLOR_WHITE_BLACK, TB_REVERSE,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 #else
     texu_cio_draw_text(dc, y, x, buf, msgbox->titlecolor, msgbox->titlebg,
                           texu_wnd_get_clsname(wnd),
@@ -395,12 +410,69 @@ _TexuMsgBoxProc_CreateButtons(
     childattrs.focusedbg = bgcolor;
 
     childattrs.id = id;
+    childattrs.clsname = TEXU_BUTTON_CLASS;//TEXU_LABEL_CLASS;
+    childattrs.userdata = 0;
+    childattrs.style = TEXU_WS_CENTER;
+    childattrs.exstyle = 0;
+
+    rc = texu_wnd_create(child, wnd, &childattrs);
+
+    if (rc != TEXU_OK)
+    {
+        texu_wnd_del(child);
+        return TEXU_ERROR;
+    }
+
+    texu_wnd_set_color(child, color, color);
+    texu_wnd_set_bgcolor(child, bgcolor, bgcolor);
 #if defined TEXU_CIO_COLOR_MONO
-    childattrs.clsname = TEXU_EDIT_CLASS;
-    childattrs.enable = TEXU_FALSE;
-#else
-    childattrs.clsname = TEXU_LABEL_CLASS;
+    texu_wnd_send_msg(child, TEXU_LM_HIGHLIGHT, TEXU_TRUE, 0);
 #endif
+    texu_wnd_add_keycmd(wnd, cmd, id, 0);
+    return rc;
+}
+
+texu_status
+_TexuMsgBoxProc_CreateButtons2(
+    texu_wnd *wnd,
+    texu_i32 y,
+    texu_i32 x,
+    texu_char *caption,
+    texu_ui32 id,
+    texu_i32 cmd,
+    texu_ui32 color,
+    texu_ui32 bgcolor,
+    texu_ui32 defcolor,
+    texu_ui32 defbgcolor)
+{
+    texu_wnd *child = 0;
+    texu_wnd_attrs childattrs;
+    texu_status rc = TEXU_OK;
+
+    child = texu_wnd_new(texu_wnd_get_env(wnd));
+    if (!child)
+    {
+        return TEXU_NOMEM;
+    }
+
+    memset(&childattrs, 0, sizeof(texu_wnd_attrs));
+    childattrs.y = y;
+    childattrs.x = x;
+    childattrs.height = 1;
+    childattrs.width = texu_strlen(caption);
+    childattrs.enable = TEXU_TRUE;
+    childattrs.visible = TEXU_TRUE;
+    childattrs.text = caption;
+    childattrs.normalcolor = color;
+    childattrs.disabledcolor = color;
+    childattrs.focusedcolor = color;
+
+    childattrs.normalbg = bgcolor;
+    childattrs.disabledbg = bgcolor;
+    childattrs.focusedbg = bgcolor;
+
+    childattrs.id = id;
+    childattrs.clsname = TEXU_BUTTON_CLASS;//TEXU_LABEL_CLASS;
     childattrs.userdata = 0;
     childattrs.style = TEXU_WS_CENTER;
     childattrs.exstyle = 0;
@@ -416,9 +488,15 @@ _TexuMsgBoxProc_CreateButtons(
     texu_wnd_set_color(child, color, color);
     texu_wnd_set_bgcolor(child, bgcolor, bgcolor);
 
+    texu_wnd_set_focused_color(child, defcolor);
+    texu_wnd_set_bgfocused_color(child, defbgcolor);
+#if defined TEXU_CIO_COLOR_MONO
+    texu_wnd_send_msg(child, TEXU_LM_HIGHLIGHT, TEXU_TRUE, 0);
+#endif
     texu_wnd_add_keycmd(wnd, cmd, id, 0);
     return rc;
 }
+
 
 enum
 {
@@ -534,6 +612,8 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         ++id;
     }
     /* create buttons */
+    msgbox->max_buttons = 0;
+    msgbox->curbtn = 0;
     if (attrs->style & TEXU_MBS_OK)
     {
         ++idok;
@@ -560,33 +640,17 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
     if (idok)
     {
         caption = buttons[F1_OK];
-        if (TEXU_IDOK == msgbox->defbutton)
-        {
-            color = msgbox->defcolor;
-#if defined WIN32
-            bgcolor = msgbox->defbg;
-#else
-            bgcolor = msgbox->defcolor;
-#endif
-        }
-        else
-        {
-            color = msgbox->okcolor;
-#if defined WIN32
-            bgcolor = msgbox->okbg;
-#else
-            bgcolor = msgbox->okcolor;
-#endif
-        }
-        rc = _TexuMsgBoxProc_CreateButtons(
+        rc = _TexuMsgBoxProc_CreateButtons2(
             wnd,
             y,
             x,
             caption,
             TEXU_IDOK,
             TVK_F1,
-            color,
-            bgcolor);
+            msgbox->okcolor,
+            msgbox->okcolor,
+            msgbox->defcolor,
+            msgbox->defcolor);
         if (rc != TEXU_OK)
         {
             return rc;
@@ -596,45 +660,24 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         texu_wnd_add_keycmd(wnd, 'o', TEXU_IDOK, 0);
         /*texu_wnd_add_keycmd(wnd, TEXU_KEY_ENTER, TEXU_IDOK, 0);*/
         x += texu_strlen(caption) + 1;
+        msgbox->buttons[msgbox->max_buttons] = texu_wnd_find_child(wnd, TEXU_IDOK);
+        ++msgbox->max_buttons;
+        texu_wnd_set_focus(msgbox->buttons[msgbox->max_buttons]);
     }
     if (idyes && !idok)
     {
         caption = buttons[F2_YES];
-        #if 0
-        /* re-color if available*/
-        if (!(idok))
-        {
-            msgbox->yescolor = msgbox->okcolor;//texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_OK);
-            msgbox->yesbg = msgbox->okbg;//texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_OK);
-        }
-        #endif
-        if (TEXU_IDYES == msgbox->defbutton)
-        {
-            color = msgbox->defcolor;
-#if defined WIN32
-            bgcolor = msgbox->defbg;
-#else
-            bgcolor = msgbox->defcolor;
-#endif
-        }
-        else
-        {
-            color = msgbox->yescolor;
-#if defined WIN32
-            bgcolor = msgbox->yesbg;
-#else
-            bgcolor = msgbox->yescolor;
-#endif
-        }
-        rc = _TexuMsgBoxProc_CreateButtons(
+        rc = _TexuMsgBoxProc_CreateButtons2(
             wnd,
             y,
             x,
             caption,
             TEXU_IDYES,
             TVK_F2,
-            color,
-            bgcolor);
+            msgbox->yescolor,
+            msgbox->yescolor,
+            msgbox->defcolor,
+            msgbox->defcolor);
         if (rc != TEXU_OK)
         {
             return rc;
@@ -643,83 +686,50 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         texu_wnd_add_keycmd(wnd, 'Y', TEXU_IDYES, 0);
         texu_wnd_add_keycmd(wnd, 'y', TEXU_IDYES, 0);
         x += texu_strlen(caption) + 1;
+        msgbox->buttons[msgbox->max_buttons] = texu_wnd_find_child(wnd, TEXU_IDYES);
+        ++msgbox->max_buttons;
+        texu_wnd_set_focus(msgbox->buttons[msgbox->max_buttons]);
     }
     if (idno)
     {
         caption = buttons[F3_NO];
-        if (TEXU_IDNO == msgbox->defbutton)
-        {
-            color = msgbox->defcolor;
-#if defined WIN32
-            bgcolor = msgbox->defbg;
-#else
-            bgcolor = msgbox->defcolor;
-#endif
-        }
-        else
-        {
-            color = msgbox->nocolor;
-#if defined WIN32
-            bgcolor = msgbox->nobg;
-#else
-            bgcolor = msgbox->nocolor;
-#endif
-        }
-        rc = _TexuMsgBoxProc_CreateButtons(
+        rc = _TexuMsgBoxProc_CreateButtons2(
             wnd,
             y,
             x,
             caption,
             TEXU_IDNO,
             TVK_F3,
-            color,
-            bgcolor);
+            msgbox->nocolor,
+            msgbox->nocolor,
+            msgbox->defcolor,
+            msgbox->defcolor);
         if (rc != TEXU_OK)
         {
             return rc;
         }
+        //++msgbox->curbtn;
         texu_wnd_add_keycmd(wnd, 'N', TEXU_IDNO, 0);
         texu_wnd_add_keycmd(wnd, 'n', TEXU_IDNO, 0);
         x += texu_strlen(caption) + 1;
+        msgbox->buttons[msgbox->max_buttons] = texu_wnd_find_child(wnd, TEXU_IDNO);
+        ++msgbox->max_buttons;
+        texu_wnd_set_focus(msgbox->buttons[msgbox->max_buttons]);
     }
     if (idcancel)
     {
         caption = buttons[F4_CANCEL];
-        #if 0
-        /*if there is no cancel button, then assign escape to no button*/
-        if (!(idno))
-        {
-            msgbox->cancelcolor = msgbox->nocolor;//texu_env_get_syscolor(env, TEXU_COLOR_BUTTON_NO);
-            msgbox->cancelbg = msgbox->nobg;//texu_env_get_sysbgcolor(env, TEXU_COLOR_BUTTON_NO);
-        }
-        #endif
-        if (TEXU_IDCANCEL == msgbox->defbutton)
-        {
-            color = msgbox->defcolor;
-#if defined WIN32
-            bgcolor = msgbox->defbg;
-#else
-            bgcolor = msgbox->defcolor;
-#endif
-        }
-        else
-        {
-            color = msgbox->cancelcolor;
-#if defined WIN32
-            bgcolor = msgbox->cancelbg;
-#else
-            bgcolor = msgbox->cancelcolor;
-#endif
-        }
-        rc = _TexuMsgBoxProc_CreateButtons(
+        rc = _TexuMsgBoxProc_CreateButtons2(
             wnd,
             y,
             x,
             caption,
             TEXU_IDCANCEL,
             TVK_F4,
-            color,
-            bgcolor);
+            msgbox->cancelcolor,
+            msgbox->cancelcolor,
+            msgbox->defcolor,
+            msgbox->defcolor);
         if (rc != TEXU_OK)
         {
             return rc;
@@ -728,12 +738,37 @@ _TexuMsgBoxProc_CreateChildren(texu_wnd *wnd, texu_wnd_attrs *attrs, texu_i32 li
         texu_wnd_add_keycmd(wnd, 'c', TEXU_IDCANCEL, 0);
         texu_wnd_add_keycmd(wnd, TEXU_KEY_ESCAPE, TEXU_IDCANCEL, 0);
         x += texu_strlen(caption) + 1;
+        msgbox->buttons[msgbox->max_buttons] = texu_wnd_find_child(wnd, TEXU_IDCANCEL);
+        ++msgbox->max_buttons;
+        texu_wnd_set_focus(msgbox->buttons[msgbox->max_buttons]);
     }
-    if (msgbox->defbutton)
+#if 0
+    if (1 == msgbox->max_buttons) /*only 1 button */
     {
-        texu_wnd_add_keycmd(wnd, TEXU_KEY_ENTER,  msgbox->defbutton, 0);
+        id = texu_wnd_get_id(msgbox->buttons[0]);
+        texu_wnd_add_keycmd(wnd, TEXU_KEY_ESCAPE, id, 0);
+        texu_wnd_add_keycmd(wnd, TEXU_KEY_ENTER, id, 0);
+        texu_wnd_set_focus(msgbox->buttons[0]);
     }
-
+    else
+#endif
+    {
+        if (msgbox->defbutton)
+        {
+            //texu_wnd_add_keycmd(wnd, TEXU_KEY_ENTER,  msgbox->defbutton, 0);
+            texu_i32 i = 0;
+            for (i = 0; i < msgbox->max_buttons; ++i)
+            {
+                id = texu_wnd_get_id(msgbox->buttons[i]);
+                if (id == msgbox->defbutton)
+                {
+                    texu_wnd_set_focus(msgbox->buttons[i]);
+                    msgbox->curbtn = i;
+                    break;
+                }
+            }
+        }
+    }
     return TEXU_OK;
 }
 
@@ -843,21 +878,8 @@ _TexuMsgBoxProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
         return rc;
     }
     texu_wnd_set_color(wnd, msgbox->color, msgbox->color);
-                       //texu_env_get_syscolor(env, TEXU_COLOR_DIALOG),
-                       //texu_env_get_syscolor(env, TEXU_COLOR_DIALOG));
-
     texu_wnd_set_bgcolor(wnd, msgbox->bgcolor, msgbox->bgcolor);
-                       //texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG),
-                       //texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG));
-/*
-    texu_wnd_set_color(wnd,
-                       texu_env_get_syscolor(env, TEXU_COLOR_DIALOG),
-                       texu_env_get_syscolor(env, TEXU_COLOR_DIALOG));
-#if (defined WIN32 && defined UNICODE)
-    texu_wnd_set_bgcolor(wnd,
-                       texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG),
-                       texu_env_get_sysbgcolor(env, TEXU_COLOR_DIALOG));
-#endif*/
+
     return TEXU_OK;
 }
 
@@ -866,9 +888,8 @@ void _TexuMsgBoxProc_OnSetTitleColor(texu_wnd *wnd, texu_ui32 color, texu_ui32 b
     texu_msgbox *msgbox = 0;
 
     msgbox = (texu_msgbox *)texu_wnd_get_userdata(wnd);
-    msgbox->titlecolor = color;//texu_env_get_syscolor(env, TEXU_COLOR_TITLE_WINDOW);
-
-    msgbox->titlebg = bgcolor;//texu_env_get_sysbgcolor(env, TEXU_COLOR_TITLE_WINDOW);
+    msgbox->titlecolor = color;
+    msgbox->titlebg = bgcolor;
 
 }
 
@@ -907,6 +928,55 @@ _TexuMsgBoxProc_OnShow(texu_wnd *wnd, texu_bool visible)
     return oldvisible;
 }
 
+texu_i32 _TexuMsgBoxProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 mod)
+{
+    texu_i32 i = 0;
+    texu_msgbox *msgbox = 0;
+    msgbox = (texu_msgbox *)texu_wnd_get_userdata(wnd);
+    switch (ch)
+    {
+        //case TEXU_KEY_UP:
+        case TEXU_KEY_LEFT:
+        {
+            if (msgbox->curbtn > 0)
+            {
+                texu_wnd_kill_focus(msgbox->buttons[msgbox->curbtn]);
+                --msgbox->curbtn;
+                texu_wnd_set_focus(msgbox->buttons[msgbox->curbtn]);
+            }
+            break;
+        }
+        case TEXU_KEY_RIGHT:
+        {
+            if (msgbox->curbtn < msgbox->max_buttons - 1)
+            {
+                texu_wnd_kill_focus(msgbox->buttons[msgbox->curbtn]);
+                ++msgbox->curbtn;
+                texu_wnd_set_focus(msgbox->buttons[msgbox->curbtn]);
+            }
+            break;
+        }
+        case TEXU_KEY_ENTER:
+        {
+            texu_i32 id = texu_wnd_get_id(msgbox->buttons[msgbox->curbtn]);
+            texu_wnd_post_msg(wnd, TEXU_WM_COMMAND, id, 0);
+            break;
+        }
+    }
+    return TEXU_OK;
+}
+
+
+texu_i32 _TexuMsgBoxProc_OnQueryKeyUp(texu_wnd *wnd)
+{
+    texu_msgbox *msgbox = (texu_msgbox *)texu_wnd_get_userdata(wnd);
+    if (msgbox->curbtn > 0)
+    {
+        return 0;
+    }
+    return 1;
+}
+
 texu_longptr
 _TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
 {
@@ -915,17 +985,7 @@ _TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam pa
     case TEXU_WM_COMMAND:
     {
         texu_msgbox *msgbox = (texu_msgbox *)texu_wnd_get_userdata(wnd);
-        /*
-        switch (param1)
-        {
-          case TEXU_IDOK:
-          case TEXU_IDCANCEL:
-          case TEXU_IDYES:
-          case TEXU_IDNO:
-            break;
-        }*/
         _TexuMsgBoxProc_Notify(wnd, TEXU_MBN_ENDDIALOG, param1);
-        /*texu_wnd_send_msg(wnd, TEXU_WM_DESTROY, 0, 0);*/
         texu_wnd_lock_update(msgbox->owner, TEXU_FALSE);
         texu_wnd_destroy(wnd);
         return 0;
@@ -955,6 +1015,17 @@ _TexuMsgBoxProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam pa
     case TEXU_MBM_SETTITLECOLOR:
         _TexuMsgBoxProc_OnSetTitleColor(wnd, (texu_ui32)param1, (texu_ui32)param2);
         return 0;
+    
+    case TEXU_WM_KEYDOWN:
+        if (TEXU_KEY_UP == param1)
+        {
+            return 0;
+        }
+        _TexuMsgBoxProc_OnKeyDown(wnd, param1, param2);
+        break;
+
+    case TEXU_WM_QUERYKEYUP:
+        return _TexuMsgBoxProc_OnQueryKeyUp(wnd);
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
@@ -1916,10 +1987,13 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     texu_printf_alignment3(buf, text, width, TEXU_ALIGN_CENTER, TEXU_TRUE, x, cx);
 
     texu_wnd_get_color(wnd, &normcolor, &discolor);
+    texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
     color = normcolor;
+    bgcolor = normbg;
     if (!(texu_wnd_is_enable(wnd)))
     {
         color = discolor;
+        bgcolor = disbg;
     }
     if (1 == btnwnd->state)
     {
@@ -1929,13 +2003,14 @@ _TexuButtonProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
             buf[0] = TEXUTEXT('[');
             buf[len - 1] = TEXUTEXT(']');
         }
+        color = texu_wnd_get_focused_color(wnd);
+        bgcolor = texu_wnd_get_bgfocused_color(wnd);
     }
-    texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
-#if 0 //defined TEXU_CIO_COLOR_MONO
-    texu_cio_putstr_attr(cio, y, x, buf,
-                         texu_cio_get_reverse(cio, color));
+#if defined TEXU_CIO_COLOR_MONO
+    texu_cio_draw_text2(cio, y, x, buf, color, bgcolor, TB_REVERSE,
+                          texu_wnd_get_clsname(wnd),
+                          texu_wnd_get_id(wnd));
 #else
-    bgcolor = normbg;
     if (!(texu_wnd_is_enable(wnd)))
     {
         bgcolor = disbg;
@@ -2219,24 +2294,23 @@ _TexuEditProc_OnGetText(texu_wnd *wnd, texu_char *text, texu_i32 textlen)
 
 void _TexuEditProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 {
-    texu_editwnd *edit = 0;
+    texu_editwnd *edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
     texu_ui32 style = texu_wnd_get_style(wnd);
-    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_char buf[TEXU_MAX_WNDTEXT + 1] = "";
 
-    if (!text)
+    if (0 == text || 0 == texu_strlen(text))
     {
-        texu_strcpy(buf, "");
-    }
-    else
-    {
-        /*copy to buffer to prevent Mac crashed*/
-        texu_strcpy(buf, text);
+        /*allow an empty text, also no need to validate it*/
+        texu_strcpy(edit->editbuf, buf);
+        edit->firstvisit = 1;
+        TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)"", 0);
+        texu_wnd_invalidate(wnd);
+        return;
     }
 
-    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)text, 0);
-    edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
-    texu_strcpy(edit->editbuf, buf);
+    texu_strcpy(edit->editbuf, text);
     edit->firstvisit = 1;
+    TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)text, 0);
 
     if (TEXU_ES_AUTODECIMALCOMMA & style)
     {
@@ -2401,7 +2475,7 @@ texu_i32
 _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd, texu_i32 state)
 {
     texu_editwnd *edit = (texu_editwnd *)texu_wnd_get_userdata(wnd);
-    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_char buf[TEXU_MAX_WNDTEXT + 1] = "";
     texu_ui32 style = texu_wnd_get_style(wnd);
     texu_f64 decimal = 0.0;
     texu_i32 number = 0;
@@ -2421,12 +2495,31 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd, texu_i32 state)
         edit->xpos = 0;
 
         texu_wnd_get_text(wnd, buf, TEXU_MAX_WNDTEXT);
+        texu_strcpy(edit->editbuf, buf);
         _TexuEditProc_Notify(wnd, TEXU_EN_KILLFOCUS, buf, state);
 
         texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
         texu_wnd_invalidate(wnd);
         return TEXU_OK;
     }
+
+    if (0 == texu_strlen(edit->editbuf))
+    {
+        /*an empty string do not want to validate*/
+        /* update text */
+        edit->firstvisit = 1;
+        edit->firstchar = 0;
+        edit->editing = 0;
+        edit->selected = 0;
+        edit->xpos = 0;
+
+        texu_wnd_set_text(wnd, buf);
+        _TexuEditProc_Notify(wnd, TEXU_EN_KILLFOCUS, buf, state);
+        texu_env_show_cursor(texu_wnd_get_env(wnd), TEXU_FALSE);
+        texu_wnd_invalidate(wnd);
+        return TEXU_OK;
+    }
+
     /* check if style is TEXU_ES_DECIMAL */
     if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
     {
@@ -3309,7 +3402,14 @@ void _TexuEditProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
             {
                 len = width;
             }
-            texu_memset(buf, edit->passchar, len);
+            if (edit->showpass == TEXU_TRUE)
+            {
+                texu_memset(buf, edit->passchar, len);
+            }
+            else
+            {
+                len = 0;
+            }
         }
 /*
         if (edit->showpass == TEXU_TRUE)

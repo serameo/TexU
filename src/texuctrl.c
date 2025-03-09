@@ -546,12 +546,6 @@ _TexuListCtrlProc_OnSetEditableCols(texu_wnd *wnd, texu_i32 ncols, const texu_i3
     texu_lcwnd *lctl = 0;
     texu_i32 i = 0;
 
-#if 0
-    if (!texu_wnd_is_enable(wnd))
-    {
-        return 0;
-    }
-#endif
     lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
     if (0 == edtcols)
     {
@@ -575,12 +569,6 @@ _TexuListCtrlProc_OnAddColumn(texu_wnd *wnd, texu_wnd_header *hdritem)
     texu_lcwnd_header *header = 0;
     texu_rect rc;
 
-#if 0
-    if (!texu_wnd_is_enable(wnd))
-    {
-        return 0;
-    }
-#endif
     lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
 
     if (lctl->nitems > 0)
@@ -1143,7 +1131,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     texu_strcpy(cap3, texu_trim(caption));
 
     memset(buf, 0, sizeof(buf));
-    cols = (isheader ? cols : cols - 0);
+    //cols = (isheader ? cols : cols - 0);
     len = texu_printf_alignment3(
             buf,
             cap3,
@@ -1165,13 +1153,19 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
         }
         else
         {
-            len = texu_printf_alignment3(
-                    buf,
-                    cap3,
-                    cols,
-                    TEXU_ALIGN_LEFT,
-                    TEXU_TRUE,
-                    x, cx);
+            if (align == TEXU_ALIGN_RIGHT)
+            {
+                texu_strcpy(cap2, cap3);
+                texu_strcat(cap2, TEXUTEXT(" "));/*extra 1 space*/
+
+                len = texu_printf_alignment3(
+                        buf,
+                        cap2,
+                        cols,
+                        align,
+                        TEXU_TRUE,
+                        x, cx);
+            }
         }
     }
     else if (2 == isheader)
@@ -1195,13 +1189,19 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
         }
         else
         {
-            len = texu_printf_alignment3(
-                    buf,
-                    cap3,
-                    cols,
-                    TEXU_ALIGN_LEFT,
-                    TEXU_TRUE,
-                    x, cx);
+            if (align == TEXU_ALIGN_RIGHT)
+            {
+                texu_strcpy(cap2, cap3);
+                texu_strcat(cap2, TEXUTEXT(" "));/*extra 1 space*/
+
+                len = texu_printf_alignment3(
+                        buf,
+                        cap2,
+                        cols,
+                        align,
+                        TEXU_TRUE,
+                        x, cx);
+            }
         }
     }
     else
@@ -1210,7 +1210,7 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
         if (align == TEXU_ALIGN_RIGHT)
         {
             texu_strcpy(cap2, cap3);
-            texu_strcat(cap2, TEXUTEXT(" "));
+            texu_strcat(cap2, TEXUTEXT(" "));/*extra 1 space*/
 
             len = texu_printf_alignment3(
                     buf,
@@ -1248,10 +1248,17 @@ _TexuListCtrlProc_DrawItem2(texu_wnd *wnd,
     else
     {
 #if (defined __VMS__ || (defined WIN32) || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)// && defined _WINDOWS))
+#if defined TEXU_CIO_COLOR_MONO
+        texu_cio_draw_text2(dc, y, x, buf, color, bgcolor, TB_REVERSE,
+                              texu_wnd_get_clsname(wnd),
+                              texu_wnd_get_id(wnd));
+
+#else
         texu_cio_draw_text(dc, y, x, buf, color, bgcolor,
                               texu_wnd_get_clsname(wnd),
                               texu_wnd_get_id(wnd));
 
+#endif
 #else
         texu_cio_putstr_attr(
             dc,
@@ -1290,9 +1297,8 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
     texu_bool fDrewLastCol = TEXU_FALSE;
     texu_i32 itemwidth = 0;
     texu_i32 x, y;
-    /*texu_wnd *parent = texu_wnd_get_parent(wnd);*/
-    /*texu_wnd *activewnd = texu_wnd_get_activechild(parent);*/
     texu_bool focusing = (LISTCTRL_STATE_FOCUSED == flags);/*(wnd == activewnd);*/
+    texu_i32 align = TEXU_ALIGN_CENTER;
 
 #if (defined __VMS__ || (defined WIN32) || defined __USE_TERMIOS__ || defined __USE_TERMBOX2__)// && defined _WINDOWS))
     texu_ui32 selbg = texu_env_get_sysbgcolor(env, TEXU_COLOR_LISTCTRL_ITEM_SELECTED);
@@ -1393,6 +1399,10 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
         selbg = header->selbg;
 #endif
         /* draw header */
+        if (style & TEXU_LCS_SIMPLEHEADER)
+        {
+            align = header->align;
+        }
         if (!(style & TEXU_LCS_NOHEADER))
         {
             border = 1;
@@ -1406,13 +1416,13 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor, normbg,
-                                           TEXU_ALIGN_CENTER,
+                                           align,
                                            border); /* 0=no border, 1=border */
 #else
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor,
-                                           TEXU_ALIGN_CENTER,
+                                           align,
                                            border); /* 0=no border, 1=border */
 #endif
             }
@@ -1423,13 +1433,13 @@ _TexuListCtrlProc_PaintCtrl(texu_wnd *wnd, texu_cio *dc, texu_rect* rect, texu_i
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor, normbg,
-                                           TEXU_ALIGN_CENTER,
+                                           align,
                                            border); /* 0=no border, 1=border */
 #else
                 _TexuListCtrlProc_DrawItem(wnd, dc, &rcitem,
                                            header->caption,
                                            normcolor,
-                                           TEXU_ALIGN_CENTER,
+                                           align,
                                            border); /* 0=no border, 1=border */
 #endif
             }
@@ -2175,7 +2185,7 @@ texu_i32 _TexuListCtrlProc_OnQueryKeyUp(texu_wnd *wnd)
     texu_lcwnd *lctl = (texu_lcwnd *)texu_wnd_get_userdata(wnd);
     if (lctl->curselrow <= 0)
     {
-        return 0;
+        return 0;/*can lost focus*/
     }
     return 1; /*still process key up*/
 }
@@ -2186,7 +2196,7 @@ texu_i32 _TexuListCtrlProc_OnQueryKeyPgUp(texu_wnd *wnd)
 
     if (lctl->curselrow <= 0)
     {
-        return 0;
+        return 0;/*can lost focus*/
     }
     return 1; /*still process key up*/
 }
@@ -2197,7 +2207,7 @@ texu_i32 _TexuListCtrlProc_OnQueryKeyPgDown(texu_wnd *wnd)
 
     if (lctl->curselrow < 0 || lctl->curselrow >= (lctl->nitems - 1))
     {
-        return 0;
+        return 0;/*can lost focus*/
     }
     return 1; /*still process key up*/
 }
@@ -2303,8 +2313,9 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         }
         return;
     }
-    else if (lctl->nitems > 0 && ch == lctl->insertkey && (style & TEXU_LCS_EDITABLE))
+    else if (lctl->nitems > 0 && ch == lctl->insertkey)// && (style & TEXU_LCS_EDITABLE))
     {
+#if 0
         if (TEXU_LCT_EDITING == lctl->editingstate)
         {
             _TexuListCtrlProc_OnEndEdit(wnd, TEXU_LC_ENDEDITCANCEL); /* edit cancel */
@@ -2352,10 +2363,17 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             _TexuListCtrlProc_OnBeginInsertRow(wnd, row);
             _TexuListCtrlProc_OnBeginEdit(wnd); /* begin editing */
         }
+#endif
+        /*just notify to its parent*/
+        if (lctl->curselrow > -1)
+        {
+            _TexuListCtrlProc_NotifyItem(wnd, TEXU_LCN_PRESSEDINSERT, lctl->curselrow, 0);
+        }
         return;
     }
     else if (lctl->nitems > 0 && ch == lctl->delkey)
     {
+#if 0
         if (TEXU_LCT_EDITING == lctl->editingstate)
         {
             _TexuListCtrlProc_OnEndEdit(wnd, TEXU_LC_ENDEDITCANCEL); /* edit cancel */
@@ -2380,6 +2398,12 @@ void _TexuListCtrlProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         else
         {
             _TexuListCtrlProc_OnSetCurRow(wnd, row);
+        }
+#endif
+        /*just notify to its parent*/
+        if (lctl->curselrow > -1)
+        {
+            _TexuListCtrlProc_NotifyItem(wnd, TEXU_LCN_PRESSEDDELETE, lctl->curselrow, 0);
         }
         return;
     }

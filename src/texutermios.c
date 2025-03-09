@@ -438,6 +438,264 @@ void texu_tb2_set_normal_size()
     //tb_write(TEXU_NORMAL_SCREEN, strlen(TEXU_NORMAL_SCREEN));
 }
 
+int texu_tb2__pre_esc_user(struct tb_event *event, size_t *consumed)
+{
+    struct bytebuf_t *in =tb_get_buffer_in();
+    if (in->len == 4 && 0 == memcmp("\033[4~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_END;
+        event->mod  = 0;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[4;3~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_END;
+        event->mod  = TB_MOD_ALT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 6 && 0 == memcmp("\033[4;2~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_END;
+        event->mod  = TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[4;4~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_END;
+        event->mod  = TB_MOD_ALT|TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 4 && 0 == memcmp("\033[1~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_HOME;
+        event->mod  = 0;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[1;3~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_HOME;
+        event->mod  = TB_MOD_ALT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 6 && 0 == memcmp("\033[1;2~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_HOME;
+        event->mod  = TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[1;4~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_HOME;
+        event->mod  = TB_MOD_ALT|TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 4 && 0 == memcmp("\033[2~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_INSERT;
+        event->mod  = 0;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[2;3~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_INSERT;
+        event->mod  = TB_MOD_ALT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 6 && 0 == memcmp("\033[2;2~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_INSERT;
+        event->mod  = TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[2;4~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_INSERT;
+        event->mod  = TB_MOD_ALT|TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 4 && 0 == memcmp("\033[3~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_DELETE;
+        event->mod  = 0;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[3;3~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_DELETE;
+        event->mod  = TB_MOD_ALT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 6 && 0 == memcmp("\033[3;2~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_DELETE;
+        event->mod  = TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[3;4~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_DELETE;
+        event->mod  = TB_MOD_ALT|TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 4 && 0 == memcmp("\033[6~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_PGDN;
+        event->mod  = 0;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[6;3~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_PGDN;
+        event->mod  = TB_MOD_ALT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 6 && 0 == memcmp("\033[6;2~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_PGDN;
+        event->mod  = TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[6;4~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_PGDN;
+        event->mod  = TB_MOD_ALT|TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 4 && 0 == memcmp("\033[5~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_PGUP;
+        event->mod  = 0;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[5;3~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_PGUP;
+        event->mod  = TB_MOD_ALT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 6 && 0 == memcmp("\033[5;2~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_PGUP;
+        event->mod  = TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[5;4~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_PGUP;
+        event->mod  = TB_MOD_ALT|TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 5 && 0 == memcmp("\033[15~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_F5;
+        event->mod  = 0;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[15;3~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_F5;
+        event->mod  = TB_MOD_ALT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 6 && 0 == memcmp("\033[15;2~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_F5;
+        event->mod  = TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    else if (in->len == 7 && 0 == memcmp("\033\033[15;4~", in->buf, in->len))
+    {
+        event->type = TB_EVENT_KEY;
+        event->ch   = 0;
+        event->key  = TB_KEY_F5;
+        event->mod  = TB_MOD_ALT|TB_MOD_SHIFT;
+        *consumed   = in->len;
+        return TB_OK;
+    }
+    return TB_ERR;
+}
+
 int texu_tb2_init(int lines, int cols)
 {
     int rc = 0;
@@ -447,6 +705,7 @@ int texu_tb2_init(int lines, int cols)
     rc = tb_init();
     if (0 == rc)
     {
+        tb_set_func(TB_FUNC_EXTRACT_PRE, texu_tb2__pre_esc_user);
         /*tb_set_input_mode(TB_INPUT_ALT);*/
         tb_set_input_mode(TB_INPUT_ESC/*| TB_INPUT_MOUSE*/);
     }

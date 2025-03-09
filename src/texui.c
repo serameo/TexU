@@ -3550,11 +3550,15 @@ _TexuDefWndProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                     if (keyup != 0)
                     {
                         /*do something here*/
+                        nextwnd = 0;
                     }
-                    nextwnd = texu_wnd_get_prev_activechild(wnd, activewnd);
-                    if (0 == nextwnd)
+                    else
                     {
-                        rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_lparam)activewnd, ch);
+                        nextwnd = texu_wnd_get_prev_activechild(wnd, activewnd);
+                        if (0 == nextwnd)
+                        {
+                            rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_lparam)activewnd, ch);
+                        }
                     }
                 }
             }

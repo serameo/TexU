@@ -1452,7 +1452,7 @@ _TexuEPSProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     attrs2.selectedcolor = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_SELECTED);
     attrs2.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_EDIT_FOCUSED);
 
-    attrs2.id = 1;
+    attrs2.id = TEXU_EPS_EDIT_NUMBER_ID;
     attrs2.clsname = TEXU_EDIT_CLASS;
     attrs2.userdata = 0;
     attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_LEFT | TEXU_ES_DECIMAL | TEXU_WS_HIDE;
@@ -1467,7 +1467,7 @@ _TexuEPSProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     texu_wnd_send_msg(editwnd, TEXU_EM_SETDECWIDTH, 2, 0); /*2-decimal points*/
 
     /*ATO ATC MP MO ML supported*/
-    attrs2.id = 2;
+    attrs2.id = TEXU_EPS_EDIT_ALPHA_ID;
     attrs2.style = TEXU_ES_AUTOHSCROLL | TEXU_ES_LEFT | TEXU_ES_UPPERCASE | TEXU_WS_HIDE;
 
     editwnd2 = texu_wnd_new(texu_wnd_get_env(wnd));
@@ -1579,13 +1579,18 @@ _TexuEPSProc_OnKillFocus(texu_wnd *wnd, texu_wnd *prevwnd, texu_i32 state)
     texu_i32 decwidth = eps->decwidth;
 
     texu_wnd_get_text(wnd, eps->editbuf, TEXU_MAX_WNDTEXT);
-
     texu_longptr rc = texu_wnd_send_msg(editwnd, TEXU_WM_KILLFOCUS, 0, state);
     if (rc < TEXU_OK)
     {
         return rc;
     }
     texu_wnd_get_text(editwnd, buf, TEXU_MAX_WNDTEXT);
+    if (0 == texu_strlen(buf))
+    {
+        /*an empty sting do not want to validate*/
+        texu_wnd_invalidate(editwnd);
+        return TEXU_OK;
+    }
     valid = _TexuEPSProc_IsValidSpread(wnd, buf);
     if (TEXU_FALSE == valid)
     {
@@ -2104,6 +2109,11 @@ _TexuEPSProc_IsValidSpread(texu_wnd *wnd, const texu_char *str)
     texu_char prclong[TEXU_MAX_WNDTEXT + 1];
     texu_i32  decwidth = eps->decwidth;
     texu_ui32 style = texu_wnd_get_style(wnd);
+    
+    if (TEXU_EPSS_NOSPREAD & style)
+    {
+        return TEXU_TRUE;
+    }
 
     if (!str || 0 == texu_strlen(str) || 0 == texu_strcmp("0.00", str))
     {
@@ -2169,7 +2179,7 @@ _TexuEPSProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
     texu_wnd *editwnd = texu_wnd_get_activechild(wnd);
     texu_i32 updown = 0;
     texu_env *env = texu_wnd_get_env(wnd);
-    /*texu_ui32 style = texu_wnd_get_style(wnd);*/
+    texu_ui32 style = texu_wnd_get_style(wnd);
 
     if (!texu_wnd_is_enable(wnd))
     {
@@ -2251,7 +2261,7 @@ _TexuEPSProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
             break;
 #endif
     }
-    if (updown)
+    if (updown && !(style & TEXU_EPSS_NOSPREAD))
     {
         /*get the current spread*/
         texu_char buf[TEXU_MAX_WNDTEXT + 1];
@@ -2358,6 +2368,14 @@ _TexuEPSProc_OnSetText(texu_wnd *wnd, const texu_char *text)
 
     if (!texu_wnd_is_enable(wnd))
     {
+        return;
+    }
+    if (0 == text || 0 == texu_strlen(text))
+    {
+        /*allow an empty text, also no need to validate it*/
+        texu_wnd_set_text(editwnd, "");
+        TexuDefWndProc(wnd, TEXU_WM_SETTEXT, (texu_lparam)"", 0);
+        texu_wnd_invalidate(wnd);
         return;
     }
 
@@ -2516,7 +2534,6 @@ texu_status _TexuEPSProc_OnGetBaseSpread(texu_wnd *wnd, texu_baseprice *ps)
 void
 _TexuEPSProc_OnSetPriceDecimal(texu_wnd *wnd, texu_i32 decimal)
 {
-
     texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
 
     decimal = TEXU_MIN(6, TEXU_MAX(0, decimal)); /*min=0, max=6*/
@@ -2583,6 +2600,16 @@ texu_i32 _TexuEPSProc_OnGetPriceAsInt(texu_wnd* wnd, texu_i32 decwidth)
     return val;
 }
 
+void _TexuEPSProc_OnLimitText(texu_wnd *wnd, texu_i32 len)
+{
+    texu_edit_pricespread *eps = (texu_edit_pricespread *)texu_wnd_get_userdata(wnd);
+    if (len < 0)
+    {
+        len = 6;
+    }
+    texu_wnd_send_msg(eps->editwnd, TEXU_EM_LIMITTEXT, len, 0);
+    texu_wnd_send_msg(eps->editwnd2, TEXU_EM_LIMITTEXT, len, 0);
+}
 
 texu_longptr
 _TexuEditPriceSpreadProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_lparam param2)
@@ -2655,6 +2682,10 @@ _TexuEditPriceSpreadProc(texu_wnd *wnd, texu_ui32 msg, texu_lparam param1, texu_
 
         case TEXU_EPSM_GETPRICEASINT:
             return _TexuEPSProc_OnGetPriceAsInt(wnd, (texu_i32)param1);
+
+        case TEXU_EPSM_LIMITTEXT:
+            _TexuEPSProc_OnLimitText(wnd, param1);
+            return 0;
     }
     return TexuDefWndProc(wnd, msg, param1, param2);
 }
