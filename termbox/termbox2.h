@@ -741,7 +741,15 @@ const char *tb_version(void);
 /*MEO: 02-JAN-2025*/
 void tb_get_cursor(int *cx, int *cy);
 void tb_get_cell(int x, int y, struct tb_cell *cell);
-int tb_write(const char *output, int len);
+/*MEO: 04-MAR-2025*/
+struct bytebuf_t {
+    char *buf;
+    size_t len;
+    size_t cap;
+};
+
+struct bytebuf_t *tb_get_buffer_in();
+
 #ifdef __cplusplus
 }
 #endif

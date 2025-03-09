@@ -74,9 +74,9 @@ static int wait_fill_event(struct tb_event *event, struct timeval *timeout);
 /* may happen in a different thread */
 static volatile int buffer_size_change_request;
 
-#if defined __UNIX__ && !(defined __LINUX__)
+#if (defined __USE_EXTREME__) || (defined __UNIX__ && !(defined __LINUX__))
 #define TERMBOX_UNIX_MAX_WIDTH      132
-#define TERMBOX_UNIX_MAX_HEIGHT     25
+#define TERMBOX_UNIX_MAX_HEIGHT     24
 #endif
 /* -------------------------------------------------------- */
 
@@ -127,7 +127,7 @@ int tb_init_fd(int inout_)
     send_clear();
 
     update_term_size();
-#if defined __UNIX__ && !(defined __LINUX__)
+#if (defined __USE_EXTREME__) || (defined __UNIX__ && !(defined __LINUX__))
     cellbuf_init(&back_buffer, TERMBOX_UNIX_MAX_WIDTH, TERMBOX_UNIX_MAX_HEIGHT);
     cellbuf_init(&front_buffer, TERMBOX_UNIX_MAX_WIDTH, TERMBOX_UNIX_MAX_HEIGHT);
 #else
@@ -260,13 +260,21 @@ void tb_change_cell(int x, int y, unsigned int ch, unsigned short fg, unsigned s
     tb_put_cell(x, y, &c);
 }
 /*04-DEC-2024*/
-SO_IMPORT void tb_get_cell(int x, int y, struct tb_cell *cell)
+void tb_get_cell(int x, int y, struct tb_cell *cell)
 {
     if ((unsigned)x >= (unsigned)back_buffer.width)
         return;
     if ((unsigned)y >= (unsigned)back_buffer.height)
         return;
     if (cell) *cell = CELL(&back_buffer, x, y);
+}
+
+/*MEO: 17-JAN-2025*/
+int tb_write(const char *buf, int len)
+{
+    bytebuffer_append(&output_buffer, buf, len);
+    bytebuffer_flush(&output_buffer, inout);
+    return 0;
 }
 
 void tb_blit(int x, int y, int w, int h, const struct tb_cell *cells)
