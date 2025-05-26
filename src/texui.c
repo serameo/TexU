@@ -2958,6 +2958,7 @@ struct texu_wnd
 {
     texu_wnd *parent;
     texu_list *children;
+    texu_list_item *wnditem; /*fast accessing*/
     texu_wnd *activechild;
     texu_wndproc wndproc;
     texu_env *env; /* console input/output */
@@ -4122,6 +4123,63 @@ texu_wnd_new(texu_env *env)
 }
 
 texu_status
+texu_wnd_create_controls(texu_wnd *wnd, const texu_wnd_template3 *templ, texu_i32 nitems)
+{
+    texu_status rc = TEXU_OK;
+    texu_i32    i  = 0;
+    texu_wnd_attrs attrs;
+    texu_env *env = texu_wnd_get_env(wnd);
+    texu_wnd *childwnd = 0;
+
+    for (i = 0; i < nitems; ++i)
+    {
+        if (!(templ[i].clsname) || texu_strlen(templ[i].clsname) == 0)
+        {
+            break;
+        }
+        childwnd = texu_wnd_new(env);
+        if (!childwnd)
+        {
+            continue;
+        }
+        memset(&attrs, 0, sizeof(attrs));
+        attrs.y             = templ[i].y;
+        attrs.x             = templ[i].x;
+        attrs.height        = templ[i].h;
+        attrs.width         = templ[i].w;
+        attrs.enable        = (TEXU_WS_DISABLED & templ[i].style ? TEXU_FALSE : TEXU_TRUE);
+        attrs.visible       = (TEXU_WS_HIDE     & templ[i].style ? TEXU_FALSE : TEXU_TRUE);
+        attrs.text          = templ[i].text;
+        attrs.normalcolor   = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+        attrs.disabledcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+        attrs.focusedcolor  = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+        attrs.selectedcolor = texu_env_get_syscolor(env, TEXU_COLOR_WINDOW);
+        attrs.normalbg      = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+        attrs.disabledbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+        attrs.focusedbg     = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+        attrs.selectedbg    = texu_env_get_sysbgcolor(env, TEXU_COLOR_WINDOW);
+
+        attrs.id            = templ[i].id;
+        attrs.clsname       = templ[i].clsname;
+        attrs.userdata      = templ[i].userdata;
+        attrs.style         = templ[i].style;
+        attrs.exstyle       = templ[i].exstyle;
+        attrs.on_validate   = templ[i].on_validate;
+        attrs.validate_data = templ[i].validate_data;
+
+        rc = texu_wnd_create(childwnd, wnd, &attrs);
+
+        if (rc != TEXU_OK)
+        {
+            texu_wnd_del(childwnd);
+            /*return 0;*/
+        }
+    }
+
+    return rc;
+}
+
+texu_status
 texu_wnd_create(texu_wnd *wnd, texu_wnd *parent, const texu_wnd_attrs *attrs)
 {
     texu_status rc = TEXU_OK;
@@ -4492,6 +4550,11 @@ _texu_wnd_invalidate_base(texu_wnd *wnd, texu_rect* rect)
     childwnd = texu_wnd_firstchild(wnd);
     while (childwnd)
     {
+        if (!texu_wnd_is_visible(childwnd))
+        {
+            childwnd = texu_wnd_nextwnd(childwnd);
+            continue;
+        }
         style = texu_wnd_get_style(childwnd);
         /*texu_wnd_get_rect(childwnd, &rcchild);*/
         texu_wnd_send_msg(childwnd, TEXU_WM_GETSCREENRECT, (texu_lparam)&rcchild, 0);
@@ -4811,7 +4874,8 @@ texu_wnd_lastchild(texu_wnd *wnd)
 texu_wnd *
 texu_wnd_nextwnd(texu_wnd *wnd)
 {
-    texu_list_item *item = 0;
+    texu_list_item *item = (wnd ? wnd->wnditem : 0);
+#if 0
     texu_wnd *parent = (wnd ? wnd->parent : 0);
     if (!parent)
     {
@@ -4819,6 +4883,7 @@ texu_wnd_nextwnd(texu_wnd *wnd)
     }
     /* find */
     item = texu_list_find_first(parent->children, (texu_lparam)wnd);
+#endif
     if (item)
     {
         item = item->next;
@@ -4830,7 +4895,8 @@ texu_wnd_nextwnd(texu_wnd *wnd)
 texu_wnd *
 texu_wnd_prevwnd(texu_wnd *wnd)
 {
-    texu_list_item *item = 0;
+    texu_list_item *item = (wnd ? wnd->wnditem : 0);
+#if 0
     texu_wnd *parent = (wnd ? wnd->parent : 0);
     if (!parent)
     {
@@ -4838,6 +4904,7 @@ texu_wnd_prevwnd(texu_wnd *wnd)
     }
     /* find */
     item = texu_list_rfind_last(parent->children, (texu_lparam)wnd);
+#endif
     if (item)
     {
         item = item->prev;
@@ -5126,6 +5193,7 @@ texu_wnd_add_child(texu_wnd *wnd, texu_wnd *childwnd)
 {
     texu_status rc = TEXU_OK;
     texu_wnd *findwnd = 0;
+    texu_list_item *wnditem = 0;
 
     if (!wnd || !childwnd)
     {
@@ -5137,7 +5205,8 @@ texu_wnd_add_child(texu_wnd *wnd, texu_wnd *childwnd)
         return TEXU_DUPLICATED_ID;
     }
 
-    texu_list_add(wnd->children, (texu_lparam)childwnd);
+    wnditem = texu_list_add2(wnd->children, (texu_lparam)childwnd);
+    childwnd->wnditem = wnditem;
     return rc;
 }
 
@@ -5151,7 +5220,7 @@ texu_wnd_remove_child(texu_wnd *wnd, texu_wnd *childwnd)
     {
         return TEXU_ERROR;
     }
-    item = _texu_wnd_find_child(wnd, childwnd->id);
+    item = childwnd->wnditem;//_texu_wnd_find_child(wnd, childwnd->id);
     if (!item)
     {
         return TEXU_NOTFOUND;

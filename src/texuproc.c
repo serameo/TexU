@@ -1139,11 +1139,11 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     color = normcolor;
     texu_wnd_get_bgcolor(wnd, &normbg, &disbg);
     colorbg = normbg;
-    if (!(texu_wnd_is_enable(wnd)))
+    /*if (!(texu_wnd_is_enable(wnd)))
     {
         color = discolor;
         colorbg = disbg;
-    }
+    }*/
     if (style & TEXU_LS_FRAME)
     {
         color = label->framecolor;
@@ -1153,15 +1153,15 @@ _TexuLabelProc_OnPaint(texu_wnd *wnd, texu_cio *cio, texu_rect* rect)
     else
     {
 #if defined __USE_TERMBOX2__
-    texu_cio_draw_text2(cio, y, x, buf, color, colorbg,
-        (label->highlight ? TB_REVERSE : 0),
-        texu_wnd_get_clsname(wnd),
-        texu_wnd_get_id(wnd));
+        texu_cio_draw_text2(cio, y, x, buf, color, colorbg,
+            (label->highlight ? TB_REVERSE : 0),
+            texu_wnd_get_clsname(wnd),
+            texu_wnd_get_id(wnd));
 #else
-    texu_cio_draw_text2(cio, y, x, buf, color, colorbg,
-        0,
-        texu_wnd_get_clsname(wnd),
-        texu_wnd_get_id(wnd));
+        texu_cio_draw_text2(cio, y, x, buf, color, colorbg,
+            0,
+            texu_wnd_get_clsname(wnd),
+            texu_wnd_get_id(wnd));
 #endif
     }
 }
@@ -1593,7 +1593,7 @@ texu_i32    _TexuPanelProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
         }
         if (activewnd && activewnd != wnd)
         {
-            if (ch == chNextKey)
+            if (ch == chNextKey || ch == TEXU_KEY_DOWN)
             {
                 qnextwnd = (texu_wnd*)texu_wnd_send_msg(activewnd, TEXU_WM_QUERYNEXTWND, 0, 0);
                 if (0 == qnextwnd)
@@ -1606,6 +1606,18 @@ texu_i32    _TexuPanelProc_OnKeyDown(texu_wnd *wnd, texu_i32 ch, texu_i32 alt)
                 }
             }
             else if (ch == chPrevKey || ((alt & TEXU_KEYPRESSED_SHIFT) && (ch == TEXU_KEY_TAB)))
+            {
+                qnextwnd = (texu_wnd*)texu_wnd_send_msg(activewnd, TEXU_WM_QUERYPREVWND, 0, 0);
+                if (0 == qnextwnd)
+                {
+                    nextwnd = texu_wnd_get_prev_activechild(wnd, activewnd);
+                    if (0 == nextwnd)
+                    {
+                        rc = texu_wnd_send_msg(activewnd, TEXU_WM_KILLFOCUS, (texu_lparam)activewnd, ch);
+                    }
+                }
+            }
+            else if (ch == TEXU_KEY_UP)
             {
                 qnextwnd = (texu_wnd*)texu_wnd_send_msg(activewnd, TEXU_WM_QUERYPREVWND, 0, 0);
                 if (0 == qnextwnd)
@@ -2385,6 +2397,47 @@ void _TexuEditProc_OnSetValidMinMax(texu_wnd *wnd, texu_i32 on, texu_editminmax 
     }
 }
 
+texu_i32 _TexuEditProc_AddCommas(texu_editwnd *edit)
+{
+    texu_char buf[TEXU_MAX_WNDTEXT + 1];
+    texu_i32 cnt = 1;
+    texu_char *pbuf;
+    texu_i32 len = texu_strlen(edit->editbuf) - 1;
+    texu_char *psz = &edit->editbuf[len];
+
+    memset(buf, 0, sizeof(buf));
+    pbuf = buf;
+
+    while (len >= 0)
+    {
+        if (cnt % 4 == 0 && *psz != TEXUTEXT('-'))
+        {
+            *pbuf = TEXUTEXT(',');
+            ++pbuf;
+            ++cnt;
+        }
+        *pbuf = *psz;
+        ++pbuf;
+        --psz;
+        --len;
+        ++cnt;
+    }
+    /* save */
+    memset(edit->editbuf, 0, sizeof(edit->editbuf));
+    /* reverse copy */
+    len = texu_strlen(buf) - 1;
+    pbuf = &buf[len];
+    psz = edit->editbuf;
+    while (len >= 0)
+    {
+        *psz = *pbuf;
+        ++psz;
+        --pbuf;
+        --len;
+    }
+    return TEXU_OK;
+}
+
 texu_i32 _TexuEditProc_AddDecimalFormat(texu_editwnd *edit)
 {
     texu_char buf[TEXU_MAX_WNDTEXT + 1];
@@ -2523,6 +2576,7 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd, texu_i32 state)
     /* check if style is TEXU_ES_DECIMAL */
     if (TEXU_ES_DECIMAL & style || TEXU_ES_AUTODECIMALCOMMA & style)
     {
+        _TexuEditProc_RemoveDecimalFormat(edit);
         decimal = texu_atof(edit->editbuf);
 
         texu_sprintf(buf, sizeof(buf), TEXUTEXT("%.*f"), (texu_i32)edit->decwidth, decimal);
@@ -2546,11 +2600,13 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd, texu_i32 state)
     }
     if (TEXU_ES_NUMBER & style)
     {
+        _TexuEditProc_RemoveDecimalFormat(edit);
         number = texu_atol(edit->editbuf);
         sprintf(edit->editbuf, "%d", (int)number);
     }
     if ((TEXU_ES_NUMBER & style) && (TEXU_TRUE == edit->onminmax))
     {
+        _TexuEditProc_RemoveDecimalFormat(edit);
         number = texu_atol(edit->editbuf);
         if (number < edit->min &&
             number > edit->max)
@@ -2582,6 +2638,10 @@ _TexuEditProc_OnKillFocus(texu_wnd *wnd, texu_wnd *nextwnd, texu_i32 state)
     if (TEXU_ES_AUTODECIMALCOMMA & style)
     {
         _TexuEditProc_AddDecimalFormat(edit);
+    }
+    else if (TEXU_ES_AUTOCOMMAS & style)
+    {
+        _TexuEditProc_AddCommas(edit);
     }
     /* update text */
     /*edit->firstvisit = 1;*/
@@ -3307,6 +3367,10 @@ _TexuEditProc_OnCreate(texu_wnd *wnd, texu_wnd_attrs *attrs)
     edit->editing = 0;
     edit->decwidth = 6;
     edit->limitchars = (TEXU_ES_AUTOHSCROLL & style ? TEXU_MAX_WNDTEXT : attrs->width);
+    if (edit->limitchars < 1)
+    {
+        edit->limitchars = 1;
+    }
     edit->selected = 0;
 
     texu_wnd_set_color(wnd,

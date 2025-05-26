@@ -159,10 +159,45 @@ texu_list_insert_first(texu_list *list, texu_longptr data)
     return TEXU_OK;
 }
 
+texu_list_item *
+texu_list_insert_first2(texu_list *list, texu_longptr data)
+{
+    texu_list_item *newitem = _texu_list_item_new(data);
+    if (!newitem)
+    {
+        return 0;
+    }
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_lock(&list->mutex);
+#endif
+    if (list->first)
+    {
+        newitem->next = list->first->next;
+        list->first->prev = newitem;
+        list->first = newitem;
+    }
+    else
+    {
+        list->first = list->last = newitem;
+    }
+
+    ++list->nitems;
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_unlock(&list->mutex);
+#endif
+    return newitem;
+}
+
 texu_status
 texu_list_insert_last(texu_list *list, texu_longptr data)
 {
     return texu_list_add(list, data);
+}
+
+texu_list_item *
+texu_list_insert_last2(texu_list *list, texu_longptr data)
+{
+    return texu_list_add2(list, data);
 }
 
 texu_status
@@ -206,6 +241,47 @@ texu_list_insert(
     return TEXU_OK;
 }
 
+texu_list_item *
+texu_list_insert2(
+    texu_list *list,
+    texu_list_item *after,
+    texu_longptr data)
+{
+    texu_list_item *prev = 0;
+    texu_list_item *newitem = _texu_list_item_new(data);
+    if (!newitem)
+    {
+        return 0;
+    }
+    #ifdef TEXU_THREAD_SAFE
+    pthread_mutex_lock(&list->mutex);
+    #endif
+
+    if (after == list->first)
+    {
+        newitem->next = list->first;
+        list->first->prev = newitem;
+        list->first = newitem;
+    }
+    else
+    {
+        prev = after->prev;
+
+        newitem->next = after;
+        newitem->prev = prev;
+        if (prev)
+        {
+            prev->next = newitem;
+        }
+        after->prev = newitem;
+    }
+    ++list->nitems;
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_unlock(&list->mutex);
+#endif
+    return newitem;
+}
+
 texu_status
 texu_list_add(texu_list *list, texu_longptr data)
 {
@@ -233,6 +309,35 @@ texu_list_add(texu_list *list, texu_longptr data)
     pthread_mutex_unlock(&list->mutex);
 #endif
     return TEXU_OK;
+}
+
+texu_list_item *
+texu_list_add2(texu_list *list, texu_longptr data)
+{
+    texu_list_item *newitem = _texu_list_item_new(data);
+    if (!newitem)
+    {
+        return 0;
+    }
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_lock(&list->mutex);
+#endif
+    if (list->first)
+    {
+        newitem->prev = list->last;
+        list->last->next = newitem;
+        list->last = newitem;
+    }
+    else
+    {
+        list->first = list->last = newitem;
+    }
+
+    ++list->nitems;
+#ifdef TEXU_THREAD_SAFE
+    pthread_mutex_unlock(&list->mutex);
+#endif
+    return newitem;
 }
 
 texu_status
