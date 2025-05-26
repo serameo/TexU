@@ -54,6 +54,12 @@ texu_status texu_list_add(texu_list *, texu_longptr);
 texu_status texu_list_insert_first(texu_list *, texu_longptr);
 texu_status texu_list_insert_last(texu_list *, texu_longptr);
 texu_status texu_list_insert(texu_list *, texu_list_item *, texu_longptr);
+
+texu_list_item * texu_list_add2(texu_list *, texu_longptr);
+texu_list_item * texu_list_insert_first2(texu_list *, texu_longptr);
+texu_list_item * texu_list_insert_last2(texu_list *, texu_longptr);
+texu_list_item * texu_list_insert2(texu_list *, texu_list_item *, texu_longptr);
+
 /* remove an item on the list */
 texu_status texu_list_remove(texu_list *, texu_list_item *);
 texu_status texu_list_cb_remove(

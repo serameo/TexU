@@ -634,6 +634,16 @@ enum
 #define TEXU_RBM_GETPREVVISIBLEBAND     (TEXU_RBM_FIRST +  17)
 #define TEXU_RBM_GETFIRSTVISIBLEBAND    (TEXU_RBM_FIRST +  18)
 #define TEXU_RBM_GETLASTVISIBLEBAND     (TEXU_RBM_FIRST +  19)
+#define TEXU_RBM_SETMAXROW              (TEXU_RBM_FIRST +  20)
+#define TEXU_RBM_GETMAXROW              (TEXU_RBM_FIRST +  21)
+#define TEXU_RBM_GOTOFIRSTCOLUMN        (TEXU_RBM_FIRST +  22)
+#define TEXU_RBM_GOTOSECONDCOLUMN       (TEXU_RBM_FIRST +  23)
+#define TEXU_RBM_GOTONEXTPAGE           (TEXU_RBM_FIRST +  24)
+#define TEXU_RBM_GOTOPREVPAGE           (TEXU_RBM_FIRST +  25)
+#define TEXU_RBM_GOTOPAGE               (TEXU_RBM_FIRST +  26)
+#define TEXU_RBM_LOADTEMPLATE           (TEXU_RBM_FIRST +  27)
+#define TEXU_RBM_GETCURPAGE             (TEXU_RBM_FIRST +  28)
+#define TEXU_RBM_GETMAXPAGE             (TEXU_RBM_FIRST +  29)
 
 #define TEXU_RBN_FIRST                  TEXU_RBM_FIRST
 #define TEXU_RBN_FIRSTCHILD             (TEXU_RBM_FIRST +  1)
@@ -641,7 +651,12 @@ enum
 #define TEXU_RBN_NEXTCHILD              (TEXU_RBM_FIRST +  3)
 #define TEXU_RBN_PREVCHILD              (TEXU_RBM_FIRST +  4)
 #define TEXU_RBN_FIRST_VISIBLE_CHILD    (TEXU_RBM_FIRST +  5)
-
+#define TEXU_RBN_MOVEDNEXTCOLUMN        (TEXU_RBM_FIRST +  6)
+#define TEXU_RBN_MOVEDPREVCOLUMN        (TEXU_RBM_FIRST +  7)
+#define TEXU_RBN_MOVEDNEXTPAGE          (TEXU_RBM_FIRST +  8)
+#define TEXU_RBN_MOVEDPREVPAGE          (TEXU_RBM_FIRST +  9)
+#define TEXU_RBN_PAGECHANGING           (TEXU_RBM_FIRST + 10)
+#define TEXU_RBN_PAGECHANGED            (TEXU_RBM_FIRST + 11)
 
 /*IP ADDRESS CTRL*/
 #define TEXU_IPM_FIRST                 (TEXU_WM_FIRST + 1400)
@@ -1052,6 +1067,7 @@ enum
 #define TEXU_ES_LOWERCASE               0x00800000
 #define TEXU_ES_A2Z                     0x01000000
 #define TEXU_ES_AUTOCOMMAS              0x02000000
+#define TEXU_ES_AUTODECIMALCOMMAS       TEXU_ES_AUTODECIMALCOMMA
 
 
 /* LISTBOX */
@@ -1116,6 +1132,12 @@ enum
 #define TEXU_RBS_NOCAPTION              0x00010000
 #define TEXU_RBS_HASUNIT                0x00020000
 #define TEXU_RBS_HIGHLIGHT              0x00040000
+#define TEXU_RBS_TWOCOLUMNS             0x00080000
+
+/*rebar band type*/
+#define TEXU_RBT_WINDOW                 1
+#define TEXU_RBT_LINEBREAK              0
+#define TEXU_RBT_SENTINEL               -1
 
 /*EDIT PRICE SPREAD CTRL*/
 #define TEXU_EPSS_SHOWCHANGE            0x00010000

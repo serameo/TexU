@@ -147,6 +147,8 @@ struct texu_rebar_notify
     struct texu_wnd_notify hdr;
     texu_wnd    *curwnd;
     texu_wnd    *nextwnd;
+    texu_i32    curpage;
+    texu_i32    nextpage;
     void*       data;
 };
 typedef struct texu_rebar_notify texu_rebar_notify;
@@ -395,11 +397,12 @@ struct texu_menu_template
 };
 typedef struct texu_menu_template texu_menu_template;
 
-/*REBAR*/
+/*REBAR BAND*/
+struct texu_rbwnd;
 struct texu_rbwnd_band
 {
     /*texu_char   caption[TEXU_MAX_WNDTEXT + 1];*/
-    texu_char  *caption;
+    texu_char   *caption;
     texu_i32    align;
     texu_bool   enable;
     texu_bool   visible;
@@ -416,9 +419,32 @@ struct texu_rbwnd_band
     texu_i32    width;
     texu_i32    height;
     /*texu_char   unit[TEXU_MAX_WNDTEXT + 1];*/
-    texu_char  *unit;
+    texu_char   *unit;
+    texu_i32    type; /*TEXU_RBT_WINDOW = 0, TEXU_RBT_BREAK = 1*/
+    texu_i32            id;
+    texu_list_item      *listitem;
+    struct texu_rbwnd   *rbwnd;
 };
 typedef struct texu_rbwnd_band texu_rbwnd_band;
+
+
+struct texu_rbwnd_template_s
+{
+    /**/
+    texu_char   *text;
+    texu_char   *clsname;
+    texu_ui32   style;
+    texu_ui32   exstyle;
+    texu_i32    height;
+    texu_i32    width;
+    texu_i32    id;
+    void        *userdata;
+    void        *validate_data;
+    texu_i32    (*on_validate)(texu_wnd*, texu_char*, void*);
+    texu_char   *bandcaption;
+    texu_i32    bandtype;
+};
+typedef struct texu_rbwnd_template_s texu_rbwnd_template;
 
 /*IP ADDRESS*/
 struct texu_ip_addr
@@ -487,9 +513,17 @@ typedef struct texu_datetime texu_datetime;
 /*simple show/hide/move */
 struct texu_layer
 {
-    texu_urect       area;          /*the area under the parent*/
-    texu_wnd        *parent;        /*the parent window*/
+    texu_urect      area;           /*the area under the parent*/
+    texu_wnd        *owner;         /*the parent window*/
     texu_list       *children;      /*children windows to be aligned in the window parent*/
+    texu_i32        id;             /*unique key defined by user*/
+};
+
+/*to manipulate many layers, e.g. a window can hold many layers*/
+struct texu_layer_mgr
+{
+    texu_wnd        *owner;        /*the parent window*/
+    texu_list       *layers;
 };
 
 #ifdef __cplusplus

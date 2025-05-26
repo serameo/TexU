@@ -62,7 +62,6 @@ struct _texu_popup_menu2
     void                *userdata;
 };
 typedef struct _texu_popup_menu2 texu_popup_menu2;
-typedef struct _texu_popup_menu2 texu_popup_menu2;
 
 texu_menu*        texu_menu_new(texu_wnd*, texu_i32);
 void              texu_menu_del(texu_menu*);

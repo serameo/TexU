@@ -31,7 +31,7 @@ extern "C" {
          1         2         3         4         5         6         7         8
 12345678901234567890123456789012345678901234567890123456789012345678901234567890
 */
-struct texu_layer *texu_layer_init(texu_wnd *parent);
+struct texu_layer *texu_layer_init(texu_wnd *owner);
 void texu_layer_release(struct texu_layer *layer);
 texu_i32 texu_layer_add_child(struct texu_layer *layer, texu_wnd *child);
 void texu_layer_show(struct texu_layer *layer, texu_bool fShow);
@@ -39,6 +39,11 @@ void texu_layer_move(struct texu_layer *layer, const texu_urect *area);
 void texu_layer_center(struct texu_layer *layer, const texu_urect *area);
 void texu_layer_vcenter(struct texu_layer *layer, const texu_urect *area);
 
+
+struct texu_layer_mgr *texu_layer_mgr_init(texu_wnd *owner);
+void texu_layer_mgr_release(struct texu_layer_mgr *mgr);
+texu_i32 texu_layer_mgr_add_layer(struct texu_layer_mgr* mgr, struct texu_layer* layer);
+void texu_layer_mgr_show(struct texu_layer_mgr* mgr, texu_i32 id);
 
 #ifdef __cplusplus
 }

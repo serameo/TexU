@@ -332,7 +332,6 @@ typedef struct texu_wnd texu_wnd;
 texu_wnd*           texu_wnd_new(texu_env*);
 void                texu_wnd_del(texu_wnd*);
 
-
 texu_status         texu_wnd_create(texu_wnd*, texu_wnd*, const texu_wnd_attrs*);
 void                texu_wnd_destroy(texu_wnd*);
 texu_longptr        texu_wnd_close(texu_wnd *wnd);
@@ -340,6 +339,7 @@ texu_status         texu_wnd_add_child(texu_wnd*, texu_wnd*);
 texu_status         texu_wnd_remove_child(texu_wnd*, texu_wnd*);
 texu_wnd*           texu_wnd_find_child(texu_wnd*, texu_ui32);
 texu_wnd*           texu_wnd_is_window(texu_wnd*);
+texu_status         texu_wnd_create_controls(texu_wnd *wnd, const texu_wnd_template3 *templ, texu_i32 nitems);
 
 texu_status         texu_wnd_add_keycmd(texu_wnd*, texu_i32, texu_ui32, texu_i32);
 texu_wnd_keycmd*    texu_wnd_find_keycmd(texu_wnd*, texu_i32, texu_i32);
